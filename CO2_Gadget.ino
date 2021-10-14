@@ -21,12 +21,11 @@
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                              SETUP CO2 SENSOR SCD30                               *********/
+/*********                                   SETUP SENSORS                                   *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 
-#include "SparkFun_SCD30_Arduino_Library.h"
-SCD30 airSensor;
+#include <Sensors.hpp>
 
 #ifdef ALTERNATIVE_I2C_PINS
 #define I2C_SDA 22
@@ -37,6 +36,7 @@ SCD30 airSensor;
 #endif
 
 bool pendingCalibration = false;
+bool newReadingsAvalilable = false;
 uint16_t calibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
@@ -44,6 +44,23 @@ uint16_t ambientPressureValue = 0;
 uint16_t co2 = 0;
 float temp, hum  = 0;
 
+void onSensorDataOk() {
+    Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
+    Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
+    Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
+
+    Serial.print(" H: " + String(sensors.getHumidity()));
+    Serial.println(" T: " + String(sensors.getTemperature()));
+
+    co2  = sensors.getCO2();
+    temp = sensors.getCO2temp();
+    hum  = sensors.getCO2humi();
+    newReadingsAvalilable = true;
+}
+
+void onSensorDataError(const char* msg) {
+    Serial.println(msg);
+}
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -363,26 +380,26 @@ void processPendingCommands()
 {
   if (pendingCalibration == true) {
     if (calibrationValue != 0) {
-      printf("Calibrating SCD30 sensor at %d PPM\n", calibrationValue);
+      printf("Calibrating CO2 sensor at %d PPM\n", calibrationValue);
       pendingCalibration = false;
-      airSensor.setForcedRecalibrationFactor(calibrationValue);
+      sensors.setCO2RecalibrationFactor(calibrationValue);
     }
     else
     {
-      printf("Avoiding calibrating SCD30 sensor with invalid value at %d PPM\n", calibrationValue);
+      printf("Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
       pendingCalibration = false;
     }
   }
 
   if (pendingAmbientPressure == true) {
     if (ambientPressureValue != 0) {
-      printf("Setting AmbientPressure for SCD30 sensor at %d mbar\n", ambientPressureValue);
+      printf("Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
       pendingAmbientPressure = false;
-      airSensor.setAmbientPressure(ambientPressureValue);
+      sensors.scd30.setAmbientPressure(ambientPressureValue);
     }
     else
     {
-      printf("Avoiding setting AmbientPressure for SCD30 sensor with invalid value at %d mbar\n", ambientPressureValue);
+      printf("Avoiding setting AmbientPressure for CO2 sensor with invalid value at %d mbar\n", ambientPressureValue);
       pendingAmbientPressure = false;
     }
   }
@@ -452,18 +469,22 @@ void setup()
   Serial.println(gadgetBle.getDeviceIdString());
 #endif
 
-  // Initialize the SCD30 driver
+  // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
-  if (airSensor.begin() == false)
-  {
-    Serial.println("Air sensor not detected. Please check wiring. Freezing...");
-    //    while (1)
-    //      ;
-  }
-  else
-  {
-    airSensor.setAutoSelfCalibration(false);
-  }
+
+  Serial.println("-->[SETUP] Detecting sensors..");
+
+  sensors.setSampleTime(5);                        // config sensors sample time interval
+  sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
+  sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
+  sensors.setDebugMode(true);                     // [optional] debug mode
+  sensors.detectI2COnly(true);                     // force to only i2c sensors
+
+  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp offset
+
+  sensors.init();
+
+  // sensors.setAutoSelfCalibration(false);
 
   initMQTT();
 
@@ -481,13 +502,13 @@ void loop()
   mqttClient.loop();
 #endif
 
+sensors.loop();  // read sensor data
+  
   processPendingCommands();
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
-    if (airSensor.dataAvailable()) {
-      co2  = airSensor.getCO2();
-      temp = airSensor.getTemperature();
-      hum  = airSensor.getHumidity();
+    if (newReadingsAvalilable) {
+    newReadingsAvalilable = false;
 
 #if defined SUPPORT_TFT
       showValuesTFT(co2);
@@ -555,8 +576,8 @@ void longpress(Button2& btn) {
   if (time > 3000) {
     Serial.print("a really really long time.");
     calibrationValue = 400;
-    printf("Manually calibrating SCD30 sensor at %d PPM\n", calibrationValue);
-    airSensor.setForcedRecalibrationFactor(calibrationValue);
+    printf("Manually calibrating CO2 sensor at %d PPM\n", calibrationValue);
+    sensors.setCO2RecalibrationFactor(calibrationValue);
     pendingCalibration = false;
   } else if (time > 1000) {
     Serial.print("a really long time.");
