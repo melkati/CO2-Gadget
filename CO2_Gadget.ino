@@ -36,7 +36,7 @@
 #endif
 
 bool pendingCalibration = false;
-bool newReadingsAvalilable = false;
+bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
@@ -55,7 +55,7 @@ void onSensorDataOk() {
     co2  = sensors.getCO2();
     temp = sensors.getCO2temp();
     hum  = sensors.getCO2humi();
-    newReadingsAvalilable = true;
+    newReadingsAvailable = true;
 }
 
 void onSensorDataError(const char* msg) {
@@ -303,6 +303,7 @@ void displaySplashScreenTFT() {
 
 void showValuesTFT(uint16_t co2) {
 #if defined SUPPORT_TFT
+  Serial.println("Updating TFT");
   if (co2 > 9999) {
     co2 = 9999;
   }
@@ -318,8 +319,11 @@ void showValuesTFT(uint16_t co2) {
   tft.setTextDatum(6); // bottom left
   tft.drawString("CO2", 10, 125);
 
+  #ifdef SUPPORT_BLE
   tft.setTextDatum(8); // bottom right
   tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
+  #endif
+  
 
   // Draw CO2 number
   if (co2 >= 1000 ) {
@@ -501,17 +505,16 @@ void loop()
 #ifdef SUPPORT_MQTT
   mqttClient.loop();
 #endif
-
-sensors.loop();  // read sensor data
   
+  sensors.loop();
   processPendingCommands();
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
-    if (newReadingsAvalilable) {
-    newReadingsAvalilable = false;
+    if (newReadingsAvailable) {
+    newReadingsAvailable = false;
 
 #if defined SUPPORT_TFT
-      showValuesTFT(co2);
+  showValuesTFT(co2);
 #endif
 
 #ifdef SUPPORT_BLE
