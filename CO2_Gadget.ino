@@ -12,6 +12,7 @@
 // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 // #define SUPPORT_OLED
 #define SUPPORT_TFT
+#define SUPPORT_ARDUINOMENU
 #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 
 #define UNITHOSTNAME "TEST"
@@ -300,9 +301,10 @@ void showValuesOLED(String text) {
 // to your Arduino library path
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include "bootlogo.h"
 
 #define SENSIRION_GREEN 0x6E66
-#define sw_version "v2.0"
+#define sw_version "v0.1"
 
 #define ADC_PIN 34
 int vref = 1100;
@@ -339,6 +341,11 @@ void displaySplashScreenTFT() {
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
+  delay(500);
+  tft.fillScreen(TFT_WHITE);
+  tft.setSwapBytes(true);
+  tft.pushImage(0, 0,  240, 135, bootlogo);
+
 #endif
 }
 
