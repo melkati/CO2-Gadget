@@ -1,0 +1,9 @@
+From: https://sites.google.com/site/jmaathuis/arduino/lilygo-ttgo-t-display-esp32/arduinomenu-demo-ttgo-t-display
+
+Bootlogo
+
+The bootlogo is placed in the file bmp.h. It is is being referenced from the ArduinoMenu_LilyGo_TTGO_T-display_demo.ino file with a #include "bmp.h". Both files should show up as seperate tabs in the Arduino IDE.
+
+After the design has finished and being saved as a 16 bit BMP file I converted the file to 16 bit R5G6B5 data with Riuson LCD Image Converter. Clear instructions how to convert color images can be found at https://www.instructables.com/id/Converting-Images-to-Flash-Memory-Iconsimages-for-/.
+
+So far I didn't had any luck with converting monochrome images but you can use https://convertio.co/nl/image-converter/ for that: convert a monochrome BMP to XBM and copy the contents of the XBM file to the sketch. I won't explain it in any further detail because that is outside of the scope of this demo sketch.
