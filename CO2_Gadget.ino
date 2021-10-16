@@ -43,8 +43,8 @@ uint16_t calibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 
-uint16_t co2 = 0;
-float temp, hum  = 0;
+uint16_t co2, co2Previous = 0;
+float temp, hum, tempPrevious, humPrevious  = 0;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -307,19 +307,13 @@ void showValuesOLED(String text) {
 #define SENSIRION_GREEN 0x6E66
 #define sw_version "v0.1"
 
-<<<<<<< HEAD
-#define ADC_PIN 34
-int vref = 1100;
-
-#define TFTFF 1
-=======
 #define GFXFF 1
->>>>>>> b1fbdec4c40925e5097c4bf73b45fae6285f48a9
 #define FF99  &SensirionSimple25pt7b
 #define FF90  &ArchivoNarrow_Regular10pt7b
 #define FF95  &ArchivoNarrow_Regular50pt7b
 
 TFT_eSPI tft = TFT_eSPI(135, 240); // Invoke library, pins defined in User_Setup.h
+// TFT_eSPI tft = TFT_eSPI(); // Invoke library, pins defined in User_Setup.h
 #endif
 
 void initDisplayTFT() {
@@ -439,11 +433,6 @@ Button2 btnDwn(BTN_DWN); // Initialize the down button
 void button_init()
 {
 #if defined SUPPORT_ARDUINOMENU
-    nav.idleTask=idle;//point a function to be used when menu is suspended
-    nav.timeOut=15;
-    mainMenu[1].disable();
-    nav.showTitle=true; //show menu title?
-
     btnUp.setLongClickHandler([](Button2 & b) {
         // Select
         unsigned int time = b.wasPressedFor();
@@ -522,6 +511,40 @@ void processPendingCommands()
   }
 }
 
+void setupTest() {
+  //options=&myOptions;//can customize options
+  Serial.begin(115200); // Set Serial baudrate at 115200
+  while(!Serial);
+  Serial.flush();
+  Serial.println();
+  
+  //SPI.begin(); // Leave this commented or else there will be nothing shown on the screen.
+  tft.init(); // Initialize the screen.
+
+  tft.setRotation(1); // Rotate display a quarter clockwise
+  
+  tft.setTextSize(2);
+  tft.setTextWrap(false);
+  tft.fillScreen(Black);
+  
+  Serial.print("Showing bootlogo... ");
+  tft.setSwapBytes(true);
+  tft.pushImage(0, 0,  240, 135, bootlogo);
+  delay(1000);
+  Serial.println("DONE");
+  
+  Serial.print("Initialize buttons... ");
+  button_init();
+  delay(1000);
+  Serial.println("DONE");
+
+  delay(2000); // A little bit more delay so that you will be able to see the bootlogo.
+  
+  Serial.println("- READY -");
+  
+  tft.fillScreen(Black); // Clear the screen to be ready to draw the menu
+}
+
 void setup()
 {
   uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); //save WatchDog register
@@ -540,10 +563,11 @@ void setup()
 #if defined SUPPORT_TFT
   // Display init and splash screen
   initDisplayTFT();
-  displaySplashScreenTFT();
+  // displaySplashScreenTFT();
   // Enjoy the splash screen for 2 seconds
   delay(2000);
   tft.fillScreen(Black);
+  tft.setTextSize(2);
 #endif
 
 #if defined SUPPORT_BLE && defined SUPPORT_WIFI
@@ -613,8 +637,16 @@ void setup()
   // button.begin(BUTTON_PIN);
   // button.setLongClickHandler(longpress);
   button_init();
+  menu_init();
 
   Serial.println("Ready.");
+}
+
+void loopNew()
+{
+  readBatteryVoltage();
+  button_loop();
+  nav.poll();
 }
 
 void loop()
@@ -629,9 +661,15 @@ void loop()
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
     if (airSensor.dataAvailable()) {
+      co2Previous = co2;
+      tempPrevious = temp;
+      humPrevious = hum;
       co2  = airSensor.getCO2();
       temp = airSensor.getTemperature();
       hum  = airSensor.getHumidity();
+      if (co2Previous != co2) {
+        nav.idleChanged=true;
+      }
 
 #if defined SUPPORT_OLED
       showValuesOLED(String(co2));
