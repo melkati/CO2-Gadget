@@ -46,18 +46,6 @@ uint16_t ambientPressureValue = 0;
 uint16_t co2 = 0;
 float temp, hum  = 0;
 
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********                          SETUP PUSH BUTTONS FUNCTIONALITY                         *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-
-#include "Button2.h"
-Button2 button;
-#define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press > 500ms to show battery voltage)
-void longpress(Button2& btn);
-
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
@@ -66,7 +54,11 @@ void longpress(Button2& btn);
 
 #ifdef SUPPORT_BLE
 #include "Sensirion_GadgetBle_Lib.h"
+#ifdef ALTERNATIVE_I2C_PINS  // Asume "compact sandwitch version". Temp and Humididy unusable. Show just CO2 on MyAmbiance
+GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
+#else
 GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
+#endif
 #endif
 
 /*****************************************************************************************************/
@@ -309,7 +301,7 @@ void showValuesOLED(String text) {
 #define ADC_PIN 34
 int vref = 1100;
 
-#define GFXFF 1
+#define TFTFF 1
 #define FF99  &SensirionSimple25pt7b
 #define FF90  &ArchivoNarrow_Regular10pt7b
 #define FF95  &ArchivoNarrow_Regular50pt7b
@@ -411,6 +403,72 @@ void showVoltageTFT()
 }
 
 /*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                                SETUP ARDUINOMENU                                  *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#if defined SUPPORT_ARDUINOMENU
+#include <CO2_Gadget_Menu.h>
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                          SETUP PUSH BUTTONS FUNCTIONALITY                         *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "Button2.h"
+// Button2 button;
+// #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press > 500ms to show battery voltage)
+// void longpress(Button2& btn);
+#define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
+#define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
+Button2 btnUp(BTN_UP); // Initialize the up button
+Button2 btnDwn(BTN_DWN); // Initialize the down button
+
+void button_init()
+{
+#if defined SUPPORT_ARDUINOMENU
+    nav.idleTask=idle;//point a function to be used when menu is suspended
+    nav.timeOut=15;
+    mainMenu[1].disable();
+    nav.showTitle=true; //show menu title?
+
+    btnUp.setLongClickHandler([](Button2 & b) {
+        // Select
+        unsigned int time = b.wasPressedFor();
+        if (time >= 500) {
+          nav.doNav(enterCmd);
+        }
+    });
+    
+    btnUp.setClickHandler([](Button2 & b) {
+       // Up
+       nav.doNav(downCmd); // It's called downCmd because it decreases the index of an array. Visually that would mean the selector goes upwards.
+    });
+
+    btnDwn.setLongClickHandler([](Button2 & b) {
+        // Exit
+        unsigned int time = b.wasPressedFor();
+        if (time >= 500) {
+          nav.doNav(escCmd);
+        }
+    });
+    
+    btnDwn.setClickHandler([](Button2 & b) {
+        // Down
+        nav.doNav(upCmd); // It's called upCmd because it increases the index of an array. Visually that would mean the selector goes downwards.
+    });
+#endif
+}
+
+void button_loop()
+{
+    // Check for button presses
+    btnUp.loop();
+    btnDwn.loop();
+}
+
+/*****************************************************************************************************/
 
 static int64_t lastMmntTime = 0;
 static int startCheckingAfterUs = 1900000;
@@ -453,6 +511,63 @@ void processPendingCommands()
   }
 }
 
+//when menu is suspended
+result idle(menuOut &o, idleEvent e)
+{
+    if (e == idling)
+    {
+#if defined SUPPORT_TFT
+Serial.println("Menu iddling");
+        if (co2 > 9999)
+        {
+            co2 = 9999;
+        }
+
+        tft.fillScreen(TFT_BLACK);
+
+        uint8_t defaultDatum = tft.getTextDatum();
+
+        tft.setTextSize(1);
+        tft.setFreeFont(FF90);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+        tft.setTextDatum(6); // bottom left
+        tft.drawString("CO2", 10, 125);
+
+        tft.setTextDatum(8); // bottom right
+        tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
+
+        // Draw CO2 number
+        if (co2 >= 1000)
+        {
+            tft.setTextColor(TFT_RED, TFT_BLACK);
+        }
+        else if (co2 >= 700)
+        {
+            tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+        }
+        else
+        {
+            tft.setTextColor(TFT_GREEN, TFT_BLACK);
+        }
+
+        tft.setTextDatum(8); // bottom right
+        tft.setTextSize(1);
+        tft.setFreeFont(FF95);
+        tft.drawString(String(co2), 195, 105);
+
+        // Draw CO2 unit
+        tft.setTextSize(1);
+        tft.setFreeFont(FF90);
+        tft.drawString("ppm", 230, 90);
+
+        // Revert datum setting
+        tft.setTextDatum(defaultDatum);
+#endif
+    }
+    return proceed;
+}
+
 void setup()
 {
   uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); //save WatchDog register
@@ -474,6 +589,7 @@ void setup()
   displaySplashScreenTFT();
   // Enjoy the splash screen for 2 seconds
   delay(2000);
+  tft.fillScreen(Black);
 #endif
 
 #if defined SUPPORT_BLE && defined SUPPORT_WIFI
@@ -540,8 +656,9 @@ void setup()
 
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp); //enable brownout detector
 
-  button.begin(BUTTON_PIN);
-  button.setLongClickHandler(longpress);
+  // button.begin(BUTTON_PIN);
+  // button.setLongClickHandler(longpress);
+  button_init();
 
   Serial.println("Ready.");
 }
@@ -565,7 +682,9 @@ void loop()
 #endif
 
 #if defined SUPPORT_TFT
+  #ifndef SUPPORT_ARDUINOMENU
       showValuesTFT(co2);
+  #endif
 #endif
 
 #ifdef SUPPORT_BLE
@@ -621,28 +740,31 @@ void loop()
   AsyncElegantOTA.loop();
 #endif
 
-  button.loop();
+  button_loop();
+#ifdef SUPPORT_ARDUINOMENU  
+  nav.poll();//this device only draws when needed
+#endif  
 }
 
-void longpress(Button2& btn) {
-  unsigned int time = btn.wasPressedFor();
-  Serial.print("You clicked ");
-  if (time > 3000) {
-    Serial.print("a really really long time.");
-    calibrationValue = 400;
-    printf("Manually calibrating SCD30 sensor at %d PPM\n", calibrationValue);
-    airSensor.setForcedRecalibrationFactor(calibrationValue);
-    pendingCalibration = false;
-  } else if (time > 1000) {
-    Serial.print("a really long time.");
-  } else if (time > 500) {
-    Serial.print("a long time.");
-    showVoltageTFT();
-    delay(2000);
-  } else {
-    Serial.print("long.");
-  }
-  Serial.print(" (");
-  Serial.print(time);
-  Serial.println(" ms)");
-}
+// void longpress(Button2& btn) {
+//   unsigned int time = btn.wasPressedFor();
+//   Serial.print("You clicked ");
+//   if (time > 3000) {
+//     Serial.print("a really really long time.");
+//     calibrationValue = 400;
+//     printf("Manually calibrating SCD30 sensor at %d PPM\n", calibrationValue);
+//     airSensor.setForcedRecalibrationFactor(calibrationValue);
+//     pendingCalibration = false;
+//   } else if (time > 1000) {
+//     Serial.print("a really long time.");
+//   } else if (time > 500) {
+//     Serial.print("a long time.");
+//     showVoltageTFT();
+//     delay(2000);
+//   } else {
+//     Serial.print("long.");
+//   }
+//   Serial.print(" (");
+//   Serial.print(time);
+//   Serial.println(" ms)");
+// }
