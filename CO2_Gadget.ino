@@ -226,6 +226,15 @@ void publishFloatMQTT(String topic, float payload)
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********                             SETUP BATTERY FUNCTIONALITY                           *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#define ADC_PIN 34
+int vref = 1100;
+#include "CO2_Gadget_Battery.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********                          SETUP OLED DISPLAY FUNCTIONALITY                         *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -298,10 +307,14 @@ void showValuesOLED(String text) {
 #define SENSIRION_GREEN 0x6E66
 #define sw_version "v0.1"
 
+<<<<<<< HEAD
 #define ADC_PIN 34
 int vref = 1100;
 
 #define TFTFF 1
+=======
+#define GFXFF 1
+>>>>>>> b1fbdec4c40925e5097c4bf73b45fae6285f48a9
 #define FF99  &SensirionSimple25pt7b
 #define FF90  &ArchivoNarrow_Regular10pt7b
 #define FF95  &ArchivoNarrow_Regular50pt7b
@@ -391,8 +404,6 @@ void showVoltageTFT()
   static uint64_t timeStamp = 0;
   if (millis() - timeStamp > 1000) {
     timeStamp = millis();
-    uint16_t v = analogRead(ADC_PIN);
-    float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
     String voltage = "Voltage :" + String(battery_voltage) + "V";
     Serial.println(voltage);
     tft.fillScreen(TFT_BLACK);
@@ -608,6 +619,8 @@ void setup()
 
 void loop()
 {
+  readBatteryVoltage();
+
 #ifdef SUPPORT_MQTT
   mqttClient.loop();
 #endif
