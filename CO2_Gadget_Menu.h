@@ -17,21 +17,10 @@ result doAlert(eventMask e, prompt &item);
 
 int test=55;
 
-int ledCtrl=LOW;
-
-result myLedOn() {
-  ledCtrl=HIGH;
-  return proceed;
-}
-result myLedOff() {
-  ledCtrl=LOW;
-  return proceed;
-}
-
-TOGGLE(ledCtrl,setLed,"Led: ",doNothing,noEvent,noStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",HIGH,doNothing,noEvent)
-  ,VALUE("Off",LOW,doNothing,noEvent)
-);
+// TOGGLE(ledCtrl,setLed,"Led: ",doNothing,noEvent,noStyle//,doExit,enterEvent,noStyle
+//   ,VALUE("On",HIGH,doNothing,noEvent)
+//   ,VALUE("Off",LOW,doNothing,noEvent)
+// );
 
 int selTest=0;
 SELECT(selTest,selMenu,"Select",doNothing,noEvent,noStyle
@@ -69,18 +58,19 @@ const char* constMEM hexNr[] MEMMODE={"0","x",hexDigit,hexDigit};
 char buf1[]="0x11";
 
 MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
-  ,OP("Op1",doNothing,noEvent)
+  ,OP("Calibración",doNothing,noEvent)
+  ,OP("Brillo de pantalla",doNothing,noEvent)
   // ,OP("Op2",doNothing,noEvent)
   // ,FIELD(test,"Test","%",0,100,10,1,doNothing,noEvent,wrapStyle)
-  ,SUBMENU(subMenu)
-  ,SUBMENU(setLed)
-  ,OP("LED On",myLedOn,enterEvent)
+  // ,SUBMENU(subMenu)
+  // ,SUBMENU(setLed)
+  // ,OP("LED On",myLedOn,enterEvent)
   // ,OP("LED Off",myLedOff,enterEvent)
-  ,SUBMENU(selMenu)
+  // ,SUBMENU(selMenu)
   // ,SUBMENU(chooseMenu)
   //,OP("Alert test",doAlert,enterEvent)
-  ,EDIT("Hex",buf1,hexNr,doNothing,noEvent,noStyle)
-  ,EXIT("<Back")
+  // ,EDIT("Hex",buf1,hexNr,doNothing,noEvent,noStyle)
+  ,EXIT("<Salir")
 );
 
 // define menu colors --------------------------------------------------------
@@ -125,8 +115,8 @@ serialOut outSerial(Serial,serialTops);
 
 #define tft_WIDTH 240
 #define tft_HEIGHT 135
-#define fontW 12
-#define fontH 18
+#define fontW 16
+#define fontH 24
 
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode* nodes[sizeof(panels) / sizeof(panel)]; //navNodes to store navigation status
@@ -146,6 +136,63 @@ result idleOld(menuOut& o,idleEvent e) {
     o.println(F("to continue"));
   }
   return proceed;
+}
+
+//when menu is suspended
+result idle(menuOut &o, idleEvent e)
+{
+    if (e == idling)
+    {
+#if defined SUPPORT_TFT
+Serial.println("Menu iddling");
+        if (co2 > 9999)
+        {
+            co2 = 9999;
+        }
+
+        tft.fillScreen(TFT_BLACK);
+
+        uint8_t defaultDatum = tft.getTextDatum();
+
+        tft.setTextSize(1);
+        tft.setFreeFont(FF90);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+        tft.setTextDatum(6); // bottom left
+        tft.drawString("CO2", 10, 125);
+
+        tft.setTextDatum(8); // bottom right
+        tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
+
+        // Draw CO2 number
+        if (co2 >= 1000)
+        {
+            tft.setTextColor(TFT_RED, TFT_BLACK);
+        }
+        else if (co2 >= 700)
+        {
+            tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+        }
+        else
+        {
+            tft.setTextColor(TFT_GREEN, TFT_BLACK);
+        }
+
+        tft.setTextDatum(8); // bottom right
+        tft.setTextSize(1);
+        tft.setFreeFont(FF95);
+        tft.drawString(String(co2), 195, 105);
+
+        // Draw CO2 unit
+        tft.setTextSize(1);
+        tft.setFreeFont(FF90);
+        tft.drawString("ppm", 230, 90);
+
+        // Revert datum setting
+        tft.setTextDatum(defaultDatum);
+#endif
+    }
+    return proceed;
 }
 
 //config myOptions('*','-',defaultNavCodes,false);
