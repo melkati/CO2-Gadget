@@ -511,63 +511,6 @@ void processPendingCommands()
   }
 }
 
-//when menu is suspended
-result idle(menuOut &o, idleEvent e)
-{
-    if (e == idling)
-    {
-#if defined SUPPORT_TFT
-Serial.println("Menu iddling");
-        if (co2 > 9999)
-        {
-            co2 = 9999;
-        }
-
-        tft.fillScreen(TFT_BLACK);
-
-        uint8_t defaultDatum = tft.getTextDatum();
-
-        tft.setTextSize(1);
-        tft.setFreeFont(FF90);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-        tft.setTextDatum(6); // bottom left
-        tft.drawString("CO2", 10, 125);
-
-        tft.setTextDatum(8); // bottom right
-        tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
-
-        // Draw CO2 number
-        if (co2 >= 1000)
-        {
-            tft.setTextColor(TFT_RED, TFT_BLACK);
-        }
-        else if (co2 >= 700)
-        {
-            tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-        }
-        else
-        {
-            tft.setTextColor(TFT_GREEN, TFT_BLACK);
-        }
-
-        tft.setTextDatum(8); // bottom right
-        tft.setTextSize(1);
-        tft.setFreeFont(FF95);
-        tft.drawString(String(co2), 195, 105);
-
-        // Draw CO2 unit
-        tft.setTextSize(1);
-        tft.setFreeFont(FF90);
-        tft.drawString("ppm", 230, 90);
-
-        // Revert datum setting
-        tft.setTextDatum(defaultDatum);
-#endif
-    }
-    return proceed;
-}
-
 void setup()
 {
   uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); //save WatchDog register
