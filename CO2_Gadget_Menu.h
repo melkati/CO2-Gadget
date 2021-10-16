@@ -13,53 +13,20 @@
 
 using namespace Menu;
 
-result doAlert(eventMask e, prompt &item);
-
 int test=55;
 
-// TOGGLE(ledCtrl,setLed,"Led: ",doNothing,noEvent,noStyle//,doExit,enterEvent,noStyle
-//   ,VALUE("On",HIGH,doNothing,noEvent)
-//   ,VALUE("Off",LOW,doNothing,noEvent)
-// );
-
-int selTest=0;
-SELECT(selTest,selMenu,"Select",doNothing,noEvent,noStyle
-  ,VALUE("Zero",0,doNothing,noEvent)
-  ,VALUE("One",1,doNothing,noEvent)
-  ,VALUE("Two",2,doNothing,noEvent)
+MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
+  ,OP("Calibration at 415ppm",doNothing,noEvent)
+  ,OP("Calibration at 415ppm",doNothing,noEvent)
+  ,FIELD(calibrationValue,"Custom calibration","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+  ,EXIT("<Salir")
 );
 
-int chooseTest=-1;
-CHOOSE(chooseTest,chooseMenu,"Choose",doNothing,noEvent,noStyle
-  ,VALUE("First",1,doNothing,noEvent)
-  ,VALUE("Second",2,doNothing,noEvent)
-  ,VALUE("Third",3,doNothing,noEvent)
-  ,VALUE("Last",-1,doNothing,noEvent)
-);
-
-//customizing a prompt look!
-//by extending the prompt class
-class altPrompt:public prompt {
-public:
-  altPrompt(constMEM promptShadow& p):prompt(p) {}
-  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t) override {
-    return out.printRaw(F("special prompt!"),len);;
-  }
-};
-
-MENU(subMenu,"Sub-Menu",doNothing,noEvent,noStyle
-  ,altOP(altPrompt,"",doNothing,noEvent)
-  ,OP("Op",doNothing,noEvent)
-  ,EXIT("<Back")
-);
-
-const char* constMEM hexDigit MEMMODE="0123456789ABCDEF";
-const char* constMEM hexNr[] MEMMODE={"0","x",hexDigit,hexDigit};
-char buf1[]="0x11";
-
-MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
-  ,OP("Calibración",doNothing,noEvent)
-  ,OP("Brillo de pantalla",doNothing,noEvent)
+MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
+  ,OP("Calibration",doNothing,noEvent)
+  ,OP("Display brightness",doNothing,noEvent)
+  ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
+  ,SUBMENU(calibrationMenu)
   // ,OP("Op2",doNothing,noEvent)
   // ,FIELD(test,"Test","%",0,100,10,1,doNothing,noEvent,wrapStyle)
   // ,SUBMENU(subMenu)
@@ -78,14 +45,16 @@ MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
 //monochromatic color table
 
 
+// define menu colors --------------------------------------------------------
 #define Black RGB565(0,0,0)
-#define Red	RGB565(255,0,0)
+#define Red RGB565(255,0,0)
 #define Green RGB565(0,255,0)
 #define Blue RGB565(0,0,255)
 #define Gray RGB565(128,128,128)
 #define LighterRed RGB565(255,150,150)
 #define LighterGreen RGB565(150,255,150)
 #define LighterBlue RGB565(150,150,255)
+#define LighterGray RGB565(211,211,211)
 #define DarkerRed RGB565(150,0,0)
 #define DarkerGreen RGB565(0,150,0)
 #define DarkerBlue RGB565(0,0,150)
@@ -93,30 +62,31 @@ MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
 #define Magenta RGB565(255,0,255)
 #define Yellow RGB565(255,255,0)
 #define White RGB565(255,255,255)
+#define DarkerOrange RGB565(255,140,0)
 
-const colorDef<uint16_t> colors[6] MEMMODE={
-  {{(uint16_t)Black,(uint16_t)Black}, {(uint16_t)Black, (uint16_t)Blue,  (uint16_t)Blue}},//bgColor
-  {{(uint16_t)Gray, (uint16_t)Gray},  {(uint16_t)White, (uint16_t)White, (uint16_t)White}},//fgColor
-  {{(uint16_t)White,(uint16_t)Black}, {(uint16_t)Yellow,(uint16_t)Yellow,(uint16_t)Red}},//valColor
-  {{(uint16_t)White,(uint16_t)Black}, {(uint16_t)White, (uint16_t)Yellow,(uint16_t)Yellow}},//unitColor
-  {{(uint16_t)White,(uint16_t)Gray},  {(uint16_t)Black, (uint16_t)Blue,  (uint16_t)White}},//cursorColor
-  {{(uint16_t)White,(uint16_t)Yellow},{(uint16_t)Blue,  (uint16_t)Red,   (uint16_t)Red}},//titleColor
+// TFT color table
+const colorDef<uint16_t> colors[6] MEMMODE = {
+  //{{disabled normal,disabled selected},{enabled normal,enabled selected, enabled editing}}
+  {{(uint16_t)Black, (uint16_t)Black}, {(uint16_t)Black, (uint16_t)Blue,   (uint16_t)Blue}}, //bgColor
+  {{(uint16_t)White, (uint16_t)White},  {(uint16_t)White, (uint16_t)White, (uint16_t)White}},//fgColor
+  {{(uint16_t)Red, (uint16_t)Red}, {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, //valColor
+  {{(uint16_t)White, (uint16_t)White}, {(uint16_t)White, (uint16_t)White, (uint16_t)White}}, //unitColor
+  {{(uint16_t)White, (uint16_t)Gray},  {(uint16_t)Black, (uint16_t)Red,  (uint16_t)White}}, //cursorColor
+  {{(uint16_t)White, (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Red}}, //titleColor
 };
 
-#define MAX_DEPTH 4
+#define MAX_DEPTH 5
 
 serialIn serial(Serial);
-
-//MENU_INPUTS(in,&serial);its single, no need to `chainStream`
 
 //define serial output device
 idx_t serialTops[MAX_DEPTH]={0};
 serialOut outSerial(Serial,serialTops);
 
-#define tft_WIDTH 240
+#define tft_WIDTH  240
 #define tft_HEIGHT 135
-#define fontW 16
-#define fontH 24
+#define fontW 12
+#define fontH 18
 
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode* nodes[sizeof(panels) / sizeof(panel)]; //navNodes to store navigation status
@@ -141,10 +111,16 @@ result idleOld(menuOut& o,idleEvent e) {
 //when menu is suspended
 result idle(menuOut &o, idleEvent e)
 {
-    if (e == idling)
-    {
 #if defined SUPPORT_TFT
-Serial.println("Menu iddling");
+    if(e==idleStart){
+      // Serial.println("Entering manu idleStart");
+      // tft.fillScreen(TFT_BLACK);
+      // tft.setFreeFont(FF99);
+      // // tft.pushImage(0, 0,  240, 22, titleBar);
+    }
+    else if (e == idling)
+    {
+        Serial.println("Menu iddling");
         if (co2 > 9999)
         {
             co2 = 9999;
@@ -190,10 +166,32 @@ Serial.println("Menu iddling");
 
         // Revert datum setting
         tft.setTextDatum(defaultDatum);
-#endif
+
+        // set default font for menu
+        // tft.setTextSize(1);
+        // tft.setFreeFont(FF99);
+        tft.setFreeFont(NULL);
+        tft.setTextSize(2);
     }
+    else if(e==idleEnd){
+      Serial.println("Entering menu idleEnd");
+      tft.fillScreen(TFT_BLACK);
+    }    
     return proceed;
+#endif    
 }
 
 //config myOptions('*','-',defaultNavCodes,false);
+
+void menu_init()
+{
+#if defined SUPPORT_ARDUINOMENU
+    nav.idleTask=idle; //point a function to be used when menu is suspended
+    nav.idleOn(idle);
+    nav.timeOut=15;
+    // mainMenu[1].disable();
+    nav.showTitle=true; //show menu title?
+    // outGfx.usePreview=true;//reserve one panel for preview?
+#endif
+}
 #endif
