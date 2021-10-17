@@ -26,7 +26,6 @@
 /*********                              SETUP CO2 SENSOR SCD30                               *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
 #include "SparkFun_SCD30_Arduino_Library.h"
 SCD30 airSensor;
 
@@ -56,59 +55,18 @@ uint16_t  co2RedRange = 1000;
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
 #ifdef SUPPORT_BLE
 #include "Sensirion_GadgetBle_Lib.h"
-#ifdef ALTERNATIVE_I2C_PINS  // Asume "compact sandwitch version". Temp and Humididy unusable. Show just CO2 on MyAmbiance
 GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
-#else
-GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
-#endif
 #endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                                   SETUP WIFI                                      *********/
+/*********                           INCLUDE WIFI FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
 #ifdef SUPPORT_WIFI
-#include <WiFi.h>
-#include <WiFiMulti.h>
-#include <ESPmDNS.h>
-// #include <WiFiUdp.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include "index.h"  //Web page header file
-
-#include "credentials.h"
-WiFiClient espClient;
-WiFiMulti WiFiMulti;
-AsyncWebServer server(80);
-
-void onWifiSettingsChanged(std::string ssid, std::string password) {
-  Serial.print("WifiSetup: SSID = ");
-  Serial.print(ssid.c_str());
-  Serial.print(", Password = ");
-  Serial.println(password.c_str());
-
-  WiFiMulti.addAP(ssid.c_str(), password.c_str());
-}
-
-////===============================================================
-//// This function is called when you open its IP in browser
-////===============================================================
-//void handleRoot() {
-// String s = MAIN_page; //Read HTML contents
-// server.send(200, "text/html", s); //Send web page
-//}
-//
-//void handleADC() {
-// int a = analogRead(A0);
-// String co2Value = String(co2);
-//
-// server.send(200, "text/plane", co2Value); //Send ADC value only to client ajax request
-//}
+#include <CO2_Gadget_WIFI>
 #endif
 
 /*****************************************************************************************************/
@@ -117,107 +75,7 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_MQTT
-#include <PubSubClient.h>
-
-// ----------------------------------------------------------------------------
-// MQTT handling
-// ----------------------------------------------------------------------------
-// const char *mqtt_server = "192.168.1.145";
-String rootTopic;
-String topic;
-char charPublish[20];
-PubSubClient mqttClient(espClient);
-#endif
-
-#ifdef SUPPORT_MQTT
-void mqttReconnect()
-{
-  if (!mqttClient.connected())
-  {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    topic = rootTopic + "/#";
-    if (mqttClient.connect((topic).c_str()))
-    {
-      Serial.println("connected");
-      // Subscribe
-      mqttClient.subscribe((topic).c_str());
-    }
-    else
-    {
-      Serial.println(" not possible to connect");
-    }
-  }
-
-  // Loop until we're reconnected
-  // while (!mqttClient.connected())
-  // {
-  //   Serial.print("Attempting MQTT connection...");
-  //   // Attempt to connect
-  //   topic = rootTopic + "/#";
-  //   if (mqttClient.connect((topic).c_str()))
-  //   {
-  //     Serial.println("connected");
-  //     // Subscribe
-  //     mqttClient.subscribe((topic).c_str());
-  //   }
-  //   else
-  //   {
-  //     Serial.print("failed, rc=");
-  //     Serial.print(mqttClient.state());
-  //     Serial.println(" try again in 5 seconds");
-  //     // Wait 5 seconds before retrying
-  //     delay(5000);
-  //   }
-  // }
-}
-
-// Function called when data is received via MQTT
-void callback(char *topic, byte *message, unsigned int length)
-{
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Payload: ");
-  String messageTemp;
-  String topicTemp;
-
-  for (int i = 0; i < length; i++)
-  {
-    Serial.print((char)message[i]);
-    messageTemp += (char)message[i];
-  }
-  Serial.println();
-
-  if (strcmp(topic, "SCD30/calibration") == 0) {
-    printf("Received calibration command with value %d\n", messageTemp.toInt());
-    pendingCalibration = true;
-    calibrationValue = messageTemp.toInt();
-  }
-
-  if (strcmp(topic, "SCD30/ambientpressure") == 0) {
-    printf("Received ambient pressure with value %d\n", messageTemp.toInt());
-    pendingAmbientPressure = true;
-    ambientPressureValue = messageTemp.toInt();
-  }
-}
-
-void publishIntMQTT(String topic, int16_t payload)
-{
-  dtostrf(payload, 0, 0, charPublish);
-  topic = rootTopic + topic;
-  Serial.printf("Publishing %d to ", payload);
-  Serial.println("topic: " + topic);
-  mqttClient.publish((topic).c_str(), charPublish);
-}
-
-void publishFloatMQTT(String topic, float payload)
-{
-  dtostrf(payload, 0, 2, charPublish);
-  topic = rootTopic + topic;
-  Serial.printf("Publishing %.0f to ", payload);
-  Serial.println("topic: " + topic);
-  mqttClient.publish((topic).c_str(), charPublish);
-}
+#include "CO2_Gadget_MQTT.h"
 #endif
 
 /*****************************************************************************************************/
@@ -231,7 +89,7 @@ void publishFloatMQTT(String topic, float payload)
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                             SETUP BATTERY FUNCTIONALITY                           *********/
+/*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #define ADC_PIN 34
@@ -240,194 +98,35 @@ int vref = 1100;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                          SETUP OLED DISPLAY FUNCTIONALITY                         *********/
+/*********                        INCLUDE OLED DISPLAY FUNCTIONALITY                         *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_OLED
-#include <U8x8lib.h>
-U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
-char oled_msg[20];
-int displayWidth = 128;
-int displayHeight = 64;
-
+#include <CO2_Gadget_OLED.h>
 #endif
-
-void initDisplayOLED() {
-#if defined SUPPORT_OLED
-  u8x8.begin();
-  u8x8.setPowerSave(0);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.drawString(0, 1, "  eMariete.com");
-  u8x8.drawString(0, 2, "   Sensirion");
-  u8x8.drawString(0, 3, "SCD30 BLE Gadget");
-  u8x8.drawString(0, 4, "  CO2 Monitor");
-#endif
-}
-
-void showValuesOLED(String text) {
-#if defined SUPPORT_OLED
-  u8x8.clearLine(2);
-  u8x8.clearLine(3);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.drawString(0, 4, "CO2: ");
-  u8x8.setFont(u8x8_font_courB18_2x3_r);
-  sprintf(oled_msg, "%4d", co2); // If parameter string then: co2.c_str()
-  u8x8.drawString(4, 3, oled_msg);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.drawString(12, 4, "ppm");
-
-  u8x8.clearLine(6);
-  sprintf(oled_msg, "T:%.1fC RH:%.0f%%", temp, hum);
-  u8x8.drawUTF8(0, 6, oled_msg);
-
-#ifdef SUPPORT_WIFI
-  if (WiFiMulti.run() != WL_CONNECTED) {
-    u8x8.clearLine(7);
-    u8x8.drawUTF8(0, 6, "WiFi unconnected");
-  } else {
-    u8x8.clearLine(7);
-    IPAddress ip = WiFi.localIP();
-    sprintf(oled_msg, "%s", ip.toString().c_str());
-    // sprintf("IP:%u.%u.%u.%u\n", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24);
-    u8x8.drawString(0, 7, oled_msg);
-  }
-#endif
-#endif
-}
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                          SETUP TFT DISPLAY FUNCTIONALITY                          *********/
+/*********                      INCLUDE TFT DISPLAY FUNCTIONALITY                            *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_TFT
-// Go to TTGO T-Display's Github Repository
-// Download the code as zip, extract it and copy the Folder TFT_eSPI
-//  => https://github.com/Xinyuan-LilyGO/TTGO-T-Display/archive/master.zip
-// to your Arduino library path
-#include <TFT_eSPI.h>
-#include <SPI.h>
-#include "bootlogo.h"
-
-#define SENSIRION_GREEN 0x6E66
-#define sw_version "v0.1"
-
-#define GFXFF 1
-#define FF99  &SensirionSimple25pt7b
-#define FF90  &ArchivoNarrow_Regular10pt7b
-#define FF95  &ArchivoNarrow_Regular50pt7b
-
-TFT_eSPI tft = TFT_eSPI(135, 240); // Invoke library, pins defined in User_Setup.h
-// TFT_eSPI tft = TFT_eSPI(); // Invoke library, pins defined in User_Setup.h
+#include "CO2_Gadget_TFT.h"
 #endif
-
-void initDisplayTFT() {
-#if defined SUPPORT_TFT
-  tft.init();
-  tft.setRotation(1);
-#endif
-}
-
-void displaySplashScreenTFT() {
-#if defined SUPPORT_TFT
-  tft.fillScreen(TFT_WHITE);
-  tft.setTextColor(SENSIRION_GREEN, TFT_WHITE);
-
-  uint8_t defaultDatum = tft.getTextDatum();
-  tft.setTextDatum(1); // Top centre
-
-  tft.setTextSize(1);
-  tft.setFreeFont(FF99);
-  tft.drawString("B", 120, 40);
-
-  tft.setTextSize(1);
-  tft.drawString(sw_version, 120, 90, 2);
-
-  // Revert datum setting
-  tft.setTextDatum(defaultDatum);
-  delay(500);
-  tft.fillScreen(TFT_WHITE);
-  tft.setSwapBytes(true);
-  tft.pushImage(0, 0,  240, 135, bootlogo);
-
-#endif
-}
-
-void showValuesTFT(uint16_t co2) {
-#if defined SUPPORT_TFT
-  if (co2 > 9999) {
-    co2 = 9999;
-  }
-
-  tft.fillScreen(TFT_BLACK);
-
-  uint8_t defaultDatum = tft.getTextDatum();
-
-  tft.setTextSize(1);
-  tft.setFreeFont(FF90);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-  tft.setTextDatum(6); // bottom left
-  tft.drawString("CO2", 10, 125);
-
-  tft.setTextDatum(8); // bottom right
-  tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
-
-  // Draw CO2 number
-  if (co2 >= co2RedRange) {
-    tft.setTextColor(TFT_RED, TFT_BLACK);
-  } else if (co2 >= co2OrangeRange) {
-    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  } else {
-    tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  }
-
-  tft.setTextDatum(8); // bottom right
-  tft.setTextSize(1);
-  tft.setFreeFont(FF95);
-  tft.drawString(String(co2), 195, 105);
-
-  // Draw CO2 unit
-  tft.setTextSize(1);
-  tft.setFreeFont(FF90);
-  tft.drawString("ppm", 230, 90);
-
-  // Revert datum setting
-  tft.setTextDatum(defaultDatum);
-
-  // set default font for menu
-  tft.setFreeFont(NULL);
-  tft.setTextSize(2);
-#endif
-}
-
-void showVoltageTFT()
-{
-#if defined SUPPORT_TFT
-  static uint64_t timeStamp = 0;
-  if (millis() - timeStamp > 1000) {
-    timeStamp = millis();
-    String voltage = "Voltage :" + String(battery_voltage) + "V";
-    Serial.println(voltage);
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString(voltage,  tft.width() / 2, tft.height() / 2 );
-  }
-#endif
-}
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                                SETUP ARDUINOMENU                                  *********/
+/*********                         INCLUDE MENU FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_ARDUINOMENU
+#define DEBUG_ARDUINOMENU
 #include <CO2_Gadget_Menu.h>
 #endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                          SETUP PUSH BUTTONS FUNCTIONALITY                         *********/
+/*********                      SETUP PUSH BUTTONS FUNCTIONALITY                             *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include "Button2.h"
@@ -714,26 +413,3 @@ void loop()
   nav.poll();//this device only draws when needed
 #endif  
 }
-
-// void longpress(Button2& btn) {
-//   unsigned int time = btn.wasPressedFor();
-//   Serial.print("You clicked ");
-//   if (time > 3000) {
-//     Serial.print("a really really long time.");
-//     calibrationValue = 400;
-//     printf("Manually calibrating SCD30 sensor at %d PPM\n", calibrationValue);
-//     airSensor.setForcedRecalibrationFactor(calibrationValue);
-//     pendingCalibration = false;
-//   } else if (time > 1000) {
-//     Serial.print("a really long time.");
-//   } else if (time > 500) {
-//     Serial.print("a long time.");
-//     showVoltageTFT();
-//     delay(2000);
-//   } else {
-//     Serial.print("long.");
-//   }
-//   Serial.print(" (");
-//   Serial.print(time);
-//   Serial.println(" ms)");
-// }
