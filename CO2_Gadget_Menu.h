@@ -13,37 +13,63 @@
 
 using namespace Menu;
 
-int test=55;
-
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
-  ,OP("Calibration at 415ppm",doNothing,noEvent)
-  ,OP("Calibration at 415ppm",doNothing,noEvent)
-  ,FIELD(calibrationValue,"Custom calibration","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
-  ,EXIT("<Salir")
+  ,OP("Calibrate at 400ppm",doNothing,noEvent)
+  ,OP("Calibrate at 415ppm",doNothing,noEvent)
+  ,FIELD(calibrationValue,"Custom","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+  ,EXIT("<Back")
+);
+
+TOGGLE(autoSelfCalibration,autoSelfCalibrationMenu,"Autom. Cal.: ",doNothing,noEvent,wrapStyle
+  ,VALUE("ON",true,doNothing,noEvent)
+  ,VALUE("OFF",false,doNothing,noEvent)
+);
+
+MENU(co2RangesConfigMenu,"CO2 Sensor",doNothing,noEvent,wrapStyle  
+   ,SUBMENU(autoSelfCalibrationMenu)
+   ,FIELD(ambientPressureValue,"Pres. Comp.","mbar",0,2000,10,10,doNothing,noEvent,noStyle)
+   ,FIELD(altidudeMeters,"Altitude","mtrs",0,9999,10,10,doNothing,noEvent,noStyle)
+   ,FIELD(co2OrangeRange,"Orange","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+   ,FIELD(co2RedRange,"Red","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+  ,EXIT("<Back")
+);
+
+MENU(wifiConfigMenu,"WIFI Config",doNothing,noEvent,wrapStyle  
+   ,OP("Work In Pregress",doNothing,noEvent)
+  ,EXIT("<Back")
+);
+
+MENU(mqttConfigMenu,"MQTT Config",doNothing,noEvent,wrapStyle  
+   ,OP("Work In Pregress",doNothing,noEvent)
+  ,EXIT("<Back")
+);
+
+MENU(espnowConfigMenu,"ESP-NOW Config",doNothing,noEvent,wrapStyle  
+   ,OP("Work In Pregress",doNothing,noEvent)
+  ,EXIT("<Back")
+);
+
+MENU(batteryConfigMenu,"Battery Config",doNothing,noEvent,wrapStyle  
+   ,FIELD(vref,"Voltaje reference","",0,2000,1,1,doNothing,noEvent,noStyle)
+  ,EXIT("<Back")
+);
+
+MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle  
+  ,SUBMENU(co2RangesConfigMenu)
+  ,SUBMENU(wifiConfigMenu)
+  ,SUBMENU(mqttConfigMenu)
+  ,SUBMENU(espnowConfigMenu)
+  ,SUBMENU(batteryConfigMenu)
+  ,EXIT("<Back")
 );
 
 MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
-  ,OP("Calibration",doNothing,noEvent)
   ,OP("Display brightness",doNothing,noEvent)
   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
   ,SUBMENU(calibrationMenu)
-  // ,OP("Op2",doNothing,noEvent)
-  // ,FIELD(test,"Test","%",0,100,10,1,doNothing,noEvent,wrapStyle)
-  // ,SUBMENU(subMenu)
-  // ,SUBMENU(setLed)
-  // ,OP("LED On",myLedOn,enterEvent)
-  // ,OP("LED Off",myLedOff,enterEvent)
-  // ,SUBMENU(selMenu)
-  // ,SUBMENU(chooseMenu)
-  //,OP("Alert test",doAlert,enterEvent)
-  // ,EDIT("Hex",buf1,hexNr,doNothing,noEvent,noStyle)
+  ,SUBMENU(configMenu)
   ,EXIT("<Salir")
 );
-
-// define menu colors --------------------------------------------------------
-//  {{disabled normal,disabled selected},{enabled normal,enabled selected, enabled editing}}
-//monochromatic color table
-
 
 // define menu colors --------------------------------------------------------
 #define Black RGB565(0,0,0)
@@ -99,99 +125,33 @@ outputsList out(outputs,sizeof(outputs)/sizeof(menuOut*));//outputs list control
 NAVROOT(nav,mainMenu,MAX_DEPTH,serial,out);
 
 //when menu is suspended
-result idleOld(menuOut& o,idleEvent e) {
-  if (e==idling) {
-    o.println(F("suspended..."));
-    o.println(F("press [select]"));
-    o.println(F("to continue"));
-  }
-  return proceed;
-}
-
-//when menu is suspended
 result idle(menuOut &o, idleEvent e)
 {
 #if defined SUPPORT_TFT
     if(e==idleStart){
-      // Serial.println("Entering manu idleStart");
-      // tft.fillScreen(TFT_BLACK);
-      // tft.setFreeFont(FF99);
-      // // tft.pushImage(0, 0,  240, 22, titleBar);
+      Serial.println("Entering menu idleStart");
     }
     else if (e == idling)
     {
         Serial.println("Menu iddling");
-        if (co2 > 9999)
-        {
-            co2 = 9999;
-        }
-
-        tft.fillScreen(TFT_BLACK);
-
-        uint8_t defaultDatum = tft.getTextDatum();
-
-        tft.setTextSize(1);
-        tft.setFreeFont(FF90);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-        tft.setTextDatum(6); // bottom left
-        tft.drawString("CO2", 10, 125);
-
-        tft.setTextDatum(8); // bottom right
-        tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
-
-        // Draw CO2 number
-        if (co2 >= 1000)
-        {
-            tft.setTextColor(TFT_RED, TFT_BLACK);
-        }
-        else if (co2 >= 700)
-        {
-            tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-        }
-        else
-        {
-            tft.setTextColor(TFT_GREEN, TFT_BLACK);
-        }
-
-        tft.setTextDatum(8); // bottom right
-        tft.setTextSize(1);
-        tft.setFreeFont(FF95);
-        tft.drawString(String(co2), 195, 105);
-
-        // Draw CO2 unit
-        tft.setTextSize(1);
-        tft.setFreeFont(FF90);
-        tft.drawString("ppm", 230, 90);
-
-        // Revert datum setting
-        tft.setTextDatum(defaultDatum);
-
-        // set default font for menu
-        // tft.setTextSize(1);
-        // tft.setFreeFont(FF99);
-        tft.setFreeFont(NULL);
-        tft.setTextSize(2);
+        showValuesTFT(co2);
     }
     else if(e==idleEnd){
       Serial.println("Entering menu idleEnd");
-      tft.fillScreen(TFT_BLACK);
+      tft.fillScreen(TFT_BLACK);      
+      readBatteryVoltage();
     }    
     return proceed;
 #endif    
 }
 
-//config myOptions('*','-',defaultNavCodes,false);
-
 void menu_init()
 {
 #if defined SUPPORT_ARDUINOMENU
-    nav.idleTask=idle; //point a function to be used when menu is suspended
+    nav.idleTask=idle; // function to be used when menu is suspended
     nav.idleOn(idle);
     nav.timeOut=15;
-    // mainMenu[1].disable();
-    nav.showTitle=true; //show menu title?
-    // outGfx.usePreview=true;//reserve one panel for preview?
+    nav.showTitle=true;
 #endif
 }
 #endif
