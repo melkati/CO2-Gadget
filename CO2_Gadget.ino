@@ -42,9 +42,14 @@ bool pendingCalibration = false;
 uint16_t calibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
+uint16_t altidudeMeters = 600;
+bool autoSelfCalibration = false;
 
 uint16_t co2, co2Previous = 0;
 float temp, hum, tempPrevious, humPrevious  = 0;
+
+uint16_t  co2OrangeRange = 700;
+uint16_t  co2RedRange = 1000;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -369,9 +374,9 @@ void showValuesTFT(uint16_t co2) {
   tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
 
   // Draw CO2 number
-  if (co2 >= 1000 ) {
+  if (co2 >= co2RedRange) {
     tft.setTextColor(TFT_RED, TFT_BLACK);
-  } else if (co2 >= 700 ) {
+  } else if (co2 >= co2OrangeRange) {
     tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   } else {
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -389,6 +394,10 @@ void showValuesTFT(uint16_t co2) {
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
+
+  // set default font for menu
+  tft.setFreeFont(NULL);
+  tft.setTextSize(2);
 #endif
 }
 
@@ -436,7 +445,7 @@ void button_init()
     btnUp.setLongClickHandler([](Button2 & b) {
         // Select
         unsigned int time = b.wasPressedFor();
-        if (time >= 500) {
+        if (time >= 300) {
           nav.doNav(enterCmd);
         }
     });
@@ -449,7 +458,7 @@ void button_init()
     btnDwn.setLongClickHandler([](Button2 & b) {
         // Exit
         unsigned int time = b.wasPressedFor();
-        if (time >= 500) {
+        if (time >= 300) {
           nav.doNav(escCmd);
         }
     });
@@ -509,40 +518,6 @@ void processPendingCommands()
       pendingAmbientPressure = false;
     }
   }
-}
-
-void setupTest() {
-  //options=&myOptions;//can customize options
-  Serial.begin(115200); // Set Serial baudrate at 115200
-  while(!Serial);
-  Serial.flush();
-  Serial.println();
-  
-  //SPI.begin(); // Leave this commented or else there will be nothing shown on the screen.
-  tft.init(); // Initialize the screen.
-
-  tft.setRotation(1); // Rotate display a quarter clockwise
-  
-  tft.setTextSize(2);
-  tft.setTextWrap(false);
-  tft.fillScreen(Black);
-  
-  Serial.print("Showing bootlogo... ");
-  tft.setSwapBytes(true);
-  tft.pushImage(0, 0,  240, 135, bootlogo);
-  delay(1000);
-  Serial.println("DONE");
-  
-  Serial.print("Initialize buttons... ");
-  button_init();
-  delay(1000);
-  Serial.println("DONE");
-
-  delay(2000); // A little bit more delay so that you will be able to see the bootlogo.
-  
-  Serial.println("- READY -");
-  
-  tft.fillScreen(Black); // Clear the screen to be ready to draw the menu
 }
 
 void setup()
@@ -627,7 +602,7 @@ void setup()
   }
   else
   {
-    airSensor.setAutoSelfCalibration(false);
+    airSensor.setAutoSelfCalibration(autoSelfCalibration);
   }
 
   initMQTT();
