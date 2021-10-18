@@ -40,6 +40,7 @@ SCD30 airSensor;
 
 bool pendingCalibration = false;
 uint16_t calibrationValue = 415;
+uint16_t customCalibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;

@@ -13,8 +13,6 @@
 
 using namespace Menu;
 
-uint16_t tempCalibrationValue = 0;
-
 // namespace Menu {
 //   template<typename T>
 //   class cancelField:public menuField<T> {
@@ -96,29 +94,29 @@ result showEvent(eventMask e,navNode& nav,prompt& item) {
 result doCalibration400ppm(eventMask e,navNode& nav, prompt &item) {
   Serial.printf("Calibrating sensor at %d", 400);
   Serial.print("action1 event:");
-  delay(500);
   Serial.println(e);
   Serial.flush();
   delay(100);
   calibrationValue=400;
   pendingCalibration=true;
-  return proceed;
+  return quit;
 }
 
 result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
-  tempCalibrationValue = calibrationValue;
-  Serial.printf("Calibrating sensor at %d", calibrationValue);
+  Serial.printf("Calibrating sensor at %d/n", customCalibrationValue);
   Serial.print("action1 event:");
-  delay(500);
   Serial.println(e);
   Serial.flush();
   delay(100);
-  return proceed;
+  calibrationValue=customCalibrationValue;
+  pendingCalibration=true;
+  return quit;
 }
 
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
   ,OP("Calibrate at 400ppm",doCalibration400ppm,anyEvent)
-  ,FIELD(calibrationValue,"Calibrate at","ppm",400,2000,10,10,showEvent,anyEvent,noStyle)
+  ,FIELD(customCalibrationValue,"Custom cal","ppm",400,2000,10,10,showEvent,anyEvent,noStyle)
+  ,OP("Calibrate at custom ppm",doCalibrationCustom,anyEvent)
   ,OP("Test event",showEvent,anyEvent)
   ,EXIT("<Back")
 );
