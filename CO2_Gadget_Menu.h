@@ -13,10 +13,111 @@
 
 using namespace Menu;
 
+// namespace Menu {
+//   template<typename T>
+//   class cancelField:public menuField<T> {
+//   protected:
+//     T original;  // to be used when cancelling
+//     bool editing;
+//   public:
+//     cancelField(const menuFieldShadow<T>& shadow): menuField<T>(shadow), editing(false) {}
+//     void doNav(navNode& nav, navCmd cmd) override {
+//       if (!editing) {
+//         original = menuField<T>::target();
+//         editing = true;
+//       }
+//       switch(cmd.cmd) {
+//         case escCmd:
+//           editing = false;
+//           menuField<T>::target() = original;
+//           menuField<T>::tunning = false;
+//           menuField<T>::dirty = true;
+//           // nav.root(options->useUpdateEvent ? updateEvent : enterEvent);
+//           // nav.event(options->useUpdateEvent ? updateEvent : enterEvent);
+//           nav.root->exit();
+//           return;
+//         case enterCmd:
+//           if (menuField<T>::tunning || options->nav2D || !menuField<T>::tune())
+//             editing = false;
+//           break;
+//       }
+//       menuField<T>::doNav(nav, cmd);
+//     }
+//   };
+// }//namespace Menu
+
+void showPath(navRoot& root) {
+  Serial.print("nav level:");
+  Serial.print(root.level);
+  Serial.print(" path:[");
+  for(int n=0;n<=root.level;n++) {
+    Serial.print(n?",":"");
+    Serial.print(root.path[n].sel);
+  }
+  Serial.println("]");
+}
+
+result showEvent(eventMask e,navNode& nav,prompt& item) {
+  Serial.println();
+  Serial.println("========");
+  Serial.print("Event for target: 0x");
+  Serial.println((long)nav.target,HEX);
+  showPath(*nav.root);
+  Serial.print(e);
+  switch(e) {
+    case noEvent://just ignore all stuff
+      Serial.println(" noEvent");break;
+    case activateEvent://this item is about to be active (system event)
+      Serial.println(" activateEvent");break;
+    case enterEvent://entering navigation level (this menu is now active)
+      Serial.println(" enterEvent");break;
+    case exitEvent://leaving navigation level
+      Serial.println(" exitEvent");break;
+    case returnEvent://TODO:entering previous level (return)
+      Serial.println(" returnEvent");break;
+    case focusEvent://element just gained focus
+      Serial.println(" focusEvent");break;
+    case blurEvent://element about to lose focus
+      Serial.println(" blurEvent");break;
+    case selFocusEvent://TODO:child just gained focus
+      Serial.println(" selFocusEvent");break;
+    case selBlurEvent://TODO:child about to lose focus
+      Serial.println(" selBlurEvent");break;
+    case updateEvent://Field value has been updated
+      Serial.println(" updateEvent");break;
+    case anyEvent:
+      Serial.println(" anyEvent");break;
+  }
+  return proceed;
+}
+
+result doCalibration400ppm(eventMask e,navNode& nav, prompt &item) {
+  Serial.printf("Calibrating sensor at %d", 400);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+  delay(100);
+  calibrationValue=400;
+  pendingCalibration=true;
+  return quit;
+}
+
+result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
+  Serial.printf("Calibrating sensor at %d/n", customCalibrationValue);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+  delay(100);
+  calibrationValue=customCalibrationValue;
+  pendingCalibration=true;
+  return quit;
+}
+
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
-  ,OP("Calibrate at 400ppm",doNothing,noEvent)
-  ,OP("Calibrate at 415ppm",doNothing,noEvent)
-  ,FIELD(calibrationValue,"Custom","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+  ,OP("Calibrate at 400ppm",doCalibration400ppm,anyEvent)
+  ,FIELD(customCalibrationValue,"Custom cal","ppm",400,2000,10,10,showEvent,anyEvent,noStyle)
+  ,OP("Calibrate at custom ppm",doCalibrationCustom,anyEvent)
+  ,OP("Test event",showEvent,anyEvent)
   ,EXIT("<Back")
 );
 
@@ -62,6 +163,13 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,EXIT("<Back")
 );
+
+//when entering main menu
+result enterMainMenu(menuOut &o, idleEvent e)
+{
+  Serial.println("Enter main menu");
+  return proceed;
+}
 
 MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
   ,OP("Display brightness",doNothing,noEvent)
@@ -129,18 +237,24 @@ result idle(menuOut &o, idleEvent e)
 {
 #if defined SUPPORT_TFT
     if(e==idleStart){
-      Serial.println("Entering menu idleStart");
+      Serial.println("Event idleStart");      
+      readBatteryVoltage();
     }
     else if (e == idling)
     {
-        Serial.println("Menu iddling");
-        showValuesTFT(co2);
+      Serial.println("Event iddling");
+      showValuesTFT(co2);
+      Serial.flush();
     }
     else if(e==idleEnd){
-      Serial.println("Entering menu idleEnd");
-      tft.fillScreen(TFT_BLACK);      
-      readBatteryVoltage();
+      Serial.println("Event idleEnd");
+      Serial.flush();
     }    
+    else {
+      Serial.print("Unhandled event: ");
+      Serial.println(e);
+      Serial.flush();
+    }
     return proceed;
 #endif    
 }
@@ -152,6 +266,8 @@ void menu_init()
     nav.idleOn(idle);
     nav.timeOut=15;
     nav.showTitle=true;
+    options->invertFieldKeys=true;    
+    nav.useUpdateEvent=true;
 #endif
 }
 #endif
