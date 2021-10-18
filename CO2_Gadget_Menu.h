@@ -13,10 +13,75 @@
 
 using namespace Menu;
 
+void showPath(navRoot& root) {
+  Serial.print("nav level:");
+  Serial.print(root.level);
+  Serial.print(" path:[");
+  for(int n=0;n<=root.level;n++) {
+    Serial.print(n?",":"");
+    Serial.print(root.path[n].sel);
+  }
+  Serial.println("]");
+}
+
+result showEvent(eventMask e,navNode& nav,prompt& item) {
+  Serial.println();
+  Serial.println("========");
+  Serial.print("Event for target: 0x");
+  Serial.println((long)nav.target,HEX);
+  showPath(*nav.root);
+  Serial.print(e);
+  switch(e) {
+    case noEvent://just ignore all stuff
+      Serial.println(" noEvent");break;
+    case activateEvent://this item is about to be active (system event)
+      Serial.println(" activateEvent");break;
+    case enterEvent://entering navigation level (this menu is now active)
+      Serial.println(" enterEvent");break;
+    case exitEvent://leaving navigation level
+      Serial.println(" exitEvent");break;
+    case returnEvent://TODO:entering previous level (return)
+      Serial.println(" returnEvent");break;
+    case focusEvent://element just gained focus
+      Serial.println(" focusEvent");break;
+    case blurEvent://element about to lose focus
+      Serial.println(" blurEvent");break;
+    case selFocusEvent://TODO:child just gained focus
+      Serial.println(" selFocusEvent");break;
+    case selBlurEvent://TODO:child about to lose focus
+      Serial.println(" selBlurEvent");break;
+    case updateEvent://Field value has been updated
+      Serial.println(" updateEvent");break;
+    case anyEvent:
+      Serial.println(" anyEvent");break;
+  }
+  return proceed;
+}
+
+result doCalibration400ppm(eventMask e,navNode& nav, prompt &item) {
+  Serial.printf("Calibrating sensor at %d", 400);
+  Serial.print("action1 event:");
+  delay(500);
+  Serial.println(e);
+  Serial.flush();
+  delay(100);
+  return proceed;
+}
+
+result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
+  Serial.printf("Calibrating sensor at %d", calibrationValue);
+  Serial.print("action1 event:");
+  delay(500);
+  Serial.println(e);
+  Serial.flush();
+  delay(100);
+  return proceed;
+}
+
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
-  ,OP("Calibrate at 400ppm",doNothing,noEvent)
-  ,OP("Calibrate at 415ppm",doNothing,noEvent)
-  ,FIELD(calibrationValue,"Custom","ppm",400,2000,10,10,doNothing,noEvent,noStyle)
+  ,OP("Calibrate at 400ppm",doCalibration400ppm,anyEvent)
+  ,FIELD(calibrationValue,"Calibrate at","ppm",400,2000,10,10,doCalibrationCustom,anyEvent,noStyle)
+  ,OP("Test event",showEvent,anyEvent)
   ,EXIT("<Back")
 );
 
@@ -152,6 +217,7 @@ void menu_init()
     nav.idleOn(idle);
     nav.timeOut=15;
     nav.showTitle=true;
+    options->invertFieldKeys=true;
 #endif
 }
 #endif
