@@ -539,12 +539,10 @@ void setup()
 #endif
 
 #if defined SUPPORT_TFT
-  // Display init and splash screen
-  initDisplayTFT();
-  // displaySplashScreenTFT();
-  // Enjoy the splash screen for 2 seconds
-  delay(2000);
-  tft.fillScreen(Black);
+  initDisplayTFT();  
+  displaySplashScreenTFT(); // Display init and splash screen  
+  delay(2000); // Enjoy the splash screen for 2 seconds
+  // tft.fillScreen(Black);
   tft.setTextSize(2);
 #endif
 

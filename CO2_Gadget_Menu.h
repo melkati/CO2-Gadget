@@ -173,7 +173,7 @@ result enterMainMenu(menuOut &o, idleEvent e)
   return proceed;
 }
 
-MENU(mainMenu,"CO2 Gadget",showEvent,enterEvent,wrapStyle
+MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
   ,OP("Display brightness",doNothing,noEvent)
   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
   ,SUBMENU(calibrationMenu)
