@@ -434,6 +434,7 @@ void showVoltageTFT()
 // Button2 button;
 // #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press > 500ms to show battery voltage)
 // void longpress(Button2& btn);
+#define LONGCLICK_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
 #define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
 #define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
 Button2 btnUp(BTN_UP); // Initialize the up button
@@ -443,11 +444,12 @@ void button_init()
 {
 #if defined SUPPORT_ARDUINOMENU
     btnUp.setLongClickHandler([](Button2 & b) {
-        // Select
-        unsigned int time = b.wasPressedFor();
-        if (time >= 300) {
-          nav.doNav(enterCmd);
-        }
+        // Old way without #define LONGCLICK_MS 300
+        // unsigned int time = b.wasPressedFor();
+        // if (time >= 300) {
+        //   nav.doNav(enterCmd);
+        // }
+        nav.doNav(enterCmd);
     });
     
     btnUp.setClickHandler([](Button2 & b) {
@@ -456,11 +458,12 @@ void button_init()
     });
 
     btnDwn.setLongClickHandler([](Button2 & b) {
-        // Exit
-        unsigned int time = b.wasPressedFor();
-        if (time >= 300) {
-          nav.doNav(escCmd);
-        }
+        // // Exit
+        // unsigned int time = b.wasPressedFor();
+        // if (time >= 300) {
+        //   nav.doNav(escCmd);
+        // }
+        nav.doNav(escCmd);
     });
     
     btnDwn.setClickHandler([](Button2 & b) {
@@ -609,25 +612,15 @@ void setup()
 
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp); //enable brownout detector
 
-  // button.begin(BUTTON_PIN);
-  // button.setLongClickHandler(longpress);
+  readBatteryVoltage();
   button_init();
   menu_init();
 
   Serial.println("Ready.");
 }
 
-void loopNew()
-{
-  readBatteryVoltage();
-  button_loop();
-  nav.poll();
-}
-
 void loop()
 {
-  readBatteryVoltage();
-
 #ifdef SUPPORT_MQTT
   mqttClient.loop();
 #endif
@@ -645,23 +638,21 @@ void loop()
       if (co2Previous != co2) {
         nav.idleChanged=true;
       }
-
-#if defined SUPPORT_OLED
+      #if defined SUPPORT_OLED
       showValuesOLED(String(co2));
-#endif
-
-#if defined SUPPORT_TFT
-  #ifndef SUPPORT_ARDUINOMENU
+      #endif
+      #if defined SUPPORT_TFT
+      #ifndef SUPPORT_ARDUINOMENU
       showValuesTFT(co2);
-  #endif
-#endif
+      #endif
+      #endif
 
-#ifdef SUPPORT_BLE
+      #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
       gadgetBle.writeTemperature(temp);
       gadgetBle.writeHumidity(hum);
       gadgetBle.commit();
-#endif
+      #endif
       lastMmntTime = esp_timer_get_time();
 
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
@@ -677,7 +668,9 @@ void loop()
 //      Serial.print("Free heap: ");
 //      Serial.println(ESP.getFreeHeap());
 
-#ifdef SUPPORT_WIFI
+
+
+      #ifdef SUPPORT_WIFI
       if (WiFiMulti.run() != WL_CONNECTED) {
         Serial.println("WiFi not connected");
       } else {
@@ -688,15 +681,15 @@ void loop()
           mqttReconnect();
         }
       }
-#endif
+      #endif
 
-#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
+      #if defined SUPPORT_MQTT && defined SUPPORT_WIFI
       if (WiFiMulti.run() == WL_CONNECTED) {
         publishIntMQTT("/co2", co2);
         publishFloatMQTT("/temp", temp);
         publishFloatMQTT("/humi", hum);
       }
-#endif
+      #endif
     }
   }
 

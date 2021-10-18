@@ -13,6 +13,41 @@
 
 using namespace Menu;
 
+uint16_t tempCalibrationValue = 0;
+
+// namespace Menu {
+//   template<typename T>
+//   class cancelField:public menuField<T> {
+//   protected:
+//     T original;  // to be used when cancelling
+//     bool editing;
+//   public:
+//     cancelField(const menuFieldShadow<T>& shadow): menuField<T>(shadow), editing(false) {}
+//     void doNav(navNode& nav, navCmd cmd) override {
+//       if (!editing) {
+//         original = menuField<T>::target();
+//         editing = true;
+//       }
+//       switch(cmd.cmd) {
+//         case escCmd:
+//           editing = false;
+//           menuField<T>::target() = original;
+//           menuField<T>::tunning = false;
+//           menuField<T>::dirty = true;
+//           // nav.root(options->useUpdateEvent ? updateEvent : enterEvent);
+//           // nav.event(options->useUpdateEvent ? updateEvent : enterEvent);
+//           nav.root->exit();
+//           return;
+//         case enterCmd:
+//           if (menuField<T>::tunning || options->nav2D || !menuField<T>::tune())
+//             editing = false;
+//           break;
+//       }
+//       menuField<T>::doNav(nav, cmd);
+//     }
+//   };
+// }//namespace Menu
+
 void showPath(navRoot& root) {
   Serial.print("nav level:");
   Serial.print(root.level);
@@ -65,10 +100,13 @@ result doCalibration400ppm(eventMask e,navNode& nav, prompt &item) {
   Serial.println(e);
   Serial.flush();
   delay(100);
+  calibrationValue=400;
+  pendingCalibration=true;
   return proceed;
 }
 
 result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
+  tempCalibrationValue = calibrationValue;
   Serial.printf("Calibrating sensor at %d", calibrationValue);
   Serial.print("action1 event:");
   delay(500);
@@ -80,7 +118,7 @@ result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
 
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
   ,OP("Calibrate at 400ppm",doCalibration400ppm,anyEvent)
-  ,FIELD(calibrationValue,"Calibrate at","ppm",400,2000,10,10,doCalibrationCustom,anyEvent,noStyle)
+  ,FIELD(calibrationValue,"Calibrate at","ppm",400,2000,10,10,showEvent,anyEvent,noStyle)
   ,OP("Test event",showEvent,anyEvent)
   ,EXIT("<Back")
 );
@@ -128,7 +166,14 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,EXIT("<Back")
 );
 
-MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
+//when entering main menu
+result enterMainMenu(menuOut &o, idleEvent e)
+{
+  Serial.println("Enter main menu");
+  return proceed;
+}
+
+MENU(mainMenu,"CO2 Gadget",showEvent,enterEvent,wrapStyle
   ,OP("Display brightness",doNothing,noEvent)
   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
   ,SUBMENU(calibrationMenu)
@@ -194,18 +239,24 @@ result idle(menuOut &o, idleEvent e)
 {
 #if defined SUPPORT_TFT
     if(e==idleStart){
-      Serial.println("Entering menu idleStart");
+      Serial.println("Event idleStart");      
+      readBatteryVoltage();
     }
     else if (e == idling)
     {
-        Serial.println("Menu iddling");
-        showValuesTFT(co2);
+      Serial.println("Event iddling");
+      showValuesTFT(co2);
+      Serial.flush();
     }
     else if(e==idleEnd){
-      Serial.println("Entering menu idleEnd");
-      tft.fillScreen(TFT_BLACK);      
-      readBatteryVoltage();
+      Serial.println("Event idleEnd");
+      Serial.flush();
     }    
+    else {
+      Serial.print("Unhandled event: ");
+      Serial.println(e);
+      Serial.flush();
+    }
     return proceed;
 #endif    
 }
@@ -217,7 +268,8 @@ void menu_init()
     nav.idleOn(idle);
     nav.timeOut=15;
     nav.showTitle=true;
-    options->invertFieldKeys=true;
+    options->invertFieldKeys=true;    
+    nav.useUpdateEvent=true;
 #endif
 }
 #endif
