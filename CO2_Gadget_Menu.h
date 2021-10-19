@@ -92,42 +92,47 @@ result showEvent(eventMask e,navNode& nav,prompt& item) {
 }
 
 result doCalibration400ppm(eventMask e,navNode& nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Calibrating sensor at %d", 400);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
-  delay(100);
+  #endif
   calibrationValue=400;
   pendingCalibration=true;
   return quit;
 }
 
 result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Calibrating sensor at %d/n", customCalibrationValue);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
-  delay(100);
+  #endif
   calibrationValue=customCalibrationValue;
   pendingCalibration=true;
   return quit;
 }
 
 result doSavePreferences(eventMask e,navNode& nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
   Serial.println("Saving preferences to NVR");
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
-  delay(100);
+  #endif
   putPreferences();
   return quit;
 }
 
 result doSetTFTBrightness(eventMask e,navNode& nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting TFT brightness at %d", TFTBrightness);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
+  #endif
   setTFTBrightness(TFTBrightness);
   return proceed;
 }
@@ -188,8 +193,10 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
 //when entering main menu
 result enterMainMenu(menuOut &o, idleEvent e)
 {
+  #ifdef DEBUG_ARDUINOMENU
   Serial.println("Enter main menu");
   return proceed;
+  #endif
 }
 
 MENU(mainMenu,"CO2 Gadget  " BUILD_GIT,doNothing,noEvent,wrapStyle  
@@ -257,23 +264,31 @@ result idle(menuOut &o, idleEvent e)
 {
 #if defined SUPPORT_TFT
     if(e==idleStart){
+      #ifdef DEBUG_ARDUINOMENU
       Serial.println("Event idleStart");      
+      #endif
       readBatteryVoltage();
     }
     else if (e == idling)
     {
+      #ifdef DEBUG_ARDUINOMENU
       Serial.println("Event iddling");
-      showValuesTFT(co2);
       Serial.flush();
+      #endif
+      showValuesTFT(co2);      
     }
     else if(e==idleEnd){
+      #ifdef DEBUG_ARDUINOMENU
       Serial.println("Event idleEnd");
       Serial.flush();
+      #endif
     }    
     else {
+      #ifdef DEBUG_ARDUINOMENU
       Serial.print("Unhandled event: ");
       Serial.println(e);
       Serial.flush();
+      #endif
     }
     return proceed;
 #endif    
