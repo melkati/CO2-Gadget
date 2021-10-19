@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "glcdfont.c": "cpp",
+        "functional": "cpp"
+    }
+}
