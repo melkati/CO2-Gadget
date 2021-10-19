@@ -4,6 +4,9 @@ An easy to build CO2 Monitor/Meter with movile phone App for real time visualiza
 
 This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and to load the firmware very easily, with one click in your browser (without having edit files, compile or install anything on your computer).
 
+![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
+
+
 # Disclaimer
 
 I just made this repository public not because it's ready for prime time but because some persons will be helping on the first version. The intent is not to present it as the final 1.0 version. Anyway, if you want to start contributing right now you will be very welcome.
@@ -26,9 +29,9 @@ I apologize in advance because right now there are almost no documentation. I'll
 
 This project support a large selection of boards, displays and sensors.
 
-At the moment you can find a very detailed tutorial with step-by-step video on how to build the CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
+At the moment you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
-Supporting any other ESP32 board is very easy. Also, the are a large number of SPI TFT displays already supported.
+Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported.
 
 # Supported sensors
 
