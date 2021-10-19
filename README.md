@@ -9,7 +9,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 # Disclaimer
 
-I just made this repository public not because it's ready for prime time but because some persons will be helping on the first version. The intent is not to present it as the final 1.0 version. Anyway, if you want to start contributing right now you will be very welcome.
+I just made this repository public not because it's ready for prime time but because some persons will be helping on the first version. My intent was not to present it as the final 1.0 version. Anyway, if you want to start contributing right now you will be very welcome.
 
 I apologize in advance because right now there are almost no documentation. I'll work on it while we get to 1.0 version so I hope it will be finished in few days/weeks. You will be more than welcome if willing to contribute to it.
 
