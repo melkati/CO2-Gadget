@@ -113,7 +113,7 @@ result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
   return quit;
 }
 
-result savePreferences(eventMask e,navNode& nav, prompt &item) {
+result doSavePreferences(eventMask e,navNode& nav, prompt &item) {
   Serial.println("Saving preferences to NVR");
   Serial.print("action1 event:");
   Serial.println(e);
@@ -121,6 +121,15 @@ result savePreferences(eventMask e,navNode& nav, prompt &item) {
   delay(100);
   putPreferences();
   return quit;
+}
+
+result doSetTFTBrightness(eventMask e,navNode& nav, prompt &item) {
+  Serial.printf("Setting TFT brightness at %d", TFTBrightness);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+  setTFTBrightness(TFTBrightness);
+  return proceed;
 }
 
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
@@ -171,8 +180,8 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,SUBMENU(mqttConfigMenu)
   ,SUBMENU(espnowConfigMenu)
   ,SUBMENU(batteryConfigMenu)  
-  ,OP("Display brightness",doNothing,noEvent)
-  ,OP("Save preferences",savePreferences,enterEvent)
+  ,FIELD(TFTBrightness,"Brightness ","",10,255,10,10,doSetTFTBrightness,anyEvent,wrapStyle)
+  ,OP("Save preferences",doSavePreferences,enterEvent)
   ,EXIT("<Back")
 );
 
