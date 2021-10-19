@@ -1,6 +1,6 @@
 # CO2-Gadget
 
-An easy to build CO2 Monitor/Meter with movile phone App for real time visualization and charting of air data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-Now) and many supported sensors.
+An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-Now) and many supported sensors.
 
 This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and to load the firmware very easily, with one click in your browser (without having edit files, compile or install anything on your computer).
 
