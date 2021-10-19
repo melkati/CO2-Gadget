@@ -113,11 +113,21 @@ result doCalibrationCustom(eventMask e,navNode& nav, prompt &item) {
   return quit;
 }
 
+result savePreferences(eventMask e,navNode& nav, prompt &item) {
+  Serial.println("Saving preferences to NVR");
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+  delay(100);
+  putPreferences();
+  return quit;
+}
+
 MENU(calibrationMenu,"Calibration",doNothing,noEvent,wrapStyle  
-  ,OP("Calibrate at 400ppm",doCalibration400ppm,anyEvent)
-  ,FIELD(customCalibrationValue,"Custom cal","ppm",400,2000,10,10,showEvent,anyEvent,noStyle)
-  ,OP("Calibrate at custom ppm",doCalibrationCustom,anyEvent)
-  ,OP("Test event",showEvent,anyEvent)
+  ,OP("Calibrate at 400ppm",doCalibration400ppm,enterEvent)
+  ,FIELD(customCalibrationValue,"Custom cal","ppm",400,2000,10,10,showEvent,enterEvent,noStyle)
+  ,OP("Calibrate at custom ppm",doCalibrationCustom,enterEvent)
+  ,OP("Test menu event",showEvent,anyEvent)
   ,EXIT("<Back")
 );
 
@@ -146,12 +156,12 @@ MENU(mqttConfigMenu,"MQTT Config",doNothing,noEvent,wrapStyle
 );
 
 MENU(espnowConfigMenu,"ESP-NOW Config",doNothing,noEvent,wrapStyle  
-   ,OP("Work In Pregress",doNothing,noEvent)
+  ,OP("Work In Pregress",doNothing,noEvent)
   ,EXIT("<Back")
 );
 
 MENU(batteryConfigMenu,"Battery Config",doNothing,noEvent,wrapStyle  
-   ,FIELD(vref,"Voltaje reference","",0,2000,1,1,doNothing,noEvent,noStyle)
+  ,FIELD(vref,"Voltage ref","",0,2000,10,10,doNothing,noEvent,noStyle)
   ,EXIT("<Back")
 );
 
@@ -160,7 +170,9 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
   ,SUBMENU(espnowConfigMenu)
-  ,SUBMENU(batteryConfigMenu)
+  ,SUBMENU(batteryConfigMenu)  
+  ,OP("Display brightness",doNothing,noEvent)
+  ,OP("Save preferences",savePreferences,enterEvent)
   ,EXIT("<Back")
 );
 
@@ -171,8 +183,7 @@ result enterMainMenu(menuOut &o, idleEvent e)
   return proceed;
 }
 
-MENU(mainMenu,"CO2 Gadget",doNothing,noEvent,wrapStyle
-  ,OP("Display brightness",doNothing,noEvent)
+MENU(mainMenu,"CO2 Gadget  " BUILD_GIT,doNothing,noEvent,wrapStyle  
   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
