@@ -1,5 +1,3 @@
-// Library Button2 by Lennart Hennigs https://github.com/LennartHennigs/Button2
-
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
@@ -16,6 +14,11 @@
 #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 
 #define UNITHOSTNAME "TEST"
+
+#ifdef BUILD_GIT
+# undef BUILD_GIT
+#endif // ifdef BUILD_GIT
+#define BUILD_GIT __DATE__
 
 #include <Wire.h>
 #include "soc/soc.h"           // disable brownout problems
@@ -117,6 +120,13 @@ int vref = 1100;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********        FUNCTIONALITY TO STORE PREFERENCES IN NON VOLATILE MEMORY                  *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Preferences.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********                         INCLUDE MENU FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -143,32 +153,22 @@ Button2 btnDwn(BTN_DWN); // Initialize the down button
 void button_init()
 {
 #if defined SUPPORT_ARDUINOMENU
-    btnUp.setLongClickHandler([](Button2 & b) {
-        // Old way without #define LONGCLICK_MS 300
-        // unsigned int time = b.wasPressedFor();
-        // if (time >= 300) {
-        //   nav.doNav(enterCmd);
-        // }
+    btnUp.setLongClickHandler([](Button2 & b) {        
         nav.doNav(enterCmd);
     });
     
     btnUp.setClickHandler([](Button2 & b) {
        // Up
-       nav.doNav(downCmd); // It's called downCmd because it decreases the index of an array. Visually that would mean the selector goes upwards.
+       nav.doNav(downCmd);
     });
 
     btnDwn.setLongClickHandler([](Button2 & b) {
-        // // Exit
-        // unsigned int time = b.wasPressedFor();
-        // if (time >= 300) {
-        //   nav.doNav(escCmd);
-        // }
         nav.doNav(escCmd);
     });
     
     btnDwn.setClickHandler([](Button2 & b) {
         // Down
-        nav.doNav(upCmd); // It's called upCmd because it increases the index of an array. Visually that would mean the selector goes downwards.
+        nav.doNav(upCmd);
     });
 #endif
 }
@@ -231,6 +231,8 @@ void setup()
   Serial.begin(115200);
   Serial.println();
   Serial.println("Starting up...");
+
+  initPreferences();
 
 #if defined SUPPORT_OLED
   delay(100);
