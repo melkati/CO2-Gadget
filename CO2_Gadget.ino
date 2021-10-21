@@ -333,6 +333,10 @@ void setup()
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp offset
 
   sensors.init();
+  if (sensors.isPmSensorConfigured())
+        Serial.println("-->[SETUP] Sensor configured: " + sensors.getPmDeviceSelected());
+
+  delay(500);
 
   // sensors.setAutoSelfCalibration(false);
 
