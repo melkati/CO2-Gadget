@@ -10,7 +10,7 @@
 // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 #define SUPPORT_TFT
 #define SUPPORT_ARDUINOMENU
-#define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
+// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 
 #define UNITHOSTNAME "TEST"
 
@@ -126,7 +126,7 @@ int vref = 1100;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                        INCLUDE OLED DISPLAY FUNCTIONALITY                         *********/
+/*********               INCLUDE OLED DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_OLED
@@ -156,7 +156,7 @@ int vref = 1100;
 /*****************************************************************************************************/
 #if defined SUPPORT_ARDUINOMENU
 #define DEBUG_ARDUINOMENU
-#include <CO2_Gadget_Menu.h>
+#include "CO2_Gadget_Menu.h"
 #endif
 
 /*****************************************************************************************************/
