@@ -58,6 +58,7 @@ NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
 | Sensor model  | UART  | i2c  | Detection mode | Status |  
 |:----------------------- |:-----:|:-----:|:-------:|:----------:|
 | Sensirion SCD30    | --- | Yes | Auto | STABLE |
+| Sensirion SCD4x    | --- | Yes | Auto | TESTING |
 | MHZ19      | Yes | --- | Select | STABLE |
 | CM1106    | Yes | --- | Select | STABLE |
 | SenseAir S8 | Yes | --- | Select | STABLE |
