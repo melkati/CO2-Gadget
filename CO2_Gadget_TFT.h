@@ -25,7 +25,7 @@ TFT_eSPI tft = TFT_eSPI(135, 240); // Invoke library, pins defined in User_Setup
 #endif
 
 void setTFTBrightness(uint32_t newBrightness) {  
-  Serial.printf("Setting screen brightness value at %.0f\n", newBrightness);
+  Serial.printf("Setting screen brightness value at %d\n", newBrightness);
   ledcWrite(0, newBrightness); // 0-15, 0-255 (with 8 bit resolution);  0=totally dark;255=totally shiny
 }
 
