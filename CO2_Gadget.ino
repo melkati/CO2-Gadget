@@ -8,10 +8,9 @@
 // #define SUPPORT_WIFI           // HTTP SERVER NOT WORKING CURRENTLY. AWAITING FIX
 // #define SUPPORT_MQTT           // Needs SUPPORT_WIFI
 // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
-// #define SUPPORT_OLED
 #define SUPPORT_TFT
 #define SUPPORT_ARDUINOMENU
-#define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
+// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 
 #define UNITHOSTNAME "TEST"
 
@@ -26,11 +25,11 @@
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                              SETUP CO2 SENSOR SCD30                               *********/
+/*********                                   SETUP SENSORS                                   *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#include "SparkFun_SCD30_Arduino_Library.h"
-SCD30 airSensor;
+
+#include <Sensors.hpp>
 
 #ifdef ALTERNATIVE_I2C_PINS
 #define I2C_SDA 22
@@ -41,6 +40,7 @@ SCD30 airSensor;
 #endif
 
 bool pendingCalibration = false;
+bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
 uint16_t customCalibrationValue = 415;
 bool pendingAmbientPressure = false;
@@ -48,8 +48,32 @@ uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
 
-uint16_t co2, co2Previous = 0;
-float temp, hum, tempPrevious, humPrevious  = 0;
+uint16_t co2 = 0;
+float temp, hum  = 0;
+
+void onSensorDataOk() {
+    Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
+    Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
+    Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
+
+    Serial.print(" H: " + String(sensors.getHumidity()));
+    Serial.println(" T: " + String(sensors.getTemperature()));
+
+    co2  = sensors.getCO2();
+    temp = sensors.getCO2temp();
+    hum  = sensors.getCO2humi();
+    newReadingsAvailable = true;
+}
+
+void onSensorDataError(const char* msg) {
+    Serial.println(msg);
+}
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                          SETUP PUSH BUTTONS FUNCTIONALITY                         *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
 
 uint16_t  co2OrangeRange = 700;
 uint16_t  co2RedRange = 1000;
@@ -198,26 +222,26 @@ void processPendingCommands()
 {
   if (pendingCalibration == true) {
     if (calibrationValue != 0) {
-      printf("Calibrating SCD30 sensor at %d PPM\n", calibrationValue);
+      printf("Calibrating CO2 sensor at %d PPM\n", calibrationValue);
       pendingCalibration = false;
-      airSensor.setForcedRecalibrationFactor(calibrationValue);
+      sensors.setCO2RecalibrationFactor(calibrationValue);
     }
     else
     {
-      printf("Avoiding calibrating SCD30 sensor with invalid value at %d PPM\n", calibrationValue);
+      printf("Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
       pendingCalibration = false;
     }
   }
 
   if (pendingAmbientPressure == true) {
     if (ambientPressureValue != 0) {
-      printf("Setting AmbientPressure for SCD30 sensor at %d mbar\n", ambientPressureValue);
+      printf("Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
       pendingAmbientPressure = false;
-      airSensor.setAmbientPressure(ambientPressureValue);
+      sensors.scd30.setAmbientPressure(ambientPressureValue);
     }
     else
     {
-      printf("Avoiding setting AmbientPressure for SCD30 sensor with invalid value at %d mbar\n", ambientPressureValue);
+      printf("Avoiding setting AmbientPressure for CO2 sensor with invalid value at %d mbar\n", ambientPressureValue);
       pendingAmbientPressure = false;
     }
   }
@@ -295,18 +319,26 @@ void setup()
   Serial.println(gadgetBle.getDeviceIdString());
 #endif
 
-  // Initialize the SCD30 driver
+  // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
-  if (airSensor.begin() == false)
-  {
-    Serial.println("Air sensor not detected. Please check wiring. Freezing...");
-    //    while (1)
-    //      ;
-  }
-  else
-  {
-    airSensor.setAutoSelfCalibration(autoSelfCalibration);
-  }
+
+  Serial.println("-->[SETUP] Detecting sensors..");
+
+  sensors.setSampleTime(5);                        // config sensors sample time interval
+  sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
+  sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
+  sensors.setDebugMode(true);                     // [optional] debug mode
+  sensors.detectI2COnly(true);                     // force to only i2c sensors
+
+  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp offset
+
+  sensors.init();
+  if (sensors.isPmSensorConfigured())
+        Serial.println("-->[SETUP] Sensor configured: " + sensors.getPmDeviceSelected());
+
+  delay(500);
+
+  // sensors.setAutoSelfCalibration(false);
 
   initMQTT();
 
@@ -324,28 +356,17 @@ void loop()
 #ifdef SUPPORT_MQTT
   mqttClient.loop();
 #endif
-
+  
+  sensors.loop();
   processPendingCommands();
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
-    if (airSensor.dataAvailable()) {
-      co2Previous = co2;
-      tempPrevious = temp;
-      humPrevious = hum;
-      co2  = airSensor.getCO2();
-      temp = airSensor.getTemperature();
-      hum  = airSensor.getHumidity();
-      if (co2Previous != co2) {
-        nav.idleChanged=true;
-      }
-      #if defined SUPPORT_OLED
-      showValuesOLED(String(co2));
-      #endif
-      #if defined SUPPORT_TFT
-      #ifndef SUPPORT_ARDUINOMENU
-      showValuesTFT(co2);
-      #endif
-      #endif
+    if (newReadingsAvailable) {
+    newReadingsAvailable = false;
+
+#if defined SUPPORT_TFT
+  showValuesTFT(co2);
+#endif
 
       #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
