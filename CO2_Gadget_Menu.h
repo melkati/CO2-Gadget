@@ -192,6 +192,7 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
 
 MENU(informationMenu,"CO2 Gadget Info.",doNothing,noEvent,wrapStyle  
    ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
+   ,OP("Test",doNothing,noEvent)
   ,EXIT("<Back")
 );
 
@@ -311,6 +312,7 @@ void menu_init()
     nav.useUpdateEvent=true;
     mainMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[0].disable(); // Make battery voltage field unselectable
+    informationMenu[1].disable(); // Make battery voltage field unselectable
 #endif
 }
 #endif
