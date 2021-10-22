@@ -190,6 +190,11 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,EXIT("<Back")
 );
 
+MENU(informationMenu,"CO2 Gadget Info.",doNothing,noEvent,wrapStyle  
+   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
+  ,EXIT("<Back")
+);
+
 //when entering main menu
 result enterMainMenu(menuOut &o, idleEvent e)
 {
@@ -201,6 +206,7 @@ result enterMainMenu(menuOut &o, idleEvent e)
 
 MENU(mainMenu,"CO2 Gadget  " BUILD_GIT,doNothing,noEvent,wrapStyle  
   ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
+  ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
   ,EXIT("<Salir")
@@ -303,6 +309,7 @@ void menu_init()
     nav.showTitle=true;
     options->invertFieldKeys=true;    
     nav.useUpdateEvent=true;
+    informationMenu[0].disable(); // Make battery voltage field unselectable
 #endif
 }
 #endif
