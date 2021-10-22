@@ -309,6 +309,7 @@ void menu_init()
     nav.showTitle=true;
     options->invertFieldKeys=true;    
     nav.useUpdateEvent=true;
+    mainMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[0].disable(); // Make battery voltage field unselectable
 #endif
 }
