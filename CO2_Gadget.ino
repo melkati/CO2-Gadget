@@ -359,11 +359,11 @@ void loop()
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
-    newReadingsAvailable = false;
+      newReadingsAvailable = false;
 
-#if defined SUPPORT_TFT
-  showValuesTFT(co2);
-#endif
+      #if defined SUPPORT_ARDUINOMENU
+      nav.idleChanged=true;
+      #endif
 
       #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
@@ -385,8 +385,6 @@ void loop()
 
 //      Serial.print("Free heap: ");
 //      Serial.println(ESP.getFreeHeap());
-
-
 
       #ifdef SUPPORT_WIFI
       if (WiFiMulti.run() != WL_CONNECTED) {
