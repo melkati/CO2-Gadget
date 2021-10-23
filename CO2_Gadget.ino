@@ -9,7 +9,6 @@
 /**/ // #define SUPPORT_MQTT           // Needs SUPPORT_WIFI
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
-/**/ #define SUPPORT_ARDUINOMENU
 /**/ #define DEBUG_ARDUINOMENU
 #define UNITHOSTNAME "TEST"
 /**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
@@ -152,9 +151,7 @@ int vref = 1100;
 /*********                         INCLUDE MENU FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#if defined SUPPORT_ARDUINOMENU
 #include "CO2_Gadget_Menu.h"
-#endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -173,7 +170,6 @@ Button2 btnDwn(BTN_DWN); // Initialize the down button
 
 void button_init()
 {
-#if defined SUPPORT_ARDUINOMENU
     btnUp.setLongClickHandler([](Button2 & b) {        
         nav.doNav(enterCmd);
     });
@@ -191,7 +187,6 @@ void button_init()
         // Down
         nav.doNav(upCmd);
     });
-#endif
 }
 
 void button_loop()
@@ -250,7 +245,9 @@ void setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   Serial.begin(115200);
-  Serial.println();
+  Serial.println();  
+  Serial.print("CO2 Gadget Version: ");
+  Serial.println(CO2_GADGET_VERSION CO2_GADGET_REV);
   Serial.println("Starting up...");
 
   initPreferences();
@@ -361,9 +358,7 @@ void loop()
     if (newReadingsAvailable) {
       newReadingsAvailable = false;
 
-      #if defined SUPPORT_ARDUINOMENU
       nav.idleChanged=true;
-      #endif
 
       #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
@@ -419,7 +414,5 @@ void loop()
 #endif
 
   button_loop();
-#ifdef SUPPORT_ARDUINOMENU  
-  nav.poll();//this device only draws when needed
-#endif  
+  nav.poll(); //this device only draws when needed
 }

@@ -4,7 +4,6 @@
 /*********                                SETUP ARDUINOMENU                                  *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#if defined SUPPORT_ARDUINOMENU
 #include <menu.h>
 #include <menuIO/serialIO.h>
 #include <menuIO/TFT_eSPIOut.h>
@@ -192,7 +191,8 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
 
 MENU(informationMenu,"Information",doNothing,noEvent,wrapStyle  
    ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
-   ,OP(BUILD_GIT,doNothing,noEvent)
+   ,OP("Comp: " BUILD_GIT,doNothing,noEvent)
+   ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV,doNothing,noEvent)
    ,OP("Test",doNothing,noEvent)
   ,EXIT("<Back")
 );
@@ -304,7 +304,6 @@ result idle(menuOut &o, idleEvent e)
 
 void menu_init()
 {
-#if defined SUPPORT_ARDUINOMENU
     nav.idleTask=idle; // function to be used when menu is suspended
     nav.idleOn(idle);
     nav.timeOut=120;
@@ -314,6 +313,4 @@ void menu_init()
     mainMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[1].disable(); // Make battery voltage field unselectable
-#endif
 }
-#endif
