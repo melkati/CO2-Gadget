@@ -62,8 +62,6 @@ NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
 | MHZ19      | Yes | --- | Select | STABLE |
 | CM1106    | Yes | --- | Select | STABLE |
 | SenseAir S8 | Yes | --- | Select | STABLE |
-| Sensirion SCD4x    | --- | Yes | Auto | TESTING |
-
 
 ### Environmental sensors
 
