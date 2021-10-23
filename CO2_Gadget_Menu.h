@@ -4,7 +4,6 @@
 /*********                                SETUP ARDUINOMENU                                  *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#if defined SUPPORT_ARDUINOMENU
 #include <menu.h>
 #include <menuIO/serialIO.h>
 #include <menuIO/TFT_eSPIOut.h>
@@ -305,7 +304,6 @@ result idle(menuOut &o, idleEvent e)
 
 void menu_init()
 {
-#if defined SUPPORT_ARDUINOMENU
     nav.idleTask=idle; // function to be used when menu is suspended
     nav.idleOn(idle);
     nav.timeOut=120;
@@ -315,6 +313,4 @@ void menu_init()
     mainMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[1].disable(); // Make battery voltage field unselectable
-#endif
 }
-#endif
