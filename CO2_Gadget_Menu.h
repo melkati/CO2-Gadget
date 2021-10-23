@@ -192,7 +192,8 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
 
 MENU(informationMenu,"Information",doNothing,noEvent,wrapStyle  
    ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
-   ,OP(BUILD_GIT,doNothing,noEvent)
+   ,OP("Comp: " BUILD_GIT,doNothing,noEvent)
+   ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV,doNothing,noEvent)
    ,OP("Test",doNothing,noEvent)
   ,EXIT("<Back")
 );

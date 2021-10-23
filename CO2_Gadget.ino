@@ -250,7 +250,9 @@ void setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   Serial.begin(115200);
-  Serial.println();
+  Serial.println();  
+  Serial.print("CO2 Gadget Version: ");
+  Serial.println(CO2_GADGET_VERSION CO2_GADGET_REV);
   Serial.println("Starting up...");
 
   initPreferences();
