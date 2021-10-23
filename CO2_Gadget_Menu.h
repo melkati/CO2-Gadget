@@ -190,8 +190,10 @@ MENU(configMenu,"Configuration",doNothing,noEvent,wrapStyle
   ,EXIT("<Back")
 );
 
-MENU(informationMenu,"CO2 Gadget Info.",doNothing,noEvent,wrapStyle  
+MENU(informationMenu,"Information",doNothing,noEvent,wrapStyle  
    ,FIELD(battery_voltage,"Battery","V",0,9,0,0,doNothing,noEvent,noStyle)
+   ,OP(BUILD_GIT,doNothing,noEvent)
+   ,OP("Test",doNothing,noEvent)
   ,EXIT("<Back")
 );
 
@@ -271,7 +273,7 @@ result idle(menuOut &o, idleEvent e)
 #if defined SUPPORT_TFT
     if(e==idleStart){
       #ifdef DEBUG_ARDUINOMENU
-      Serial.println("Event idleStart");      
+      Serial.println("Event idleStart");
       #endif
       readBatteryVoltage();
     }
@@ -281,7 +283,7 @@ result idle(menuOut &o, idleEvent e)
       Serial.println("Event iddling");
       Serial.flush();
       #endif
-      showValuesTFT(co2);      
+      showValuesTFT(co2); 
     }
     else if(e==idleEnd){
       #ifdef DEBUG_ARDUINOMENU
@@ -305,11 +307,13 @@ void menu_init()
 #if defined SUPPORT_ARDUINOMENU
     nav.idleTask=idle; // function to be used when menu is suspended
     nav.idleOn(idle);
-    nav.timeOut=15;
+    nav.timeOut=120;
     nav.showTitle=true;
     options->invertFieldKeys=true;    
     nav.useUpdateEvent=true;
+    mainMenu[0].disable(); // Make battery voltage field unselectable
     informationMenu[0].disable(); // Make battery voltage field unselectable
+    informationMenu[1].disable(); // Make battery voltage field unselectable
 #endif
 }
 #endif
