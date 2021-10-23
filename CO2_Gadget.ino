@@ -1,18 +1,20 @@
 /*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
-/*********                                                                                   *********/
 /*****************************************************************************************************/
-
-#define SUPPORT_BLE
-// #define SUPPORT_WIFI           // HTTP SERVER NOT WORKING CURRENTLY. AWAITING FIX
-// #define SUPPORT_MQTT           // Needs SUPPORT_WIFI
-// #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
-#define SUPPORT_TFT
-#define SUPPORT_ARDUINOMENU
-// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
-
+/* If you are NOT using PlarformIO (You are using Arduino IDE) you must define your options bellow   */
+/* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
+/**/ #ifndef PLATFORMIO
+/**/ #define SUPPORT_BLE
+/**/ // #define SUPPORT_WIFI           // HTTP SERVER NOT WORKING CURRENTLY. AWAITING FIX
+/**/ // #define SUPPORT_MQTT           // Needs SUPPORT_WIFI
+/**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
+/**/ #define SUPPORT_TFT
+/**/ #define SUPPORT_ARDUINOMENU
+/**/ #define DEBUG_ARDUINOMENU
 #define UNITHOSTNAME "TEST"
+/**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
+/**/ #endif
+/*****************************************************************************************************/
 
 #ifdef BUILD_GIT
 # undef BUILD_GIT
@@ -49,7 +51,12 @@ uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
 
 uint16_t co2 = 0;
-float temp, hum  = 0;
+float temp, hum  = 0; 
+
+
+uint16_t  co2OrangeRange = 700; // Default CO2 ppm concentration threshold to display values in orange (user can change on menu and save on preferences)
+uint16_t  co2RedRange = 1000;   // Default CO2 ppm concentration threshold to display values in red (user can change on menu and save on preferences)
+
 
 void onSensorDataOk() {
     Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
@@ -68,15 +75,6 @@ void onSensorDataOk() {
 void onSensorDataError(const char* msg) {
     Serial.println(msg);
 }
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********                          SETUP PUSH BUTTONS FUNCTIONALITY                         *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-
-uint16_t  co2OrangeRange = 700;
-uint16_t  co2RedRange = 1000;
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -155,7 +153,6 @@ int vref = 1100;
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #if defined SUPPORT_ARDUINOMENU
-#define DEBUG_ARDUINOMENU
 #include "CO2_Gadget_Menu.h"
 #endif
 
@@ -164,13 +161,13 @@ int vref = 1100;
 /*********                      SETUP PUSH BUTTONS FUNCTIONALITY                             *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#include "Button2.h"
 // Button2 button;
 // #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press > 500ms to show battery voltage)
 // void longpress(Button2& btn);
 #define LONGCLICK_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
 #define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
 #define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
+#include "Button2.h"
 Button2 btnUp(BTN_UP); // Initialize the up button
 Button2 btnDwn(BTN_DWN); // Initialize the down button
 
@@ -362,11 +359,11 @@ void loop()
 
   if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
-    newReadingsAvailable = false;
+      newReadingsAvailable = false;
 
-#if defined SUPPORT_TFT
-  showValuesTFT(co2);
-#endif
+      #if defined SUPPORT_ARDUINOMENU
+      nav.idleChanged=true;
+      #endif
 
       #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
@@ -388,8 +385,6 @@ void loop()
 
 //      Serial.print("Free heap: ");
 //      Serial.println(ESP.getFreeHeap());
-
-
 
       #ifdef SUPPORT_WIFI
       if (WiFiMulti.run() != WL_CONNECTED) {
