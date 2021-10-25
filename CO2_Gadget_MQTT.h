@@ -1,14 +1,13 @@
+// clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                            SETUP MQTT FUNCTIONALITY                               *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+// clang-format on
 #if defined SUPPORT_MQTT
 #include <PubSubClient.h>
 
-// ----------------------------------------------------------------------------
-// MQTT handling
-// ----------------------------------------------------------------------------
 // const char *mqtt_server = "192.168.1.145";
 String rootTopic;
 String topic;
@@ -17,21 +16,16 @@ PubSubClient mqttClient(espClient);
 #endif
 
 #ifdef SUPPORT_MQTT
-void mqttReconnect()
-{
-  if (!mqttClient.connected())
-  {
+void mqttReconnect() {
+  if (!mqttClient.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     topic = rootTopic + "/#";
-    if (mqttClient.connect((topic).c_str()))
-    {
+    if (mqttClient.connect((topic).c_str())) {
       Serial.println("connected");
       // Subscribe
       mqttClient.subscribe((topic).c_str());
-    }
-    else
-    {
+    } else {
       Serial.println(" not possible to connect");
     }
   }
@@ -60,16 +54,14 @@ void mqttReconnect()
 }
 
 // Function called when data is received via MQTT
-void callback(char *topic, byte *message, unsigned int length)
-{
+void callback(char *topic, byte *message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
   Serial.print(". Payload: ");
   String messageTemp;
   String topicTemp;
 
-  for (int i = 0; i < length; i++)
-  {
+  for (int i = 0; i < length; i++) {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
@@ -88,8 +80,7 @@ void callback(char *topic, byte *message, unsigned int length)
   }
 }
 
-void publishIntMQTT(String topic, int16_t payload)
-{
+void publishIntMQTT(String topic, int16_t payload) {
   dtostrf(payload, 0, 0, charPublish);
   topic = rootTopic + topic;
   Serial.printf("Publishing %d to ", payload);
@@ -97,8 +88,7 @@ void publishIntMQTT(String topic, int16_t payload)
   mqttClient.publish((topic).c_str(), charPublish);
 }
 
-void publishFloatMQTT(String topic, float payload)
-{
+void publishFloatMQTT(String topic, float payload) {
   dtostrf(payload, 0, 2, charPublish);
   topic = rootTopic + topic;
   Serial.printf("Publishing %.0f to ", payload);
