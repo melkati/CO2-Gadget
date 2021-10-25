@@ -1,8 +1,11 @@
+
+// clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                                   SETUP WIFI                                      *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+// clang-format on
 
 #ifdef SUPPORT_WIFI
 #include <WiFi.h>
@@ -11,7 +14,7 @@
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include "index.h"  //Web page header file
+#include "index.h" //Web page header file
 
 #include "credentials.h"
 WiFiClient espClient;
@@ -30,15 +33,16 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 ////===============================================================
 //// This function is called when you open its IP in browser
 ////===============================================================
-//void handleRoot() {
+// void handleRoot() {
 // String s = MAIN_page; //Read HTML contents
 // server.send(200, "text/html", s); //Send web page
 //}
 //
-//void handleADC() {
+// void handleADC() {
 // int a = analogRead(A0);
 // String co2Value = String(co2);
 //
-// server.send(200, "text/plane", co2Value); //Send ADC value only to client ajax request
+// server.send(200, "text/plane", co2Value); //Send ADC value only to client
+// ajax request
 //}
 #endif
