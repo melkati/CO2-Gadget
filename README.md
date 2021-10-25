@@ -1,5 +1,6 @@
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
+![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 
 # CO2-Gadget
 
@@ -135,6 +136,9 @@ arduino-cli upload --fqbn esp32:esp32:esp32:UploadSpeed=115200 -p /dev/ttyUSB0 b
 # Supporting the project
 
 If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
+
+[![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
 
 When creating a pull request, we recommend that you do the following:
 
