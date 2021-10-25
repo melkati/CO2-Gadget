@@ -18,6 +18,7 @@ I apologize in advance because right now there are almost no documentation. I'll
 
 # Features (WIP)
 
+- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, MH-Z19, Cubic CM1106
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
 - Management and configuration via on screen menu, serial port and web page
@@ -26,7 +27,6 @@ I apologize in advance because right now there are almost no documentation. I'll
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - Over the air updates OTA
-- Many popular sensors supported
 
 # Supported hardware and build
 
