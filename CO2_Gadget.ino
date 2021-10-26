@@ -231,9 +231,19 @@ static int startCheckingAfterUs = 1900000;
 
 void initMQTT() {
 #ifdef SUPPORT_MQTT
+  char mac_address[16];
   mqttClient.setServer(mqtt_server, 1883);
-  mqttClient.setCallback(callback);
-  rootTopic = UNITHOSTNAME;
+  mqttClient.setCallback(callbackMQTT);
+  // rootTopic = UNITHOSTNAME;
+
+  String WiFiMAC = WiFi.macAddress();
+  WiFiMAC.replace(F(":"),F(""));
+  WiFiMAC.toCharArray(mac_address, 16);
+  
+  // Create client ID from MAC address
+  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5], &mac_address[6]); // Fix:: conversion error
+
+  rootTopic = "CO2-Gadget";
 #endif
 }
 

@@ -8,7 +8,6 @@
 #if defined SUPPORT_MQTT
 #include <PubSubClient.h>
 
-// const char *mqtt_server = "192.168.1.145";
 String rootTopic;
 String topic;
 char charPublish[20];
@@ -54,7 +53,7 @@ void mqttReconnect() {
 }
 
 // Function called when data is received via MQTT
-void callback(char *topic, byte *message, unsigned int length) {
+void callbackMQTT(char *topic, byte *message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
   Serial.print(". Payload: ");
