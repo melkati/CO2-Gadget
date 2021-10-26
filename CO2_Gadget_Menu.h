@@ -208,8 +208,8 @@ MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle,
 result enterMainMenu(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.println("Enter main menu");
-  return proceed;
 #endif
+  return proceed;
 }
 
 MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle,
