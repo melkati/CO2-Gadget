@@ -8,17 +8,12 @@
 // clang-format on
 
 #ifdef SUPPORT_WIFI
-#include <WiFi.h>
-#include <WiFiMulti.h>
-#include <ESPmDNS.h>
-// #include <WiFiUdp.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+
 #include "index.h" //Web page header file
 
 #include "credentials.h"
 WiFiClient espClient;
-WiFiMulti WiFiMulti;
+// WiFiMulti WiFiMulti;
 AsyncWebServer server(80);
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
@@ -27,7 +22,8 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
   Serial.print(", Password = ");
   Serial.println(password.c_str());
 
-  WiFiMulti.addAP(ssid.c_str(), password.c_str());
+  // WiFiMulti.addAP(ssid.c_str(), password.c_str());
+  WiFi.begin(ssid.c_str(), password.c_str());
 }
 
 ////===============================================================

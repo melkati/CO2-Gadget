@@ -22,9 +22,18 @@
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
 
+
 #include <Wire.h>
 #include "soc/soc.h" // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
+
+#ifdef SUPPORT_WIFI
+#include <WiFi.h>
+#include <ESPmDNS.h>
+// #include <WiFiUdp.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -44,7 +53,7 @@
 #define I2C_SCL 22
 #endif
 
-    bool pendingCalibration = false;
+bool pendingCalibration = false;
 bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
 uint16_t customCalibrationValue = 415;
@@ -82,6 +91,17 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********                           INCLUDE WIFI FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#ifdef SUPPORT_WIFI
+#include <CO2_Gadget_WIFI.h>
+#endif
+
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -89,17 +109,6 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 #ifdef SUPPORT_BLE
 #include "Sensirion_GadgetBle_Lib.h"
 GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
-#endif
-
-// clang-format off
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********                           INCLUDE WIFI FUNCTIONALITY                              *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-// clang-format on
-#ifdef SUPPORT_WIFI
-#include <CO2_Gadget_WIFI>
 #endif
 
 // clang-format off
@@ -290,8 +299,8 @@ void setup() {
 #endif
 
 #ifdef SUPPORT_WIFI
-  WiFiMulti.addAP(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
-  while (WiFiMulti.run() != WL_CONNECTED) {
+  WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
@@ -400,19 +409,21 @@ void loop() {
       //      Serial.println(ESP.getFreeHeap());
 
 #ifdef SUPPORT_WIFI
-      if (WiFiMulti.run() != WL_CONNECTED) {
+      if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi not connected");
       } else {
         Serial.print("WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
+        #ifdef SUPPORT_MQTT
         if (!mqttClient.connected()) {
           mqttReconnect();
         }
+        #endif
       }
 #endif
 
 #if defined SUPPORT_MQTT && defined SUPPORT_WIFI
-      if (WiFiMulti.run() == WL_CONNECTED) {
+      if (WiFi.status() == WL_CONNECTED) {
         publishIntMQTT("/co2", co2);
         publishFloatMQTT("/temp", temp);
         publishFloatMQTT("/humi", hum);
