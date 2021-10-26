@@ -145,14 +145,16 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-- [x] Test and enable WIFI feature
-- [x] Test and enable MQTT feature
+- [X] Test and enable WIFI feature
+- [X] Test and enable MQTT feature
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM
 - [ ] Enable use of features without recompiling by activating/deactivating on the buit in menu
 
-* At the moment you have to choose between BLE and WIFI (you have to choose between one and the other at compile time, you can't activate both at the same time but you can switch between them as many times as you want). I have to work on fixing it to being able to activate both at the same time (some time ago I had it but when I've tried it again, after a while, it gives me an error. I have to look deeply into it). Once this works my idea is to be able to enable BLE, WiFi or both from the menu.
+* At the moment you have to choose between BLE and WIFI (you have to choose between one and the other at compile time, you can't activate both at the same time but you can switch between them as many times as you want).
+* I have to work on fixing it to being able to activate both at the same time (some time ago I had it but when I've tried it again, after a while, it gives me an error. I have to look deeply into it).
+* Once this works my idea is to be able to enable BLE, WiFi or both from the menu.
 
 # Credits
 
