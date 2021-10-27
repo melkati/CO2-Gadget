@@ -178,6 +178,7 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle,
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle,
      OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
 
+
 // list of allowed characters
 const char *const digit = "0123456789";
 const char *const hexChars MEMMODE = "0123456789ABCDEF";

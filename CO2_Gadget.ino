@@ -17,11 +17,14 @@
 /*****************************************************************************************************/
 // clang-format on
 
+#if defined SUPPORT_MQTT && !defined ESP_WIFI
+  #error SUPPORT_MQTT needs SUPPORT_WIFI. There can't be MQTT without WiFi 
+#endif
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
-
 
 #include <Wire.h>
 #include "soc/soc.h" // disable brownout problems
@@ -52,6 +55,8 @@
 #define I2C_SDA 21
 #define I2C_SCL 22
 #endif
+
+String rootTopic = ""; // Always defined to be able to configure in menu
 
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
@@ -102,24 +107,24 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                              SETUP BLE FUNCTIONALITY                              *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-// clang-format on
-#ifdef SUPPORT_BLE
-#include "Sensirion_GadgetBle_Lib.h"
-GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
-#endif
-
-// clang-format off
-/*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********                            SETUP MQTT FUNCTIONALITY                               *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
 #if defined SUPPORT_MQTT
 #include "CO2_Gadget_MQTT.h"
+#endif
+
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                              SETUP BLE FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#ifdef SUPPORT_BLE
+#include "Sensirion_GadgetBle_Lib.h"
+GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 #endif
 
 // clang-format off
@@ -195,8 +200,7 @@ int vref = 1100;
 // #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press
 // > 500ms to show battery voltage) void longpress(Button2& btn);
 #define LONGCLICK_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
-#define BTN_UP                                                                 \
-  35 // Pinnumber for button for up/previous and select / enter actions
+#define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
 #define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
 #include "Button2.h"
 Button2 btnUp(BTN_UP);   // Initialize the up button
@@ -234,16 +238,18 @@ void initMQTT() {
   char mac_address[16];
   mqttClient.setServer(mqtt_server, 1883);
   mqttClient.setCallback(callbackMQTT);
-  // rootTopic = UNITHOSTNAME;
 
-  String WiFiMAC = WiFi.macAddress();
-  WiFiMAC.replace(F(":"),F(""));
-  WiFiMAC.toCharArray(mac_address, 16);
-  
+  // Peding: Create rootTopic as "CO2-Gadget-1f:2a" (UNITHOSTNAME + last two
+  // bytes of mac address) rootTopic = UNITHOSTNAME; String WiFiMAC =
+  // WiFi.macAddress(); WiFiMAC.replace(F(":"),F(""));
+  // WiFiMAC.toCharArray(mac_address, 16);
   // Create client ID from MAC address
-  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5], &mac_address[6]); // Fix:: conversion error
+  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5],
+  // &mac_address[6]); // Fix:: conversion error
 
-  rootTopic = "CO2-Gadget";
+  if (rootTopic = "") {
+    rootTopic = "CO2-Gadget";
+  }
 #endif
 }
 
@@ -424,11 +430,11 @@ void loop() {
       } else {
         Serial.print("WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
-        #ifdef SUPPORT_MQTT
+#ifdef SUPPORT_MQTT
         if (!mqttClient.connected()) {
           mqttReconnect();
         }
-        #endif
+#endif
       }
 #endif
 
