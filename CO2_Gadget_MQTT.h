@@ -44,15 +44,15 @@ void callbackMQTT(char *topic, byte *message, unsigned int length) {
   Serial.println();
 
   if (strcmp(topic, "SCD30/calibration") == 0) {
-    printf("Received calibration command with value %d\n", messageTemp.toInt());
-    pendingCalibration = true;
     calibrationValue = messageTemp.toInt();
+    printf("Received calibration command with value %d\n", calibrationValue);
+    pendingCalibration = true;    
   }
 
   if (strcmp(topic, "SCD30/ambientpressure") == 0) {
-    printf("Received ambient pressure with value %d\n", messageTemp.toInt());
-    pendingAmbientPressure = true;
     ambientPressureValue = messageTemp.toInt();
+    printf("Received ambient pressure with value %d\n", ambientPressureValue);
+    pendingAmbientPressure = true;    
   }
 }
 
@@ -99,6 +99,17 @@ void publishMQTT() {
         publishFloatMQTT("/temp", temp);
         publishFloatMQTT("/humi", hum);
       }
+      // Serial.print("Free heap: ");
+      // Serial.println(ESP.getFreeHeap());
+#endif
+}
+
+void mqttClientLoop() {
+#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
+  mqttReconnect(); // Make sure MQTT client is connected
+  if (mqttClient.connected()) { 
+    mqttClient.loop();
+  }
 #endif
 }
 #endif

@@ -27,11 +27,22 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 }
 
 void initWifi() {
+  char hostName[12];
+  uint8_t mac[6];
+  WiFi.mode(WIFI_STA);
+  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+  WiFi.macAddress(mac);
+  Serial.print("rootTopic: "); Serial.println(rootTopic);
+  sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);
+  Serial.printf("Setting hostname %s: %d\n", hostName, WiFi.setHostname(hostName));
   WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
+  Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
+  Serial.println("");
+  delay(5000);
 
   /*use mdns for host name resolution*/
   if (!MDNS.begin(UNITHOSTNAME)) { // http://esp32.local
