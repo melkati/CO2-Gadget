@@ -18,7 +18,7 @@
 // clang-format on
 
 #if defined SUPPORT_MQTT && !defined ESP_WIFI
-  #error SUPPORT_MQTT needs SUPPORT_WIFI. There can't be MQTT without WiFi 
+  // #error SUPPORT_MQTT needs SUPPORT_WIFI. Not possible to support  MQTT without WiFi 
 #endif
 
 #ifdef BUILD_GIT
@@ -233,26 +233,6 @@ void button_loop() {
 static int64_t lastMmntTime = 0;
 static int startCheckingAfterUs = 1900000;
 
-void initMQTT() {
-#ifdef SUPPORT_MQTT
-  char mac_address[16];
-  mqttClient.setServer(mqtt_server, 1883);
-  mqttClient.setCallback(callbackMQTT);
-
-  // Peding: Create rootTopic as "CO2-Gadget-1f:2a" (UNITHOSTNAME + last two
-  // bytes of mac address) rootTopic = UNITHOSTNAME; String WiFiMAC =
-  // WiFi.macAddress(); WiFiMAC.replace(F(":"),F(""));
-  // WiFiMAC.toCharArray(mac_address, 16);
-  // Create client ID from MAC address
-  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5],
-  // &mac_address[6]); // Fix:: conversion error
-
-  if (rootTopic = "") {
-    rootTopic = "CO2-Gadget";
-  }
-#endif
-}
-
 void processPendingCommands() {
   if (pendingCalibration == true) {
     if (calibrationValue != 0) {
@@ -308,44 +288,11 @@ void setup() {
   tft.setTextSize(2);
 #endif
 
-#if defined SUPPORT_BLE && defined SUPPORT_WIFI
-  // Initialize the GadgetBle Library
-  gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-  gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-#endif
-
-#ifdef SUPPORT_WIFI
-  WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-
-  /*use mdns for host name resolution*/
-  if (!MDNS.begin(UNITHOSTNAME)) { // http://esp32.local
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
-  Serial.print("mDNS responder started. CO2 monitor web interface at: http://");
-  Serial.print(UNITHOSTNAME);
-  Serial.println(".local");
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "CO2: " + String(co2) + " PPM");
-    //  server.on("/", handleRoot);      //This is display page
-    //  server.on("/readADC", handleADC);//To get update of ADC Value only
-  });
-
-#ifdef SUPPORT_OTA
-  AsyncElegantOTA.begin(&server); // Start ElegantOTA
-  Serial.println("OTA ready");
-#endif
-
-  server.begin();
-  Serial.println("HTTP server started");
-#endif
+// #if defined SUPPORT_BLE && defined SUPPORT_WIFI
+//   // Initialize the GadgetBle Library
+//   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+//   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+// #endif
 
 #ifdef SUPPORT_BLE
   // Initialize the GadgetBle Library
@@ -353,6 +300,9 @@ void setup() {
   Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
   Serial.println(gadgetBle.getDeviceIdString());
 #endif
+
+  initWifi();
+
 
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -364,7 +314,6 @@ void setup() {
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(true);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
-
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
   // offset
 
@@ -390,6 +339,63 @@ void setup() {
 }
 
 void loop() {
+  #ifdef SUPPORT_MQTT
+  mqttClient.loop();
+#endif
+
+  sensors.loop();
+  processPendingCommands();
+
+  if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
+    if (newReadingsAvailable) {
+      newReadingsAvailable = false;
+      nav.idleChanged = true;
+
+#ifdef SUPPORT_BLE
+      gadgetBle.writeCO2(co2);
+      gadgetBle.writeTemperature(temp);
+      gadgetBle.writeHumidity(hum);
+      gadgetBle.commit();
+#endif
+      lastMmntTime = esp_timer_get_time();
+
+      // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
+      Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
+
+      Serial.print("Free heap: ");
+      Serial.println(ESP.getFreeHeap());
+
+#ifdef SUPPORT_WIFI
+      if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi not connected");
+      } else {
+        Serial.print("WiFi connected - IP = ");
+        Serial.println(WiFi.localIP());
+#ifdef SUPPORT_MQTT
+        if (!mqttClient.connected()) {
+          mqttReconnect();
+        }
+#endif
+      }
+#endif
+      publishMQTT();
+    }
+  }
+
+#ifdef SUPPORT_BLE
+  gadgetBle.handleEvents();
+  delay(3);
+#endif
+
+#ifdef SUPPORT_OTA
+  AsyncElegantOTA.loop();
+#endif
+
+  button_loop();
+  nav.poll(); // this device only draws when needed
+}
+
+void loopold() {
 #ifdef SUPPORT_MQTT
   mqttClient.loop();
 #endif
@@ -421,8 +427,8 @@ void loop() {
       Serial.print("Humidity[%]:");
       Serial.println(hum);
 
-      //      Serial.print("Free heap: ");
-      //      Serial.println(ESP.getFreeHeap());
+           Serial.print("Free heap: ");
+           Serial.println(ESP.getFreeHeap());
 
 #ifdef SUPPORT_WIFI
       if (WiFi.status() != WL_CONNECTED) {
@@ -438,13 +444,7 @@ void loop() {
       }
 #endif
 
-#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
-      if (WiFi.status() == WL_CONNECTED) {
-        publishIntMQTT("/co2", co2);
-        publishFloatMQTT("/temp", temp);
-        publishFloatMQTT("/humi", hum);
-      }
-#endif
+      publishMQTT();
     }
   }
 

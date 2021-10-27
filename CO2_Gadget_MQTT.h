@@ -27,28 +27,6 @@ void mqttReconnect() {
       Serial.println(" not possible to connect");
     }
   }
-
-  // Loop until we're reconnected
-  // while (!mqttClient.connected())
-  // {
-  //   Serial.print("Attempting MQTT connection...");
-  //   // Attempt to connect
-  //   topic = rootTopic + "/#";
-  //   if (mqttClient.connect((topic).c_str()))
-  //   {
-  //     Serial.println("connected");
-  //     // Subscribe
-  //     mqttClient.subscribe((topic).c_str());
-  //   }
-  //   else
-  //   {
-  //     Serial.print("failed, rc=");
-  //     Serial.print(mqttClient.state());
-  //     Serial.println(" try again in 5 seconds");
-  //     // Wait 5 seconds before retrying
-  //     delay(5000);
-  //   }
-  // }
 }
 
 // Function called when data is received via MQTT
@@ -92,5 +70,35 @@ void publishFloatMQTT(String topic, float payload) {
   Serial.printf("Publishing %.0f to ", payload);
   Serial.println("topic: " + topic);
   mqttClient.publish((topic).c_str(), charPublish);
+}
+
+void initMQTT() {
+#ifdef SUPPORT_MQTT
+  // char mac_address[16];
+  mqttClient.setServer(mqtt_server, 1883);
+  mqttClient.setCallback(callbackMQTT);
+
+  // Peding: Create rootTopic as "CO2-Gadget-1f:2a" (UNITHOSTNAME + last two
+  // bytes of mac address) rootTopic = UNITHOSTNAME; String WiFiMAC =
+  // WiFi.macAddress(); WiFiMAC.replace(F(":"),F(""));
+  // WiFiMAC.toCharArray(mac_address, 16);
+  // Create client ID from MAC address
+  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5],
+  // &mac_address[6]); // Fix:: conversion error
+
+  if (rootTopic = "") {
+    rootTopic = "CO2-Gadget";
+  }
+#endif
+}
+
+void publishMQTT() {
+#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
+      if (WiFi.status() == WL_CONNECTED) {
+        publishIntMQTT("/co2", co2);
+        publishFloatMQTT("/temp", temp);
+        publishFloatMQTT("/humi", hum);
+      }
+#endif
 }
 #endif
