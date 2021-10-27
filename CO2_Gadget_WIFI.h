@@ -26,6 +26,38 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
   WiFi.begin(ssid.c_str(), password.c_str());
 }
 
+void initWifi() {
+  WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+
+  /*use mdns for host name resolution*/
+  if (!MDNS.begin(UNITHOSTNAME)) { // http://esp32.local
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.print("mDNS responder started. CO2 monitor web interface at: http://");
+  Serial.print(UNITHOSTNAME);
+  Serial.println(".local");
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "CO2: " + String(co2) + " PPM");
+    //  server.on("/", handleRoot);      //This is display page
+    //  server.on("/readADC", handleADC);//To get update of ADC Value only
+  });
+
+#ifdef SUPPORT_OTA
+  AsyncElegantOTA.begin(&server); // Start ElegantOTA
+  Serial.println("OTA ready");
+#endif
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
 ////===============================================================
 //// This function is called when you open its IP in browser
 ////===============================================================
