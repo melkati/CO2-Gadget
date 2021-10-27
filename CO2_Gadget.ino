@@ -56,7 +56,7 @@
 #define I2C_SCL 22
 #endif
 
-String rootTopic = ""; // Always defined to be able to configure in menu
+String rootTopic = UNITHOSTNAME; // Always defined to be able to configure in menu
 
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
@@ -222,7 +222,7 @@ void button_init() {
   });
 }
 
-void button_loop() {
+void buttonsLoop() {
   // Check for button presses
   btnUp.loop();
   btnDwn.loop();
@@ -230,7 +230,7 @@ void button_loop() {
 
 /*****************************************************************************************************/
 
-static int64_t lastMmntTime = 0;
+static int64_t lastReadingsCommunicationTime = 0;
 static int startCheckingAfterUs = 1900000;
 
 void processPendingCommands() {
@@ -339,47 +339,30 @@ void setup() {
 }
 
 void loop() {
-  #ifdef SUPPORT_MQTT
-  mqttClient.loop();
-#endif
-
+  mqttClientLoop();
   sensors.loop();
   processPendingCommands();
 
-  if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
+  if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
+      lastReadingsCommunicationTime = esp_timer_get_time();
       newReadingsAvailable = false;
-      nav.idleChanged = true;
-
+      nav.idleChanged = true; // Must redraw display as there are new readings
 #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
       gadgetBle.writeTemperature(temp);
       gadgetBle.writeHumidity(hum);
       gadgetBle.commit();
-#endif
-      lastMmntTime = esp_timer_get_time();
-
+#endif      
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
       Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
-
-      Serial.print("Free heap: ");
-      Serial.println(ESP.getFreeHeap());
-
 #ifdef SUPPORT_WIFI
       if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi not connected");
-      } else {
-        Serial.print("WiFi connected - IP = ");
-        Serial.println(WiFi.localIP());
-#ifdef SUPPORT_MQTT
-        if (!mqttClient.connected()) {
-          mqttReconnect();
-        }
-#endif
       }
-#endif
       publishMQTT();
-    }
+    }    
+#endif
   }
 
 #ifdef SUPPORT_BLE
@@ -391,72 +374,6 @@ void loop() {
   AsyncElegantOTA.loop();
 #endif
 
-  button_loop();
-  nav.poll(); // this device only draws when needed
-}
-
-void loopold() {
-#ifdef SUPPORT_MQTT
-  mqttClient.loop();
-#endif
-
-  sensors.loop();
-  processPendingCommands();
-
-  if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
-    if (newReadingsAvailable) {
-      newReadingsAvailable = false;
-
-      nav.idleChanged = true;
-
-#ifdef SUPPORT_BLE
-      gadgetBle.writeCO2(co2);
-      gadgetBle.writeTemperature(temp);
-      gadgetBle.writeHumidity(hum);
-      gadgetBle.commit();
-#endif
-      lastMmntTime = esp_timer_get_time();
-
-      // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
-      Serial.print("CO2[ppm]:");
-      Serial.print(co2);
-      Serial.print("\t");
-      Serial.print("Temperature[℃]:");
-      Serial.print(temp);
-      Serial.print("\t");
-      Serial.print("Humidity[%]:");
-      Serial.println(hum);
-
-           Serial.print("Free heap: ");
-           Serial.println(ESP.getFreeHeap());
-
-#ifdef SUPPORT_WIFI
-      if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi not connected");
-      } else {
-        Serial.print("WiFi connected - IP = ");
-        Serial.println(WiFi.localIP());
-#ifdef SUPPORT_MQTT
-        if (!mqttClient.connected()) {
-          mqttReconnect();
-        }
-#endif
-      }
-#endif
-
-      publishMQTT();
-    }
-  }
-
-#ifdef SUPPORT_BLE
-  gadgetBle.handleEvents();
-  delay(3);
-#endif
-
-#ifdef SUPPORT_OTA
-  AsyncElegantOTA.loop();
-#endif
-
-  button_loop();
+  buttonsLoop();
   nav.poll(); // this device only draws when needed
 }

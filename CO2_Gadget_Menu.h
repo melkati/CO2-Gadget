@@ -228,7 +228,7 @@ MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle,
            noStyle),
      OP("Comp: " BUILD_GIT, doNothing, noEvent),
      OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent),
-     OP("Test", doNothing, noEvent), EXIT("<Back"));
+     EXIT("<Back"));
 
 // when entering main menu
 result enterMainMenu(menuOut &o, idleEvent e) {
