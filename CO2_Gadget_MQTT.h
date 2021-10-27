@@ -8,7 +8,6 @@
 #if defined SUPPORT_MQTT
 #include <PubSubClient.h>
 
-String rootTopic;
 String topic;
 char charPublish[20];
 PubSubClient mqttClient(espClient);

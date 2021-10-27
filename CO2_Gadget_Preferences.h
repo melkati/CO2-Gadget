@@ -11,7 +11,9 @@ void initPreferences() {
   co2RedRange = preferences.getUInt("co2RedRange", 1000);
   TFTBrightness = preferences.getUInt("TFTBrightness", 100);
   // rootTopic = preferences.getUInt("rootTopic", defaultRootTopic);
-  rootTopic = preferences.getString("rootTopic", rootTopic);
+  #ifdef SUPPORT_MQTT
+    rootTopic = preferences.getString("rootTopic", rootTopic);
+  #endif
   preferences.end();
 }
 
@@ -23,6 +25,8 @@ void putPreferences() {
   preferences.putUInt("co2OrangeRange", co2OrangeRange);
   preferences.putUInt("co2RedRange", co2RedRange);
   preferences.putUInt("TFTBrightness", TFTBrightness);
-  preferences.putString("rootTopic", rootTopic);
+  #ifdef SUPPORT_MQTT
+    preferences.putString("rootTopic", rootTopic);
+  #endif
   preferences.end();
 }
