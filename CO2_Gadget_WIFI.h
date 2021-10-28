@@ -42,6 +42,8 @@ void initWifi() {
     delay(500);
   }
   Serial.println("");
+  Serial.print("WiFi connected - IP = ");
+  Serial.println(WiFi.localIP());
 
   /*use mdns for host name resolution*/
   if (!MDNS.begin(rootTopic.c_str())) { // http://esp32.local
