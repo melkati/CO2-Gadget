@@ -11,7 +11,7 @@
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "TEST"
+#define UNITHOSTNAME "CO2-Gadget"
 /**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 /**/ #endif
 /*****************************************************************************************************/
@@ -56,7 +56,8 @@
 #define I2C_SCL 22
 #endif
 
-String rootTopic = UNITHOSTNAME; // Always defined to be able to configure in menu
+String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
+String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
 
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
