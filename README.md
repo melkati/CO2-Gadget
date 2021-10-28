@@ -83,6 +83,56 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 # Building from repository
 
+First you should edit some files with your own data and preferences.
+
+Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
+
+  #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
+  #define  WIFI_PW_CREDENTIALS  "some_secret_password"
+
+In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address in:
+  
+  const  char *mqtt_server = "192.168.1.145";
+
+You are done with credentials. Save the file credentials.h
+
+Now there are some more modifications in different places depending if you are using  PlatformIO of Arduino IDE.
+
+For PlatformIO:
+
+Edit the file platformio.ini. 
+
+Change the next two lines with the COM port your TTGO T-Display board is connected to:
+
+  upload_port = COMxx
+  monitor_port = COMxx
+
+You should now modify the next three lines depending on if you want this feature enabled or disabled:
+
+  -D SUPPORT_BLE
+  -D SUPPORT_WIFI
+  -D SUPPORT_MQTT
+
+In the options you want disabled put a semicolon in front of it e.g. if you dont wan't to use MQTT put a semicolon before the line "-D SUPPORT_MQTT" as in:
+
+  ;     -D SUPPORT_MQTT
+
+A semicolon in this file is like deleting the line or converting it on a commentary. The compiler will just ignore it.
+
+  -D SUPPORT_BLE will *enable* BLE functionality (Bluetooth Low Energy)
+  -D SUPPORT_WIFI will *enable* WiFi functionality
+  -D SUPPORT_MQTT will *enable* MQTT functionality (you must enable WiFi to use MQTT)
+  
+If any of these lines start with a semicolon the functionality will be disabled.
+
+  ; -D SUPPORT_BLE will *disable* BLE functionality (Bluetooth Low Energy)
+  ; -D SUPPORT_WIFI will *disable* WiFi functionality
+  ; -D SUPPORT_MQTT will *disable* MQTT functionality (you must enable WiFi to use MQTT)
+
+Save the file platformio.ini
+
+If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
+
 ### PlatformIO (recommended)
 
 #### Compiling and Installing
