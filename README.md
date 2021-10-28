@@ -33,13 +33,13 @@ I apologize in advance because right now there are almost no documentation. I'll
 
 This project support a large selection of boards, displays and sensors.
 
-At the moment you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
+As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
 Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported.
 
 # Supported sensors
 
-This project uses the CanAirIO sensorlib library to support as many sensors as possible. Thanks to @hpsaturn and CanAirIO team.
+This project uses the CanAirIO sensorlib library to support as many sensors as possible out of the box. Thanks to @hpsaturn and CanAirIO team.
 
 CanAirIO sensorlib right now supports:
 
@@ -150,8 +150,8 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-- [ ] Test and enable WIFI feature
-- [ ] Test and enable MQTT feature
+- [x] Test and enable WIFI feature
+- [x] Test and enable MQTT feature
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM

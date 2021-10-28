@@ -176,13 +176,39 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle,
      EXIT("<Back"));
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle,
-     OP("Work In Pregress", doNothing, noEvent), EXIT("<Back"));
+     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
+
+
+// list of allowed characters
+const char *const digit = "0123456789";
+const char *const hexChars MEMMODE = "0123456789ABCDEF";
+const char *const alphaNum[] MEMMODE = {
+    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+char tempTopicMQTT[] =
+    "                              "; // field will initialize its
+                                      // size by this string length
+
+result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Topic to %s", tempTopicMQTT);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempTopicMQTT, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  rootTopic = tempTopicMQTT;
+  return proceed;
+}
 
 MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle,
-     OP("Work In Pregress", doNothing, noEvent), EXIT("<Back"));
+     // EDIT(label,target buffer,validators,action,events mask,styles)
+     EDIT("Topic", tempTopicMQTT, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle),
+     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
 
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle,
-     OP("Work In Pregress", doNothing, noEvent), EXIT("<Back"));
+     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
 
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle,
      FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doNothing, noEvent,
@@ -202,14 +228,14 @@ MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle,
            noStyle),
      OP("Comp: " BUILD_GIT, doNothing, noEvent),
      OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent),
-     OP("Test", doNothing, noEvent), EXIT("<Back"));
+     EXIT("<Back"));
 
 // when entering main menu
 result enterMainMenu(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.println("Enter main menu");
-  return proceed;
 #endif
+  return proceed;
 }
 
 MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle,
@@ -321,4 +347,5 @@ void menu_init() {
   mainMenu[0].disable();        // Make battery voltage field unselectable
   informationMenu[0].disable(); // Make battery voltage field unselectable
   informationMenu[1].disable(); // Make battery voltage field unselectable
+  strcpy(tempTopicMQTT, rootTopic.c_str());
 }

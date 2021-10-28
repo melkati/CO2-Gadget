@@ -11,11 +11,15 @@
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "TEST"
+#define UNITHOSTNAME "CO2-Gadget"
 /**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 /**/ #endif
 /*****************************************************************************************************/
 // clang-format on
+
+#if defined SUPPORT_MQTT && !defined ESP_WIFI
+  // #error SUPPORT_MQTT needs SUPPORT_WIFI. Not possible to support  MQTT without WiFi 
+#endif
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -25,6 +29,14 @@
 #include <Wire.h>
 #include "soc/soc.h" // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
+
+#ifdef SUPPORT_WIFI
+#include <WiFi.h>
+#include <ESPmDNS.h>
+// #include <WiFiUdp.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -44,7 +56,10 @@
 #define I2C_SCL 22
 #endif
 
-    bool pendingCalibration = false;
+String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
+String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
+
+bool pendingCalibration = false;
 bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
 uint16_t customCalibrationValue = 415;
@@ -82,24 +97,12 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                              SETUP BLE FUNCTIONALITY                              *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-// clang-format on
-#ifdef SUPPORT_BLE
-#include "Sensirion_GadgetBle_Lib.h"
-GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
-#endif
-
-// clang-format off
-/*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********                           INCLUDE WIFI FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
 #ifdef SUPPORT_WIFI
-#include <CO2_Gadget_WIFI>
+#include <CO2_Gadget_WIFI.h>
 #endif
 
 // clang-format off
@@ -111,6 +114,18 @@ GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2);
 // clang-format on
 #if defined SUPPORT_MQTT
 #include "CO2_Gadget_MQTT.h"
+#endif
+
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                              SETUP BLE FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#ifdef SUPPORT_BLE
+#include "Sensirion_GadgetBle_Lib.h"
+GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 #endif
 
 // clang-format off
@@ -186,8 +201,7 @@ int vref = 1100;
 // #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press
 // > 500ms to show battery voltage) void longpress(Button2& btn);
 #define LONGCLICK_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
-#define BTN_UP                                                                 \
-  35 // Pinnumber for button for up/previous and select / enter actions
+#define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
 #define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
 #include "Button2.h"
 Button2 btnUp(BTN_UP);   // Initialize the up button
@@ -209,7 +223,7 @@ void button_init() {
   });
 }
 
-void button_loop() {
+void buttonsLoop() {
   // Check for button presses
   btnUp.loop();
   btnDwn.loop();
@@ -217,16 +231,8 @@ void button_loop() {
 
 /*****************************************************************************************************/
 
-static int64_t lastMmntTime = 0;
+static int64_t lastReadingsCommunicationTime = 0;
 static int startCheckingAfterUs = 1900000;
-
-void initMQTT() {
-#ifdef SUPPORT_MQTT
-  mqttClient.setServer(mqtt_server, 1883);
-  mqttClient.setCallback(callback);
-  rootTopic = UNITHOSTNAME;
-#endif
-}
 
 void processPendingCommands() {
   if (pendingCalibration == true) {
@@ -283,44 +289,11 @@ void setup() {
   tft.setTextSize(2);
 #endif
 
-#if defined SUPPORT_BLE && defined SUPPORT_WIFI
-  // Initialize the GadgetBle Library
-  gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-  gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-#endif
-
-#ifdef SUPPORT_WIFI
-  WiFiMulti.addAP(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
-  while (WiFiMulti.run() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-
-  /*use mdns for host name resolution*/
-  if (!MDNS.begin(UNITHOSTNAME)) { // http://esp32.local
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
-  Serial.print("mDNS responder started. CO2 monitor web interface at: http://");
-  Serial.print(UNITHOSTNAME);
-  Serial.println(".local");
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "CO2: " + String(co2) + " PPM");
-    //  server.on("/", handleRoot);      //This is display page
-    //  server.on("/readADC", handleADC);//To get update of ADC Value only
-  });
-
-#ifdef SUPPORT_OTA
-  AsyncElegantOTA.begin(&server); // Start ElegantOTA
-  Serial.println("OTA ready");
-#endif
-
-  server.begin();
-  Serial.println("HTTP server started");
-#endif
+// #if defined SUPPORT_BLE && defined SUPPORT_WIFI
+//   // Initialize the GadgetBle Library
+//   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+//   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+// #endif
 
 #ifdef SUPPORT_BLE
   // Initialize the GadgetBle Library
@@ -328,6 +301,9 @@ void setup() {
   Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
   Serial.println(gadgetBle.getDeviceIdString());
 #endif
+
+  initWifi();
+
 
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -339,7 +315,6 @@ void setup() {
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(true);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
-
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
   // offset
 
@@ -365,60 +340,30 @@ void setup() {
 }
 
 void loop() {
-#ifdef SUPPORT_MQTT
-  mqttClient.loop();
-#endif
-
+  mqttClientLoop();
   sensors.loop();
   processPendingCommands();
 
-  if (esp_timer_get_time() - lastMmntTime >= startCheckingAfterUs) {
+  if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
+      lastReadingsCommunicationTime = esp_timer_get_time();
       newReadingsAvailable = false;
-
-      nav.idleChanged = true;
-
+      nav.idleChanged = true; // Must redraw display as there are new readings
 #ifdef SUPPORT_BLE
       gadgetBle.writeCO2(co2);
       gadgetBle.writeTemperature(temp);
       gadgetBle.writeHumidity(hum);
       gadgetBle.commit();
-#endif
-      lastMmntTime = esp_timer_get_time();
-
+#endif      
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
-      Serial.print("CO2[ppm]:");
-      Serial.print(co2);
-      Serial.print("\t");
-      Serial.print("Temperature[℃]:");
-      Serial.print(temp);
-      Serial.print("\t");
-      Serial.print("Humidity[%]:");
-      Serial.println(hum);
-
-      //      Serial.print("Free heap: ");
-      //      Serial.println(ESP.getFreeHeap());
-
+      Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
 #ifdef SUPPORT_WIFI
-      if (WiFiMulti.run() != WL_CONNECTED) {
+      if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi not connected");
-      } else {
-        Serial.print("WiFi connected - IP = ");
-        Serial.println(WiFi.localIP());
-        if (!mqttClient.connected()) {
-          mqttReconnect();
-        }
       }
+      publishMQTT();
+    }    
 #endif
-
-#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
-      if (WiFiMulti.run() == WL_CONNECTED) {
-        publishIntMQTT("/co2", co2);
-        publishFloatMQTT("/temp", temp);
-        publishFloatMQTT("/humi", hum);
-      }
-#endif
-    }
   }
 
 #ifdef SUPPORT_BLE
@@ -430,6 +375,6 @@ void loop() {
   AsyncElegantOTA.loop();
 #endif
 
-  button_loop();
+  buttonsLoop();
   nav.poll(); // this device only draws when needed
 }
