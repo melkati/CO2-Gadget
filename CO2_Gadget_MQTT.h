@@ -8,21 +8,22 @@
 #if defined SUPPORT_MQTT
 #include <PubSubClient.h>
 
-String topic;
 char charPublish[20];
 PubSubClient mqttClient(espClient);
 #endif
 
 #ifdef SUPPORT_MQTT
 void mqttReconnect() {
+  String subscriptionTopic;
   if (!mqttClient.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    topic = rootTopic + "/#";
-    if (mqttClient.connect((topic).c_str())) {
+    subscriptionTopic = rootTopic + "/#";
+    if (mqttClient.connect((mqttClientId).c_str())) {
       Serial.println("connected");
       // Subscribe
-      mqttClient.subscribe((topic).c_str());
+      mqttClient.subscribe((subscriptionTopic).c_str());
+      printf("Suscribing to: %s/n", subscriptionTopic.c_str());
     } else {
       Serial.println(" not possible to connect");
     }
@@ -35,7 +36,7 @@ void callbackMQTT(char *topic, byte *message, unsigned int length) {
   Serial.print(topic);
   Serial.print(". Payload: ");
   String messageTemp;
-  String topicTemp;
+  String topicToLookAt;
 
   for (int i = 0; i < length; i++) {
     Serial.print((char)message[i]);
@@ -43,13 +44,17 @@ void callbackMQTT(char *topic, byte *message, unsigned int length) {
   }
   Serial.println();
 
-  if (strcmp(topic, "SCD30/calibration") == 0) {
+  topicToLookAt = rootTopic + "/calibration";
+
+  if (strcmp(topic, topicToLookAt.c_str()) == 0) {
     calibrationValue = messageTemp.toInt();
     printf("Received calibration command with value %d\n", calibrationValue);
     pendingCalibration = true;    
   }
 
-  if (strcmp(topic, "SCD30/ambientpressure") == 0) {
+  topicToLookAt = rootTopic + "/ambientpressure";
+
+  if (strcmp(topic, topicToLookAt.c_str()) == 0) {
     ambientPressureValue = messageTemp.toInt();
     printf("Received ambient pressure with value %d\n", ambientPressureValue);
     pendingAmbientPressure = true;    
@@ -77,24 +82,13 @@ void initMQTT() {
   // char mac_address[16];
   mqttClient.setServer(mqtt_server, 1883);
   mqttClient.setCallback(callbackMQTT);
-
-  // Peding: Create rootTopic as "CO2-Gadget-1f:2a" (UNITHOSTNAME + last two
-  // bytes of mac address) rootTopic = UNITHOSTNAME; String WiFiMAC =
-  // WiFi.macAddress(); WiFiMAC.replace(F(":"),F(""));
-  // WiFiMAC.toCharArray(mac_address, 16);
-  // Create client ID from MAC address
-  // sprintf_P(rootTopic, PSTR(UNITHOSTNAME"-%s%s"), &mac_address[5],
-  // &mac_address[6]); // Fix:: conversion error
-
-  if (rootTopic = "") {
-    rootTopic = "CO2-Gadget";
-  }
+  mqttReconnect();
 #endif
 }
 
 void publishMQTT() {
 #if defined SUPPORT_MQTT && defined SUPPORT_WIFI
-      if (WiFi.status() == WL_CONNECTED) {
+      if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
         publishIntMQTT("/co2", co2);
         publishFloatMQTT("/temp", temp);
         publishFloatMQTT("/humi", hum);

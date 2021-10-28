@@ -42,17 +42,16 @@ void initWifi() {
     delay(500);
   }
   Serial.println("");
-  delay(5000);
 
   /*use mdns for host name resolution*/
-  if (!MDNS.begin(UNITHOSTNAME)) { // http://esp32.local
+  if (!MDNS.begin(rootTopic.c_str())) { // http://esp32.local
     Serial.println("Error setting up MDNS responder!");
     while (1) {
       delay(1000);
     }
   }
   Serial.print("mDNS responder started. CO2 monitor web interface at: http://");
-  Serial.print(UNITHOSTNAME);
+  Serial.print(rootTopic);
   Serial.println(".local");
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -68,6 +67,10 @@ void initWifi() {
 
   server.begin();
   Serial.println("HTTP server started");
+
+#ifdef SUPPORT_MQTT
+  mqttClientId = hostName;
+#endif
 }
 ////===============================================================
 //// This function is called when you open its IP in browser
