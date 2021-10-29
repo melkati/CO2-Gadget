@@ -37,59 +37,7 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#include <Sensors.hpp>
-
-#undef I2C_SDA
-#undef I2C_SCL
-#ifdef ALTERNATIVE_I2C_PINS
-#define I2C_SDA 22
-#define I2C_SCL 21
-#else
-#define I2C_SDA 21
-#define I2C_SCL 22
-#endif
-
-String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
-String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
-
-bool activeBLE =  true;
-bool activeWIFI = true;
-bool activeMQTT = true;
-
-bool pendingCalibration = false;
-bool newReadingsAvailable = false;
-uint16_t calibrationValue = 415;
-uint16_t customCalibrationValue = 415;
-bool pendingAmbientPressure = false;
-uint16_t ambientPressureValue = 0;
-uint16_t altidudeMeters = 600;
-bool autoSelfCalibration = false;
-
-uint16_t co2 = 0;
-float temp, hum = 0;
-
-uint16_t co2OrangeRange =
-    700; // Default CO2 ppm concentration threshold to display values in orange
-         // (user can change on menu and save on preferences)
-uint16_t co2RedRange =
-    1000; // Default CO2 ppm concentration threshold to display values in red
-          // (user can change on menu and save on preferences)
-
-void onSensorDataOk() {
-  Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
-  Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
-  Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
-
-  Serial.print(" H: " + String(sensors.getHumidity()));
-  Serial.println(" T: " + String(sensors.getTemperature()));
-
-  co2 = sensors.getCO2();
-  temp = sensors.getCO2temp();
-  hum = sensors.getCO2humi();
-  newReadingsAvailable = true;
-}
-
-void onSensorDataError(const char *msg) { Serial.println(msg); }
+#include <CO2_Gadget_Sensors.h>
 
 // clang-format off
 /*****************************************************************************************************/
@@ -253,77 +201,7 @@ void processPendingCommands() {
   }
 }
 
-void setup() {
-  uint32_t brown_reg_temp =
-      READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); // save WatchDog register
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
-
-  Serial.begin(115200);
-  Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
-
-  initPreferences();
-
-#if defined SUPPORT_OLED
-  delay(100);
-  initDisplayOLED();
-  delay(1000);
-#endif
-
-#if defined SUPPORT_TFT
-  initDisplayTFT();
-  displaySplashScreenTFT(); // Display init and splash screen
-  delay(2000);              // Enjoy the splash screen for 2 seconds
-  tft.setTextSize(2);
-#endif
-
-// #if defined SUPPORT_BLE && defined SUPPORT_WIFI
-//   // Initialize the GadgetBle Library
-//   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-//   gadgetBle.setCurrentWifiSsid(WIFI_SSID);
-// #endif
-
-  initBLE();
-  initWifi();
-
-  // Initialize sensors
-  Wire.begin(I2C_SDA, I2C_SCL);
-
-  Serial.println("-->[SETUP] Detecting sensors..");
-
-  sensors.setSampleTime(5); // config sensors sample time interval
-  sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-  sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(true);                     // [optional] debug mode
-  sensors.detectI2COnly(true);                    // force to only i2c sensors
-  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
-  // offset
-
-  sensors.init();
-  if (sensors.isPmSensorConfigured())
-    Serial.println("-->[SETUP] Sensor configured: " +
-                   sensors.getPmDeviceSelected());
-
-  delay(500);
-
-  // sensors.setAutoSelfCalibration(false);
-
-  initMQTT();
-
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
-                 brown_reg_temp); // enable brownout detector
-
-  readBatteryVoltage();
-  button_init();
-  menu_init();
-
-  Serial.println("Ready.");
-}
-
-void loop() {
-  mqttClientLoop();
-  sensors.loop();
-  processPendingCommands();
-
+void readingsLoop() {
   if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
       lastReadingsCommunicationTime = esp_timer_get_time();
@@ -338,13 +216,52 @@ void loop() {
       publishMQTT();
     }    
   }
+}
 
+void setup() {
+  uint32_t brown_reg_temp =
+      READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); // save WatchDog register
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
+  Serial.begin(115200);
+  Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
+  initPreferences();
+#if defined SUPPORT_OLED
+  delay(100);
+  initDisplayOLED();
+  delay(1000);
+#endif
+#if defined SUPPORT_TFT
+  initDisplayTFT();
+  displaySplashScreenTFT(); // Display init and splash screen
+  delay(2000);              // Enjoy the splash screen for 2 seconds
+  tft.setTextSize(2);
+#endif
+// #if defined SUPPORT_BLE && defined SUPPORT_WIFI
+//   // Initialize the GadgetBle Library
+//   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+//   gadgetBle.setCurrentWifiSsid(WIFI_SSID);
+// #endif
+  initBLE();
+  initWifi();
+  initSensors();  
+  initMQTT();
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
+                 brown_reg_temp); // enable brownout detector
+  readBatteryVoltage();
+  button_init();
+  menu_init();
+  Serial.println("Ready.");
+}
+
+void loop() {
+  mqttClientLoop();
+  sensorsLoop();
+  processPendingCommands();
+  readingsLoop();
   loopBLE();
-
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
 #endif
-
   buttonsLoop();
   nav.poll(); // this device only draws when needed
 }
