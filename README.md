@@ -90,13 +90,13 @@ Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID an
   #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
   #define  WIFI_PW_CREDENTIALS    "some_secret_password"
 
-In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address in:
+In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
   
   const  char *mqtt_server = "192.168.1.145";
 
 You are done with credentials. Save the file credentials.h
 
-If you want you can keep sensitive data in a file, you can define it in environment variables so you don't need a credentials.h file with your secrets.
+If you prefer not to keep sensitive data in a file, you can define it in environment variables so you don't need a credentials.h file with your secrets.
 
   Unix:
     export WIFI_SSID='\"my\ ssid\ name\"'
