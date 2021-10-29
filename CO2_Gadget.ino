@@ -117,8 +117,7 @@ const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if 
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#include "Sensirion_GadgetBle_Lib.h"
-GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
+#include "CO2_Gadget_BLE.h"
 
 // clang-format off
 /*****************************************************************************************************/
@@ -283,13 +282,7 @@ void setup() {
 //   gadgetBle.setCurrentWifiSsid(WIFI_SSID);
 // #endif
 
-  // Initialize the GadgetBle Library
-  if (activeBLE) {
-    gadgetBle.begin();
-    Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
-    Serial.println(gadgetBle.getDeviceIdString());
-  }  
-
+  initBLE();
   initWifi();
 
   // Initialize sensors
@@ -336,13 +329,7 @@ void loop() {
       lastReadingsCommunicationTime = esp_timer_get_time();
       newReadingsAvailable = false;
       nav.idleChanged = true; // Must redraw display as there are new readings
-
-      if (activeBLE) {
-        gadgetBle.writeCO2(co2);
-        gadgetBle.writeTemperature(temp);
-        gadgetBle.writeHumidity(hum);
-        gadgetBle.commit();
-      }
+      publishBLE();
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
       Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
@@ -352,10 +339,7 @@ void loop() {
     }    
   }
 
-  if (activeBLE) {
-    gadgetBle.handleEvents();
-    delay(3);
-  }
+  loopBLE();
 
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
