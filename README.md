@@ -87,8 +87,8 @@ First you should edit some files with your own data and preferences.
 
 Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
 
-  #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
-  #define  WIFI_PW_CREDENTIALS  "some_secret_password"
+  #define  WIFI_SSID  "MyWiFiSSID"
+  #define  WIFI_PASSWORD  "some_secret_password"
 
 In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address in:
   
