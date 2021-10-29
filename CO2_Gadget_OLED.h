@@ -43,7 +43,7 @@ void showValuesOLED(String text) {
   sprintf(oled_msg, "T:%.1fC RH:%.0f%%", temp, hum);
   u8x8.drawUTF8(0, 6, oled_msg);
 
-#ifdef SUPPORT_WIFI
+  if (activeWIFI) {
   if (WiFiMulti.run() != WL_CONNECTED) {
     u8x8.clearLine(7);
     u8x8.drawUTF8(0, 6, "WiFi unconnected");
@@ -55,6 +55,6 @@ void showValuesOLED(String text) {
     // 0xff, ip >> 24);
     u8x8.drawString(0, 7, oled_msg);
   }
-#endif
+  }
 #endif
 }

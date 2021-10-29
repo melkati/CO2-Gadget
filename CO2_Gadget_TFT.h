@@ -90,10 +90,10 @@ void showValuesTFT(uint16_t co2) {
   tft.drawString("CO2", 10, 125);
 
   tft.setTextDatum(8); // bottom right
-  #ifdef SUPPORT_BLE
-  tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
-  #endif
-
+  if (activeBLE) {
+    tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
+  }
+  
   // Draw CO2 number
   if (co2 >= co2RedRange) {
     tft.setTextColor(TFT_RED, TFT_BLACK);

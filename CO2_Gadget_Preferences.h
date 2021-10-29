@@ -13,9 +13,7 @@ void initPreferences() {
   // activeBLE = preferences.getBool("activeBLE", true);
   // activeWIFI = preferences.getBool("activeWIFI", false);
   // activeMQTT = preferences.getBool("activeMQTT", false);
-  #ifdef SUPPORT_MQTT
-    rootTopic = preferences.getString("rootTopic", rootTopic);
-  #endif
+  rootTopic = preferences.getString("rootTopic", rootTopic);
   preferences.end();
 }
 
@@ -30,8 +28,6 @@ void putPreferences() {
   preferences.putBool("activeBLE", activeBLE);
   preferences.putBool("activeWIFI", activeWIFI);
   preferences.putBool("activeMQTT", activeMQTT);
-  #ifdef SUPPORT_MQTT
-    preferences.putString("rootTopic", rootTopic);
-  #endif
+  preferences.putString("rootTopic", rootTopic);
   preferences.end();
 }

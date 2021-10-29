@@ -173,6 +173,9 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
+  if (!activeWIFI) {
+    activeMQTT = false;
+  }
   return proceed;
 }
 
@@ -210,6 +213,9 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetActiveMQTT(eventMask e, navNode &nav, prompt &item) {
+  if (!activeWIFI) {
+    // Make MQTT active field unselectable if WIFI is not active
+  }
   return proceed;
 }
 
@@ -364,7 +370,10 @@ void menu_init() {
   options->invertFieldKeys = true;
   nav.useUpdateEvent = true;
   mainMenu[0].disable();        // Make battery voltage field unselectable
-  informationMenu[0].disable(); // Make battery voltage field unselectable
-  informationMenu[1].disable(); // Make battery voltage field unselectable
+  informationMenu[0].disable(); // Make information field unselectable
+  informationMenu[1].disable(); // Make information field unselectable
+  if (!activeWIFI) {
+    activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
+  }
   strcpy(tempTopicMQTT, rootTopic.c_str());
 }

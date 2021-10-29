@@ -5,9 +5,6 @@
 /* If you are NOT using PlarformIO (You are using Arduino IDE) you must define your options bellow   */
 /* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
 /**/ #ifndef PLATFORMIO
-/**/ #define SUPPORT_BLE
-/**/ // #define SUPPORT_WIFI           // HTTP SERVER NOT WORKING CURRENTLY. AWAITING FIX
-/**/ // #define SUPPORT_MQTT           // Needs SUPPORT_WIFI
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
@@ -16,10 +13,6 @@
 /**/ #endif
 /*****************************************************************************************************/
 // clang-format on
-
-#if defined SUPPORT_MQTT && !defined ESP_WIFI
-  // #error SUPPORT_MQTT needs SUPPORT_WIFI. Not possible to support  MQTT without WiFi 
-#endif
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -30,13 +23,11 @@
 #include "soc/soc.h" // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 
-#ifdef SUPPORT_WIFI
 #include <WiFi.h>
 #include <ESPmDNS.h>
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -48,6 +39,8 @@
 
 #include <Sensors.hpp>
 
+#undef I2C_SDA
+#undef I2C_SCL
 #ifdef ALTERNATIVE_I2C_PINS
 #define I2C_SDA 22
 #define I2C_SCL 21
