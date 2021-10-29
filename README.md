@@ -96,15 +96,7 @@ In the same credentials.h file edit the IP of your MQTT broker, substituting 192
 
 You are done with credentials. Save the file credentials.h
 
-If you prefer not to keep sensitive data in a file, you can define it in environment variables so you don't need a credentials.h file with your secrets.
-
-  Unix:
-    export WIFI_SSID='\"my\ ssid\ name\"'
-    export WIFI_PASS='\"my\ password\"'
-
-  Windows:
-    set WIFI_SSID='"my ssid name"'
-    set WIFI_PASS='"my password"'
+If you prefer not to keep sensitive data in a file, you can define this data in environment variables so you don't need a credentials.h file with your secrets. See platformio.ini file for instructions.
 
 Now there are some more modifications in different places depending if you are using  PlatformIO of Arduino IDE.
 
