@@ -152,31 +152,38 @@ result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle,
-     OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent),
-     FIELD(customCalibrationValue, "Custom cal", "ppm", 400, 2000, 10, 10,
-           showEvent, enterEvent, noStyle),
-     OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent),
-     OP("Test menu event", showEvent, anyEvent), EXIT("<Back"));
+// clang-format off
+TOGGLE(autoSelfCalibration, autoSelfCalibrationMenu, "Autom. Cal.: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doNothing, noEvent)
+  ,VALUE("OFF", false, doNothing, noEvent));
 
-TOGGLE(autoSelfCalibration, autoSelfCalibrationMenu, "Autom. Cal.: ", doNothing,
-       noEvent, wrapStyle, VALUE("ON", true, doNothing, noEvent),
-       VALUE("OFF", false, doNothing, noEvent));
+MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
+  ,SUBMENU(autoSelfCalibrationMenu)
+  ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
+  ,FIELD(customCalibrationValue, "Custom cal", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
+  ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
+  ,OP("Test menu event", showEvent, anyEvent), EXIT("<Back"));
 
-MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle,
-     SUBMENU(autoSelfCalibrationMenu),
-     FIELD(ambientPressureValue, "Pres. Comp.", "mbar", 0, 2000, 10, 10,
-           doNothing, noEvent, noStyle),
-     FIELD(altidudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing,
-           noEvent, noStyle),
-     FIELD(co2OrangeRange, "Orange", "ppm", 400, 2000, 10, 10, doNothing,
-           noEvent, noStyle),
-     FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent,
-           noStyle),
-     EXIT("<Back"));
+MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
+  ,SUBMENU(autoSelfCalibrationMenu)
+  ,FIELD(ambientPressureValue, "Pres. Comp.", "mbar", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(altidudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(co2OrangeRange, "Orange", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,EXIT("<Back"));
 
-MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle,
-     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
+result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
+  return proceed;
+}
+
+TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
+  ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
+
+MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeWIFIMenu)
+  ,OP("Work In Progress", doNothing, noEvent)
+  , EXIT("<Back"));
 
 
 // list of allowed characters
@@ -202,33 +209,42 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle,
-     // EDIT(label,target buffer,validators,action,events mask,styles)
-     EDIT("Topic", tempTopicMQTT, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle),
-     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
+result doSetActiveMQTT(eventMask e, navNode &nav, prompt &item) {
+  return proceed;
+}
 
-MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle,
-     OP("Work In Progress", doNothing, noEvent), EXIT("<Back"));
+TOGGLE(activeMQTT, activeMQTTMenu, "MQTT Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveMQTT, exitEvent)
+  ,VALUE("OFF", false, doSetActiveMQTT, exitEvent));
 
-MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle,
-     FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doNothing, noEvent,
-           noStyle),
-     EXIT("<Back"));
+MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
+  // ,EDIT(label,target buffer,validators,action,events mask,styles)
+  ,SUBMENU(activeMQTTMenu)
+  ,EDIT("Topic", tempTopicMQTT, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
+  ,OP("Work In Progress", doNothing, noEvent)
+  , EXIT("<Back"));
 
-MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle,
-     SUBMENU(co2RangesConfigMenu), SUBMENU(wifiConfigMenu),
-     SUBMENU(mqttConfigMenu), SUBMENU(espnowConfigMenu),
-     SUBMENU(batteryConfigMenu),
-     FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10,
-           doSetTFTBrightness, anyEvent, wrapStyle),
-     OP("Save preferences", doSavePreferences, enterEvent), EXIT("<Back"));
+MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
+  ,OP("Work In Progress", doNothing, noEvent)
+  ,EXIT("<Back"));
 
-MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle,
-     FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent,
-           noStyle),
-     OP("Comp: " BUILD_GIT, doNothing, noEvent),
-     OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent),
-     EXIT("<Back"));
+MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
+  ,FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,EXIT("<Back"));
+
+MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
+  ,SUBMENU(co2RangesConfigMenu), SUBMENU(wifiConfigMenu)
+  ,SUBMENU(mqttConfigMenu), SUBMENU(espnowConfigMenu)
+  ,SUBMENU(batteryConfigMenu)
+  ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,OP("Save preferences", doSavePreferences, enterEvent)
+  , EXIT("<Back"));
+
+MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
+  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,OP("Comp: " BUILD_GIT, doNothing, noEvent)
+  ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EXIT("<Back"));
 
 // when entering main menu
 result enterMainMenu(menuOut &o, idleEvent e) {
@@ -238,11 +254,14 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle,
-     FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent,
-           noStyle),
-     SUBMENU(informationMenu), SUBMENU(calibrationMenu), SUBMENU(configMenu),
-     EXIT("<Salir"));
+MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle
+  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,SUBMENU(informationMenu)
+  ,SUBMENU(calibrationMenu)
+  ,SUBMENU(configMenu)
+  ,EXIT("<Salir"));
+
+// clang-format on
 
 // define menu colors --------------------------------------------------------
 #define Black RGB565(0, 0, 0)

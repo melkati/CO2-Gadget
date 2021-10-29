@@ -59,6 +59,10 @@
 String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
 String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
 
+bool activeBLE =  true;
+bool activeWIFI = true;
+bool activeMQTT = true;
+
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
@@ -101,9 +105,7 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#ifdef SUPPORT_WIFI
 #include <CO2_Gadget_WIFI.h>
-#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -112,9 +114,8 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#if defined SUPPORT_MQTT
+const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if any
 #include "CO2_Gadget_MQTT.h"
-#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -123,10 +124,8 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#ifdef SUPPORT_BLE
 #include "Sensirion_GadgetBle_Lib.h"
 GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
-#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -268,10 +267,7 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
 
   Serial.begin(115200);
-  Serial.println();
-  Serial.print("CO2 Gadget Version: ");
-  Serial.println(CO2_GADGET_VERSION CO2_GADGET_REV);
-  Serial.println("Starting up...");
+  Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
 
   initPreferences();
 
@@ -285,25 +281,23 @@ void setup() {
   initDisplayTFT();
   displaySplashScreenTFT(); // Display init and splash screen
   delay(2000);              // Enjoy the splash screen for 2 seconds
-  // tft.fillScreen(Black);
   tft.setTextSize(2);
 #endif
 
 // #if defined SUPPORT_BLE && defined SUPPORT_WIFI
 //   // Initialize the GadgetBle Library
 //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-//   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+//   gadgetBle.setCurrentWifiSsid(WIFI_SSID);
 // #endif
 
-#ifdef SUPPORT_BLE
   // Initialize the GadgetBle Library
-  gadgetBle.begin();
-  Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
-  Serial.println(gadgetBle.getDeviceIdString());
-#endif
+  if (activeBLE) {
+    gadgetBle.begin();
+    Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
+    Serial.println(gadgetBle.getDeviceIdString());
+  }  
 
   initWifi();
-
 
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -349,27 +343,26 @@ void loop() {
       lastReadingsCommunicationTime = esp_timer_get_time();
       newReadingsAvailable = false;
       nav.idleChanged = true; // Must redraw display as there are new readings
-#ifdef SUPPORT_BLE
-      gadgetBle.writeCO2(co2);
-      gadgetBle.writeTemperature(temp);
-      gadgetBle.writeHumidity(hum);
-      gadgetBle.commit();
-#endif      
+
+      if (activeBLE) {
+        gadgetBle.writeCO2(co2);
+        gadgetBle.writeTemperature(temp);
+        gadgetBle.writeHumidity(hum);
+        gadgetBle.commit();
+      }
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
       Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
-#ifdef SUPPORT_WIFI
-      if (WiFi.status() != WL_CONNECTED) {
+      if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
       publishMQTT();
     }    
-#endif
   }
 
-#ifdef SUPPORT_BLE
-  gadgetBle.handleEvents();
-  delay(3);
-#endif
+  if (activeBLE) {
+    gadgetBle.handleEvents();
+    delay(3);
+  }
 
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();

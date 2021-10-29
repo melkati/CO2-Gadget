@@ -5,14 +5,11 @@
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#if defined SUPPORT_MQTT
 #include <PubSubClient.h>
 
 char charPublish[20];
 PubSubClient mqttClient(espClient);
-#endif
 
-#ifdef SUPPORT_MQTT
 void mqttReconnect() {
   String subscriptionTopic;
   if (!mqttClient.connected()) {
@@ -78,16 +75,19 @@ void publishFloatMQTT(String topic, float payload) {
 }
 
 void initMQTT() {
-#ifdef SUPPORT_MQTT
-  // char mac_address[16];
-  mqttClient.setServer(mqtt_server, 1883);
-  mqttClient.setCallback(callbackMQTT);
-  mqttReconnect();
-#endif
+  if (activeMQTT) {
+    if (!activeWIFI) {
+      activeMQTT = false;
+      return;
+    }
+    mqttClient.setServer(mqtt_server, 1883);
+    mqttClient.setCallback(callbackMQTT);
+    mqttReconnect();
+  }
 }
 
 void publishMQTT() {
-#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
+  if (activeMQTT) {
       if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
         publishIntMQTT("/co2", co2);
         publishFloatMQTT("/temp", temp);
@@ -95,15 +95,14 @@ void publishMQTT() {
       }
       // Serial.print("Free heap: ");
       // Serial.println(ESP.getFreeHeap());
-#endif
+  }
 }
 
 void mqttClientLoop() {
-#if defined SUPPORT_MQTT && defined SUPPORT_WIFI
-  mqttReconnect(); // Make sure MQTT client is connected
-  if (mqttClient.connected()) { 
-    mqttClient.loop();
+  if (activeMQTT) {
+    mqttReconnect(); // Make sure MQTT client is connected
+    if (mqttClient.connected()) {
+      mqttClient.loop();
+    }
   }
-#endif
 }
-#endif
