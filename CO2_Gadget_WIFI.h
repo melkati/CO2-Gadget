@@ -30,6 +30,8 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 void initWifi() {
   char hostName[12];
   uint8_t mac[6];
+  int connectionTries = 0;
+  int maxConnectionTries = 30;
   if (activeWIFI) {
     WiFi.mode(WIFI_STA);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
@@ -39,14 +41,15 @@ void initWifi() {
     sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);
     Serial.printf("Setting hostname %s: %d\n", hostName,
                   WiFi.setHostname(hostName));
-    // For development and troubleshooting:
-    // Serial.printf("WIFI_SSID: %s\t, WIFI_PASSWORD: %s\n", WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
-    // const char *ssid = WIFI_SSID_CREDENTIALS;
-    // const char *pass = WIFI_PW_CREDENTIALS;
-    // WiFi.begin(ssid, password);
     WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
+      ++connectionTries;
+      if (connectionTries==maxConnectionTries) {
+        activeWIFI = false;
+        Serial.printf("Not possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionTries);
+        return;
+      }
       Serial.print(".");
       delay(500);
     }
