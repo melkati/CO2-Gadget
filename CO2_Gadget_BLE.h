@@ -6,7 +6,11 @@ void initBLE() {
   if (activeBLE) {
     gadgetBle.begin();
     Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
-    Serial.println(gadgetBle.getDeviceIdString());
+    // Serial.println(gadgetBle.getDeviceIdString());
+    // if (activeWIFI) {
+    //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+    //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+    // }
   }
 }
 

@@ -1,3 +1,4 @@
+
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -6,14 +7,13 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#include "index.h" //Web page header file
+// #include "index.h" //Web page header file
 
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
 #include "credentials.h"
 #endif
 
 WiFiClient espClient;
-// WiFiMulti WiFiMulti;
 AsyncWebServer server(80);
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
@@ -21,8 +21,6 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
   Serial.print(ssid.c_str());
   Serial.print(", Password = ");
   Serial.println(password.c_str());
-
-  // WiFiMulti.addAP(ssid.c_str(), password.c_str());
   WiFi.begin(ssid.c_str(), password.c_str());
 }
 
@@ -57,15 +55,16 @@ void initWifi() {
     Serial.println(WiFi.localIP());
 
     /*use mdns for host name resolution*/
-    if (!MDNS.begin(rootTopic.c_str())) { // http://esp32.local
+    if (!MDNS.begin(hostName)) { // http://esp32.local
       Serial.println("Error setting up MDNS responder!");
       while (1) {
         delay(1000);
       }
     }
+    // Serial.printf("mDNS responder started. CO2 Gadget web interface at: http:\\\\%s\n",hostName);
     Serial.print(
-        "mDNS responder started. CO2 monitor web interface at: http://");
-    Serial.print(rootTopic);
+        "mDNS responder started. CO2 Gadget web interface at: http://");
+    Serial.print(hostName);
     Serial.println(".local");
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {

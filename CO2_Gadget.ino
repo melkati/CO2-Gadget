@@ -240,11 +240,6 @@ void setup() {
   delay(2000);              // Enjoy the splash screen for 2 seconds
   tft.setTextSize(2);
 #endif
-// #if defined SUPPORT_BLE && defined SUPPORT_WIFI
-//   // Initialize the GadgetBle Library
-//   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-//   gadgetBle.setCurrentWifiSsid(WIFI_SSID);
-// #endif
   initBLE();
   initWifi();
   initSensors();  
