@@ -10,13 +10,6 @@
 #define I2C_SCL 22
 #endif
 
-String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
-String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
-
-bool activeBLE =  true;
-bool activeWIFI = true;
-bool activeMQTT = true;
-
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;

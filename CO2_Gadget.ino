@@ -14,6 +14,13 @@
 /*****************************************************************************************************/
 // clang-format on
 
+String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
+String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
+
+bool activeBLE =  true;
+bool activeWIFI = true;
+bool activeMQTT = true;
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
