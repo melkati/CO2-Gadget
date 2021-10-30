@@ -16,6 +16,8 @@
 
 using namespace Menu;
 
+char tempIPAddress[16];
+
 // namespace Menu {
 //   template<typename T>
 //   class cancelField:public menuField<T> {
@@ -250,6 +252,7 @@ MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,OP("Comp: " BUILD_GIT, doNothing, noEvent)
   ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EDIT("IP: ", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -371,9 +374,12 @@ void menu_init() {
   nav.useUpdateEvent = true;
   mainMenu[0].disable();        // Make battery voltage field unselectable
   informationMenu[0].disable(); // Make information field unselectable
-  informationMenu[1].disable(); // Make information field unselectable
+  informationMenu[1].disable(); 
+  informationMenu[2].disable(); 
+  informationMenu[3].disable(); 
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
-  strcpy(tempTopicMQTT, rootTopic.c_str());
+  strcpy(tempTopicMQTT, rootTopic.c_str());  
+  sprintf(tempIPAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
 }

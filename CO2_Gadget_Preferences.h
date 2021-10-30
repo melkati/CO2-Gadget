@@ -5,7 +5,7 @@ void printPreferences() {
   Serial.println("LOADED PREFERENCES FROM NVR:");
   Serial.printf("customCalibrationValue: %d\n", customCalibrationValue);
   Serial.printf("altidudeMeters:\t %d\n", altidudeMeters);
-  Serial.printf("autoSelfCalibration:\t %b\n", autoSelfCalibration);
+  Serial.printf("autoSelfCalibration:\t %b\n", ((autoSelfCalibration) ? "Enabled":"Disabled"));
   Serial.printf("co2OrangeRange:\t %d\n", co2OrangeRange);
   Serial.printf("co2RedRange:\t %d\n", co2RedRange);
   Serial.printf("TFTBrightness:\t %d\n", TFTBrightness);
