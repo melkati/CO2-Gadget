@@ -44,7 +44,7 @@ void initWifi() {
       ++connectionTries;
       if (connectionTries==maxConnectionTries) {
         activeWIFI = false;
-        Serial.printf("Not possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionTries);
+        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionTries);
         return;
       }
       Serial.print(".");
