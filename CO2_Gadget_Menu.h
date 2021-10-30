@@ -177,6 +177,13 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
+    WiFi.disconnect();
+  } else {
+    initWifi();
+    activeMQTT = preferences.getBool("activeMQTT", false);
+    if ((activeMQTT) && (WiFi.isConnected())) {
+      initMQTT();
+    }
   }
   return proceed;
 }
