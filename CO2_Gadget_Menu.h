@@ -52,6 +52,14 @@ char tempIPAddress[16];
 //   };
 // }//namespace Menu
 
+void fillTempIPAddress() {
+  if ((activeWIFI) && (WiFi.isConnected())) {
+    sprintf(tempIPAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+  } else {
+    sprintf(tempIPAddress, ((activeWIFI) ? "Disconnected" : "Disabled"));
+  }
+}
+
 void showPath(navRoot &root) {
   Serial.print("nav level:");
   Serial.print(root.level);
@@ -185,6 +193,7 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
       initMQTT();
     }
   }
+  fillTempIPAddress();
   return proceed;
 }
 
@@ -383,12 +392,12 @@ void menu_init() {
   nav.useUpdateEvent = true;
   mainMenu[0].disable();        // Make battery voltage field unselectable
   informationMenu[0].disable(); // Make information field unselectable
-  informationMenu[1].disable(); 
-  informationMenu[2].disable(); 
-  informationMenu[3].disable(); 
+  informationMenu[1].disable();
+  informationMenu[2].disable();
+  informationMenu[3].disable();
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
-  strcpy(tempTopicMQTT, rootTopic.c_str());  
-  sprintf(tempIPAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
+  strcpy(tempTopicMQTT, rootTopic.c_str());
+  fillTempIPAddress();  
 }
