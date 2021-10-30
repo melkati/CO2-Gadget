@@ -215,8 +215,10 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetActiveMQTT(eventMask e, navNode &nav, prompt &item) {
-  if (!activeWIFI) {
-    // Make MQTT active field unselectable if WIFI is not active
+  if ((activeWIFI) && (activeMQTT)) {
+    initMQTT();
+  } else {
+    activeMQTT = false;
   }
   return proceed;
 }
