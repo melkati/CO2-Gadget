@@ -136,9 +136,6 @@ int vref = 1100;
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-// Button2 button;
-// #define BUTTON_PIN  35 // Menu button (Press > 1500ms for calibration, press
-// > 500ms to show battery voltage) void longpress(Button2& btn);
 #define LONGCLICK_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
 #define BTN_UP 35 // Pinnumber for button for up/previous and select / enter actions
 #define BTN_DWN 0 // Pinnumber for button for down/next and back / exit actions
@@ -146,7 +143,7 @@ int vref = 1100;
 Button2 btnUp(BTN_UP);   // Initialize the up button
 Button2 btnDwn(BTN_DWN); // Initialize the down button
 
-void button_init() {
+void buttonsInit() {
   btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
 
   btnUp.setClickHandler([](Button2 &b) {
@@ -247,8 +244,8 @@ void setup() {
   initMQTT();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
-  readBatteryVoltage();
-  button_init();
+  // readBatteryVoltage();
+  buttonsInit();
   menu_init();
   Serial.println("Ready.");
 }
