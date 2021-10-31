@@ -182,6 +182,27 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
+result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
+  if (!activeBLE) {
+    activeBLE = false;
+  } else {
+    activeBLE = true;
+  }
+  return proceed;
+}
+
+TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveBLE, exitEvent)
+  ,VALUE("OFF", false, doSetActiveBLE, exitEvent));
+
+MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeBLEMenu)
+  ,OP("To deactivate you", doNothing, noEvent)
+  ,OP("save and reboot", doNothing, noEvent)
+  ,OP("the device.", doNothing, noEvent)
+  ,OP("Work In Progress", doNothing, noEvent)
+  , EXIT("<Back"));
+
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
@@ -259,8 +280,11 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
-  ,SUBMENU(co2RangesConfigMenu), SUBMENU(wifiConfigMenu)
-  ,SUBMENU(mqttConfigMenu), SUBMENU(espnowConfigMenu)
+  ,SUBMENU(co2RangesConfigMenu)
+  ,SUBMENU(bleConfigMenu)
+  ,SUBMENU(wifiConfigMenu)
+  ,SUBMENU(mqttConfigMenu)
+  ,SUBMENU(espnowConfigMenu)
   ,SUBMENU(batteryConfigMenu)
   ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
   ,OP("Save preferences", doSavePreferences, enterEvent)

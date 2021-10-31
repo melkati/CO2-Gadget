@@ -4,13 +4,14 @@ GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 void initBLE() {
   // Initialize the GadgetBle Library
   if (activeBLE) {
+    if (activeWIFI) {
+      gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+      gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+    }
     gadgetBle.begin();
     Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
-    // Serial.println(gadgetBle.getDeviceIdString());
-    // if (activeWIFI) {
-    //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-    //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-    // }
+    Serial.println(gadgetBle.getDeviceIdString());
+   
   }
 }
 
