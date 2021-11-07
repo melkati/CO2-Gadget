@@ -93,7 +93,9 @@ const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if 
 /*****************************************************************************************************/
 // clang-format on
 #define ADC_PIN 34
-int vref = 1100;
+uint16_t vRef = 1100;
+uint16_t batteryDischargedMillivolts = 3500; // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is considered fully charged (100%).
 #include "CO2_Gadget_Battery.h"
 
 // clang-format off

@@ -5,14 +5,18 @@ void printPreferences() {
   Serial.println("LOADED PREFERENCES FROM NVR:");
   Serial.printf("customCalibrationValue: %d\n", customCalibrationValue);
   Serial.printf("altidudeMeters:\t %d\n", altidudeMeters);
-  Serial.printf("autoSelfCalibration:\t %s\n", ((autoSelfCalibration) ? "Enabled":"Disabled"));
+  Serial.printf("autoSelfCalibration:\t %s\n",
+                ((autoSelfCalibration) ? "Enabled" : "Disabled"));
   Serial.printf("co2OrangeRange:\t %d\n", co2OrangeRange);
   Serial.printf("co2RedRange:\t %d\n", co2RedRange);
   Serial.printf("TFTBrightness:\t %d\n", TFTBrightness);
-  Serial.printf("activeBLE is:\t%s\n", ((activeBLE) ? "Enabled":"Disabled"));
-  Serial.printf("activeWIFI:\t%s\n", ((activeWIFI) ? "Enabled":"Disabled"));
-  Serial.printf("activeMQTT:\t%s\n", ((activeMQTT) ? "Enabled":"Disabled"));
+  Serial.printf("activeBLE is:\t%s\n", ((activeBLE) ? "Enabled" : "Disabled"));
+  Serial.printf("activeWIFI:\t%s\n", ((activeWIFI) ? "Enabled" : "Disabled"));
+  Serial.printf("activeMQTT:\t%s\n", ((activeMQTT) ? "Enabled" : "Disabled"));
   Serial.printf("rootTopic:\t%s\n", rootTopic.c_str());
+  Serial.printf("batDischgd:\t %d\n", batteryDischargedMillivolts);
+  Serial.printf("batChargd:\t %d\n", batteryFullyChargedMillivolts);
+  Serial.printf("vRef:\t %d\n", vRef);
 }
 void initPreferences() {
   preferences.begin("CO2-Gadget", false);
@@ -31,6 +35,9 @@ void initPreferences() {
     activeMQTT = false; // If not WiFi active disable MQTT and save
     preferences.putBool("activeMQTT", activeMQTT);
   }
+  batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
+  batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
+  vRef = preferences.getUInt("vRef", 1100);
   preferences.end();
   printPreferences();
 }
@@ -47,5 +54,8 @@ void putPreferences() {
   preferences.putBool("activeWIFI", activeWIFI);
   preferences.putBool("activeMQTT", activeMQTT);
   preferences.putString("rootTopic", rootTopic);
+  preferences.putUInt("batDischgd", batteryDischargedMillivolts);
+  preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
+  preferences.putUInt("vRef", vRef);
   preferences.end();
 }
