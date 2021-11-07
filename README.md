@@ -185,7 +185,7 @@ When creating a pull request, we recommend that you do the following:
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM
-- [ ] Enable use of features without recompiling by activating/deactivating on the buit in menu
+- [x] Enable enable and disable BLE, WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
 
 # Credits
 

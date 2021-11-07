@@ -71,6 +71,9 @@ void initWifi() {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/html", MAIN_page);
     });
+    server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/html", SIMPLE_page);
+    });
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(co2));
     });
