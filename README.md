@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-=======
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 
->>>>>>> upstream/master
 # CO2-Gadget
 
 An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-Now) and many supported sensors.
@@ -22,10 +19,7 @@ I apologize in advance because right now there are almost no documentation. I'll
 
 # Features (WIP)
 
-<<<<<<< HEAD
-=======
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, MH-Z19, Cubic CM1106
->>>>>>> upstream/master
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
 - Management and configuration via on screen menu, serial port and web page
@@ -34,30 +28,18 @@ I apologize in advance because right now there are almost no documentation. I'll
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - Over the air updates OTA
-<<<<<<< HEAD
-- Many popular sensors supported
-=======
->>>>>>> upstream/master
 
 # Supported hardware and build
 
 This project support a large selection of boards, displays and sensors.
 
-<<<<<<< HEAD
-At the moment you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
-=======
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
->>>>>>> upstream/master
 
 Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported.
 
 # Supported sensors
 
-<<<<<<< HEAD
-This project uses the CanAirIO sensorlib library to support as many sensors as possible. Thanks to @hpsaturn and CanAirIO team.
-=======
 This project uses the CanAirIO sensorlib library to support as many sensors as possible out of the box. Thanks to @hpsaturn and CanAirIO team.
->>>>>>> upstream/master
 
 CanAirIO sensorlib right now supports:
 
@@ -78,18 +60,10 @@ NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
 | Sensor model  | UART  | i2c  | Detection mode | Status |  
 |:----------------------- |:-----:|:-----:|:-------:|:----------:|
 | Sensirion SCD30    | --- | Yes | Auto | STABLE |
-<<<<<<< HEAD
-| MHZ19      | Yes | --- | Select | STABLE |
-| CM1106    | Yes | --- | Select | STABLE |
-| SenseAir S8 | Yes | --- | Select | STABLE |
-| Sensirion SCD4x    | --- | Yes | Auto | TESTING |
-
-=======
 | Sensirion SCD4x    | --- | Yes | Auto | TESTING |
 | MHZ19      | Yes | --- | Select | STABLE |
 | CM1106    | Yes | --- | Select | STABLE |
 | SenseAir S8 | Yes | --- | Select | STABLE |
->>>>>>> upstream/master
 
 ### Environmental sensors
 
@@ -109,8 +83,6 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 # Building from repository
 
-<<<<<<< HEAD
-=======
 First you should edit some files with your own data and preferences.
 
 Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
@@ -141,7 +113,6 @@ Save the file platformio.ini
 
 If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
 
->>>>>>> upstream/master
 ### PlatformIO (recommended)
 
 #### Compiling and Installing
@@ -196,12 +167,9 @@ arduino-cli upload --fqbn esp32:esp32:esp32:UploadSpeed=115200 -p /dev/ttyUSB0 b
 
 If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
 
-<<<<<<< HEAD
-=======
 [![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
 
->>>>>>> upstream/master
 When creating a pull request, we recommend that you do the following:
 
 - Clone the repository
@@ -212,13 +180,8 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-<<<<<<< HEAD
-- [ ] Test and enable WIFI feature
-- [ ] Test and enable MQTT feature
-=======
 - [x] Test and enable WIFI feature
 - [x] Test and enable MQTT feature
->>>>>>> upstream/master
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM
