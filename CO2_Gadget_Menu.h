@@ -275,8 +275,8 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,OP("Work In Progress", doNothing, noEvent)
   ,EXIT("<Back"));
 
-result doSetvref(eventMask e, navNode &nav, prompt &item) {
-  battery.begin(vref, voltageDividerRatio, &sigmoidal);
+result doSetvRef(eventMask e, navNode &nav, prompt &item) {
+  battery.begin(vRef, voltageDividerRatio, &sigmoidal);
   delay(10);
   battery_voltage = (float)battery.voltage() / 1000;
   nav.target-> dirty = true;
@@ -285,7 +285,9 @@ result doSetvref(eventMask e, navNode &nav, prompt &item) {
 
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doSetvref, anyEvent, noStyle)
+  ,FIELD(vRef, "Voltage ref", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
+  ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV)", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV)", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
