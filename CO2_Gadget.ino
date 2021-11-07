@@ -202,6 +202,7 @@ void setup() {
   Serial.begin(115200);
   Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
   initPreferences();
+  initBattery();
 #if defined SUPPORT_OLED
   delay(100);
   initDisplayOLED();
