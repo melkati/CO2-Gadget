@@ -1,11 +1,14 @@
+
+// clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                          SETUP OLED DISPLAY FUNCTIONALITY                         *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+// clang-format on
 #if defined SUPPORT_OLED
 #include <U8x8lib.h>
-U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
+U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/U8X8_PIN_NONE);
 char oled_msg[20];
 int displayWidth = 128;
 int displayHeight = 64;
@@ -40,7 +43,7 @@ void showValuesOLED(String text) {
   sprintf(oled_msg, "T:%.1fC RH:%.0f%%", temp, hum);
   u8x8.drawUTF8(0, 6, oled_msg);
 
-#ifdef SUPPORT_WIFI
+  if (activeWIFI) {
   if (WiFiMulti.run() != WL_CONNECTED) {
     u8x8.clearLine(7);
     u8x8.drawUTF8(0, 6, "WiFi unconnected");
@@ -48,9 +51,10 @@ void showValuesOLED(String text) {
     u8x8.clearLine(7);
     IPAddress ip = WiFi.localIP();
     sprintf(oled_msg, "%s", ip.toString().c_str());
-    // sprintf("IP:%u.%u.%u.%u\n", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24);
+    // sprintf("IP:%u.%u.%u.%u\n", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) &
+    // 0xff, ip >> 24);
     u8x8.drawString(0, 7, oled_msg);
   }
-#endif
+  }
 #endif
 }
