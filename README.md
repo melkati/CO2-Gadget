@@ -85,7 +85,7 @@ Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID an
 
 In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
   
-  const  char *mqtt_server = "192.168.1.145";
+  const  char *mqttBroker = "192.168.1.145";
 
 You are done with credentials. Save the file credentials.h
 

@@ -200,7 +200,6 @@ MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,OP("To deactivate you", doNothing, noEvent)
   ,OP("save and reboot", doNothing, noEvent)
   ,OP("the device.", doNothing, noEvent)
-  ,OP("Work In Progress", doNothing, noEvent)
   , EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
@@ -233,21 +232,61 @@ const char *const digit = "0123456789";
 const char *const hexChars MEMMODE = "0123456789ABCDEF";
 const char *const alphaNum[] MEMMODE = {
     " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
-char tempTopicMQTT[] =
-    "                              "; // field will initialize its
-                                      // size by this string length
+const char *const reducedSet[] MEMMODE = {
+    " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
+
+char tempMQTTTopic[] = "                              "; // field will initialize its size by this string length
+char tempMQTTClientId[] = "                              "; 
+char tempMQTTBrokerIP[] = "                              "; 
 
 result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 #ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting MQTT Topic to %s", tempTopicMQTT);
+  Serial.printf("Setting MQTT Topic to %s\n", tempMQTTTopic);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
 #endif  
-  char * p = strchr (tempTopicMQTT, ' ');  // search for space
+  char * p = strchr (tempMQTTTopic, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  rootTopic = tempTopicMQTT;
+  rootTopic = tempMQTTTopic;
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Client Id to %s\n", tempMQTTClientId);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTClientId, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttClientId = tempMQTTClientId;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Broker IP to: %s\n", tempMQTTBrokerIP);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTBrokerIP, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttBroker = tempMQTTBrokerIP;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
   return proceed;
 }
 
@@ -265,11 +304,11 @@ TOGGLE(activeMQTT, activeMQTTMenu, "MQTT Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("OFF", false, doSetActiveMQTT, exitEvent));
 
 MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
-  // ,EDIT(label,target buffer,validators,action,events mask,styles)
   ,SUBMENU(activeMQTTMenu)
-  ,EDIT("Topic", tempTopicMQTT, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
-  ,OP("Work In Progress", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
+  ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)  
+  ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
+  ,EXIT("<Back"));
 
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,OP("Work In Progress", doNothing, noEvent)
@@ -288,7 +327,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
   ,OP("Save preferences", doSavePreferences, enterEvent)
-  , EXIT("<Back"));
+  ,EXIT("<Back"));
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
@@ -422,6 +461,8 @@ void menu_init() {
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
-  strcpy(tempTopicMQTT, rootTopic.c_str());
+  strcpy(tempMQTTTopic, rootTopic.c_str());
+  strcpy(tempMQTTClientId, mqttClientId.c_str());
+  strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
   fillTempIPAddress();  
 }
