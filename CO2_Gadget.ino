@@ -16,6 +16,7 @@
 
 String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
 String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
+String mqttBroker   = MQTT_BROKER_SERVER; // Always defined to be able to configure in menu
 
 bool activeBLE =  true;
 bool activeWIFI = true;
@@ -62,7 +63,6 @@ bool activeMQTT = true;
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if any
 #include "CO2_Gadget_MQTT.h"
 
 // clang-format off

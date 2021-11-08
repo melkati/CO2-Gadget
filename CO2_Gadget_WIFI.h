@@ -86,18 +86,3 @@ void initWifi() {
 #endif
   }
 }
-////===============================================================
-//// This function is called when you open its IP in browser
-////===============================================================
-// void handleRoot() {
-// String s = MAIN_page; //Read HTML contents
-// server.send(200, "text/html", s); //Send web page
-//}
-//
-// void handleADC() {
-// int a = analogRead(A0);
-// String co2Value = String(co2);
-//
-// server.send(200, "text/plane", co2Value); //Send ADC value only to client
-// ajax request
-//}
