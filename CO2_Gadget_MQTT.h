@@ -11,18 +11,25 @@ char charPublish[20];
 PubSubClient mqttClient(espClient);
 
 void mqttReconnect() {
-  String subscriptionTopic;
-  if (!mqttClient.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    subscriptionTopic = rootTopic + "/#";
-    if (mqttClient.connect((mqttClientId).c_str())) {
-      Serial.println("connected");
-      // Subscribe
-      mqttClient.subscribe((subscriptionTopic).c_str());
-      printf("Suscribing to: %s/n", subscriptionTopic.c_str());
-    } else {
-      Serial.println(" not possible to connect");
+  static uint64_t timeStamp = 0;
+  uint16_t secondsBetweenTries = 5;
+  if (millis() - timeStamp > (secondsBetweenTries*1000)) { // Max one try each 5 seconds
+    timeStamp = millis();
+    String subscriptionTopic;
+    if (!mqttClient.connected()) {
+      Serial.print("Attempting MQTT connection...");
+      // Attempt to connect
+      subscriptionTopic = rootTopic + "/#";      
+      if (mqttClient.connect((mqttClientId).c_str())) {
+        Serial.println("connected");
+        // Subscribe
+        mqttClient.subscribe((subscriptionTopic).c_str());
+        printf("Suscribing to: %s/n", subscriptionTopic.c_str());
+      } else {
+        Serial.println(" not possible to connect");
+        Serial.print("Failed to connect. Connection status: ");
+        Serial.println(mqttClient.state()); // Possible States: https://pubsubclient.knolleary.net/api#state
+      }
     }
   }
 }
