@@ -10,13 +10,6 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 ![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
 
-
-# Disclaimer
-
-I just made this repository public not because it's ready for prime time but because some persons will be helping on the first version. My intent was not to present it as the final 1.0 version. Anyway, if you want to start contributing right now you will be very welcome.
-
-I apologize in advance because right now there are almost no documentation. I'll work on it while we get to 1.0 version so I hope it will be finished in few days/weeks. You will be more than welcome if willing to contribute to it.
-
 # Features (WIP)
 
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, MH-Z19, Cubic CM1106
@@ -185,10 +178,30 @@ When creating a pull request, we recommend that you do the following:
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM
-- [ ] Enable use of features without recompiling by activating/deactivating on the buit in menu
+- [x] Enable use of features without recompiling by activating/deactivating on the buit in menu
 
 # Credits
 
-Thanks to all collaborators and [eMariete](https://emariete.com) community for testing and reports.
+Thanks to all collaborators, contributors and [eMariete](https://emariete.com) community for testing and reports.
 
 ---
+## License
+
+    Copyright (C) 2021 CO2 Gadget Contributors
+    Contact: https://emariete.com
+
+    This file is part of the CO2 Gadget firmware.
+
+    The CO2 Gadget firmware is free software: you can
+    redistribute it and/or modify it under the terms of the GNU Lesser General
+    Public License as published by the Free Software Foundation, either version
+    3 of the License, or (at your option) any later version.
+
+    The emariete.com Website and Documentation is distributed in the hope
+    that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with the emariete.com Website and Documentation. If not, see
+    <http://www.gnu.org/licenses/>.
