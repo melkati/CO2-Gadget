@@ -3,3 +3,4 @@
 *.old
 *.bin
 Bootlogo
+platformio.ini
