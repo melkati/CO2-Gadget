@@ -12,8 +12,10 @@ PubSubClient mqttClient(espClient);
 
 void mqttReconnect() {
   static uint64_t timeStamp = 0;
-  uint16_t secondsBetweenTries = 5;
-  if (millis() - timeStamp > (secondsBetweenTries*1000)) { // Max one try each 5 seconds
+  uint16_t secondsBetweenRetries = 15; // Keep trying to connect to MQTT broker for 3 minutes (12 times every 15 secs)
+  uint16_t maxConnectionRetries = 12;
+  uint16_t connectionRetries = 0;
+  if (millis() - timeStamp > (secondsBetweenRetries*1000)) { // Max one try each 5 seconds
     timeStamp = millis();
     String subscriptionTopic;
     if (!mqttClient.connected()) {
@@ -26,9 +28,14 @@ void mqttReconnect() {
         mqttClient.subscribe((subscriptionTopic).c_str());
         printf("Suscribing to: %s/n", subscriptionTopic.c_str());
       } else {
+        ++connectionRetries;
+        mqttClient.setSocketTimeout(2); //Drop timeout to 2 secs for subsecuents tries
         Serial.println(" not possible to connect");
-        Serial.print("Failed to connect. Connection status: ");
-        Serial.println(mqttClient.state()); // Possible States: https://pubsubclient.knolleary.net/api#state
+        Serial.printf("Failed to connect. Connection status:  %d. (%d of %d retries)\n", mqttClient.state(), connectionRetries, maxConnectionRetries); // Possible States: https://pubsubclient.knolleary.net/api#state
+        if (connectionRetries >= maxConnectionRetries) {
+          activeMQTT = false;
+          Serial.println("Max retries to connect to MQTT broker reached, dissabling MQTT...");
+        }
       }
     }
   }
