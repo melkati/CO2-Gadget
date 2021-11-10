@@ -3,4 +3,5 @@
 *.old
 *.bin
 Bootlogo
-platformio.ini
+extra_envs.ini
+
