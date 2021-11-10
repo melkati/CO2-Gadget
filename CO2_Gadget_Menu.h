@@ -314,8 +314,19 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,OP("Work In Progress", doNothing, noEvent)
   ,EXIT("<Back"));
 
+result doSetvRef(eventMask e, navNode &nav, prompt &item) {
+  battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+  delay(10);
+  battery_voltage = (float)battery.voltage() / 1000;
+  nav.target-> dirty = true;
+  return proceed;
+}
+
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
-  ,FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,FIELD(vRef, "Voltage ref", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
+  ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV)", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV)", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
@@ -430,6 +441,7 @@ result idle(menuOut &o, idleEvent e) {
     Serial.flush();
 #endif
     showValuesTFT(co2);
+    readBatteryVoltage();
   } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
     Serial.println("Event idleEnd");
@@ -461,6 +473,7 @@ void menu_init() {
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
+  batteryConfigMenu[0].disable(); // Make information field unselectable
   strcpy(tempMQTTTopic, rootTopic.c_str());
   strcpy(tempMQTTClientId, mqttClientId.c_str());
   strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
