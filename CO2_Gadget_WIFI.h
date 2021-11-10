@@ -27,8 +27,8 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 void initWifi() {
   char hostName[12];
   uint8_t mac[6];
-  int connectionTries = 0;
-  int maxConnectionTries = 30;
+  uint16_t connectionRetries = 0;
+  uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
     WiFi.mode(WIFI_STA);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
@@ -41,10 +41,10 @@ void initWifi() {
     WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
-      ++connectionTries;
-      if (connectionTries==maxConnectionTries) {
+      ++connectionRetries;
+      if (connectionRetries==maxConnectionRetries) {
         activeWIFI = false;
-        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionTries);
+        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
         return;
       }
       Serial.print(".");
@@ -86,18 +86,3 @@ void initWifi() {
 #endif
   }
 }
-////===============================================================
-//// This function is called when you open its IP in browser
-////===============================================================
-// void handleRoot() {
-// String s = MAIN_page; //Read HTML contents
-// server.send(200, "text/html", s); //Send web page
-//}
-//
-// void handleADC() {
-// int a = analogRead(A0);
-// String co2Value = String(co2);
-//
-// server.send(200, "text/plane", co2Value); //Send ADC value only to client
-// ajax request
-//}
