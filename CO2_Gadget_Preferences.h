@@ -17,6 +17,8 @@ void printPreferences() {
   Serial.printf("batDischgd:\t %d\n", batteryDischargedMillivolts);
   Serial.printf("batChargd:\t %d\n", batteryFullyChargedMillivolts);
   Serial.printf("vRef:\t %d\n", vRef);
+  Serial.printf("mqttClientId:\t%s\n", mqttClientId.c_str());
+  Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());  
 }
 void initPreferences() {
   preferences.begin("CO2-Gadget", false);
@@ -31,6 +33,24 @@ void initPreferences() {
   activeWIFI = preferences.getBool("activeWIFI", false);
   activeMQTT = preferences.getBool("activeMQTT", false);
   rootTopic = preferences.getString("rootTopic", rootTopic);
+  mqttClientId = preferences.getString("mqttClientId", mqttClientId);
+  // String tempMQTTBroker = ""; 
+  // strcpy(tempMQTTBroker, mqttBroker);
+  // mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
+  // tempMQTTBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
+  // tempMQTTBroker = preferences.getString("mqttBroker", mqttBroker);
+  // tempMQTTBroker = preferences.getString("mqttBroker", String(mqttBroker));
+  
+  // mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str(); // Result in empty mqttBroker
+  
+  // string tempMQTTBroker(mqttBroker);
+  // mqttBroker = tempMQTTBroker.c_str();
+  mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
+  Serial.printf("\nMQTT BROKER mqttBroker: %s\n\n", mqttBroker.c_str());
+  
+  // mqttBroker = preferences.getString("mqttBroker", mqttBroker);
+  // mqttBroker = preferences.getString("mqttBroker", String(mqttBroker));
+  // strcpy(mqttBroker, tempMQTTBroker);
   if (!activeWIFI) {
     activeMQTT = false; // If not WiFi active disable MQTT and save
     preferences.putBool("activeMQTT", activeMQTT);
@@ -57,5 +77,7 @@ void putPreferences() {
   preferences.putUInt("batDischgd", batteryDischargedMillivolts);
   preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
   preferences.putUInt("vRef", vRef);
+  preferences.putString("mqttClientId", mqttClientId);
+  preferences.putString("mqttBroker", mqttBroker);
   preferences.end();
 }
