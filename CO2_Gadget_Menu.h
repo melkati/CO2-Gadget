@@ -310,9 +310,11 @@ MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
+#if defined SUPPORT_ESPNOW
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,OP("Work In Progress", doNothing, noEvent)
   ,EXIT("<Back"));
+#endif
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   battery.begin(vRef, voltageDividerRatio, &sigmoidal);
@@ -334,7 +336,9 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(bleConfigMenu)
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
+#if defined SUPPORT_ESPNOW  
   ,SUBMENU(espnowConfigMenu)
+#endif  
   ,SUBMENU(batteryConfigMenu)
   ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
   ,OP("Save preferences", doSavePreferences, enterEvent)
