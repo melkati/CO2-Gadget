@@ -18,7 +18,9 @@ void printPreferences() {
   Serial.printf("batChargd:\t %d\n", batteryFullyChargedMillivolts);
   Serial.printf("vRef:\t %d\n", vRef);
   Serial.printf("mqttClientId:\t%s\n", mqttClientId.c_str());
-  Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());  
+  Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());
+  Serial.printf("wifiSSID:\t%s\n", wifiSSID.c_str());
+  Serial.printf("wifiPass:\t%s\n", wifiPass.c_str());
 }
 
 void initPreferences() {
@@ -43,6 +45,8 @@ void initPreferences() {
   batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
   batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
   vRef = preferences.getUInt("vRef", 1100);
+  wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
+  wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
   preferences.end();
   printPreferences();
 }
@@ -64,5 +68,7 @@ void putPreferences() {
   preferences.putUInt("vRef", vRef);
   preferences.putString("mqttClientId", mqttClientId);
   preferences.putString("mqttBroker", mqttBroker);
+  preferences.putString("wifiSSID", wifiSSID);
+  preferences.putString("wifiPass", wifiPass);
   preferences.end();
 }
