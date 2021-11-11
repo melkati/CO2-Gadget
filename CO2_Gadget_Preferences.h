@@ -18,7 +18,8 @@ void printPreferences() {
   Serial.printf("batChargd:\t %d\n", batteryFullyChargedMillivolts);
   Serial.printf("vRef:\t %d\n", vRef);
   Serial.printf("mqttClientId:\t%s\n", mqttClientId.c_str());
-  Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());  
+  Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());
+  Serial.printf("timeToDisplayOff:\t %d\n", timeToDisplayOff);  
 }
 
 void initPreferences() {
@@ -43,6 +44,7 @@ void initPreferences() {
   batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
   batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
   vRef = preferences.getUInt("vRef", 1100);
+  timeToDisplayOff = preferences.getUInt("timeToDisplayOff", 0);
   preferences.end();
   printPreferences();
 }
@@ -64,5 +66,6 @@ void putPreferences() {
   preferences.putUInt("vRef", vRef);
   preferences.putString("mqttClientId", mqttClientId);
   preferences.putString("mqttBroker", mqttBroker);
+  preferences.putString("timeToDisplayOff", timeToDisplayOff);
   preferences.end();
 }
