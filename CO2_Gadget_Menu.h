@@ -170,7 +170,7 @@ TOGGLE(autoSelfCalibration, autoSelfCalibrationMenu, "Autom. Cal.: ", doNothing,
 MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,SUBMENU(autoSelfCalibrationMenu)
   ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
-  ,FIELD(customCalibrationValue, "Custom cal", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
+  ,FIELD(customCalibrationValue, "Custom Cal: ", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
   ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
   ,OP("Test menu event", showEvent, anyEvent), EXIT("<Back"));
 
@@ -359,8 +359,8 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
+  ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
