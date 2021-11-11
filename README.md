@@ -80,31 +80,32 @@ First you should edit some files with your own data and preferences.
 
 Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
 
+  ```
   #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
   #define  WIFI_PW_CREDENTIALS    "some_secret_password"
-
-In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
-  
-  const  char *mqttBroker = "192.168.1.145";
-
-You are done with credentials. Save the file credentials.h
-
+  ```
 If you prefer not to keep sensitive data in a file, you can define this data in environment variables so you don't need a credentials.h file with your secrets. See platformio.ini file for instructions.
+
+If you are planning to use MQTT with authentication, substitute "MyUser" with your own MQTT user and "another_secret_password" with your own MQTT user password:
+
+  ```
+  #define MQTT_USER_CREDENTIAL "MyUser"
+  #define MQTT_PW_CREDENTIAL "another_secret_password"
+  ```
+You are done with credentials. Save the file credentials.h
 
 Now there are some more modifications in different places depending if you are using  PlatformIO of Arduino IDE.
 
 For PlatformIO:
 
-Edit the file platformio.ini. 
+Edit the file platformio.ini
 
-Change the next two lines with the COM port your TTGO T-Display board is connected to:
-
-  upload_port = COMxx
-  monitor_port = COMxx
-
+If you are planning to use MQTT, edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
+  
+  ```
+  -D MQTT_BROKER_SERVER="\"192.168.1.146"\"
+  ```
 Save the file platformio.ini
-
-If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
 
 ### PlatformIO (recommended)
 
@@ -115,8 +116,11 @@ We recommend PlatformIO because it is more easy than Arduino IDE. For this, plea
 ```python
 pio run --target upload
 ```
+If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
 
 ### Arduino
+
+This Arduino instructions are outdated. 
 
 #### Prerequisites
 
