@@ -94,20 +94,25 @@ If you are planning to use MQTT with authentication, substitute "MyUser" with yo
   ```
 You are done with credentials. Save the file credentials.h
 
-Now there are some more modifications in different places depending if you are using  PlatformIO of Arduino IDE.
-
-For PlatformIO:
+### PlatformIO (recommended)
 
 Edit the file platformio.ini
 
+If necessary adjust the upload and minitoring port configuration to match your situation.
+
+  ```
+  upload_speed = 921600
+  monitor_speed = 115200
+  upload_port = COM13
+  monitor_port = COM13
+  ```
+  
 If you are planning to use MQTT, edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
   
   ```
   -D MQTT_BROKER_SERVER="\"192.168.1.146"\"
   ```
 Save the file platformio.ini
-
-### PlatformIO (recommended)
 
 #### Compiling and Installing
 
@@ -120,7 +125,7 @@ If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press
 
 ### Arduino
 
-This Arduino instructions are outdated. 
+These Arduino instructions are outdated. Sou must adapt it to your situation while I write some new instructions.
 
 #### Prerequisites
 
