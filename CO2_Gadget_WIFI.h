@@ -38,7 +38,7 @@ void initWifi() {
     sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);
     Serial.printf("Setting hostname %s: %d\n", hostName,
                   WiFi.setHostname(hostName));
-    WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
+    WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
       ++connectionRetries;
