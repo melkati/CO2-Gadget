@@ -25,7 +25,10 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 
+// Variables to control automatic display off to save power
 uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
+uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000); // Next time display should turn off
+uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -193,12 +196,21 @@ void readingsLoop() {
       nav.idleChanged = true; // Must redraw display as there are new readings
       publishBLE();
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
-      Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
+      // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
       publishMQTT();
     }    
+  }
+}
+
+void displayLoop() {
+  if (timeToDisplayOff>0) {
+    if (millis() > nextTimeToDisplayOff) { 
+    setTFTBrightness(0); // Turn off the display
+    nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff*1000);
+  }
   }
 }
 
@@ -238,10 +250,11 @@ void loop() {
   sensorsLoop();
   processPendingCommands();
   readingsLoop();
-  loopBLE();
+  BLELoop();
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
 #endif
+  displayLoop();
   buttonsLoop();
   nav.poll(); // this device only draws when needed
 }
