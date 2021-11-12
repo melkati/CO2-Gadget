@@ -339,8 +339,8 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,FIELD(TFTBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
-  ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
+  ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
