@@ -334,7 +334,7 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
-  ,FIELD(timeToDisplayOff, "Time To Disp Off", "", 0, 999, 10, 10, doNothing, noEvent, wrapStyle)
+  ,FIELD(timeToDisplayOff, "Time To Disp Off", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle

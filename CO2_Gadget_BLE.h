@@ -24,7 +24,7 @@ void publishBLE() {
       }
 }
 
-void loopBLE() {
+void BLELoop() {
     if (activeBLE) {
         gadgetBle.handleEvents();
         delay(3);
