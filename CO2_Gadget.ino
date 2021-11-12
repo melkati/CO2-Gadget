@@ -26,6 +26,7 @@ bool activeWIFI = true;
 bool activeMQTT = true;
 
 // Variables to control automatic display off to save power
+bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
 uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000); // Next time display should turn off
 uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
@@ -206,11 +207,21 @@ void readingsLoop() {
 }
 
 void displayLoop() {
-  if (timeToDisplayOff>0) {
-    if (millis() > nextTimeToDisplayOff) { 
+  if (timeToDisplayOff == 0)
+    return;
+
+  // If configured not to turn off the display on external power
+  // and actual voltage is more than those of a maximum loaded batery + 5%, do
+  // nothing and return
+  if ((!displayOffOnExternalPower) &&
+      (battery_voltage * 1000 > batteryFullyChargedMillivolts +
+                                    (batteryFullyChargedMillivolts * 5 / 100)))
+    return;
+
+  if (millis() > nextTimeToDisplayOff) {
+    Serial.println("Turning off display to save power");
     setTFTBrightness(0); // Turn off the display
-    nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff*1000);
-  }
+    nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
 
