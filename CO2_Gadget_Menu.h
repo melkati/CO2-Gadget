@@ -376,7 +376,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
-  ,EXIT("<Salir"));
+  ,EXIT("<Exit"));
 
 // clang-format on
 
