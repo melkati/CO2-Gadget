@@ -18,39 +18,20 @@ using namespace Menu;
 
 char tempIPAddress[16];
 
-// namespace Menu {
-//   template<typename T>
-//   class cancelField:public menuField<T> {
-//   protected:
-//     T original;  // to be used when cancelling
-//     bool editing;
-//   public:
-//     cancelField(const menuFieldShadow<T>& shadow): menuField<T>(shadow),
-//     editing(false) {} void doNav(navNode& nav, navCmd cmd) override {
-//       if (!editing) {
-//         original = menuField<T>::target();
-//         editing = true;
-//       }
-//       switch(cmd.cmd) {
-//         case escCmd:
-//           editing = false;
-//           menuField<T>::target() = original;
-//           menuField<T>::tunning = false;
-//           menuField<T>::dirty = true;
-//           // nav.root(options->useUpdateEvent ? updateEvent : enterEvent);
-//           // nav.event(options->useUpdateEvent ? updateEvent : enterEvent);
-//           nav.root->exit();
-//           return;
-//         case enterCmd:
-//           if (menuField<T>::tunning || options->nav2D ||
-//           !menuField<T>::tune())
-//             editing = false;
-//           break;
-//       }
-//       menuField<T>::doNav(nav, cmd);
-//     }
-//   };
-// }//namespace Menu
+// list of allowed characters
+const char *const digit = "0123456789";
+const char *const hexChars MEMMODE = "0123456789ABCDEF";
+const char *const alphaNum[] MEMMODE = {
+    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const reducedSet[] MEMMODE = {
+    " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
+
+// field will initialize its size by this string length
+char tempMQTTTopic[]    = "                              ";
+char tempMQTTClientId[] = "                              ";
+char tempMQTTBrokerIP[] = "                              ";
+char tempWiFiSSID[]     = "                              ";
+char tempWiFiPasswrd[]  = "                              ";
 
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
@@ -172,7 +153,8 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
   ,FIELD(customCalibrationValue, "Custom Cal: ", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
   ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
-  ,OP("Test menu event", showEvent, anyEvent), EXIT("<Back"));
+  ,OP("Test menu event", showEvent, anyEvent),
+  EXIT("<Back"));
 
 MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(autoSelfCalibrationMenu)
@@ -200,7 +182,7 @@ MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,OP("To deactivate you", doNothing, noEvent)
   ,OP("save and reboot", doNothing, noEvent)
   ,OP("the device.", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
@@ -217,27 +199,46 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi SSID to %s\n", tempWiFiSSID);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempWiFiSSID, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  wifiSSID = tempWiFiSSID;  
+  return proceed;
+}
+
+result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi Password to %s\n", tempWiFiPasswrd);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempWiFiPasswrd, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  wifiPass = tempWiFiPasswrd;
+  return proceed;
+}
+
 TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeWIFIMenu)
-  ,OP("Work In Progress", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,SUBMENU(activeWIFIMenu)  
+  ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
+  #ifndef WIFI_PRIVACY
+  ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  #endif
+  ,EXIT("<Back"));
 
-
-// list of allowed characters
-const char *const digit = "0123456789";
-const char *const hexChars MEMMODE = "0123456789ABCDEF";
-const char *const alphaNum[] MEMMODE = {
-    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
-const char *const reducedSet[] MEMMODE = {
-    " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
-
-char tempMQTTTopic[] = "                              "; // field will initialize its size by this string length
-char tempMQTTClientId[] = "                              "; 
-char tempMQTTBrokerIP[] = "                              "; 
 
 result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 #ifndef DEBUG_ARDUINOMENU
@@ -306,7 +307,7 @@ TOGGLE(activeMQTT, activeMQTTMenu, "MQTT Enable: ", doNothing,noEvent, wrapStyle
 MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeMQTTMenu)
   ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
-  ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)  
+  ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)
   ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
@@ -325,10 +326,10 @@ result doSetvRef(eventMask e, navNode &nav, prompt &item) {
 }
 
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,FIELD(vRef, "Voltage ref", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
-  ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV)", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
-  ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV)", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(battery_voltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
+  ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
@@ -481,5 +482,7 @@ void menu_init() {
   strcpy(tempMQTTTopic, rootTopic.c_str());
   strcpy(tempMQTTClientId, mqttClientId.c_str());
   strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
+  strcpy(tempWiFiSSID, wifiSSID.c_str());
+  strcpy(tempWiFiPasswrd, wifiPass.c_str());
   fillTempIPAddress();  
 }

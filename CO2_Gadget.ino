@@ -14,9 +14,12 @@
 /*****************************************************************************************************/
 // clang-format on
 
-String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
-String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
-String mqttBroker   = MQTT_BROKER_SERVER; // Always defined to be able to configure in menu
+// Next data always defined to be able to configure in menu
+String rootTopic    = UNITHOSTNAME;
+String mqttClientId = UNITHOSTNAME;
+String mqttBroker   = MQTT_BROKER_SERVER;
+String wifiSSID     = WIFI_SSID_CREDENTIALS;
+String wifiPass     = WIFI_PW_CREDENTIALS;
 
 bool activeBLE =  true;
 bool activeWIFI = true;
