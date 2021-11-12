@@ -70,7 +70,7 @@ void putPreferences() {
   preferences.putUInt("vRef", vRef);
   preferences.putString("mqttClientId", mqttClientId);
   preferences.putString("mqttBroker", mqttBroker);
-  preferences.putString("timeToDisplayOff", timeToDisplayOff);
+  preferences.putUInt("timeToDisplayOff", timeToDisplayOff);
   preferences.putString("wifiSSID", wifiSSID);
   preferences.putString("wifiPass", wifiPass);
   preferences.end();

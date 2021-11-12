@@ -25,6 +25,8 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 
+uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
