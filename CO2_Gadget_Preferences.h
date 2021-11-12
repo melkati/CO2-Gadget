@@ -19,7 +19,8 @@ void printPreferences() {
   Serial.printf("vRef:\t %d\n", vRef);
   Serial.printf("mqttClientId:\t%s\n", mqttClientId.c_str());
   Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());
-  Serial.printf("timeToDisplayOff:\t %d\n", timeToDisplayOff);  
+  Serial.printf("timeToDisplayOff:\t %d\n", timeToDisplayOff);
+  Serial.printf("displayOffOnExternalPower:\t%s\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"));
   Serial.printf("wifiSSID:\t%s\n", wifiSSID.c_str());
   Serial.printf("wifiPass:\t%s\n", wifiPass.c_str());
 }
@@ -47,6 +48,7 @@ void initPreferences() {
   batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
   vRef = preferences.getUInt("vRef", 1100);
   timeToDisplayOff = preferences.getUInt("timeToDisplayOff", 0);
+  displayOffOnExternalPower = preferences.getBool("displayOffOnExternalPower", false);
   wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
   wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
   preferences.end();
@@ -71,6 +73,7 @@ void putPreferences() {
   preferences.putString("mqttClientId", mqttClientId);
   preferences.putString("mqttBroker", mqttBroker);
   preferences.putUInt("timeToDisplayOff", timeToDisplayOff);
+  preferences.putBool("displayOffOnExternalPower", displayOffOnExternalPower);
   preferences.putString("wifiSSID", wifiSSID);
   preferences.putString("wifiPass", wifiPass);
   preferences.end();

@@ -332,9 +332,15 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
+
+TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doNothing, noEvent)
+  ,VALUE("OFF", false, doNothing, noEvent));
+
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
-  ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
-  ,FIELD(timeToDisplayOff, "Time To Disp Off", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
+  ,FIELD(TFTBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,SUBMENU(activeDisplayOffMenuOnBattery)
+  ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
