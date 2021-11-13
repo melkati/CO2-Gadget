@@ -169,6 +169,7 @@ result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
     activeBLE = false;
   } else {
     activeBLE = true;
+    initBLE();
   }
   return proceed;
 }
@@ -179,7 +180,7 @@ TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing,noEvent, wrapStyle
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
-  ,OP("To deactivate you", doNothing, noEvent)
+  ,OP("To take effect", doNothing, noEvent)
   ,OP("save and reboot", doNothing, noEvent)
   ,OP("the device.", doNothing, noEvent)
   ,EXIT("<Back"));
