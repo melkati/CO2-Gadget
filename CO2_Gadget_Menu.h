@@ -167,8 +167,10 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
   if (!activeBLE) {
     activeBLE = false;
+    disableBLE();
   } else {
     activeBLE = true;
+    enableBLE();
     initBLE();
   }
   return proceed;
@@ -188,7 +190,7 @@ MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
-    WiFi.disconnect();
+    disableWiFi();
   } else {
     initWifi();
     activeMQTT = preferences.getBool("activeMQTT", false);

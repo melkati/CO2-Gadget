@@ -24,6 +24,12 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
   WiFi.begin(ssid.c_str(), password.c_str());
 }
 
+void disableWiFi() {
+    WiFi.disconnect(true);  // Disconnect from the network
+    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    Serial.println("WiFi dissabled!");
+}
+
 void initWifi() {
   char hostName[12];
   uint8_t mac[6];
@@ -31,6 +37,7 @@ void initWifi() {
   uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
     WiFi.mode(WIFI_STA);
+    WiFi.setSleep(true);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.macAddress(mac);
     Serial.print("rootTopic: ");
@@ -84,5 +91,9 @@ void initWifi() {
 #ifdef SUPPORT_MQTT
     mqttClientId = hostName;
 #endif
+  } 
+  else 
+  {
+    disableWiFi();
   }
 }
