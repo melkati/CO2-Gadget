@@ -248,9 +248,6 @@ void setup() {
 #endif
   buttonsInit();
   menu_init();  
-  activeBLE =  true;
-  // activeWIFI = false;
-  // activeMQTT = false;
   initBLE();
   initWifi();
   initSensors();  
@@ -269,7 +266,7 @@ void loop() {
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
 #endif
-  // displayLoop();
+  displayLoop();
   buttonsLoop();
   nav.poll(); // this device only draws when needed
 }
