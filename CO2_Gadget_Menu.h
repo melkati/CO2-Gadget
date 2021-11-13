@@ -32,7 +32,7 @@ char tempMQTTClientId[] = "                              ";
 char tempMQTTBrokerIP[] = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
-char tempMDNSName[]     = "                              ";
+char tempHostName[]     = "                              ";
 
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
@@ -236,7 +236,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  
-  ,EDIT("Host:", tempMDNSName, alphaNum, doNothing, noEvent, wrapStyle)
+  ,EDIT("Host:", tempHostName, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 
@@ -495,6 +495,6 @@ void menu_init() {
   strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
   strcpy(tempWiFiSSID, wifiSSID.c_str());
   strcpy(tempWiFiPasswrd, wifiPass.c_str());
-  strcpy(tempMDNSName, mDNSName.c_str());
+  strcpy(tempHostName, hostName.c_str());
   fillTempIPAddress();  
 }

@@ -16,8 +16,6 @@
 WiFiClient espClient;
 AsyncWebServer server(80);
 
-char hostName[12];
-
 void onWifiSettingsChanged(std::string ssid, std::string password) {
   Serial.print("WifiSetup: SSID = ");
   Serial.print(ssid.c_str());
@@ -28,7 +26,7 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
 
 void initMDNS() {
   /*use mdns for host name resolution*/
-  if (!MDNS.begin(hostName)) { // http://esp32.local
+  if (!MDNS.begin(hostName.c_str())) { // http://esp32.local
     Serial.println("Error setting up MDNS responder!");
     while (1) {
       delay(1000);
@@ -53,12 +51,8 @@ void initWifi() {
     WiFi.mode(WIFI_STA);
     WiFi.setSleep(true);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    WiFi.macAddress(mac);
-    Serial.print("rootTopic: ");
-    Serial.println(rootTopic);
-    sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);    
-    Serial.printf("Setting hostname %s: %d\n", hostName,
-                  WiFi.setHostname(hostName));
+    Serial.printf("Setting hostname %s: %d\n", hostName.c_str(),
+                  WiFi.setHostname(hostName.c_str()));
     mDNSName = WiFi.getHostname();
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
     Serial.print("Connecting to WiFi");
