@@ -25,6 +25,8 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 
+bool bleInitialized = false;
+
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
@@ -244,15 +246,17 @@ void setup() {
   delay(2000);              // Enjoy the splash screen for 2 seconds
   tft.setTextSize(2);
 #endif
+  buttonsInit();
+  menu_init();  
+  activeBLE =  true;
+  // activeWIFI = false;
+  // activeMQTT = false;
   initBLE();
   initWifi();
   initSensors();  
   initMQTT();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
-  // readBatteryVoltage();
-  buttonsInit();
-  menu_init();
   Serial.println("Ready.");
 }
 
@@ -265,7 +269,7 @@ void loop() {
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
 #endif
-  displayLoop();
+  // displayLoop();
   buttonsLoop();
   nav.poll(); // this device only draws when needed
 }

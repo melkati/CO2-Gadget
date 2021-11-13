@@ -11,8 +11,8 @@ void printPreferences() {
   Serial.printf("co2RedRange:\t %d\n", co2RedRange);
   Serial.printf("TFTBrightness:\t %d\n", TFTBrightness);
   Serial.printf("activeBLE is:\t%s\n", ((activeBLE) ? "Enabled" : "Disabled"));
-  Serial.printf("activeWIFI:\t%s\n", ((activeWIFI) ? "Enabled" : "Disabled"));
-  Serial.printf("activeMQTT:\t%s\n", ((activeMQTT) ? "Enabled" : "Disabled"));
+  Serial.printf("activeWIFI is:\t%s\n", ((activeWIFI) ? "Enabled" : "Disabled"));
+  Serial.printf("activeMQTT is:\t%s\n", ((activeMQTT) ? "Enabled" : "Disabled"));
   Serial.printf("rootTopic:\t%s\n", rootTopic.c_str());
   Serial.printf("batDischgd:\t %d\n", batteryDischargedMillivolts);
   Serial.printf("batChargd:\t %d\n", batteryFullyChargedMillivolts);

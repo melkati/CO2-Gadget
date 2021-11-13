@@ -12,7 +12,7 @@ void IRAM_ATTR buttonUpISR() {
 
 void buttonsInit() {
   // Interrupt Service Routine to turn on the display on button UP press 
-  attachInterrupt(BTN_UP, buttonUpISR, FALLING);
+  attachInterrupt(BTN_UP, buttonUpISR, RISING);
   
   btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
 
