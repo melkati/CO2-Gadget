@@ -20,6 +20,7 @@ String mqttClientId = UNITHOSTNAME;
 String mqttBroker   = MQTT_BROKER_SERVER;
 String wifiSSID     = WIFI_SSID_CREDENTIALS;
 String wifiPass     = WIFI_PW_CREDENTIALS;
+String mDNSName     = "Unset";
 
 bool activeBLE =  true;
 bool activeWIFI = true;
@@ -248,12 +249,12 @@ void setup() {
   delay(2000);              // Enjoy the splash screen for 2 seconds
   tft.setTextSize(2);
 #endif
-  buttonsInit();
-  menu_init();  
   initBLE();
   initWifi();
   initSensors();  
   initMQTT();
+  menu_init();
+  buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
   Serial.println("Ready.");
