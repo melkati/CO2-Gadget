@@ -3,7 +3,7 @@ GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 
 void initBLE() {
   if (activeBLE) {
-    if (bleInitialized) return; // If BLE is already initialized no nothing and return
+    if (bleInitialized) return; // If BLE is already initialized do nothing and return
     // if (activeWIFI) {
     //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
     //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
@@ -29,4 +29,14 @@ void BLELoop() {
     gadgetBle.handleEvents();
     delay(3);
   }
+}
+
+void enableBLE() {
+  if (!bleInitialized) return; // If BLE is NOT initialized do nothing and return
+  esp_bt_controller_enable(ESP_BT_MODE_BLE);
+}
+
+void disableBLE() {
+  if (!bleInitialized) return; // If BLE is NOT initialized do nothing and return
+  btStop();
 }
