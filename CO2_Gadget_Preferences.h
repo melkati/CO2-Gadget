@@ -22,7 +22,9 @@ void printPreferences() {
   Serial.printf("tToDispOff:\t %d\n", timeToDisplayOff);
   Serial.printf("dispOffOnExP:\t%s\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"));
   Serial.printf("wifiSSID:\t%s\n", wifiSSID.c_str());
+  #ifndef WIFI_PRIVACY
   Serial.printf("wifiPass:\t%s\n", wifiPass.c_str());
+  #endif
 }
 
 void initPreferences() {

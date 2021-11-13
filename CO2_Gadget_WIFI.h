@@ -56,9 +56,10 @@ void initWifi() {
     WiFi.macAddress(mac);
     Serial.print("rootTopic: ");
     Serial.println(rootTopic);
-    sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);
+    sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);    
     Serial.printf("Setting hostname %s: %d\n", hostName,
                   WiFi.setHostname(hostName));
+    mDNSName = WiFi.getHostname();
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
@@ -74,6 +75,7 @@ void initWifi() {
     Serial.println("");
     Serial.print("WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
+    initMDNS();
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/html", MAIN_page);

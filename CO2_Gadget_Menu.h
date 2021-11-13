@@ -32,6 +32,7 @@ char tempMQTTClientId[] = "                              ";
 char tempMQTTBrokerIP[] = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
+char tempMDNSName[]     = "                              ";
 
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
@@ -165,25 +166,20 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
-  if (!activeBLE) {
-    activeBLE = false;
-    disableBLE();
-  } else {
-    activeBLE = true;
-    enableBLE();
-    initBLE();
-  }
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("activeBLE", activeBLE);
+  preferences.end();
   return proceed;
 }
 
-TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing,noEvent, wrapStyle
+TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveBLE, exitEvent)
   ,VALUE("OFF", false, doSetActiveBLE, exitEvent));
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
   ,OP("To take effect", doNothing, noEvent)
-  ,OP("save and reboot", doNothing, noEvent)
+  ,OP("you must reboot", doNothing, noEvent)
   ,OP("the device.", doNothing, noEvent)
   ,EXIT("<Back"));
 
@@ -239,7 +235,8 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
   #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
-  #endif
+  #endif  
+  ,EDIT("Host:", tempMDNSName, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 
@@ -361,9 +358,9 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp: " BUILD_GIT, doNothing, noEvent)
-  ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
-  ,EDIT("IP: ", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,OP("Comp:" BUILD_GIT, doNothing, noEvent)
+  ,OP("Version:" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EDIT("IP:", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -498,5 +495,6 @@ void menu_init() {
   strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
   strcpy(tempWiFiSSID, wifiSSID.c_str());
   strcpy(tempWiFiPasswrd, wifiPass.c_str());
+  strcpy(tempMDNSName, mDNSName.c_str());
   fillTempIPAddress();  
 }
