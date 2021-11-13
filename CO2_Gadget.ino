@@ -15,6 +15,7 @@
 // clang-format on
 
 // Next data always defined to be able to configure in menu
+String hostName     = UNITHOSTNAME;
 String rootTopic    = UNITHOSTNAME;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker   = MQTT_BROKER_SERVER;

@@ -2,6 +2,7 @@
 Preferences preferences;
 
 void printPreferences() {
+  Serial.println("");
   Serial.println("LOADED PREFERENCES FROM NVR:");
   Serial.printf("customCalibrationValue: %d\n", customCalibrationValue);
   Serial.printf("altidudeMeters:\t %d\n", altidudeMeters);
@@ -25,6 +26,8 @@ void printPreferences() {
   #ifndef WIFI_PRIVACY
   Serial.printf("wifiPass:\t%s\n", wifiPass.c_str());
   #endif
+  Serial.printf("hostName:\t%s\n", hostName.c_str());
+  Serial.println("");
 }
 
 void initPreferences() {
@@ -53,6 +56,7 @@ void initPreferences() {
   displayOffOnExternalPower = preferences.getBool("dispOffOnExP", false);
   wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
   wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
+  hostName = preferences.getString("hostName", hostName).c_str();
   preferences.end();
   printPreferences();
 }
@@ -79,5 +83,6 @@ void putPreferences() {
   preferences.putBool("dispOffOnExP", displayOffOnExternalPower);
   preferences.putString("wifiSSID", wifiSSID);
   preferences.putString("wifiPass", wifiPass);
+  preferences.putString("hostName", hostName);
   preferences.end();
 }

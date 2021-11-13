@@ -23,6 +23,8 @@ void mqttReconnect() {
       // Attempt to connect            
       if (mqttClient.connect((mqttClientId).c_str())) {
         Serial.println("connected");
+        Serial.print("rootTopic: ");
+        Serial.println(rootTopic);
         // Subscribe
         subscriptionTopic = rootTopic + "/calibration";
         mqttClient.subscribe((subscriptionTopic).c_str());
