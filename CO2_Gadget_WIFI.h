@@ -7,7 +7,7 @@
 /*****************************************************************************************************/
 // clang-format on
 
-// #include "index.h" //Web page header file
+#include "index.h" //Web page header file
 
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
 #include "credentials.h"
@@ -15,6 +15,8 @@
 
 WiFiClient espClient;
 AsyncWebServer server(80);
+
+char hostName[12];
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
   Serial.print("WifiSetup: SSID = ");
@@ -24,6 +26,19 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
   WiFi.begin(ssid.c_str(), password.c_str());
 }
 
+void initMDNS() {
+  /*use mdns for host name resolution*/
+  if (!MDNS.begin(hostName)) { // http://esp32.local
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.print("mDNS responder started. CO2 Gadget web interface at: http://");
+  Serial.print(hostName);
+  Serial.println(".local");
+}
+
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
     WiFi.mode(WIFI_OFF);    // Switch WiFi off
@@ -31,7 +46,6 @@ void disableWiFi() {
 }
 
 void initWifi() {
-  char hostName[12];
   uint8_t mac[6];
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
@@ -61,23 +75,23 @@ void initWifi() {
     Serial.print("WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
 
-    /*use mdns for host name resolution*/
-    if (!MDNS.begin(hostName)) { // http://esp32.local
-      Serial.println("Error setting up MDNS responder!");
-      while (1) {
-        delay(1000);
-      }
-    }
-    // Serial.printf("mDNS responder started. CO2 Gadget web interface at: http:\\\\%s\n",hostName);
-    Serial.print(
-        "mDNS responder started. CO2 Gadget web interface at: http://");
-    Serial.print(hostName);
-    Serial.println(".local");
-
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", "CO2: " + String(co2) + " PPM");
-      //  server.on("/", handleRoot);      //This is display page
-      //  server.on("/readADC", handleADC);//To get update of ADC Value only
+      request->send(200, "text/html", MAIN_page);
+    });
+    server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/html", SIMPLE_page);
+    });
+    server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/plain", String(co2));
+    });
+    server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/plain", String(temp));
+    });
+    server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/plain", String(hum));
+    });
+    server.onNotFound([](AsyncWebServerRequest *request) {
+      request->send(400, "text/plain", "Not found");
     });
 
 #ifdef SUPPORT_OTA
