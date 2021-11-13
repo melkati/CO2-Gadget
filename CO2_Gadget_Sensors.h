@@ -54,7 +54,7 @@ void initSensors() {
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(true);                     // [optional] debug mode
+  sensors.setDebugMode(false);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
   // offset

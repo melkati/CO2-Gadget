@@ -39,12 +39,19 @@ void initMDNS() {
   Serial.println(".local");
 }
 
+void disableWiFi() {
+    WiFi.disconnect(true);  // Disconnect from the network
+    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    Serial.println("WiFi dissabled!");
+}
+
 void initWifi() {
   uint8_t mac[6];
-  int connectionTries = 0;
-  int maxConnectionTries = 30;
+  uint16_t connectionRetries = 0;
+  uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
     WiFi.mode(WIFI_STA);
+    WiFi.setSleep(true);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.macAddress(mac);
     Serial.print("rootTopic: ");
@@ -52,13 +59,13 @@ void initWifi() {
     sprintf(hostName, "%s-%x%x", rootTopic.c_str(), mac[4], mac[5]);
     Serial.printf("Setting hostname %s: %d\n", hostName,
                   WiFi.setHostname(hostName));
-    WiFi.begin(WIFI_SSID_CREDENTIALS, WIFI_PW_CREDENTIALS);
+    WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
-      ++connectionTries;
-      if (connectionTries==maxConnectionTries) {
+      ++connectionRetries;
+      if (connectionRetries==maxConnectionRetries) {
         activeWIFI = false;
-        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionTries);
+        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
         return;
       }
       Serial.print(".");
@@ -98,5 +105,9 @@ void initWifi() {
 #ifdef SUPPORT_MQTT
     mqttClientId = hostName;
 #endif
+  } 
+  else 
+  {
+    disableWiFi();
   }
 }
