@@ -44,7 +44,6 @@ void disableWiFi() {
 }
 
 void initWifi() {
-  uint8_t mac[6];
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
