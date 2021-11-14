@@ -3,3 +3,5 @@
 *.old
 *.bin
 Bootlogo
+extra_envs.ini
+

@@ -46,6 +46,10 @@ void onSensorDataOk() {
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
+  
+  // Turn On the Sensor (reserved for future use)
+  digitalWrite(ENABLE_PIN, ENABLE_PIN_HIGH);
+
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
 
@@ -54,7 +58,7 @@ void initSensors() {
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(true);                     // [optional] debug mode
+  sensors.setDebugMode(false);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
   // offset

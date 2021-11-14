@@ -10,13 +10,6 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 ![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
 
-
-# Disclaimer
-
-I just made this repository public not because it's ready for prime time but because some persons will be helping on the first version. My intent was not to present it as the final 1.0 version. Anyway, if you want to start contributing right now you will be very welcome.
-
-I apologize in advance because right now there are almost no documentation. I'll work on it while we get to 1.0 version so I hope it will be finished in few days/weeks. You will be more than welcome if willing to contribute to it.
-
 # Features (WIP)
 
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, MH-Z19, Cubic CM1106
@@ -87,33 +80,39 @@ First you should edit some files with your own data and preferences.
 
 Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
 
+  ```
   #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
   #define  WIFI_PW_CREDENTIALS    "some_secret_password"
-
-In the same credentials.h file edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
-  
-  const  char *mqtt_server = "192.168.1.145";
-
-You are done with credentials. Save the file credentials.h
-
+  ```
 If you prefer not to keep sensitive data in a file, you can define this data in environment variables so you don't need a credentials.h file with your secrets. See platformio.ini file for instructions.
 
-Now there are some more modifications in different places depending if you are using  PlatformIO of Arduino IDE.
+If you are planning to use MQTT with authentication, substitute "MyUser" with your own MQTT user and "another_secret_password" with your own MQTT user password:
 
-For PlatformIO:
-
-Edit the file platformio.ini. 
-
-Change the next two lines with the COM port your TTGO T-Display board is connected to:
-
-  upload_port = COMxx
-  monitor_port = COMxx
-
-Save the file platformio.ini
-
-If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
+  ```
+  #define MQTT_USER_CREDENTIAL "MyUser"
+  #define MQTT_PW_CREDENTIAL "another_secret_password"
+  ```
+You are done with credentials. Save the file credentials.h
 
 ### PlatformIO (recommended)
+
+Edit the file platformio.ini
+
+If necessary adjust the upload and minitoring port configuration to match your situation.
+
+  ```
+  upload_speed = 921600
+  monitor_speed = 115200
+  upload_port = COM13
+  monitor_port = COM13
+  ```
+  
+If you are planning to use MQTT, edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
+  
+  ```
+  -D MQTT_BROKER_SERVER="\"192.168.1.146"\"
+  ```
+Save the file platformio.ini
 
 #### Compiling and Installing
 
@@ -122,8 +121,11 @@ We recommend PlatformIO because it is more easy than Arduino IDE. For this, plea
 ```python
 pio run --target upload
 ```
+If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
 
 ### Arduino
+
+These Arduino instructions are outdated. Sou must adapt it to your situation while I write some new instructions.
 
 #### Prerequisites
 
@@ -185,10 +187,30 @@ When creating a pull request, we recommend that you do the following:
 - [ ] Test and enable ESP-Now feature
 - [ ] Test and enable OLED Display support
 - [ ] Implement full support for PM
-- [ ] Enable use of features without recompiling by activating/deactivating on the buit in menu
+- [x] Enable enable and disable BLE, WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
 
 # Credits
 
-Thanks to all collaborators and [eMariete](https://emariete.com) community for testing and reports.
+Thanks to all collaborators, contributors and [eMariete](https://emariete.com) community for testing and reports.
 
 ---
+## License
+
+    Copyright (C) 2021 CO2 Gadget Contributors
+    Contact: https://emariete.com
+
+    This file is part of the CO2 Gadget firmware.
+
+    The CO2 Gadget firmware is free software: you can
+    redistribute it and/or modify it under the terms of the GNU Lesser General
+    Public License as published by the Free Software Foundation, either version
+    3 of the License, or (at your option) any later version.
+
+    The emariete.com Website and Documentation is distributed in the hope
+    that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with the emariete.com Website and Documentation. If not, see
+    <http://www.gnu.org/licenses/>.

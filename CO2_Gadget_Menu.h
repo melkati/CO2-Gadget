@@ -18,39 +18,21 @@ using namespace Menu;
 
 char tempIPAddress[16];
 
-// namespace Menu {
-//   template<typename T>
-//   class cancelField:public menuField<T> {
-//   protected:
-//     T original;  // to be used when cancelling
-//     bool editing;
-//   public:
-//     cancelField(const menuFieldShadow<T>& shadow): menuField<T>(shadow),
-//     editing(false) {} void doNav(navNode& nav, navCmd cmd) override {
-//       if (!editing) {
-//         original = menuField<T>::target();
-//         editing = true;
-//       }
-//       switch(cmd.cmd) {
-//         case escCmd:
-//           editing = false;
-//           menuField<T>::target() = original;
-//           menuField<T>::tunning = false;
-//           menuField<T>::dirty = true;
-//           // nav.root(options->useUpdateEvent ? updateEvent : enterEvent);
-//           // nav.event(options->useUpdateEvent ? updateEvent : enterEvent);
-//           nav.root->exit();
-//           return;
-//         case enterCmd:
-//           if (menuField<T>::tunning || options->nav2D ||
-//           !menuField<T>::tune())
-//             editing = false;
-//           break;
-//       }
-//       menuField<T>::doNav(nav, cmd);
-//     }
-//   };
-// }//namespace Menu
+// list of allowed characters
+const char *const digit = "0123456789";
+const char *const hexChars MEMMODE = "0123456789ABCDEF";
+const char *const alphaNum[] MEMMODE = {
+    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const reducedSet[] MEMMODE = {
+    " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
+
+// field will initialize its size by this string length
+char tempMQTTTopic[]    = "                              ";
+char tempMQTTClientId[] = "                              ";
+char tempMQTTBrokerIP[] = "                              ";
+char tempWiFiSSID[]     = "                              ";
+char tempWiFiPasswrd[]  = "                              ";
+char tempHostName[]     = "                              ";
 
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
@@ -170,9 +152,10 @@ TOGGLE(autoSelfCalibration, autoSelfCalibrationMenu, "Autom. Cal.: ", doNothing,
 MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,SUBMENU(autoSelfCalibrationMenu)
   ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
-  ,FIELD(customCalibrationValue, "Custom cal", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
+  ,FIELD(customCalibrationValue, "Custom Cal: ", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
   ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
-  ,OP("Test menu event", showEvent, anyEvent), EXIT("<Back"));
+  ,OP("Test menu event", showEvent, anyEvent),
+  EXIT("<Back"));
 
 MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(autoSelfCalibrationMenu)
@@ -183,30 +166,27 @@ MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
-  if (!activeBLE) {
-    activeBLE = false;
-  } else {
-    activeBLE = true;
-  }
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("activeBLE", activeBLE);
+  preferences.end();
   return proceed;
 }
 
-TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing,noEvent, wrapStyle
+TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveBLE, exitEvent)
   ,VALUE("OFF", false, doSetActiveBLE, exitEvent));
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
-  ,OP("To deactivate you", doNothing, noEvent)
-  ,OP("save and reboot", doNothing, noEvent)
+  ,OP("To take effect", doNothing, noEvent)
+  ,OP("you must reboot", doNothing, noEvent)
   ,OP("the device.", doNothing, noEvent)
-  ,OP("Work In Progress", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
-    WiFi.disconnect();
+    disableWiFi();
   } else {
     initWifi();
     activeMQTT = preferences.getBool("activeMQTT", false);
@@ -218,36 +198,96 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi SSID to %s\n", tempWiFiSSID);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempWiFiSSID, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  wifiSSID = tempWiFiSSID;  
+  return proceed;
+}
+
+result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi Password to %s\n", tempWiFiPasswrd);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempWiFiPasswrd, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  wifiPass = tempWiFiPasswrd;
+  return proceed;
+}
+
 TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeWIFIMenu)
-  ,OP("Work In Progress", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,SUBMENU(activeWIFIMenu)  
+  ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
+  #ifndef WIFI_PRIVACY
+  ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  #endif  
+  ,EDIT("Host:", tempHostName, alphaNum, doNothing, noEvent, wrapStyle)
+  ,EXIT("<Back"));
 
-
-// list of allowed characters
-const char *const digit = "0123456789";
-const char *const hexChars MEMMODE = "0123456789ABCDEF";
-const char *const alphaNum[] MEMMODE = {
-    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
-char tempTopicMQTT[] =
-    "                              "; // field will initialize its
-                                      // size by this string length
 
 result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 #ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting MQTT Topic to %s", tempTopicMQTT);
+  Serial.printf("Setting MQTT Topic to %s\n", tempMQTTTopic);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
 #endif  
-  char * p = strchr (tempTopicMQTT, ' ');  // search for space
+  char * p = strchr (tempMQTTTopic, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  rootTopic = tempTopicMQTT;
+  rootTopic = tempMQTTTopic;
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Client Id to %s\n", tempMQTTClientId);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTClientId, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttClientId = tempMQTTClientId;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Broker IP to: %s\n", tempMQTTBrokerIP);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTBrokerIP, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttBroker = tempMQTTBrokerIP;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
   return proceed;
 }
 
@@ -265,18 +305,42 @@ TOGGLE(activeMQTT, activeMQTTMenu, "MQTT Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("OFF", false, doSetActiveMQTT, exitEvent));
 
 MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
-  // ,EDIT(label,target buffer,validators,action,events mask,styles)
   ,SUBMENU(activeMQTTMenu)
-  ,EDIT("Topic", tempTopicMQTT, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
-  ,OP("Work In Progress", doNothing, noEvent)
-  , EXIT("<Back"));
+  ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
+  ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)
+  ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
+  ,EXIT("<Back"));
 
+#if defined SUPPORT_ESPNOW
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,OP("Work In Progress", doNothing, noEvent)
   ,EXIT("<Back"));
+#endif
+
+result doSetvRef(eventMask e, navNode &nav, prompt &item) {
+  battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+  delay(10);
+  battery_voltage = (float)battery.voltage() / 1000;
+  nav.target-> dirty = true;
+  return proceed;
+}
 
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
-  ,FIELD(vref, "Voltage ref", "", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(battery_voltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
+  ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
+  ,EXIT("<Back"));
+
+
+TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doNothing, noEvent)
+  ,VALUE("OFF", false, doNothing, noEvent));
+
+MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
+  ,FIELD(TFTBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
+  ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
@@ -284,17 +348,19 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(bleConfigMenu)
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
+#if defined SUPPORT_ESPNOW  
   ,SUBMENU(espnowConfigMenu)
+#endif  
   ,SUBMENU(batteryConfigMenu)
-  ,FIELD(TFTBrightness, "Brightness ", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,SUBMENU(displayConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
-  , EXIT("<Back"));
+  ,EXIT("<Back"));
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp: " BUILD_GIT, doNothing, noEvent)
-  ,OP("Version: " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
-  ,EDIT("IP: ", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,OP("Comp:" BUILD_GIT, doNothing, noEvent)
+  ,OP("Version:" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EDIT("IP:", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -305,12 +371,12 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-MENU(mainMenu, "CO2 Gadget  " BUILD_GIT, doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
+  ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
-  ,EXIT("<Salir"));
+  ,EXIT("<Exit"));
 
 // clang-format on
 
@@ -391,6 +457,7 @@ result idle(menuOut &o, idleEvent e) {
     Serial.flush();
 #endif
     showValuesTFT(co2);
+    readBatteryVoltage();
   } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
     Serial.println("Event idleEnd");
@@ -422,6 +489,12 @@ void menu_init() {
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
-  strcpy(tempTopicMQTT, rootTopic.c_str());
+  batteryConfigMenu[0].disable(); // Make information field unselectable
+  strcpy(tempMQTTTopic, rootTopic.c_str());
+  strcpy(tempMQTTClientId, mqttClientId.c_str());
+  strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
+  strcpy(tempWiFiSSID, wifiSSID.c_str());
+  strcpy(tempWiFiPasswrd, wifiPass.c_str());
+  strcpy(tempHostName, hostName.c_str());
   fillTempIPAddress();  
 }

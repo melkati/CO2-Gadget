@@ -14,12 +14,26 @@
 /*****************************************************************************************************/
 // clang-format on
 
-String rootTopic    = UNITHOSTNAME; // Always defined to be able to configure in menu
-String mqttClientId = UNITHOSTNAME; // Always defined to be able to configure in menu
+// Next data always defined to be able to configure in menu
+String hostName     = UNITHOSTNAME;
+String rootTopic    = UNITHOSTNAME;
+String mqttClientId = UNITHOSTNAME;
+String mqttBroker   = MQTT_BROKER_SERVER;
+String wifiSSID     = WIFI_SSID_CREDENTIALS;
+String wifiPass     = WIFI_PW_CREDENTIALS;
+String mDNSName     = "Unset";
 
 bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
+
+bool bleInitialized = false;
+
+// Variables to control automatic display off to save power
+bool displayOffOnExternalPower = false;
+uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
+uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000); // Next time display should turn off
+uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -27,6 +41,7 @@ bool activeMQTT = true;
 #define BUILD_GIT __DATE__
 
 #include <Wire.h>
+#include "driver/adc.h"
 #include "soc/soc.h" // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 
@@ -62,7 +77,6 @@ bool activeMQTT = true;
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if any
 #include "CO2_Gadget_MQTT.h"
 
 // clang-format off
@@ -93,7 +107,9 @@ const char *mqtt_server = MQTT_BROKER_SERVER; // Your MQTT broker IP address if 
 /*****************************************************************************************************/
 // clang-format on
 #define ADC_PIN 34
-int vref = 1100;
+uint16_t vRef = 1100;
+uint16_t batteryDischargedMillivolts = 3500; // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is considered fully charged (100%).
 #include "CO2_Gadget_Battery.h"
 
 // clang-format off
@@ -186,12 +202,31 @@ void readingsLoop() {
       nav.idleChanged = true; // Must redraw display as there are new readings
       publishBLE();
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
-      Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
+      // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
       publishMQTT();
     }    
+  }
+}
+
+void displayLoop() {
+  if (timeToDisplayOff == 0)
+    return;
+
+  // If configured not to turn off the display on external power
+  // and actual voltage is more than those of a maximum loaded batery + 5%, do
+  // nothing and return
+  if ((!displayOffOnExternalPower) &&
+      (battery_voltage * 1000 > batteryFullyChargedMillivolts +
+                                    (batteryFullyChargedMillivolts * 5 / 100)))
+    return;
+
+  if (millis() > nextTimeToDisplayOff) {
+    Serial.println("Turning off display to save power");
+    setTFTBrightness(0); // Turn off the display
+    nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
 
@@ -201,7 +236,9 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
   Serial.begin(115200);
   Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
+  setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
+  initBattery();
 #if defined SUPPORT_OLED
   delay(100);
   initDisplayOLED();
@@ -219,11 +256,10 @@ void setup() {
   initWifi();
   initSensors();  
   initMQTT();
+  menu_init();
+  buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
-  // readBatteryVoltage();
-  buttonsInit();
-  menu_init();
   Serial.println("Ready.");
 }
 
@@ -232,10 +268,11 @@ void loop() {
   sensorsLoop();
   processPendingCommands();
   readingsLoop();
-  loopBLE();
+  BLELoop();
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
 #endif
+  displayLoop();
   buttonsLoop();
   nav.poll(); // this device only draws when needed
 }
