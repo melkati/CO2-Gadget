@@ -2,7 +2,7 @@
 /*****************************************************************************************************/
 /*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
 /*****************************************************************************************************/
-/* If you are NOT using PlarformIO (You are using Arduino IDE) you must define your options bellow   */
+/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
 /* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
 /**/ #ifndef PLATFORMIO
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
