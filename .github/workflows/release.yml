@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+        - 'v*'
+
+jobs:
+    build:
+        name: Create Release
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v1
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -U platformio
+            platformio update
+        - name: Get the version
+          id: get_version
+          run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+        - name: Show version
+          run: echo ${{ steps.get_version.outputs.VERSION }}
+        - name: Build test version
+          run: |
+            pio run
+        - name: Create manifiest file
+          id: createmanifiest
+          run: |
+            echo "{" > file.txt
+            echo "  \"name\": \"${{ github.event.repository.name }}\"," >> file.txt
+            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> file.txt
+            echo "  \"new_install_skip_erase": false,\" >> file.txt
+            echo "  \"builds": [\" >> file.txt
+            echo "      {" >> file.txt
+            echo "        \"chipFamily\": \"ESP32\"," >> file.txt
+            echo "        \"improv\": false," >> file.txt
+            echo "        \"parts\": [" >> file.txt
+            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> file.txt
+            echo "        ]" >> file.txt
+            echo "      }" >> file.txt
+            echo "  ]" >> file.txt
+            echo "}" >> file.txt
+            echo "::set-output name=manifiest::$(cat file.txt)"
+        - name: Read manifiest file with cat 
+          run:  |
+            echo "Manifiest file contents readed with cat:"
+            cat file.txt
+        - name: Read manifiest file
+          id: readmanifiest
+          run:  |
+            echo "Manifiest file contents from variable:"
+            echo ${{ steps.createmanifiest.outputs.manifiest }}
+        - name: Upload artifacts
+          uses: actions/upload-artifact@v2
+          with:
+            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}
+            path: .pio/build/esp32dev/*.bin
+        - name: Rename bin file
+          if: startsWith(github.ref, 'refs/tags/')
+          run: |
+            mv .pio/build/esp32dev/firmware.bin .pio/build/esp32dev/${{ github.event.repository.name }}.bin
+            mv .pio/build/esp32dev/partitions.bin .pio/build/esp32dev/${{ github.event.repository.name }}-partitions.bin
+        - name: Create Release
+          id: create_release
+          uses: softprops/action-gh-release@v1
+          if: startsWith(github.ref, 'refs/tags/')
+          with:
+            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}
+            files: .pio/build/esp32dev/*.bin            
+            draft: true
+            # prerelease: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
