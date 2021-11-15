@@ -32,10 +32,10 @@ jobs:
           pio run
       - uses: actions/upload-artifact@v2
         with:
-          name: firmware_esp32dev
+          name: Medidor_CO2_Gadget_TTGO_T-Display_normal
           path: .pio/build/esp32dev/firmware.bin
       - uses: actions/upload-artifact@v2
         with:
-          name: firmware_esp32dev-sandwich
+          name: Medidor_CO2_Gadget_TTGO_T-Display_sandwich
           path: .pio/build/esp32dev-sandwich/firmware.bin
 
