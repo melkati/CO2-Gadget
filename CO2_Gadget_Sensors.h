@@ -47,8 +47,12 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
   
+  #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
+  Serial.println("-->[SETUP] Turning on sensor..");
   digitalWrite(ENABLE_PIN, ENABLE_PIN_HIGH);
+  delay(50);
+  #endif
 
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
