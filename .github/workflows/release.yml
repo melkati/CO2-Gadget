@@ -29,7 +29,7 @@ jobs:
         needs: get_default_envs
         strategy:
           matrix:
-        environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
+            environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
         steps:
         - name: Checkout code
           uses: actions/checkout@v2
