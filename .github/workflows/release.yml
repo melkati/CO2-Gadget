@@ -83,7 +83,7 @@ jobs:
         - name: Upload artifacts
           uses: actions/upload-artifact@v2
           with:
-            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}
+            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.environment }}
             path: .pio/build/esp32dev/*.bin
         - name: Rename bin file
           if: startsWith(github.ref, 'refs/tags/')
@@ -95,9 +95,22 @@ jobs:
           uses: softprops/action-gh-release@v1
           if: startsWith(github.ref, 'refs/tags/')
           with:
-            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}
+            name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.environment }}
             files: .pio/build/${{ matrix.environment }}/*.bin            
             draft: true
             # prerelease: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
+        - name: 📂 Sync files
+          uses: SamKirkland/FTP-Deploy-Action@4.1.0
+          with:
+            server: ${{ secrets.ftp_server }}
+            username: ${{ secrets.ftp_user }}
+            password: ${{ secrets.ftp_password }}
+            protocol: ftps
+            local-dir: .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}.bin
+            server-dir: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}
+            dry-run: false
+            
+            
+            
