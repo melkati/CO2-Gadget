@@ -4,6 +4,8 @@ on:
   push:
     tags:
         - 'v*'
+  workflow_dispatch:
+  
 
 jobs:
 
@@ -108,7 +110,7 @@ jobs:
             username: ${{ secrets.ftp_user }}
             password: ${{ secrets.ftp_password }}
             protocol: ftps
-            local-dir: .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}.bin
+            local-dir: .pio/build/${{ matrix.environment }}/
             server-dir: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}
             dry-run: false
             
