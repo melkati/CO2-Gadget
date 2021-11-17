@@ -20,8 +20,7 @@ jobs:
       - name: Get default environments
         id: envs
         run: |
-          # echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
-          run: echo ::set-output name=environments::esp32dev, esp32dev-sandwich
+          echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
           echo ${{ steps.envs.outputs.environments }}
       outputs:
         environments: ${{ steps.envs.outputs.environments }}
@@ -32,7 +31,8 @@ jobs:
         needs: get_default_envs
         strategy:
           matrix:
-            environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
+            # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
+            environment: [esp32dev, esp32dev-sandwich]
         steps:
         - name: Checkout code
           uses: actions/checkout@v2
