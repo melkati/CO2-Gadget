@@ -8,20 +8,20 @@ on:
 jobs:
 
     get_default_envs:
-    name: Gather Environments
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - name: Install PlatformIO
-      run: pip install -r requirements.txt
-    - name: Get default environments
-      id: envs
-      run: |
-        echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
-        echo ${{ steps.envs.outputs.environments }}
-    outputs:
-      environments: ${{ steps.envs.outputs.environments }}
+      name: Gather Environments
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - name: Install PlatformIO
+        run: pip install -r requirements.txt
+      - name: Get default environments
+        id: envs
+        run: |
+          echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
+          echo ${{ steps.envs.outputs.environments }}
+      outputs:
+        environments: ${{ steps.envs.outputs.environments }}
 
     build:
         name: Create Release
