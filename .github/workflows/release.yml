@@ -20,7 +20,8 @@ jobs:
       - name: Get default environments
         id: envs
         run: |
-          echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
+          # echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
+          run: echo ::set-output name=environments::esp32dev, esp32dev-sandwich
           echo ${{ steps.envs.outputs.environments }}
       outputs:
         environments: ${{ steps.envs.outputs.environments }}
