@@ -8,33 +8,33 @@ on:
 
 jobs:
 
-    get_default_envs:
-      name: Gather Environments
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - name: Install PlatformIO
-        run: |
-          pip install -U platformio
-          platformio update
-      - name: Dump github context
-        run:   echo "$GITHUB_CONTEXT"
-        shell: bash
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-      - name: Get default environments
-        id: envs
-        run: |
-          echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
-          echo ${{ steps.envs.outputs.environments }}
-      outputs:
-        environments: ${{ steps.envs.outputs.environments }}
+    # get_default_envs:
+    #   name: Gather Environments
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #   - uses: actions/checkout@v2
+    #   - uses: actions/setup-python@v2
+    #   - name: Install PlatformIO
+    #     run: |
+    #       pip install -U platformio
+    #       platformio update
+    #   - name: Dump github context
+    #     run:   echo "$GITHUB_CONTEXT"
+    #     shell: bash
+    #     env:
+    #       GITHUB_CONTEXT: ${{ toJson(github) }}
+    #   - name: Get default environments
+    #     id: envs
+    #     run: |
+    #       echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
+    #       echo ${{ steps.envs.outputs.environments }}
+    #   outputs:
+    #     environments: ${{ steps.envs.outputs.environments }}
 
     build:
         name: Create Release
         runs-on: ubuntu-latest
-        needs: get_default_envs
+        # needs: get_default_envs
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
@@ -114,8 +114,8 @@ jobs:
             FTP_SERVER: ${{ secrets.ftp_server }}
             FTP_USERNAME: ${{ secrets.ftp_user }}
             FTP_PASSWORD: ${{ secrets.ftp_password }}
-            local-LOCAL_DIR: .pio/build/${{ matrix.environment }}/
-            REMOTE_DIR-dir: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
+            LOCAL_DIR: .pio/build/${{ matrix.environment }}/
+            REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
             METHOD: sftp
             PORT: 22
             ARGS: --verbose
