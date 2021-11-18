@@ -59,8 +59,9 @@ jobs:
           run: echo ${{ steps.get_version.outputs.VERSION }}
         - name: Get current date
           id: date
-          run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-          run: echo "::set-output name=time::$(date +'%H:%M:%S')"
+          run: |
+            echo "::set-output name=date::$(date +'%Y-%m-%d')"
+            echo "::set-output name=time::$(date +'%H:%M:%S')"
         - name: Build test version
           run: |
             pio run -e ${{ matrix.environment }}
