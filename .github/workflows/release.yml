@@ -18,6 +18,11 @@ jobs:
         run: |
           pip install -U platformio
           platformio update
+      - name: Dump github context
+        run:   echo "$GITHUB_CONTEXT"
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
       - name: Get default environments
         id: envs
         run: |
