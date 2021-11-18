@@ -80,7 +80,7 @@ jobs:
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -99,7 +99,7 @@ jobs:
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-erase.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
