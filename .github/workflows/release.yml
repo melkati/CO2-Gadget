@@ -110,14 +110,14 @@ jobs:
             echo "Manifest file contents readed with cat:"
             cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "Erase manifest file contents readed with cat:"
-            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.-erase.manifest.json
+            cat ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
         - name: Read manifest files
           id: readmanifests
           run:  |
             echo "Manifest file contents from variable:"
             echo ${{ steps.createmanifest.outputs.manifest }}
             echo "Erase manifest file contents from variable:"
-            echo ${{ steps.createmanifest.outputs.erase-manifest }}
+            echo ${{ steps.createmanifest.outputs-erase.manifest }}
         - name: Upload artifacts
           uses: actions/upload-artifact@v2
           with:
@@ -130,7 +130,7 @@ jobs:
             mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
             mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            mv ${{ github.event.repository.name }}-${{ matrix.environment }}.erase-manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.erase-manifest.json
+            mv ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
