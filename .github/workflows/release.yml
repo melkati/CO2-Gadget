@@ -38,8 +38,8 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            # environment: [esp32dev, esp32dev-sandwich]
-            environment: [esp32dev-sandwich]
+            environment: [esp32dev, esp32dev-sandwich]
+            # environment: [esp32dev-sandwich]
         steps:
         - name: Checkout code
           uses: actions/checkout@v2
