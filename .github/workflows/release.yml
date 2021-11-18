@@ -111,9 +111,9 @@ jobs:
         - name: 📂 Sync files - FTP-Deploy-Action
           uses: SamKirkland/FTP-Deploy-Action@2.0.0
           with:
-            FTP_SERVER: ${{ secrets.ftp_server }}
-            FTP_USERNAME: ${{ secrets.ftp_user }}
-            FTP_PASSWORD: ${{ secrets.ftp_password }}
+            FTP_SERVER: ${{ secrets.FTP_SERVER }}
+            FTP_USERNAME: ${{ secrets.FTP_USER }}
+            FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
             LOCAL_DIR: .pio/build/${{ matrix.environment }}/
             REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
             METHOD: sftp
