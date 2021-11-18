@@ -108,6 +108,7 @@ jobs:
             files: .pio/build/${{ matrix.environment }}/output/*.bin            
             draft: true
             # prerelease: true
+            generate_release_notes: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
         - name: 📂 Sync files - FTP-Deploy-Action
