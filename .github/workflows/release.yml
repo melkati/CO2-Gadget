@@ -63,25 +63,25 @@ jobs:
         - name: Create manifest file
           id: createmanifest
           run: |
-            echo "{" > file.txt
-            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> file.txt
-            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> file.txt
-            echo "  \"new_install_skip_erase": false,\" >> file.txt
-            echo "  \"builds": [\" >> file.txt
-            echo "      {" >> file.txt
-            echo "        \"chipFamily\": \"ESP32\"," >> file.txt
-            echo "        \"improv\": false," >> file.txt
-            echo "        \"parts\": [" >> file.txt
-            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> file.txt
-            echo "        ]" >> file.txt
-            echo "      }" >> file.txt
-            echo "  ]" >> file.txt
-            echo "}" >> file.txt
-            echo "::set-output name=manifest::$(cat file.txt)"
+            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "  \"new_install_skip_erase": false,\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "  \"builds": [\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.json)"
         - name: Read manifest file with cat 
           run:  |
             echo "Manifest file contents readed with cat:"
-            cat file.txt
+            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.json
         - name: Read manifest file
           id: readmanifest
           run:  |
@@ -95,15 +95,17 @@ jobs:
         - name: Rename bin file
           if: startsWith(github.ref, 'refs/tags/')
           run: |
-            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
-            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
+            mkdir .pio/build/${{ matrix.environment }}/output/
+            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
+            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
+            mv ${{ github.event.repository.name }}-${{ matrix.environment }}.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.json
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
           if: startsWith(github.ref, 'refs/tags/')
           with:
             name: ${{ github.event.repository.name }}-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.environment }}
-            files: .pio/build/${{ matrix.environment }}/*.bin            
+            files: .pio/build/${{ matrix.environment }}/output/*.bin            
             draft: true
             # prerelease: true
           env:
@@ -114,7 +116,7 @@ jobs:
             FTP_SERVER: ${{ secrets.FTP_SERVER }}
             FTP_USERNAME: ${{ secrets.FTP_USER }}
             FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-            LOCAL_DIR: .pio/build/${{ matrix.environment }}/
+            LOCAL_DIR: .pio/build/${{ matrix.environment }}/output/
             REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
             METHOD: sftp
             PORT: 22
