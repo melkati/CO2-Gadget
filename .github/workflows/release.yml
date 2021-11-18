@@ -63,25 +63,25 @@ jobs:
         - name: Create manifest file
           id: createmanifest
           run: |
-            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "  \"new_install_skip_erase": false,\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "  \"builds": [\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.json
-            echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.json)"
+            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_skip_erase": false,\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"builds": [\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)"
         - name: Read manifest file with cat 
           run:  |
             echo "Manifest file contents readed with cat:"
-            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
         - name: Read manifest file
           id: readmanifest
           run:  |
@@ -98,7 +98,7 @@ jobs:
             mkdir .pio/build/${{ matrix.environment }}/output/
             mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
             mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
-            mv ${{ github.event.repository.name }}-${{ matrix.environment }}.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.json
+            mv ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
