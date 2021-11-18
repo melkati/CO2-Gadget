@@ -178,9 +178,8 @@ TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
-  ,OP("To take effect", doNothing, noEvent)
-  ,OP("you must reboot", doNothing, noEvent)
-  ,OP("the device.", doNothing, noEvent)
+  ,OP("You can't", doNothing, noEvent)
+  ,OP("disable BLE.", doNothing, noEvent)
   ,EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
@@ -486,6 +485,7 @@ void menu_init() {
   informationMenu[1].disable();
   informationMenu[2].disable();
   informationMenu[3].disable();
+  activeBLEMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
