@@ -66,8 +66,8 @@ jobs:
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_skip_erase": false,\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"builds": [\" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_skip_erase\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
