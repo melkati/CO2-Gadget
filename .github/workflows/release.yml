@@ -109,7 +109,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
         - name: 📂 Sync files
-          uses: SamKirkland/FTP-Deploy-Action@4.1.0
+          uses: SamKirkland/FTP-Deploy-Action@2.0.0
           with:
             server: ${{ secrets.ftp_server }}
             username: ${{ secrets.ftp_user }}
@@ -118,6 +118,9 @@ jobs:
             local-dir: .pio/build/${{ matrix.environment }}/
             server-dir: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
             dry-run: false
+            METHOD: sftp
+            PORT: 22
+            ARGS: --verbose
             
             
             
