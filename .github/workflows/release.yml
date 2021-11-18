@@ -34,7 +34,8 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [esp32dev, esp32dev-sandwich]
+            # environment: [esp32dev, esp32dev-sandwich]
+            environment: [esp32dev-sandwich]
         steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -90,8 +91,8 @@ jobs:
         - name: Rename bin file
           if: startsWith(github.ref, 'refs/tags/')
           run: |
-            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}.bin
-            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}-partitions.bin
+            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
+            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
