@@ -68,6 +68,7 @@ jobs:
         - name: Create manifest file
           id: createmanifest
           run: |
+            # Create "normal" (no memory erase manifest)
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -85,15 +86,38 @@ jobs:
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)"
-        - name: Read manifest file with cat 
+            #
+            # Create "erase" (memory erase manifest)
+            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"new_install_skip_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "::set-output name=erase-manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json)"
+        - name: Read manifest files with cat 
           run:  |
             echo "Manifest file contents readed with cat:"
             cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-        - name: Read manifest file
-          id: readmanifest
+            echo "Erase manifest file contents readed with cat:"
+            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.-erase.manifest.json
+        - name: Read manifest files
+          id: readmanifests
           run:  |
             echo "Manifest file contents from variable:"
             echo ${{ steps.createmanifest.outputs.manifest }}
+            echo "Erase manifest file contents from variable:"
+            echo ${{ steps.createmanifest.outputs.erase-manifest }}
         - name: Upload artifacts
           uses: actions/upload-artifact@v2
           with:
@@ -106,6 +130,7 @@ jobs:
             mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
             mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            mv ${{ github.event.repository.name }}-${{ matrix.environment }}.erase-manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.erase-manifest.json
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
