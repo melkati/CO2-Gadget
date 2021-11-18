@@ -60,7 +60,7 @@ jobs:
         - name: Get current date
           id: date
           run: |
-            echo "::set-output name=date::$(date +'%Y-%m-%d')"
+            echo "::set-output name=date::$(date +'%d-%m-%Y')"
             echo "::set-output name=time::$(date +'%H:%M:%S')"
         - name: Build test version
           run: |
@@ -73,7 +73,7 @@ jobs:
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_skip_erase\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_skip_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
