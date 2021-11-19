@@ -473,6 +473,14 @@ result idle(menuOut &o, idleEvent e) {
 #endif
 }
 
+String rightPad(String aString,uint8_t aLenght) {
+  String tempString = aString;
+  while (tempString.length()<aLenght) {
+    tempString = tempString + " ";
+  }
+  return tempString;
+}
+
 void menu_init() {
   nav.idleTask = idle; // function to be used when menu is suspended
   nav.idleOn(idle);
@@ -485,16 +493,23 @@ void menu_init() {
   informationMenu[1].disable();
   informationMenu[2].disable();
   informationMenu[3].disable();
-  activeBLEMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
+  // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
+
+  rightPad(rootTopic, 30);
   strcpy(tempMQTTTopic, rootTopic.c_str());
+  rightPad(mqttClientId, 30);
   strcpy(tempMQTTClientId, mqttClientId.c_str());
+  rightPad(mqttBroker, 30);
   strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
+  rightPad(wifiSSID, 30);
   strcpy(tempWiFiSSID, wifiSSID.c_str());
+  rightPad(wifiPass, 30);
   strcpy(tempWiFiPasswrd, wifiPass.c_str());
+  rightPad(hostName, 30);
   strcpy(tempHostName, hostName.c_str());
   fillTempIPAddress();  
 }
