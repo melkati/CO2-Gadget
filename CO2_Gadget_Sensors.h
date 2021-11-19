@@ -50,6 +50,7 @@ void initSensors() {
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
   Serial.println("-->[SETUP] Turning on sensor..");
+  pinMode(ENABLE_PIN, OUTPUT);
   digitalWrite(ENABLE_PIN, ENABLE_PIN_HIGH);
   delay(50);
   #endif
