@@ -54,6 +54,15 @@ void initPreferences() {
   vRef = preferences.getUInt("vRef", 1100);
   timeToDisplayOff = preferences.getUInt("tToDispOff", 0);
   displayOffOnExternalPower = preferences.getBool("dispOffOnExP", false);
+  if (wifiSSID=="") {
+    wifiSSID = "                              ";
+  };
+  if (wifiPass == "") {
+    wifiPass = "                              ";
+  };
+  if (hostName == "") {
+    hostName = "                              ";
+  };
   wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
   wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
   hostName = preferences.getString("hostName", hostName).c_str();
