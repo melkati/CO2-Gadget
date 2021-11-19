@@ -80,7 +80,10 @@ jobs:
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"bootloader_dio_40m.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json            
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -99,6 +102,9 @@ jobs:
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"bootloader_dio_40m.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-erase.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
