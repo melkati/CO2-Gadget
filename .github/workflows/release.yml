@@ -160,4 +160,11 @@ jobs:
             METHOD: sftp
             PORT: 22
             ARGS: --verbose
+        - name: Clean WP Rocket Cache
+            id: cleanCache
+            uses: fjogeleit/http-request-action@master
+            with:
+              url: ${{ secrets.CLEAN_CACHE_URL }}
+        - name: Show Response
+            run: echo ${{ steps.cleanCache.outputs.response }}
 
