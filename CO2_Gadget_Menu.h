@@ -16,6 +16,32 @@
 
 using namespace Menu;
 
+//customizing a menu prompt look
+class confirmReboot:public menu {
+public:
+  confirmReboot(constMEM menuNodeShadow& shadow):menu(shadow) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t p) override {
+    return idx<0?//idx will be -1 when printing a menu title or a valid index when printing as option
+      menu::printTo(root,sel,out,idx,len,p)://when printing title
+      out.printRaw((constText*)F("Reboot w/o saving"),len);//when printing as regular option
+  }
+};
+
+result systemReboot() {
+  Serial.println();
+  Serial.println("Reboot CO2 Gadget at user request from menu...");
+  //do some termiination stuff here
+  ESP.restart();
+  return quit;
+}
+
+//using the customized menu class
+//note that first parameter is the class name
+altMENU(confirmReboot,subMenu,"Reboot?",doNothing,noEvent,wrapStyle,(Menu::_menuData|Menu::_canNav)
+  ,OP("Yes",systemReboot,enterEvent)
+  ,EXIT("Cancel")
+);
+
 char tempIPAddress[16];
 
 // list of allowed characters
@@ -370,11 +396,17 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
+// TOGGLE(rebootMenu, rebootMenu, "Off on USB: ", doNothing,noEvent, wrapStyle
+//   ,VALUE("ON", true, doNothing, noEvent)
+//   ,VALUE("OFF", false, doNothing, noEvent));
+
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
+  // ,SUBMENU(rebootMenu)
+  ,SUBMENU(subMenu)
   ,EXIT("<Exit"));
 
 // clang-format on
