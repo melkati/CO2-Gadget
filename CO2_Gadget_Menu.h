@@ -535,17 +535,23 @@ void menu_init() {
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
 
-  rightPad(rootTopic, 30);
-  strcpy(tempMQTTTopic, rootTopic.c_str());
-  rightPad(mqttClientId, 30);
-  strcpy(tempMQTTClientId, mqttClientId.c_str());
-  rightPad(mqttBroker, 30);
-  strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
-  rightPad(wifiSSID, 30);
-  strcpy(tempWiFiSSID, wifiSSID.c_str());
-  rightPad(wifiPass, 30);
-  strcpy(tempWiFiPasswrd, wifiPass.c_str());
-  rightPad(hostName, 30);
-  strcpy(tempHostName, hostName.c_str());
+  rootTopic = rightPad(rootTopic, 30);
+  rootTopic.toCharArray(tempMQTTTopic, rootTopic.length());
+
+  mqttClientId = rightPad(mqttClientId, 30);
+  mqttClientId.toCharArray(tempMQTTClientId, mqttClientId.length());
+
+  mqttBroker = rightPad(mqttBroker, 30);
+  mqttBroker.toCharArray(tempMQTTBrokerIP, mqttBroker.length());
+
+  wifiSSID = rightPad(wifiSSID, 30);
+  wifiSSID.toCharArray(tempWiFiSSID, wifiSSID.length());
+
+  wifiPass = rightPad(wifiPass, 30);
+  wifiPass.toCharArray(tempWiFiPasswrd, wifiPass.length());
+
+  hostName = rightPad(hostName, 30);
+  hostName.toCharArray(tempHostName, hostName.length());
+  
   fillTempIPAddress();  
 }
