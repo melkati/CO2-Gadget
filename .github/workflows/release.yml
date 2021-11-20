@@ -40,16 +40,7 @@ jobs:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
             environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
-        steps:
-        - name: Delete old files at FTP server (delete this one)
-          shell: python
-          run: |
-            import ftplib
-            ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
-            ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
-            # ftp.rename('jim.txt', 'jimmy.txt')
-            ftp.delete('/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin')
-            ftp.quit()      
+        steps: 
         - name: Checkout code
           uses: actions/checkout@v2
         - name: Set up Python ${{ matrix.python-version }}
@@ -159,16 +150,7 @@ jobs:
             # prerelease: true
             generate_release_notes: true
           env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
-        - name: Delete old files at FTP server
-          shell: python
-          run: |
-            import ftplib
-            ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
-            ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
-            # ftp.rename('jim.txt', 'jimmy.txt')
-            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin) CO2-Gadget-esp32dev-sandwich-v0.3.068.bin
-            ftp.quit()            
+            GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}          
         - name: 📂 Sync files - FTP-Deploy-Action
           uses: SamKirkland/FTP-Deploy-Action@2.0.0
           env:
