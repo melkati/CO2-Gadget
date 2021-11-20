@@ -146,8 +146,8 @@ jobs:
             files: |
               .pio/build/${{ matrix.environment }}/output/*.bin
               .pio/build/${{ matrix.environment }}/output/*.json
-            # draft: true
-            prerelease: true
+            draft: true
+            # prerelease: true
             generate_release_notes: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
