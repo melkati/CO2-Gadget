@@ -30,7 +30,7 @@ void initBattery() {
 }
 
 void readBatteryVoltage() {
-  static uint16_t batterySecondsBetweenReads = 1;
+  static uint16_t batterySecondsBetweenReads = 60;
   static uint64_t batteryTimeStamp = (-1 * (batterySecondsBetweenReads*1000));
   if (millis() > batteryTimeStamp + (batterySecondsBetweenReads*1000)) { 
     battery_voltage = (float)battery.voltage() / 1000;    
