@@ -20,6 +20,8 @@ void printPreferences() {
   Serial.printf("vRef:\t %d\n", vRef);
   Serial.printf("mqttClientId:\t%s\n", mqttClientId.c_str());
   Serial.printf("mqttBroker:\t%s\n", mqttBroker.c_str());
+  Serial.printf("mqttUser:\t%s\n", mqttUser.c_str());
+  Serial.printf("mqttPass:\t%s\n", mqttPass.c_str());
   Serial.printf("tToDispOff:\t %d\n", timeToDisplayOff);
   Serial.printf("dispOffOnExP:\t%s\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"));
   Serial.printf("wifiSSID:\t%s\n", wifiSSID.c_str());
@@ -45,6 +47,8 @@ void initPreferences() {
   rootTopic = preferences.getString("rootTopic", rootTopic);
   mqttClientId = preferences.getString("mqttClientId", mqttClientId);
   mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
+  mqttUser = preferences.getString("mqttUser", mqttUser).c_str();
+  mqttPass = preferences.getString("mqttPass", mqttPass).c_str();
   if (!activeWIFI) { // If not WiFi active disable MQTT and save
     activeMQTT = false;
     preferences.putBool("activeMQTT", activeMQTT);
@@ -88,6 +92,8 @@ void putPreferences() {
   preferences.putUInt("vRef", vRef);
   preferences.putString("mqttClientId", mqttClientId);
   preferences.putString("mqttBroker", mqttBroker);
+  preferences.putString("mqttUser", mqttUser);
+  preferences.putString("mqttPass", mqttPass);
   preferences.putUInt("tToDispOff", timeToDisplayOff);
   preferences.putBool("dispOffOnExP", displayOffOnExternalPower);
   preferences.putString("wifiSSID", wifiSSID);
