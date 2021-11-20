@@ -479,6 +479,38 @@ outputsList out(outputs,
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
 
+String rightPad(String aString,uint8_t aLenght) {
+  String tempString = aString;
+  while (tempString.length()<aLenght) {
+    tempString = tempString + " ";
+  }
+  return tempString;
+} 
+
+void loadTempArraysWithActualValues() {
+  rootTopic = rightPad(rootTopic, 30);
+  rootTopic.toCharArray(tempMQTTTopic, rootTopic.length());
+
+  mqttClientId = rightPad(mqttClientId, 30);
+  mqttClientId.toCharArray(tempMQTTClientId, mqttClientId.length());
+
+  mqttBroker = rightPad(mqttBroker, 30);
+  mqttBroker.toCharArray(tempMQTTBrokerIP, mqttBroker.length());
+
+  wifiSSID = rightPad(wifiSSID, 30);
+  wifiSSID.toCharArray(tempWiFiSSID, wifiSSID.length());
+  Serial.print("tempWiFiSSID: #");
+  Serial.print(tempWiFiSSID);
+  Serial.println("#");
+
+  wifiPass = rightPad(wifiPass, 30);
+  wifiPass.toCharArray(tempWiFiPasswrd, wifiPass.length());
+
+  hostName = rightPad(hostName, 30);
+  hostName.toCharArray(tempHostName, hostName.length());
+  fillTempIPAddress();
+}
+
 // when menu is suspended
 result idle(menuOut &o, idleEvent e) {
 #if defined SUPPORT_TFT
@@ -499,6 +531,7 @@ result idle(menuOut &o, idleEvent e) {
     Serial.println("Event idleEnd");
     Serial.flush();
 #endif
+  loadTempArraysWithActualValues();
   } else {
 #ifdef DEBUG_ARDUINOMENU
     Serial.print("Unhandled event: ");
@@ -508,14 +541,6 @@ result idle(menuOut &o, idleEvent e) {
   }
   return proceed;
 #endif
-}
-
-String rightPad(String aString,uint8_t aLenght) {
-  String tempString = aString;
-  while (tempString.length()<aLenght) {
-    tempString = tempString + " ";
-  }
-  return tempString;
 }
 
 void menu_init() {
@@ -536,23 +561,5 @@ void menu_init() {
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
 
-  rootTopic = rightPad(rootTopic, 30);
-  rootTopic.toCharArray(tempMQTTTopic, rootTopic.length());
-
-  mqttClientId = rightPad(mqttClientId, 30);
-  mqttClientId.toCharArray(tempMQTTClientId, mqttClientId.length());
-
-  mqttBroker = rightPad(mqttBroker, 30);
-  mqttBroker.toCharArray(tempMQTTBrokerIP, mqttBroker.length());
-
-  wifiSSID = rightPad(wifiSSID, 30);
-  wifiSSID.toCharArray(tempWiFiSSID, wifiSSID.length());
-
-  wifiPass = rightPad(wifiPass, 30);
-  wifiPass.toCharArray(tempWiFiPasswrd, wifiPass.length());
-
-  hostName = rightPad(hostName, 30);
-  hostName.toCharArray(tempHostName, hostName.length());
-  
-  fillTempIPAddress();  
+  loadTempArraysWithActualValues();
 }
