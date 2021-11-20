@@ -57,6 +57,8 @@ const char *const reducedSet[] MEMMODE = {
 char tempMQTTTopic[]    = "                              ";
 char tempMQTTClientId[] = "                              ";
 char tempMQTTBrokerIP[] = "                              ";
+char tempMQTTUser[]     = "                              ";
+char tempMQTTPass[]     = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
@@ -317,6 +319,40 @@ result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+result doSetMQTTUser(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT User to: %s\n", tempMQTTBrokerIP);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTUser, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttUser = tempMQTTUser;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTPass(eventMask e, navNode &nav, prompt &item) {
+#ifndef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Pass to: %s\n", tempMQTTPass);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTPass, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttPass = tempMQTTPass;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
 result doSetActiveMQTT(eventMask e, navNode &nav, prompt &item) {
   if ((activeWIFI) && (activeMQTT)) {
     initMQTT();
@@ -335,6 +371,8 @@ MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
   ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)
   ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
+  ,EDIT("User", tempMQTTUser, alphaNum, doSetMQTTUser, exitEvent, wrapStyle)
+  ,EDIT("Pass", tempMQTTPass, alphaNum, doSetMQTTPass, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
 #if defined SUPPORT_ESPNOW
@@ -496,6 +534,12 @@ void loadTempArraysWithActualValues() {
 
   mqttBroker = rightPad(mqttBroker, 30);
   mqttBroker.toCharArray(tempMQTTBrokerIP, mqttBroker.length());
+
+  mqttUser = rightPad(mqttUser, 30);
+  mqttUser.toCharArray(tempMQTTUser, mqttUser.length());
+
+  mqttPass = rightPad(mqttPass, 30);
+  mqttPass.toCharArray(tempMQTTPass, mqttPass.length());
 
   wifiSSID = rightPad(wifiSSID, 30);
   wifiSSID.toCharArray(tempWiFiSSID, wifiSSID.length());
