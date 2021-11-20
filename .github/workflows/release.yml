@@ -41,6 +41,15 @@ jobs:
             environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
         steps:
+        - name: Delete old files at FTP server (delete this one)
+          shell: python
+          run: |
+            import ftplib
+            ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
+            ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
+            # ftp.rename('jim.txt', 'jimmy.txt')
+            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin) CO2-Gadget-esp32dev-sandwich-v0.3.068.bin
+            ftp.quit()      
         - name: Checkout code
           uses: actions/checkout@v2
         - name: Set up Python ${{ matrix.python-version }}
@@ -158,7 +167,7 @@ jobs:
             ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
             ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
             # ftp.rename('jim.txt', 'jimmy.txt')
-            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}*.bin)
+            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin) CO2-Gadget-esp32dev-sandwich-v0.3.068.bin
             ftp.quit()            
         - name: 📂 Sync files - FTP-Deploy-Action
           uses: SamKirkland/FTP-Deploy-Action@2.0.0
