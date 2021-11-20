@@ -409,7 +409,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(subMenu)
   ,EXIT("<Exit"));
 
-// clang-format on
+
 
 // define menu colors --------------------------------------------------------
 #define Black RGB565(0, 0, 0)
@@ -431,24 +431,28 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
 #define DarkerOrange RGB565(255, 140, 0)
 
 // TFT color table
-const colorDef<uint16_t> colors[6] MEMMODE = {
-    //{{disabled normal,disabled selected},{enabled normal,enabled selected,
-    //enabled editing}}
-    {{(uint16_t)Black, (uint16_t)Black},
-     {(uint16_t)Black, (uint16_t)Blue, (uint16_t)Blue}}, // bgColor
-    {{(uint16_t)White, (uint16_t)White},
-     {(uint16_t)White, (uint16_t)White, (uint16_t)White}}, // fgColor
-    {{(uint16_t)Red, (uint16_t)Red},
-     {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, // valColor
-    {{(uint16_t)White, (uint16_t)White},
-     {(uint16_t)White, (uint16_t)White, (uint16_t)White}}, // unitColor
-    {{(uint16_t)White, (uint16_t)Gray},
-     {(uint16_t)Black, (uint16_t)Red, (uint16_t)White}}, // cursorColor
-    {{(uint16_t)White, (uint16_t)Yellow},
-     {(uint16_t)Black, (uint16_t)Blue, (uint16_t)Red}}, // titleColor
-};
+// const colorDef<uint16_t> colors[6] MEMMODE = {
+//     //{{disabled normal,disabled selected}, {enabled normal,  enabled selected, enabled editing}}
+//     {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Blue}},   // bgColor
+//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // fgColor
+//     {{(uint16_t)Red,    (uint16_t)Red},    {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, // valColor
+//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // unitColor
+//     {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,    (uint16_t)White}},  // cursorColor
+//     {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Red}},    // titleColor
+// };
 
-#define MAX_DEPTH 5
+const colorDef<uint16_t> colors[6] MEMMODE = {
+    //{{disabled normal,disabled selected}, {enabled normal,  enabled selected,       enabled editing}}
+    {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,         (uint16_t)Blue}},   // bgColor
+    {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,        (uint16_t)White}},  // fgColor
+    {{(uint16_t)Green,  (uint16_t)Green},  {(uint16_t)Green,  (uint16_t)Green,        (uint16_t)Green}},  // valColor - Numbers
+    {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,        (uint16_t)White}},  // unitColor - Numeric field unit color
+    {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,          (uint16_t)White}},  // cursorColor
+    {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)DarkerOrange, (uint16_t)Red}},    // titleColor - Menu title color
+};
+// clang-format on
+
+#define MAX_DEPTH 4
 
 serialIn serial(Serial);
 
