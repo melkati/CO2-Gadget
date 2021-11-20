@@ -47,8 +47,9 @@ char tempIPAddress[16];
 // list of allowed characters
 const char *const digit = "0123456789";
 const char *const hexChars MEMMODE = "0123456789ABCDEF";
-const char *const alphaNum[] MEMMODE = {
-    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}"};
+
 const char *const reducedSet[] MEMMODE = {
     " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
@@ -259,7 +260,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)  
   ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
   #ifndef WIFI_PRIVACY
-  ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  
   ,EDIT("Host:", tempHostName, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
