@@ -151,16 +151,16 @@ jobs:
             generate_release_notes: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
-        # - name: 📂 Sync files - FTP-Deploy-Action
-          # uses: SamKirkland/FTP-Deploy-Action@2.0.0
-          # env:
-            # FTP_SERVER: ${{ secrets.FTP_SERVER }}
-            # FTP_USERNAME: ${{ secrets.FTP_USER }}
-            # FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-            # LOCAL_DIR: .pio/build/${{ matrix.environment }}/output/
-            # REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
-            # METHOD: sftp
-            # PORT: 22
-            # ARGS: --verbose
+        - name: 📂 Sync files - FTP-Deploy-Action
+          uses: SamKirkland/FTP-Deploy-Action@2.0.0
+          env:
+            FTP_SERVER: ${{ secrets.FTP_SERVER }}
+            FTP_USERNAME: ${{ secrets.FTP_USER }}
+            FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+            LOCAL_DIR: .pio/build/${{ matrix.environment }}/output/
+            REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
+            METHOD: sftp
+            PORT: 22
+            ARGS: --verbose
         - name: Clean WP Rocket Cache
           run: curl https://emariete.com/clean_cache.php
