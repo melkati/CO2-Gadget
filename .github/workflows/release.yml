@@ -48,7 +48,7 @@ jobs:
             ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
             ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
             # ftp.rename('jim.txt', 'jimmy.txt')
-            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin) CO2-Gadget-esp32dev-sandwich-v0.3.068.bin
+            ftp.delete('/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}-v0.*.*.bin')
             ftp.quit()      
         - name: Checkout code
           uses: actions/checkout@v2
