@@ -133,8 +133,8 @@ jobs:
           if: startsWith(github.ref, 'refs/tags/')
           run: |
             mkdir .pio/build/${{ matrix.environment }}/output/
-            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.bin
-            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
+            mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin
+            # mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
         - name: Create Release
@@ -151,6 +151,15 @@ jobs:
             generate_release_notes: true
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
+        - name: Delete old files at FTP server
+          shell: python
+          run: |
+            import ftplib
+            ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
+            ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
+            # ftp.rename('jim.txt', 'jimmy.txt')
+            ftp.delete(/public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/${{ github.event.repository.name }}-${{ matrix.environment }}*.bin)
+            ftp.quit()            
         - name: 📂 Sync files - FTP-Deploy-Action
           uses: SamKirkland/FTP-Deploy-Action@2.0.0
           env:
