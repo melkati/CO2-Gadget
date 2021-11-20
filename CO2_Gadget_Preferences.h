@@ -51,7 +51,7 @@ void initPreferences() {
   }
   batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
   batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
-  vRef = preferences.getUInt("vRef", 1100);
+  vRef = preferences.getUInt("vRef", 930); // Looks like, due to a bug, 930 is a goos starting number for vRef
   timeToDisplayOff = preferences.getUInt("tToDispOff", 0);
   displayOffOnExternalPower = preferences.getBool("dispOffOnExP", false);
   if (wifiSSID=="") {
