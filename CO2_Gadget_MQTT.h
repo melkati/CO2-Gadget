@@ -21,7 +21,7 @@ void mqttReconnect() {
     if (!mqttClient.connected()) {
       Serial.print("Attempting MQTT connection...");
       // Attempt to connect            
-      if (mqttClient.connect((mqttClientId).c_str())) {
+      if (mqttClient.connect((mqttClientId).c_str(), (mqttUser).c_str(), (mqttPass).c_str())) {
         Serial.println("connected");
         Serial.print("rootTopic: ");
         Serial.println(rootTopic);
