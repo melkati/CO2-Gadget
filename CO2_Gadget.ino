@@ -48,7 +48,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 
 #include <WiFi.h>
+#ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
+#endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
