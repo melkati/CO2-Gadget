@@ -60,6 +60,14 @@ void initWifi() {
       if (connectionRetries==maxConnectionRetries) {
         activeWIFI = false;
         Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
+          Serial.print("wifiSSID: #");
+          Serial.print(wifiSSID);
+          Serial.println("#");
+          #ifndef WIFI_PRIVACY
+          Serial.print("wifiPass: #");
+          Serial.print(wifiPass);
+          Serial.println("#");
+          #endif
         return;
       }
       Serial.print(".");
