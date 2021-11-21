@@ -76,6 +76,7 @@ void initPreferences() {
 }
 
 void putPreferences() {
+  Serial.println("");
   Serial.println("Saving preferences to NVR");
   rootTopic.trim();
   mqttClientId.trim();
