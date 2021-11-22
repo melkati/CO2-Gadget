@@ -62,6 +62,17 @@ const char MAIN_page[] PROGMEM = R"=====(
   font-size: 0.5em;
   text-anchor: middle;
 }
+/*smartphone styles*/
+@media only screen and (max-width: 639px) {
+    .flex-wrapper {
+       flex-flow: column wrap;
+       align-items: center;
+    }
+    .single-chart {
+        width: 66%;
+        justify-content: center;
+    }
+}
   </style>
 </head>
 
