@@ -210,7 +210,9 @@ void readingsLoop() {
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
+      #ifdef SUPPORT_MQTT
       publishMQTT();
+      #endif
     }    
   }
 }
@@ -256,8 +258,10 @@ void setup() {
 #endif
   initBLE();
   initWifi();
-  initSensors();  
+  initSensors();
+  #ifdef SUPPORT_MQTT
   initMQTT();
+  #endif
   menu_init();
   buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,

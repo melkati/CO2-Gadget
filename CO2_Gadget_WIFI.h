@@ -228,6 +228,7 @@ void initWifi() {
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFiEvent);
     // WiFi.setSleep(true);
+    // WiFi.setSleep(WIFI_PS_NONE);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     Serial.printf("Setting hostname %s: %d\n", hostName.c_str(),
                   WiFi.setHostname(hostName.c_str()));

@@ -5,12 +5,15 @@
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
+#ifdef SUPPORT_MQTT
 #include <PubSubClient.h>
 
 char charPublish[20];
 PubSubClient mqttClient(espClient);
+#endif
 
 void mqttReconnect() {
+  #ifdef SUPPORT_MQTT
   static uint64_t timeStamp = 0;
   uint16_t secondsBetweenRetries = 15; // Keep trying to connect to MQTT broker for 3 minutes (12 times every 15 secs)
   uint16_t maxConnectionRetries = 12;
@@ -44,6 +47,7 @@ void mqttReconnect() {
       }
     }
   }
+  #endif
 }
 
 // Function called when data is received via MQTT
@@ -78,22 +82,27 @@ void callbackMQTT(char *topic, byte *message, unsigned int length) {
 }
 
 void publishIntMQTT(String topic, int16_t payload) {
+  #ifdef SUPPORT_MQTT
   dtostrf(payload, 0, 0, charPublish);
   topic = rootTopic + topic;
   Serial.printf("Publishing %d to ", payload);
   Serial.println("topic: " + topic);
   mqttClient.publish((topic).c_str(), charPublish);
+  #endif
 }
 
 void publishFloatMQTT(String topic, float payload) {
+  #ifdef SUPPORT_MQTT
   dtostrf(payload, 0, 2, charPublish);
   topic = rootTopic + topic;
   Serial.printf("Publishing %.0f to ", payload);
   Serial.println("topic: " + topic);
   mqttClient.publish((topic).c_str(), charPublish);
+  #endif
 }
 
 void initMQTT() {
+  #ifdef SUPPORT_MQTT
   if (activeMQTT) {
     if (!activeWIFI) {
       activeMQTT = false;
@@ -107,9 +116,11 @@ void initMQTT() {
     mqttClient.setCallback(callbackMQTT);
     mqttReconnect();
   }
+  #endif
 }
 
 void publishMQTT() {
+  #ifdef SUPPORT_MQTT
   if (activeMQTT) {
       if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
         publishIntMQTT("/co2", co2);
@@ -119,13 +130,16 @@ void publishMQTT() {
       // Serial.print("Free heap: ");
       // Serial.println(ESP.getFreeHeap());
   }
+  #endif
 }
 
 void mqttClientLoop() {
   if (activeMQTT) {
+    #ifdef SUPPORT_MQTT
     mqttReconnect(); // Make sure MQTT client is connected
     if (mqttClient.connected()) {
       mqttClient.loop();
     }
+    #endif
   }
 }
