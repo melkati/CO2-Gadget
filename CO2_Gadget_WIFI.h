@@ -281,9 +281,6 @@ void initWifi() {
       response->addHeader("Server","ESP Async Web Server");
       request->send(response);
     });
-    server.on("/main", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", MAIN_page);
-    });
     server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", SIMPLE_page);
     });
