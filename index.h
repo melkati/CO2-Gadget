@@ -69,8 +69,7 @@ const char MAIN_page[] PROGMEM = R"=====(
        align-items: center;
     }
     .single-chart {
-        width: 66%;
-        justify-content: center;
+        hight: 33%;
     }
 }
   </style>
