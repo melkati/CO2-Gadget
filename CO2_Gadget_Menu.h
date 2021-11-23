@@ -260,7 +260,7 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)  
-  ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
+  ,EDIT("SSID", tempWiFiSSID, allChars, doSetWiFiSSID, exitEvent, wrapStyle)
   #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  
