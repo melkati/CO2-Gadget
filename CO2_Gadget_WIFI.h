@@ -220,6 +220,21 @@ void disableWiFi() {
     Serial.println("WiFi dissabled!");
 }
 
+// Replaces placeholder with actual values
+String processor(const String& var) {
+  //Serial.println(var);
+  if (var == "CO2") {
+    return String(co2);
+  }
+  else if (var == "TEMPERATURE") {
+    return String(temp);
+  }
+  else if (var == "HUMIDITY") {
+    return String(hum);
+  }
+  return String();
+}
+
 void initWifi() {
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
@@ -261,10 +276,16 @@ void initWifi() {
     #endif
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/html", MAIN_page);
+      request->send_P(200, "text/html", MAIN_page);
+      AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
+      response->addHeader("Server","ESP Async Web Server");
+      request->send(response);
+    });
+    server.on("/main", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send_P(200, "text/html", MAIN_page);
     });
     server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/html", SIMPLE_page);
+      request->send_P(200, "text/html", SIMPLE_page);
     });
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(co2));
