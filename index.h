@@ -62,6 +62,16 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
   font-size: 0.5em;
   text-anchor: middle;
 }
+/*smartphone styles*/
+@media only screen and (max-width: 639px) {
+    .flex-wrapper {
+       flex-flow: column wrap;
+       align-items: center;
+    }
+    .single-chart {
+        hight: 33%;
+    }
+}
   </style>
 </head>
 
@@ -275,3 +285,4 @@ const char SIMPLE_page[] PROGMEM = R"rawliteral(
 
 </html>
 )rawliteral";
+
