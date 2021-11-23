@@ -2,7 +2,7 @@
 /*****************************************************************************************************/
 /*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
 /*****************************************************************************************************/
-/* If you are NOT using PlarformIO (You are using Arduino IDE) you must define your options bellow   */
+/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
 /* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
 /**/ #ifndef PLATFORMIO
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
@@ -19,6 +19,8 @@ String hostName     = UNITHOSTNAME;
 String rootTopic    = UNITHOSTNAME;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker   = MQTT_BROKER_SERVER;
+String mqttUser     = "";
+String mqttPass     = "";
 String wifiSSID     = WIFI_SSID_CREDENTIALS;
 String wifiPass     = WIFI_PW_CREDENTIALS;
 String mDNSName     = "Unset";
@@ -46,7 +48,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 
 #include <WiFi.h>
+#ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
+#endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -206,7 +210,9 @@ void readingsLoop() {
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
+      #ifdef SUPPORT_MQTT
       publishMQTT();
+      #endif
     }    
   }
 }
@@ -236,7 +242,7 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
   Serial.begin(115200);
   Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
-  setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
+  // setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
   initBattery();
 #if defined SUPPORT_OLED
@@ -254,8 +260,10 @@ void setup() {
 #endif
   initBLE();
   initWifi();
-  initSensors();  
+  initSensors();
+  #ifdef SUPPORT_MQTT
   initMQTT();
+  #endif
   menu_init();
   buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,

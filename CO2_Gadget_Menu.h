@@ -16,13 +16,40 @@
 
 using namespace Menu;
 
+//customizing a menu prompt look
+class confirmReboot:public menu {
+public:
+  confirmReboot(constMEM menuNodeShadow& shadow):menu(shadow) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t p) override {
+    return idx<0?//idx will be -1 when printing a menu title or a valid index when printing as option
+      menu::printTo(root,sel,out,idx,len,p)://when printing title
+      out.printRaw((constText*)F("Reboot w/o saving"),len);//when printing as regular option
+  }
+};
+
+result systemReboot() {
+  Serial.println();
+  Serial.println("Reboot CO2 Gadget at user request from menu...");
+  //do some termiination stuff here
+  ESP.restart();
+  return quit;
+}
+
+//using the customized menu class
+//note that first parameter is the class name
+altMENU(confirmReboot,subMenu,"Reboot?",doNothing,noEvent,wrapStyle,(Menu::_menuData|Menu::_canNav)
+  ,OP("Yes",systemReboot,enterEvent)
+  ,EXIT("Cancel")
+);
+
 char tempIPAddress[16];
 
 // list of allowed characters
 const char *const digit = "0123456789";
 const char *const hexChars MEMMODE = "0123456789ABCDEF";
-const char *const alphaNum[] MEMMODE = {
-    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
+const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}"};
+
 const char *const reducedSet[] MEMMODE = {
     " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
@@ -30,6 +57,8 @@ const char *const reducedSet[] MEMMODE = {
 char tempMQTTTopic[]    = "                              ";
 char tempMQTTClientId[] = "                              ";
 char tempMQTTBrokerIP[] = "                              ";
+char tempMQTTUser[]     = "                              ";
+char tempMQTTPass[]     = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
@@ -112,7 +141,7 @@ result doCalibration400ppm(eventMask e, navNode &nav, prompt &item) {
 
 result doCalibrationCustom(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
-  Serial.printf("Calibrating sensor at %d/n", customCalibrationValue);
+  Serial.printf("Calibrating sensor at %d\n", customCalibrationValue);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -178,9 +207,8 @@ TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
-  ,OP("To take effect", doNothing, noEvent)
-  ,OP("you must reboot", doNothing, noEvent)
-  ,OP("the device.", doNothing, noEvent)
+  ,OP("You can't", doNothing, noEvent)
+  ,OP("disable BLE.", doNothing, noEvent)
   ,EXIT("<Back"));
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
@@ -199,8 +227,8 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
-#ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting WiFi SSID to %s\n", tempWiFiSSID);
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi SSID to #%s#\n", tempWiFiSSID);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -213,8 +241,8 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
-#ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting WiFi Password to %s\n", tempWiFiPasswrd);
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi Password to #%s#\n", tempWiFiPasswrd);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -234,15 +262,15 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)  
   ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
   #ifndef WIFI_PRIVACY
-  ,EDIT("Pass:", tempWiFiPasswrd, alphaNum, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  
   ,EDIT("Host:", tempHostName, alphaNum, doNothing, noEvent, wrapStyle)
   ,EXIT("<Back"));
 
 
 result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
-#ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting MQTT Topic to %s\n", tempMQTTTopic);
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Topic to #%s#\n", tempMQTTTopic);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -258,8 +286,8 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
-#ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting MQTT Client Id to %s\n", tempMQTTClientId);
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Client Id to #%s#\n", tempMQTTClientId);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -275,8 +303,8 @@ result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
 }
 
 result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
-#ifndef DEBUG_ARDUINOMENU
-  Serial.printf("Setting MQTT Broker IP to: %s\n", tempMQTTBrokerIP);
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Broker IP to: #%s#\n", tempMQTTBrokerIP);
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
@@ -285,6 +313,40 @@ result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
   if (p)     // if found truncate at space
     *p = 0;
   mqttBroker = tempMQTTBrokerIP;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTUser(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT User to: #%s#\n", tempMQTTBrokerIP);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTUser, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttUser = tempMQTTUser;  
+  if ((activeMQTT) && (WiFi.isConnected())) {
+    initMQTT();
+  }
+  return proceed;
+}
+
+result doSetMQTTPass(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting MQTT Pass to: #%s#\n", tempMQTTPass);
+  Serial.print("action1 event:");
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  char * p = strchr (tempMQTTPass, ' ');  // search for space
+  if (p)     // if found truncate at space
+    *p = 0;
+  mqttPass = tempMQTTPass;  
   if ((activeMQTT) && (WiFi.isConnected())) {
     initMQTT();
   }
@@ -308,7 +370,9 @@ MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeMQTTMenu)
   ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
   ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)
-  ,EDIT("IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
+  ,EDIT("Broker IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
+  ,EDIT("User", tempMQTTUser, alphaNum, doSetMQTTUser, exitEvent, wrapStyle)
+  ,EDIT("Pass", tempMQTTPass, alphaNum, doSetMQTTPass, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
 #if defined SUPPORT_ESPNOW
@@ -371,14 +435,20 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
+// TOGGLE(rebootMenu, rebootMenu, "Off on USB: ", doNothing,noEvent, wrapStyle
+//   ,VALUE("ON", true, doNothing, noEvent)
+//   ,VALUE("OFF", false, doNothing, noEvent));
+
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
+  // ,SUBMENU(rebootMenu)
+  ,SUBMENU(subMenu)
   ,EXIT("<Exit"));
 
-// clang-format on
+
 
 // define menu colors --------------------------------------------------------
 #define Black RGB565(0, 0, 0)
@@ -400,24 +470,28 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
 #define DarkerOrange RGB565(255, 140, 0)
 
 // TFT color table
-const colorDef<uint16_t> colors[6] MEMMODE = {
-    //{{disabled normal,disabled selected},{enabled normal,enabled selected,
-    //enabled editing}}
-    {{(uint16_t)Black, (uint16_t)Black},
-     {(uint16_t)Black, (uint16_t)Blue, (uint16_t)Blue}}, // bgColor
-    {{(uint16_t)White, (uint16_t)White},
-     {(uint16_t)White, (uint16_t)White, (uint16_t)White}}, // fgColor
-    {{(uint16_t)Red, (uint16_t)Red},
-     {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, // valColor
-    {{(uint16_t)White, (uint16_t)White},
-     {(uint16_t)White, (uint16_t)White, (uint16_t)White}}, // unitColor
-    {{(uint16_t)White, (uint16_t)Gray},
-     {(uint16_t)Black, (uint16_t)Red, (uint16_t)White}}, // cursorColor
-    {{(uint16_t)White, (uint16_t)Yellow},
-     {(uint16_t)Black, (uint16_t)Blue, (uint16_t)Red}}, // titleColor
-};
+// const colorDef<uint16_t> colors[6] MEMMODE = {
+//     //{{disabled normal,disabled selected}, {enabled normal,  enabled selected, enabled editing}}
+//     {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Blue}},   // bgColor
+//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // fgColor
+//     {{(uint16_t)Red,    (uint16_t)Red},    {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, // valColor
+//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // unitColor
+//     {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,    (uint16_t)White}},  // cursorColor
+//     {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Red}},    // titleColor
+// };
 
-#define MAX_DEPTH 5
+const colorDef<uint16_t> colors[6] MEMMODE = {
+    //{{disabled normal,disabled selected}, {enabled normal,  enabled selected,       enabled editing}}
+    {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,         (uint16_t)Blue}},   // bgColor
+    {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,        (uint16_t)White}},  // fgColor
+    {{(uint16_t)Green,  (uint16_t)Green},  {(uint16_t)Green,  (uint16_t)Green,        (uint16_t)Green}},  // valColor - Numbers
+    {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,        (uint16_t)White}},  // unitColor - Numeric field unit color
+    {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,          (uint16_t)White}},  // cursorColor
+    {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)DarkerOrange, (uint16_t)Red}},    // titleColor - Menu title color
+};
+// clang-format on
+
+#define MAX_DEPTH 4
 
 serialIn serial(Serial);
 
@@ -443,6 +517,94 @@ outputsList out(outputs,
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
 
+String rightPad(String aString,uint8_t aLenght) {
+  String tempString = aString;
+  while (tempString.length()<aLenght) {
+    tempString = tempString + " ";
+  }
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("Original String: #");
+  Serial.print(aString);
+  Serial.println("#");
+  Serial.print("Padded String: #");
+  Serial.print(tempString);
+  Serial.println("#");
+  #endif
+  return tempString;
+} 
+
+void loadTempArraysWithActualValues() {
+  String paddedString;
+
+  paddedString = rightPad(rootTopic, 30);
+  paddedString.toCharArray(tempMQTTTopic, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempMQTTTopic: #");
+  Serial.print(tempMQTTTopic);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(mqttClientId, 30);
+  paddedString.toCharArray(tempMQTTClientId, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempMQTTClientId: #");
+  Serial.print(tempMQTTClientId);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(mqttBroker, 30);
+  paddedString.toCharArray(tempMQTTBrokerIP, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.printf("mqttBroker: #%s#\n", mqttBroker.c_str());
+  Serial.printf("mqttBroker.length(): %d\n", paddedString.length());
+  Serial.print("tempMQTTBrokerIP: #");
+  Serial.print(tempMQTTBrokerIP);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(mqttUser, 30);
+  paddedString.toCharArray(tempMQTTUser, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempMQTTUser: #");
+  Serial.print(tempMQTTUser);
+  Serial.println("#");  
+  #endif
+
+  paddedString = rightPad(mqttPass, 30);
+  paddedString.toCharArray(tempMQTTPass, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempMQTTPass: #");
+  Serial.print(tempMQTTPass);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(wifiSSID, 30);
+  paddedString.toCharArray(tempWiFiSSID, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempWiFiSSID: #");
+  Serial.print(tempWiFiSSID);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(wifiPass, 30);
+  paddedString.toCharArray(tempWiFiPasswrd, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempWiFiPasswrd: #");
+  Serial.print(tempWiFiPasswrd);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(hostName, 30);
+  paddedString.toCharArray(tempHostName, paddedString.length());
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempHostName: #");
+  Serial.print(tempHostName);
+  Serial.println("#");
+  #endif
+
+  fillTempIPAddress();
+}
+
 // when menu is suspended
 result idle(menuOut &o, idleEvent e) {
 #if defined SUPPORT_TFT
@@ -463,6 +625,7 @@ result idle(menuOut &o, idleEvent e) {
     Serial.println("Event idleEnd");
     Serial.flush();
 #endif
+  loadTempArraysWithActualValues();
   } else {
 #ifdef DEBUG_ARDUINOMENU
     Serial.print("Unhandled event: ");
@@ -486,15 +649,11 @@ void menu_init() {
   informationMenu[1].disable();
   informationMenu[2].disable();
   informationMenu[3].disable();
+  // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
-  strcpy(tempMQTTTopic, rootTopic.c_str());
-  strcpy(tempMQTTClientId, mqttClientId.c_str());
-  strcpy(tempMQTTBrokerIP, mqttBroker.c_str());
-  strcpy(tempWiFiSSID, wifiSSID.c_str());
-  strcpy(tempWiFiPasswrd, wifiPass.c_str());
-  strcpy(tempHostName, hostName.c_str());
-  fillTempIPAddress();  
+
+  loadTempArraysWithActualValues();
 }

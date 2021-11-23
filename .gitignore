@@ -2,6 +2,7 @@
 .vscode
 *.old
 *.bin
+*.ino.cpp
 Bootlogo
 extra_envs.ini
 
