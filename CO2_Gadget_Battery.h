@@ -34,6 +34,5 @@ void readBatteryVoltage() {
   static uint64_t batteryTimeStamp = (-1 * (batterySecondsBetweenReads*1000));
   if (millis() > batteryTimeStamp + (batterySecondsBetweenReads*1000)) { 
     battery_voltage = (float)battery.voltage() / 1000;    
-    Serial.printf("battery_voltage: %.2f\n", battery_voltage);
   }
 }

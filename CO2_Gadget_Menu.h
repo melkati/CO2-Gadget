@@ -48,10 +48,10 @@ char tempIPAddress[16];
 const char *const digit = "0123456789";
 const char *const hexChars MEMMODE = "0123456789ABCDEF";
 const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
-const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}"};
+const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}?¿"};
+const char *const ssidChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@%&/()=-*^~:.{}¿"};
 
-const char *const reducedSet[] MEMMODE = {
-    " 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
+const char *const reducedSet[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
 // field will initialize its size by this string length
 char tempMQTTTopic[]    = "                              ";
@@ -233,10 +233,11 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
   Serial.println(e);
   Serial.flush();
 #endif  
-  char * p = strchr (tempWiFiSSID, ' ');  // search for space
-  if (p)     // if found truncate at space
-    *p = 0;
-  wifiSSID = tempWiFiSSID;  
+  // Serial.printf("tempWiFiSSID: #%s#\n", tempWiFiSSID);
+  wifiSSID = String(tempWiFiSSID);
+  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
+  wifiSSID.trim();
+  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
   return proceed;
 }
 
@@ -246,11 +247,9 @@ result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
   Serial.print("action1 event:");
   Serial.println(e);
   Serial.flush();
-#endif  
-  char * p = strchr (tempWiFiPasswrd, ' ');  // search for space
-  if (p)     // if found truncate at space
-    *p = 0;
-  wifiPass = tempWiFiPasswrd;
+#endif
+  wifiPass = String(tempWiFiPasswrd);
+  wifiPass.trim();
   return proceed;
 }
 
@@ -260,7 +259,7 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)  
-  ,EDIT("SSID", tempWiFiSSID, alphaNum, doSetWiFiSSID, exitEvent, wrapStyle)
+  ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
   #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  

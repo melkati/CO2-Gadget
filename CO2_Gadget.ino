@@ -48,7 +48,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 
 #include <WiFi.h>
+#ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
+#endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -208,7 +210,9 @@ void readingsLoop() {
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
         Serial.println("WiFi not connected");
       }
+      #ifdef SUPPORT_MQTT
       publishMQTT();
+      #endif
     }    
   }
 }
@@ -237,6 +241,10 @@ void setup() {
       READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); // save WatchDog register
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
   Serial.begin(115200);
+  // Serial.printf("Total heap: %d", ESP.getHeapSize());
+  // Serial.printf("Free heap: %d", ESP.getFreeHeap());
+  // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
+  // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
   Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
   // setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
@@ -254,8 +262,10 @@ void setup() {
 #endif
   initBLE();
   initWifi();
-  initSensors();  
+  initSensors();
+  #ifdef SUPPORT_MQTT
   initMQTT();
+  #endif
   menu_init();
   buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
