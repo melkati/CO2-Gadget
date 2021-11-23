@@ -30,12 +30,12 @@ uint16_t co2RedRange =
           // (user can change on menu and save on preferences)
 
 void onSensorDataOk() {
-  Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
-  Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
-  Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
+  // Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
+  // Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
+  // Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
 
-  Serial.print(" H: " + String(sensors.getHumidity()));
-  Serial.println(" T: " + String(sensors.getTemperature()));
+  // Serial.print(" H: " + String(sensors.getHumidity()));
+  // Serial.println(" T: " + String(sensors.getTemperature()));
 
   co2 = sensors.getCO2();
   temp = sensors.getCO2temp();

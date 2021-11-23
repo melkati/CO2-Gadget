@@ -254,8 +254,6 @@ void setup() {
   initDisplayTFT();
   displaySplashScreenTFT(); // Display init and splash screen
   delay(2000);              // Enjoy the splash screen for 2 seconds
-  pinMode(27, OUTPUT);
-  digitalWrite(27, HIGH);
   tft.setTextSize(2);
 #endif
   initBLE();
