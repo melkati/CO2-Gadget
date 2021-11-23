@@ -1,4 +1,4 @@
-const char MAIN_page[] PROGMEM = R"=====(
+const char MAIN_page[] PROGMEM = R"rawliteral(
 <!-- See https://medium.com/@pppped/how-to-code-a-responsive-circular-percentage-chart-with-svg-and-css-3632f8cd7705 -->
 <!DOCTYPE html>
 <html>
@@ -127,19 +127,19 @@ const char MAIN_page[] PROGMEM = R"=====(
   <script>
 
     setInterval(function () {
-      // Call a function repetatively with 2 Second interval
+      // Call a function repetatively with 15 Second interval
       getCO2Data();
-    }, 5000); //2000mSeconds update rate
+    }, 15000); // 15000mS  update rate
 
     setInterval(function () {
-      // Call a function repetatively with 2 Second interval
+      // Call a function repetatively with 60 Second interval
       getTemperatureData();
-    }, 5000); //50000mSeconds update rate
+    }, 60000); // 60000mS  update rate
 
     setInterval(function () {
-      // Call a function repetatively with 2 Second interval
+      // Call a function repetatively with 60 Second interval
       getHumidityData();
-    }, 5000); //50000mSeconds update rate
+    }, 60000); // 60000mS  update rate
 
     function getCO2Data() {
       var xhttp = new XMLHttpRequest();
@@ -182,10 +182,10 @@ const char MAIN_page[] PROGMEM = R"=====(
 </body>
 
 </html>
-)=====";
+)rawliteral";
 
 
-const char SIMPLE_page[] PROGMEM = R"=====(
+const char SIMPLE_page[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
 
@@ -274,4 +274,4 @@ const char SIMPLE_page[] PROGMEM = R"=====(
 </body>
 
 </html>
-)=====";
+)rawliteral";

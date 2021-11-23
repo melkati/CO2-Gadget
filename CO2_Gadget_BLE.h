@@ -34,15 +34,3 @@ void BLELoop() {
     delay(3);
   }
 }
-
-void enableBLE() {
-  // if (!bleInitialized) return; // If BLE is NOT initialized do nothing and return
-  Serial.println("Enabling BLE");
-  esp_bt_controller_enable(ESP_BT_MODE_BLE);
-}
-
-void disableBLE() {
-  // if (!bleInitialized) return; // If BLE is NOT initialized do nothing and return
-  Serial.println("Disabling BLE");
-  btStop();
-}
