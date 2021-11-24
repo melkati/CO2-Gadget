@@ -270,7 +270,7 @@ void setup() {
   buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
-  Serial.println("Ready.");
+  Serial.println("-->[STUP] Ready.");
 }
 
 void loop() {

@@ -22,11 +22,11 @@ void mqttReconnect() {
     timeStamp = millis();
     String subscriptionTopic;
     if (!mqttClient.connected()) {
-      Serial.printf("-->[MQTT] Attempting MQTT connection...");
+      Serial.printf("-->[MQTT] Attempting MQTT connection... ");
       // Attempt to connect            
       if (mqttClient.connect((mqttClientId).c_str(), (mqttUser).c_str(), (mqttPass).c_str())) {
         Serial.printf("connected\n");
-        Serial.print("rootTopic: ");
+        Serial.print("-->[MQTT] rootTopic: ");
         Serial.println(rootTopic);
         // Subscribe
         subscriptionTopic = rootTopic + "/calibration";
