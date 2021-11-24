@@ -17,7 +17,7 @@ WiFiClient espClient;
 AsyncWebServer server(80);
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-  Serial.print("[WiFi] WifiSetup: SSID = ");
+  Serial.print("-->[WiFi] WifiSetup: SSID = ");
   Serial.print(ssid.c_str());
   Serial.print(", Password = ");
   Serial.println(password.c_str());
@@ -36,51 +36,51 @@ void printWiFiStatus() { // Print wifi status on serial monitor
   //  WL_CONNECTION_LOST: assigned when the connection is lost;
   //  WL_DISCONNECTED: assigned when disconnected from a network;
 
-  Serial.print("wifi_status: ");
+  Serial.print("[WiFi-Status] ");
   switch (WiFi.status()) {
     case WL_CONNECTED: 
-      Serial.println("[WiFi] WiFi connected");
+      Serial.println("WiFi connected");
       break;
     case WL_NO_SHIELD:
-      Serial.println("[WiFi] No WiFi HW detected");
+      Serial.println("No WiFi HW detected");
       break;
     case WL_IDLE_STATUS:
-      Serial.println("[WiFi] Attempting...");
+      Serial.println("Attempting...");
       break;
     case WL_NO_SSID_AVAIL:
-      Serial.println("[WiFi] No SSID available");
+      Serial.println("No SSID available");
       break;
     case WL_SCAN_COMPLETED:
-      Serial.println("[WiFi] Networks scan completed");
+      Serial.println("Networks scan completed");
       break;
     case WL_CONNECT_FAILED:
-      Serial.println("[WiFi] Connect failed");
+      Serial.println("Connect failed");
       break;
     case WL_CONNECTION_LOST:
-      Serial.println("[WiFi] Connection lost");
+      Serial.println("Connection lost");
       break;
     case WL_DISCONNECTED:
-      Serial.println("[WiFi] Disconnected");
+      Serial.println("Disconnected");
       break;
     default: 
-      Serial.println("[WiFi] Unknown status");
+      Serial.println("Unknown status");
       break;
   }
     
   // Print the SSID of the network you're attached to:
-  Serial.print("[WiFi] SSID: ");
+  Serial.print("-->[WiFi] SSID: ");
   Serial.println(WiFi.SSID());
 
   // Print your WiFi shield's IP address:
-  Serial.print("[WiFi] IP Address: ");
+  Serial.print("-->[WiFi] IP Address: ");
   Serial.println(WiFi.localIP());
 
   // Print your WiFi shield's MAC address:
-  Serial.print("[WiFi] MAC Adress: ");
+  Serial.print("-->[WiFi] MAC Adress: ");
   Serial.println(WiFi.macAddress());
   
   // Print the received signal strength:
-  Serial.print("[WiFi] Signal strength (RSSI):");
+  Serial.print("-->[WiFi] Signal strength (RSSI):");
   Serial.print(WiFi.RSSI());
   Serial.println(" dBm");
 
@@ -217,7 +217,7 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
     WiFi.mode(WIFI_OFF);    // Switch WiFi off
-    Serial.println("[WiFi] WiFi dissabled!");
+    Serial.println("-->[WiFi] WiFi dissabled!");
 }
 
 // Replaces placeholder with actual values
@@ -245,20 +245,20 @@ void initWifi() {
     // WiFi.setSleep(true);
     // WiFi.setSleep(WIFI_PS_NONE);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    Serial.printf("[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
+    Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
                   WiFi.setHostname(hostName.c_str()));
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-    Serial.print("[WiFi] Connecting to WiFi");
+    Serial.print("-->[WiFi] Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
       ++connectionRetries;
       if (connectionRetries==maxConnectionRetries) {
         activeWIFI = false;
         Serial.printf("\n[WiFi] Not possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
-          Serial.print("[WiFi] wifiSSID: #");
+          Serial.print("-->[WiFi] wifiSSID: #");
           Serial.print(wifiSSID);
           Serial.println("#");
           #ifndef WIFI_PRIVACY
-          Serial.print("[WiFi] wifiPass: #");
+          Serial.print("-->[WiFi] wifiPass: #");
           Serial.print(wifiPass);
           Serial.println("#");
           #endif
@@ -268,7 +268,7 @@ void initWifi() {
       delay(500);
     }
     Serial.println("");
-    Serial.print("[WiFi] WiFi connected - IP = ");
+    Serial.print("-->[WiFi] WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
     #ifdef SUPPORT_MDNS
     mDNSName = WiFi.getHostname();
@@ -303,7 +303,7 @@ void initWifi() {
 #endif
 
     server.begin();
-    Serial.println("[WiFi] HTTP server started");
+    Serial.println("-->[WiFi] HTTP server started");
 
     printWiFiStatus();
   } 
