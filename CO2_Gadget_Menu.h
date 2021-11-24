@@ -63,6 +63,11 @@ char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
 
+void setInMenu(bool isInMenu) {
+  inMenu = isInMenu;
+  Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
+}
+
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
     sprintf(tempIPAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
@@ -130,7 +135,7 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
 result doCalibration400ppm(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Calibrating sensor at %d", 400);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
@@ -142,7 +147,7 @@ result doCalibration400ppm(eventMask e, navNode &nav, prompt &item) {
 result doCalibrationCustom(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Calibrating sensor at %d\n", customCalibrationValue);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
@@ -154,7 +159,7 @@ result doCalibrationCustom(eventMask e, navNode &nav, prompt &item) {
 result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.println("Saving preferences to NVR");
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
@@ -165,7 +170,7 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
 result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting TFT brightness at %d", TFTBrightness);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
@@ -229,7 +234,7 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
 result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting WiFi SSID to #%s#\n", tempWiFiSSID);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -244,7 +249,7 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
 result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting WiFi Password to #%s#\n", tempWiFiPasswrd);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
@@ -270,7 +275,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
 result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting MQTT Topic to #%s#\n", tempMQTTTopic);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -287,7 +292,7 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
 result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting MQTT Client Id to #%s#\n", tempMQTTClientId);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -304,7 +309,7 @@ result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
 result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting MQTT Broker IP to: #%s#\n", tempMQTTBrokerIP);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -321,7 +326,7 @@ result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
 result doSetMQTTUser(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting MQTT User to: #%s#\n", tempMQTTBrokerIP);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -338,7 +343,7 @@ result doSetMQTTUser(eventMask e, navNode &nav, prompt &item) {
 result doSetMQTTPass(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting MQTT Pass to: #%s#\n", tempMQTTPass);
-  Serial.print("action1 event:");
+  Serial.print(F("action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif  
@@ -535,6 +540,8 @@ String rightPad(String aString,uint8_t aLenght) {
 void loadTempArraysWithActualValues() {
   String paddedString;
 
+  Serial.print("-->[MENU] loadTempArraysWithActualValues()");
+
   paddedString = rightPad(rootTopic, 30);
   paddedString.toCharArray(tempMQTTTopic, paddedString.length());
   #ifdef DEBUG_ARDUINOMENU
@@ -611,6 +618,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
     Serial.println("Event idleStart");
 #endif
+    setInMenu(false);
     readBatteryVoltage();
   } else if (e == idling) {
 #ifdef DEBUG_ARDUINOMENU
@@ -624,6 +632,7 @@ result idle(menuOut &o, idleEvent e) {
     Serial.println("Event idleEnd");
     Serial.flush();
 #endif
+  setInMenu(true);
   loadTempArraysWithActualValues();
   } else {
 #ifdef DEBUG_ARDUINOMENU
