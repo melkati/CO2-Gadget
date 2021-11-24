@@ -1,6 +1,7 @@
 const char MAIN_page[] PROGMEM = R"=====(
 <!-- See https://medium.com/@pppped/how-to-code-a-responsive-circular-percentage-chart-with-svg-and-css-3632f8cd7705 -->
 <!DOCTYPE html>
+<html lang=”en”>
 <html>
 
 <head>
@@ -8,6 +9,12 @@ const char MAIN_page[] PROGMEM = R"=====(
   <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
   <style>
+.tag {
+    font-weight: bold;
+    font-size: large;
+    display: flex;
+    justify-content: space-around;
+}
     .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
@@ -65,11 +72,12 @@ const char MAIN_page[] PROGMEM = R"=====(
 /*smartphone styles*/
 @media only screen and (max-width: 639px) {
     .flex-wrapper {
-       flex-flow: column wrap;
-       align-items: center;
+      flex-flow: column wrap;
+      align-items: center;
     }
     .single-chart {
-        hight: 33%;
+      hight: 50vh;
+      width: 33vh;
     }
 }
   </style>
@@ -98,6 +106,7 @@ const char MAIN_page[] PROGMEM = R"=====(
           <tspan dx="0" dy="1.2em">ppm</tspan>
         </text> -->
       </svg>
+    <div class="tag">CO2</div>
     </div>
     
     <div class="single-chart">
@@ -115,6 +124,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         />
         <text x="18" y="20.35" class="percentage" id="TempValue"> Init...</text>
       </svg>
+      <div class="tag">Temperature</div>
     </div>
   
     <div class="single-chart">
@@ -132,6 +142,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         />
         <text x="18" y="20.35" class="percentage" id="HumValue"> Init...</text>
       </svg>
+      <div class="tag">Humidity</div>
     </div>
   </div>
   <script>
