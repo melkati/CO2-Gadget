@@ -64,11 +64,12 @@ void initSensors() {
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(false);                     // [optional] debug mode
-  sensors.detectI2COnly(true);                    // force to only i2c sensors
+  sensors.detectI2COnly(false);                    // force to only i2c sensors
   // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
   // offset
 
-  sensors.init();
+  sensors.init(sensors.SENSEAIRS8);
+
   if (sensors.isPmSensorConfigured())
     Serial.println("-->[SETUP] Sensor configured: " +
                    sensors.getPmDeviceSelected());
