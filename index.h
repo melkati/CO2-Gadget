@@ -9,12 +9,14 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
   <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
   <style>
-.tag {
-    font-weight: bold;
-    font-size: large;
-    display: flex;
-    justify-content: space-around;
-}
+      .tag {
+        font: bolder large arial;
+        font-family: Arial;
+        display: flex; 
+        justify-content: space-around;
+        background-color: rgb(150, 238, 234);
+        color: #666;
+      }
     .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
@@ -71,14 +73,22 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
 }
 /*smartphone styles*/
 @media only screen and (max-width: 639px) {
-    .flex-wrapper {
-      flex-flow: column wrap;
-      align-items: center;
-    }
-    .single-chart {
-      hight: 50vh;
-      width: 33vh;
-    }
+  .flex-wrapper {
+    flex-flow: column wrap;
+    align-items: center;
+  }
+  .single-chart {
+    display: flex;
+    justify-content: space-around;
+    hight: 55vh;
+    width: 35vh;
+    flex-flow: wrap;
+  }
+  .tag {
+    font: bolder condensed 90% arial;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+  }
 }
   </style>
 </head>
@@ -87,6 +97,7 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
 
   <div class="flex-wrapper">
     <div class="single-chart">
+      <div class="tag">CO2</div>
       <svg viewBox="0 0 36 36" class="circular-chart co2">
         <path class="circle-bg"
           d="M18 2.0845
@@ -106,10 +117,10 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
           <tspan dx="0" dy="1.2em">ppm</tspan>
         </text> -->
       </svg>
-    <div class="tag">CO2</div>
     </div>
     
     <div class="single-chart">
+      <div class="tag">Temperature</div>
       <svg viewBox="0 0 36 36" class="circular-chart temp">
         <path class="circle-bg"
           d="M18 2.0845
@@ -124,10 +135,10 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
         />
         <text x="18" y="20.35" class="percentage" id="TempValue"> Init...</text>
       </svg>
-      <div class="tag">Temperature</div>
     </div>
   
     <div class="single-chart">
+      <div class="tag">Humidity</div>
       <svg viewBox="0 0 36 36" class="circular-chart humi">
         <path class="circle-bg"
           d="M18 2.0845
@@ -142,7 +153,6 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
         />
         <text x="18" y="20.35" class="percentage" id="HumValue"> Init...</text>
       </svg>
-      <div class="tag">Humidity</div>
     </div>
   </div>
   <script>
