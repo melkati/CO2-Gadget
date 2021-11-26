@@ -676,6 +676,7 @@ void menu_init() {
   batteryConfigMenu[0].disable(); // Make information field unselectable
 
   loadTempArraysWithActualValues();
+  
   Serial.println("");
   Serial.println("-->[MENU] Use keys + - * /");
   Serial.println("-->[MENU] to control the menu navigation");
