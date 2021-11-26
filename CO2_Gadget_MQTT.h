@@ -85,9 +85,11 @@ void publishIntMQTT(String topic, int16_t payload) {
   #ifdef SUPPORT_MQTT
   dtostrf(payload, 0, 0, charPublish);
   topic = rootTopic + topic;
+  if (!inMenu) {
   Serial.printf("-->[MQTT] Publishing %d to ", payload);
   Serial.println("topic: " + topic);
   mqttClient.publish((topic).c_str(), charPublish);
+  }
   #endif
 }
 
@@ -95,9 +97,11 @@ void publishFloatMQTT(String topic, float payload) {
   #ifdef SUPPORT_MQTT
   dtostrf(payload, 0, 2, charPublish);
   topic = rootTopic + topic;
+  if (!inMenu) {
   Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
   Serial.println("topic: " + topic);
   mqttClient.publish((topic).c_str(), charPublish);
+  }
   #endif
 }
 
