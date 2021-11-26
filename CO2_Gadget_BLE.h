@@ -9,6 +9,7 @@ void initBLE() {
       Serial.println(gadgetBle.getDeviceIdString());
       return; // If BLE is already initialized do nothing and return
     } else {
+      gadgetBle.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds
       gadgetBle.begin();
       Serial.print("Sensirion GadgetBle Lib initialized with deviceId = ");
       Serial.println(gadgetBle.getDeviceIdString());
