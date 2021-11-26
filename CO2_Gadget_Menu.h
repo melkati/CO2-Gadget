@@ -258,6 +258,18 @@ result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+result doSetHostName(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting WiFi Password to #%s#\n", tempWiFiPasswrd);
+  Serial.print(F("action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif
+  hostName = String(tempHostName);
+  hostName.trim();
+  return proceed;
+}
+
 TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
@@ -268,7 +280,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   #endif  
-  ,EDIT("Host:", tempHostName, alphaNum, doNothing, noEvent, wrapStyle)
+  ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
 
@@ -664,4 +676,8 @@ void menu_init() {
   batteryConfigMenu[0].disable(); // Make information field unselectable
 
   loadTempArraysWithActualValues();
+  Serial.println("");
+  Serial.println("-->[MENU] Use keys + - * /");
+  Serial.println("-->[MENU] to control the menu navigation");
+  Serial.println("");
 }
