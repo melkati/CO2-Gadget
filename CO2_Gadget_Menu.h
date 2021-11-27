@@ -418,17 +418,20 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
-  #ifndef DEBUG_ARDUINOMENU
+  #ifdef DEBUG_ARDUINOMENU
     Serial.printf("[MENU] Setting setTempOffset to %.1f\n",tempOffset);
   #endif
-  sensors.setTempOffset(int(tempOffset*100));
+  sensors.setTempOffset(tempOffset);
+  preferences.begin("CO2-Gadget", false);
+  preferences.putFloat("tempOffset", tempOffset);
+  preferences.end();
   nav.target-> dirty = true;
   return proceed;
 }
 
 MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
-  ,FIELD(temp, "Temp", "deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset","deg C",-50,50,1,0.1,doSetTempOffset,anyEvent,wrapStyle)
+  ,FIELD(temp, "Temp", " deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset"," deg C",-50,50,1,0.1,doSetTempOffset,(eventMask)(enterEvent | exitEvent | updateEvent),wrapStyle)
   ,EXIT("<Back"));
 
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle

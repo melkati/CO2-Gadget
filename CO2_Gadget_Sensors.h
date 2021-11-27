@@ -64,7 +64,6 @@ void initSensors() {
   Serial.println("-->[SENS] Detecting sensors..");
 
   sensors.setSampleTime(5); // config sensors sample time interval
-  sensors.setTempOffset(tempOffset);
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(true);                     // [optional] debug mode
