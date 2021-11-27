@@ -18,6 +18,7 @@ bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
+float tempOffset = 0.0;
 
 uint16_t co2 = 0;
 float temp, hum = 0;
@@ -63,12 +64,11 @@ void initSensors() {
   Serial.println("-->[SENS] Detecting sensors..");
 
   sensors.setSampleTime(5); // config sensors sample time interval
+  sensors.setTempOffset(tempOffset);
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(false);                     // [optional] debug mode
+  sensors.setDebugMode(true);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
-  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
-  // offset
 
   sensors.init();
   if (sensors.isPmSensorConfigured())

@@ -30,7 +30,12 @@ public:
 result systemReboot() {
   Serial.println();
   Serial.println("Reboot CO2 Gadget at user request from menu...");
-  //do some termiination stuff here
+  //do some termination stuff here
+  if (sensors.getPmDeviceSelected() == "SCD30") {
+    Serial.println("Resetting SCD30 sensor...");
+    delay(100);
+    sensors.scd30.reset();
+  }
   ESP.restart();
   return quit;
 }
@@ -412,6 +417,19 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
+result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
+  #ifndef DEBUG_ARDUINOMENU
+    Serial.printf("[MENU] Setting setTempOffset to %.1f\n",tempOffset);
+  #endif
+  sensors.setTempOffset(int(tempOffset*100));
+  nav.target-> dirty = true;
+  return proceed;
+}
+
+MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
+  ,FIELD(temp, "Temp", "deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset","deg C",-50,50,1,0.1,doSetTempOffset,anyEvent,wrapStyle)
+  ,EXIT("<Back"));
 
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doNothing, noEvent)
@@ -432,6 +450,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(espnowConfigMenu)
 #endif  
   ,SUBMENU(batteryConfigMenu)
+  ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
@@ -552,7 +571,9 @@ String rightPad(String aString,uint8_t aLenght) {
 void loadTempArraysWithActualValues() {
   String paddedString;
 
+  #ifdef DEBUG_ARDUINOMENU
   Serial.print("-->[MENU] loadTempArraysWithActualValues()");
+  #endif
 
   paddedString = rightPad(rootTopic, 30);
   paddedString.toCharArray(tempMQTTTopic, paddedString.length());
@@ -628,20 +649,20 @@ result idle(menuOut &o, idleEvent e) {
 #if defined SUPPORT_TFT
   if (e == idleStart) {
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event idleStart");
+    Serial.println("-->[MQTT] Event idleStart");
 #endif
     setInMenu(false);
     readBatteryVoltage();
-  } else if (e == idling) {
+  } else if (e == idling) { // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event iddling");
+    Serial.println("-->[MQTT] Event iddling");
     Serial.flush();
 #endif
     showValuesTFT(co2);
     readBatteryVoltage();
   } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event idleEnd");
+    Serial.println("-->[MQTT] Event idleEnd");
     Serial.flush();
 #endif
   setInMenu(true);
@@ -674,9 +695,10 @@ void menu_init() {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
+  temperatureConfigMenu[0].disable();
 
   loadTempArraysWithActualValues();
-  
+
   Serial.println("");
   Serial.println("-->[MENU] Use keys + - * /");
   Serial.println("-->[MENU] to control the menu navigation");

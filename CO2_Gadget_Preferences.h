@@ -5,6 +5,7 @@ void printPreferences() {
   Serial.println("");
   Serial.println("LOADED PREFERENCES FROM NVR:");
   Serial.printf("customCalibrationValue: #%d#\n", customCalibrationValue);
+  Serial.printf("tempOffset:\t #%.1f#\n", tempOffset);
   Serial.printf("altidudeMeters:\t #%d#\n", altidudeMeters);
   Serial.printf("autoSelfCalibration:\t #%s#\n",
                 ((autoSelfCalibration) ? "Enabled" : "Disabled"));
@@ -38,6 +39,7 @@ void initPreferences() {
   preferences.begin("CO2-Gadget", false);
   // preferences.clear(); // Remove all preferences
   customCalibrationValue = preferences.getUInt("customCalValue", 415);
+  tempOffset = preferences.getFloat("tempOffset", 0);
   altidudeMeters = preferences.getUInt("altidudeMeters", 0);
   autoSelfCalibration = preferences.getBool("autoSelfCal", false);
   co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
@@ -89,6 +91,7 @@ void putPreferences() {
   preferences.end();
   preferences.begin("CO2-Gadget", false);
   preferences.putUInt("customCalValue", customCalibrationValue);
+  preferences.putUInt("tempOffset", tempOffset);
   preferences.putUInt("altidudeMeters", altidudeMeters);
   preferences.putBool("autoSelfCal", autoSelfCalibration);
   preferences.putUInt("co2OrangeRange", co2OrangeRange);
