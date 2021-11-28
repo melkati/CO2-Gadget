@@ -53,7 +53,7 @@ void displaySplashScreenTFT() {
   tft.setTextColor(SENSIRION_GREEN, TFT_WHITE);
 
   uint8_t defaultDatum = tft.getTextDatum();
-  tft.setTextDatum(1); // Top centre
+  tft.setTextDatum(TC_DATUM); // Top centre
 
   tft.setTextSize(1);
   tft.setFreeFont(FF99);
@@ -72,6 +72,22 @@ void displaySplashScreenTFT() {
 #endif
 }
 
+void showVoltageTFT() {
+#if defined SUPPORT_TFT
+  // Draw Voltaje number
+  if (battery_voltage <= 3.6) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (battery_voltage <= 3.8) {
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  } else {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  }
+
+  tft.setTextDatum(BC_DATUM); // Bottom centre
+  tft.drawString(String(battery_voltage) + "V", tft.width() / 2, 125);
+#endif
+}
+
 void showValuesTFT(uint16_t co2) {
 #if defined SUPPORT_TFT
   if (co2 > 9999) {
@@ -86,10 +102,10 @@ void showValuesTFT(uint16_t co2) {
   tft.setFreeFont(FF90);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  tft.setTextDatum(6); // bottom left
+  tft.setTextDatum(BL_DATUM); // bottom left
   tft.drawString("CO2", 10, 125);
 
-  tft.setTextDatum(8); // bottom right
+  tft.setTextDatum(BR_DATUM); // bottom right
   if (activeBLE) {
     tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
   }
@@ -103,7 +119,7 @@ void showValuesTFT(uint16_t co2) {
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
   }
 
-  tft.setTextDatum(8); // bottom right
+  tft.setTextDatum(BR_DATUM); // bottom right
   tft.setTextSize(1);
   tft.setFreeFont(FF95);
   tft.drawString(String(co2), 195, 105);
@@ -113,25 +129,13 @@ void showValuesTFT(uint16_t co2) {
   tft.setFreeFont(FF90);
   tft.drawString("ppm", 230, 90);
 
+  showVoltageTFT();
+
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
 
   // set default font for menu
   tft.setFreeFont(NULL);
   tft.setTextSize(2);
-#endif
-}
-
-void showVoltageTFT() {
-#if defined SUPPORT_TFT
-  static uint64_t timeStamp = 0;
-  if (millis() - timeStamp > 1000) {
-    timeStamp = millis();
-    String voltage = "Voltage :" + String(battery_voltage) + "V";
-    Serial.println(voltage);
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString(voltage, tft.width() / 2, tft.height() / 2);
-  }
 #endif
 }
