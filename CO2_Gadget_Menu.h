@@ -74,11 +74,6 @@ void setInMenu(bool isInMenu) {
   Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
 }
 
-void setInMenu(bool isInMenu) {
-  inMenu = isInMenu;
-  Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
-}
-
 void fillTempIPAddress() {
   if ((activeWIFI) && (WiFi.isConnected())) {
     sprintf(tempIPAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
