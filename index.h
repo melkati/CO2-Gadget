@@ -1,6 +1,7 @@
 const char MAIN_page[] PROGMEM = R"rawliteral(
 <!-- See https://medium.com/@pppped/how-to-code-a-responsive-circular-percentage-chart-with-svg-and-css-3632f8cd7705 -->
 <!DOCTYPE html>
+<html lang=”en”>
 <html>
 
 <head>
@@ -8,6 +9,14 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
   <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
   <style>
+      .tag {
+        font: bolder large arial;
+        font-family: Arial;
+        display: flex; 
+        justify-content: space-around;
+        background-color: rgb(150, 238, 234);
+        color: #666;
+      }
     .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
@@ -65,13 +74,22 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
 
 /*smartphone styles*/
 @media only screen and (max-width: 639px) {
-    .flex-wrapper {
-       flex-flow: column wrap;
-       align-items: center;
-    }
-    .single-chart {
-        hight: 33%;
-    }
+  .flex-wrapper {
+    flex-flow: column wrap;
+    align-items: center;
+  }
+  .single-chart {
+    display: flex;
+    justify-content: space-around;
+    hight: 55vh;
+    width: 35vh;
+    flex-flow: wrap;
+  }
+  .tag {
+    font: bolder condensed 90% arial;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+  }
 }
   </style>
 </head>
@@ -80,6 +98,7 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
 
   <div class="flex-wrapper">
     <div class="single-chart">
+      <div class="tag">CO2</div>
       <svg viewBox="0 0 36 36" class="circular-chart co2">
         <path class="circle-bg"
           d="M18 2.0845
@@ -102,6 +121,7 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
     </div>
     
     <div class="single-chart">
+      <div class="tag">Temperature</div>
       <svg viewBox="0 0 36 36" class="circular-chart temp">
         <path class="circle-bg"
           d="M18 2.0845
@@ -119,6 +139,7 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
     </div>
   
     <div class="single-chart">
+      <div class="tag">Humidity</div>
       <svg viewBox="0 0 36 36" class="circular-chart humi">
         <path class="circle-bg"
           d="M18 2.0845
@@ -285,3 +306,4 @@ const char SIMPLE_page[] PROGMEM = R"rawliteral(
 
 </html>
 )rawliteral";
+
