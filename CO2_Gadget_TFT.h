@@ -72,6 +72,62 @@ void displaySplashScreenTFT() {
 #endif
 }
 
+void showHumidity() {
+#if defined SUPPORT_TFT
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(hum, 0) + "%", 15*10, 125);
+#endif
+}
+
+void showBatteryIconTFT()
+{
+  uint8_t batteryLevel = battery.level();
+  
+
+  tft.drawRect(tft.width() - 27, 2, 26, 12, TFT_WHITE); // Battery outter rectangle
+  tft.drawLine(tft.width() - 2, 4, tft.width(), 10, TFT_WHITE);
+  if (batteryLevel > 20)
+  {
+    tft.fillRect(tft.width() - 25, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 40)
+  {
+    tft.fillRect(tft.width() - 19, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 60)
+  {
+    tft.fillRect(tft.width() - 13, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 80)
+  {
+    tft.fillRect(tft.width() - 7, 4, 4, 10, TFT_WHITE);
+  }
+}
+
+void showTemperatureTFT() {
+#if defined SUPPORT_TFT
+  // Draw Voltaje number
+  if (temp >= 28) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (temp >= 23) {
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  } else if (temp >= 18) {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  } else if (temp >= 13) {
+    tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  } else if (temp >= 8) {
+    tft.setTextColor(TFT_DARKCYAN, TFT_BLACK);
+  } else {
+    tft.setTextColor(TFT_BLUE, TFT_BLACK);
+  }
+
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(temp, 1) + "ºC", 9*10, 125);
+#endif
+}
+
 void showVoltageTFT() {
 #if defined SUPPORT_TFT
   // Draw Voltaje number
@@ -83,8 +139,8 @@ void showVoltageTFT() {
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
   }
 
-  tft.setTextDatum(BC_DATUM); // Bottom centre
-  tft.drawString(String(battery_voltage) + "V", tft.width() / 2, 125);
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(battery_voltage, 1) + "V", 5*10, 125);
 #endif
 }
 
@@ -103,7 +159,7 @@ void showValuesTFT(uint16_t co2) {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   tft.setTextDatum(BL_DATUM); // bottom left
-  tft.drawString("CO2", 10, 125);
+  tft.drawString("CO2", 0, 125);
 
   tft.setTextDatum(BR_DATUM); // bottom right
   if (activeBLE) {
@@ -130,6 +186,9 @@ void showValuesTFT(uint16_t co2) {
   tft.drawString("ppm", 230, 90);
 
   showVoltageTFT();
+  showTemperatureTFT();
+  showHumidity();
+  showBatteryIconTFT();
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
