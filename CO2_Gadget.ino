@@ -29,6 +29,8 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 
+bool inMenu = false;
+
 bool bleInitialized = false;
 
 // Variables to control automatic display off to save power
@@ -173,11 +175,11 @@ static int startCheckingAfterUs = 1900000;
 void processPendingCommands() {
   if (pendingCalibration == true) {
     if (calibrationValue != 0) {
-      printf("Calibrating CO2 sensor at %d PPM\n", calibrationValue);
+      printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
       pendingCalibration = false;
       sensors.setCO2RecalibrationFactor(calibrationValue);
     } else {
-      printf("Avoiding calibrating CO2 sensor with invalid value at %d PPM\n",
+      printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n",
              calibrationValue);
       pendingCalibration = false;
     }
@@ -185,12 +187,12 @@ void processPendingCommands() {
 
   if (pendingAmbientPressure == true) {
     if (ambientPressureValue != 0) {
-      printf("Setting AmbientPressure for CO2 sensor at %d mbar\n",
+      printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n",
              ambientPressureValue);
       pendingAmbientPressure = false;
       sensors.scd30.setAmbientPressure(ambientPressureValue);
     } else {
-      printf("Avoiding setting AmbientPressure for CO2 sensor with invalid "
+      printf("-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
              "value at %d mbar\n",
              ambientPressureValue);
       pendingAmbientPressure = false;
@@ -208,7 +210,7 @@ void readingsLoop() {
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
       // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
-        Serial.println("WiFi not connected");
+        Serial.println("-->[MAIN] WiFi not connected");
       }
       #ifdef SUPPORT_MQTT
       publishMQTT();
@@ -230,7 +232,7 @@ void displayLoop() {
     return;
 
   if (millis() > nextTimeToDisplayOff) {
-    Serial.println("Turning off display to save power");
+    Serial.println("-->[MAIN] Turning off display to save power");
     setTFTBrightness(0); // Turn off the display
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
@@ -245,7 +247,7 @@ void setup() {
   // Serial.printf("Free heap: %d", ESP.getFreeHeap());
   // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
   // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
-  Serial.printf("\nCO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
+  Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
   // setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
   initBattery();
@@ -270,7 +272,7 @@ void setup() {
   buttonsInit();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
                  brown_reg_temp); // enable brownout detector
-  Serial.println("Ready.");
+  Serial.println("-->[STUP] Ready.");
 }
 
 void loop() {
