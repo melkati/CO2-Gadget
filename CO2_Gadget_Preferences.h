@@ -39,7 +39,7 @@ void initPreferences() {
   preferences.begin("CO2-Gadget", false);
   // preferences.clear(); // Remove all preferences
   customCalibrationValue = preferences.getUInt("customCalValue", 415);
-  tempOffset = preferences.getFloat("tempOffset", 0);
+  tempOffset = float(preferences.getFloat("tempOffset", 0));
   altidudeMeters = preferences.getUInt("altidudeMeters", 0);
   autoSelfCalibration = preferences.getBool("autoSelfCal", false);
   co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
