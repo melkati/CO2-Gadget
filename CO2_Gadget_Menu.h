@@ -67,6 +67,7 @@ char tempMQTTPass[]     = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
+char tempBLEDeviceId[]  = "                              ";
 
 void setInMenu(bool isInMenu) {
   inMenu = isInMenu;
@@ -419,7 +420,7 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
 
 result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting setTempOffset to %.1f\n",tempOffset);
+    Serial.printf("[MENU] Setting setTempOffset to %.2f\n",tempOffset);
   #endif
   sensors.setTempOffset(tempOffset);
   preferences.begin("CO2-Gadget", false);
@@ -460,9 +461,10 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp:" BUILD_GIT, doNothing, noEvent)
-  ,OP("Version:" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
-  ,EDIT("IP:", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,OP("Comp" BUILD_GIT, doNothing, noEvent)
+  ,OP("Version" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -575,7 +577,7 @@ void loadTempArraysWithActualValues() {
   String paddedString;
 
   #ifdef DEBUG_ARDUINOMENU
-  Serial.print("-->[MENU] loadTempArraysWithActualValues()");
+  Serial.println("-->[MENU] loadTempArraysWithActualValues()");
   #endif
 
   paddedString = rightPad(rootTopic, 30);
@@ -644,6 +646,14 @@ void loadTempArraysWithActualValues() {
   Serial.println("#");
   #endif
 
+  paddedString = rightPad(gadgetBle.getDeviceIdString(), 30);
+  paddedString.toCharArray(tempBLEDeviceId, paddedString.length());  
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempBLEDeviceId: #");
+  Serial.print(tempBLEDeviceId);
+  Serial.println("#");
+  #endif
+
   fillTempIPAddress();
 }
 
@@ -684,7 +694,7 @@ result idle(menuOut &o, idleEvent e) {
 void menu_init() {
   nav.idleTask = idle; // function to be used when menu is suspended
   nav.idleOn(idle);
-  nav.timeOut = 120;
+  nav.timeOut = 30;
   nav.showTitle = true;
   options->invertFieldKeys = true;
   nav.useUpdateEvent = true;
@@ -693,6 +703,7 @@ void menu_init() {
   informationMenu[1].disable();
   informationMenu[2].disable();
   informationMenu[3].disable();
+  informationMenu[4].disable();
   // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
