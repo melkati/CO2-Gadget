@@ -53,7 +53,7 @@ void displaySplashScreenTFT() {
   tft.setTextColor(SENSIRION_GREEN, TFT_WHITE);
 
   uint8_t defaultDatum = tft.getTextDatum();
-  tft.setTextDatum(1); // Top centre
+  tft.setTextDatum(TC_DATUM); // Top centre
 
   tft.setTextSize(1);
   tft.setFreeFont(FF99);
@@ -72,6 +72,78 @@ void displaySplashScreenTFT() {
 #endif
 }
 
+void showHumidity() {
+#if defined SUPPORT_TFT
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(hum, 0) + "%", 15*10, 125);
+#endif
+}
+
+void showBatteryIconTFT()
+{
+  uint8_t batteryLevel = battery.level();
+  
+
+  tft.drawRect(tft.width() - 27, 2, 26, 12, TFT_WHITE); // Battery outter rectangle
+  tft.drawLine(tft.width() - 2, 4, tft.width(), 10, TFT_WHITE);
+  if (batteryLevel > 20)
+  {
+    tft.fillRect(tft.width() - 25, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 40)
+  {
+    tft.fillRect(tft.width() - 19, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 60)
+  {
+    tft.fillRect(tft.width() - 13, 4, 4, 10, TFT_WHITE);
+  }
+  if (batteryLevel > 80)
+  {
+    tft.fillRect(tft.width() - 7, 4, 4, 10, TFT_WHITE);
+  }
+}
+
+void showTemperatureTFT() {
+#if defined SUPPORT_TFT
+  // Draw Voltaje number
+  if (temp >= 28) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (temp >= 23) {
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  } else if (temp >= 18) {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  } else if (temp >= 13) {
+    tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  } else if (temp >= 8) {
+    tft.setTextColor(TFT_DARKCYAN, TFT_BLACK);
+  } else {
+    tft.setTextColor(TFT_BLUE, TFT_BLACK);
+  }
+
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(temp, 1) + "ºC", 9*10, 125);
+#endif
+}
+
+void showVoltageTFT() {
+#if defined SUPPORT_TFT
+  // Draw Voltaje number
+  if (battery_voltage <= 3.6) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (battery_voltage <= 3.8) {
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  } else {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  }
+
+  tft.setTextDatum(BL_DATUM);
+  tft.drawString(String(battery_voltage, 1) + "V", 5*10, 125);
+#endif
+}
+
 void showValuesTFT(uint16_t co2) {
 #if defined SUPPORT_TFT
   if (co2 > 9999) {
@@ -86,10 +158,10 @@ void showValuesTFT(uint16_t co2) {
   tft.setFreeFont(FF90);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  tft.setTextDatum(6); // bottom left
-  tft.drawString("CO2", 10, 125);
+  tft.setTextDatum(BL_DATUM); // bottom left
+  tft.drawString("CO2", 0, 125);
 
-  tft.setTextDatum(8); // bottom right
+  tft.setTextDatum(BR_DATUM); // bottom right
   if (activeBLE) {
     tft.drawString(gadgetBle.getDeviceIdString(), 230, 125);
   }
@@ -103,7 +175,7 @@ void showValuesTFT(uint16_t co2) {
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
   }
 
-  tft.setTextDatum(8); // bottom right
+  tft.setTextDatum(BR_DATUM); // bottom right
   tft.setTextSize(1);
   tft.setFreeFont(FF95);
   tft.drawString(String(co2), 195, 105);
@@ -113,25 +185,16 @@ void showValuesTFT(uint16_t co2) {
   tft.setFreeFont(FF90);
   tft.drawString("ppm", 230, 90);
 
+  showVoltageTFT();
+  showTemperatureTFT();
+  showHumidity();
+  showBatteryIconTFT();
+
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
 
   // set default font for menu
   tft.setFreeFont(NULL);
   tft.setTextSize(2);
-#endif
-}
-
-void showVoltageTFT() {
-#if defined SUPPORT_TFT
-  static uint64_t timeStamp = 0;
-  if (millis() - timeStamp > 1000) {
-    timeStamp = millis();
-    String voltage = "Voltage :" + String(battery_voltage) + "V";
-    Serial.println(voltage);
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString(voltage, tft.width() / 2, tft.height() / 2);
-  }
 #endif
 }

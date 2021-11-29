@@ -2,6 +2,8 @@
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 
+👉 **Please, due to a issue with memory, use [development branch](https://github.com/melkati/CO2-Gadget/tree/development) while problem gets sorted out.** It uses a [modified version of the Sensirion Gadget BLE Arduino Lib]( https://github.com/melkati/arduino-ble-gadget.git#setSampleIntervalMs)
+
 # CO2-Gadget
 
 An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-Now) and many supported sensors.

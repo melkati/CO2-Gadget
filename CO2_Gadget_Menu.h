@@ -30,7 +30,12 @@ public:
 result systemReboot() {
   Serial.println();
   Serial.println("Reboot CO2 Gadget at user request from menu...");
-  //do some termiination stuff here
+  //do some termination stuff here
+  if (sensors.getPmDeviceSelected() == "SCD30") {
+    Serial.println("Resetting SCD30 sensor...");
+    delay(100);
+    sensors.scd30.reset();
+  }
   ESP.restart();
   return quit;
 }
@@ -62,6 +67,12 @@ char tempMQTTPass[]     = "                              ";
 char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
+char tempBLEDeviceId[]  = "                              ";
+
+void setInMenu(bool isInMenu) {
+  inMenu = isInMenu;
+  Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
+}
 
 void setInMenu(bool isInMenu) {
   inMenu = isInMenu;
@@ -412,6 +423,22 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 
+result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
+    Serial.printf("[MENU] Setting setTempOffset to %.2f\n",tempOffset);
+  #endif
+  sensors.setTempOffset(tempOffset);
+  preferences.begin("CO2-Gadget", false);
+  preferences.putFloat("tempOffset", tempOffset);
+  preferences.end();
+  nav.target-> dirty = true;
+  return proceed;
+}
+
+MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
+  ,FIELD(temp, "Temp", " deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset"," deg C",-50,50,1,0.1,doSetTempOffset,(eventMask)(enterEvent | exitEvent | updateEvent),wrapStyle)
+  ,EXIT("<Back"));
 
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doNothing, noEvent)
@@ -432,15 +459,17 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(espnowConfigMenu)
 #endif  
   ,SUBMENU(batteryConfigMenu)
+  ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp:" BUILD_GIT, doNothing, noEvent)
-  ,OP("Version:" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
-  ,EDIT("IP:", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,OP("Comp" BUILD_GIT, doNothing, noEvent)
+  ,OP("Version" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
+  ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -552,7 +581,9 @@ String rightPad(String aString,uint8_t aLenght) {
 void loadTempArraysWithActualValues() {
   String paddedString;
 
-  Serial.print("-->[MENU] loadTempArraysWithActualValues()");
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.println("-->[MENU] loadTempArraysWithActualValues()");
+  #endif
 
   paddedString = rightPad(rootTopic, 30);
   paddedString.toCharArray(tempMQTTTopic, paddedString.length());
@@ -620,6 +651,14 @@ void loadTempArraysWithActualValues() {
   Serial.println("#");
   #endif
 
+  paddedString = rightPad(gadgetBle.getDeviceIdString(), 30);
+  paddedString.toCharArray(tempBLEDeviceId, paddedString.length());  
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempBLEDeviceId: #");
+  Serial.print(tempBLEDeviceId);
+  Serial.println("#");
+  #endif
+
   fillTempIPAddress();
 }
 
@@ -628,20 +667,20 @@ result idle(menuOut &o, idleEvent e) {
 #if defined SUPPORT_TFT
   if (e == idleStart) {
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event idleStart");
+    Serial.println("-->[MQTT] Event idleStart");
 #endif
     setInMenu(false);
     readBatteryVoltage();
-  } else if (e == idling) {
+  } else if (e == idling) { // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event iddling");
+    Serial.println("-->[MQTT] Event iddling");
     Serial.flush();
 #endif
     showValuesTFT(co2);
     readBatteryVoltage();
   } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
-    Serial.println("Event idleEnd");
+    Serial.println("-->[MQTT] Event idleEnd");
     Serial.flush();
 #endif
   setInMenu(true);
@@ -660,7 +699,7 @@ result idle(menuOut &o, idleEvent e) {
 void menu_init() {
   nav.idleTask = idle; // function to be used when menu is suspended
   nav.idleOn(idle);
-  nav.timeOut = 120;
+  nav.timeOut = 30;
   nav.showTitle = true;
   options->invertFieldKeys = true;
   nav.useUpdateEvent = true;
@@ -669,14 +708,15 @@ void menu_init() {
   informationMenu[1].disable();
   informationMenu[2].disable();
   informationMenu[3].disable();
+  informationMenu[4].disable();
   // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
   }
   batteryConfigMenu[0].disable(); // Make information field unselectable
+  temperatureConfigMenu[0].disable();
 
   loadTempArraysWithActualValues();
-  
   Serial.println("");
   Serial.println("-->[MENU] Use keys + - * /");
   Serial.println("-->[MENU] to control the menu navigation");

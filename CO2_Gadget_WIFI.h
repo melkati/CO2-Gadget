@@ -36,7 +36,7 @@ void printWiFiStatus() { // Print wifi status on serial monitor
   //  WL_CONNECTION_LOST: assigned when the connection is lost;
   //  WL_DISCONNECTED: assigned when disconnected from a network;
 
-  Serial.print("[WiFi-Status] ");
+  Serial.print("-->[WiFi-Status] ");
   switch (WiFi.status()) {
     case WL_CONNECTED: 
       Serial.println("WiFi connected");
@@ -115,7 +115,7 @@ void printWiFiStatus() { // Print wifi status on serial monitor
 }
 
 void WiFiEvent(WiFiEvent_t event) {
-    Serial.printf("[WiFi-event] event: %d - ", event);
+    Serial.printf("-->[WiFi-event] event: %d - ", event);
 
     switch (event) {
         case SYSTEM_EVENT_WIFI_READY: 

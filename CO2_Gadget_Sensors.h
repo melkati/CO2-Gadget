@@ -18,6 +18,7 @@ bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
+float tempOffset = 0.0f;
 
 uint16_t co2 = 0;
 float temp, hum = 0;
@@ -65,10 +66,10 @@ void initSensors() {
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(false);                     // [optional] debug mode
+  sensors.setDebugMode(true);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
-  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
-  // offset
+  uint32_t workaroundOffset = tempOffset*1000;    // workaraound https://t.me/canairio/18464
+  sensors.setTempOffset(float(workaroundOffset/1000.0));
 
   sensors.init();
   if (sensors.isPmSensorConfigured())
