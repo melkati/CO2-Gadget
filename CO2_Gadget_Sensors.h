@@ -18,6 +18,7 @@ bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
+float tempOffset = 0.0f;
 
 uint16_t co2 = 0;
 float temp, hum = 0;
@@ -30,12 +31,14 @@ uint16_t co2RedRange =
           // (user can change on menu and save on preferences)
 
 void onSensorDataOk() {
-  // Serial.print("-->[MAIN] CO2: " + sensors.getStringCO2());
-  // Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
-  // Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
+  if (!inMenu) {
+    Serial.print("-->[SENS] CO2: " + sensors.getStringCO2());
+    Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
+    Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
 
-  // Serial.print(" H: " + String(sensors.getHumidity()));
-  // Serial.println(" T: " + String(sensors.getTemperature()));
+    Serial.print(" H: " + String(sensors.getHumidity()));
+    Serial.println(" T: " + String(sensors.getTemperature()));
+  }
 
   co2 = sensors.getCO2();
   temp = sensors.getCO2temp();
@@ -49,7 +52,7 @@ void initSensors() {
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
-  Serial.println("-->[SETUP] Turning on sensor..");
+  Serial.println("-->[SENS] Turning on sensor..");
   pinMode(ENABLE_PIN, OUTPUT);
   digitalWrite(ENABLE_PIN, ENABLE_PIN_HIGH);
   delay(50);
@@ -58,20 +61,20 @@ void initSensors() {
   // Initialize sensors
   Wire.begin(I2C_SDA, I2C_SCL);
 
-  Serial.println("-->[SETUP] Detecting sensors..");
+  Serial.println("-->[SENS] Detecting sensors..");
 
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(false);                     // [optional] debug mode
-  sensors.detectI2COnly(false);                    // force to only i2c sensors
-  // sensors.scd30.setTemperatureOffset(2.0);         // example to set temp
-  // offset
+  sensors.detectI2COnly(true);                    // force to only i2c sensors
+  
+  sensors.setTempOffset(tempOffset);
 
   sensors.init(sensors.SENSEAIRS8);
 
   if (sensors.isPmSensorConfigured())
-    Serial.println("-->[SETUP] Sensor configured: " +
+    Serial.println("-->[SENS] Sensor configured: " +
                    sensors.getPmDeviceSelected());
 
   delay(500);

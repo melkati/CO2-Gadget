@@ -29,10 +29,16 @@ void initBattery() {
 	battery.begin(vRef, voltageDividerRatio, &sigmoidal);
 }
 
-void readBatteryVoltage() {
+float readBatteryVoltage() {
   static uint16_t batterySecondsBetweenReads = 60;
   static uint64_t batteryTimeStamp = (-1 * (batterySecondsBetweenReads*1000));
   if (millis() > batteryTimeStamp + (batterySecondsBetweenReads*1000)) { 
     battery_voltage = (float)battery.voltage() / 1000;    
   }
+  return(battery_voltage);
+}
+
+uint8_t getBatteryPercentage() {
+  Serial.printf("Battery Level: %d%%\n", battery.level());
+  return battery.level();
 }

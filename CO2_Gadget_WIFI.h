@@ -17,7 +17,7 @@ WiFiClient espClient;
 AsyncWebServer server(80);
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-  Serial.print("WifiSetup: SSID = ");
+  Serial.print("-->[WiFi] WifiSetup: SSID = ");
   Serial.print(ssid.c_str());
   Serial.print(", Password = ");
   Serial.println(password.c_str());
@@ -36,7 +36,7 @@ void printWiFiStatus() { // Print wifi status on serial monitor
   //  WL_CONNECTION_LOST: assigned when the connection is lost;
   //  WL_DISCONNECTED: assigned when disconnected from a network;
 
-  Serial.print("wifi_status: ");
+  Serial.print("-->[WiFi-Status] ");
   switch (WiFi.status()) {
     case WL_CONNECTED: 
       Serial.println("WiFi connected");
@@ -68,19 +68,19 @@ void printWiFiStatus() { // Print wifi status on serial monitor
   }
     
   // Print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
+  Serial.print("-->[WiFi] SSID: ");
   Serial.println(WiFi.SSID());
 
   // Print your WiFi shield's IP address:
-  Serial.print("IP Address: ");
+  Serial.print("-->[WiFi] IP Address: ");
   Serial.println(WiFi.localIP());
 
   // Print your WiFi shield's MAC address:
-  Serial.print("MAC Adress: ");
+  Serial.print("-->[WiFi] MAC Adress: ");
   Serial.println(WiFi.macAddress());
   
   // Print the received signal strength:
-  Serial.print("Signal strength (RSSI):");
+  Serial.print("-->[WiFi] Signal strength (RSSI):");
   Serial.print(WiFi.RSSI());
   Serial.println(" dBm");
 
@@ -115,7 +115,7 @@ void printWiFiStatus() { // Print wifi status on serial monitor
 }
 
 void WiFiEvent(WiFiEvent_t event) {
-    Serial.printf("[WiFi-event] event: %d - ", event);
+    Serial.printf("-->[WiFi-event] event: %d - ", event);
 
     switch (event) {
         case SYSTEM_EVENT_WIFI_READY: 
@@ -217,7 +217,7 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
     WiFi.mode(WIFI_OFF);    // Switch WiFi off
-    Serial.println("WiFi dissabled!");
+    Serial.println("-->[WiFi] WiFi dissabled!");
 }
 
 // Replaces placeholder with actual values
@@ -245,20 +245,20 @@ void initWifi() {
     // WiFi.setSleep(true);
     // WiFi.setSleep(WIFI_PS_NONE);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    Serial.printf("Setting hostname %s: %d\n", hostName.c_str(),
+    Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
                   WiFi.setHostname(hostName.c_str()));
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-    Serial.print("Connecting to WiFi");
+    Serial.print("-->[WiFi] Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
       ++connectionRetries;
       if (connectionRetries==maxConnectionRetries) {
         activeWIFI = false;
-        Serial.printf("\nNot possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
-          Serial.print("wifiSSID: #");
+        Serial.printf("\n[WiFi] Not possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
+          Serial.print("-->[WiFi] wifiSSID: #");
           Serial.print(wifiSSID);
           Serial.println("#");
           #ifndef WIFI_PRIVACY
-          Serial.print("wifiPass: #");
+          Serial.print("-->[WiFi] wifiPass: #");
           Serial.print(wifiPass);
           Serial.println("#");
           #endif
@@ -268,7 +268,7 @@ void initWifi() {
       delay(500);
     }
     Serial.println("");
-    Serial.print("WiFi connected - IP = ");
+    Serial.print("-->[WiFi] WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
     #ifdef SUPPORT_MDNS
     mDNSName = WiFi.getHostname();
@@ -280,9 +280,6 @@ void initWifi() {
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
       response->addHeader("Server","ESP Async Web Server");
       request->send(response);
-    });
-    server.on("/main", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", MAIN_page);
     });
     server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", SIMPLE_page);
@@ -306,7 +303,7 @@ void initWifi() {
 #endif
 
     server.begin();
-    Serial.println("HTTP server started");
+    Serial.println("-->[WiFi] HTTP server started");
 
     printWiFiStatus();
   } 
