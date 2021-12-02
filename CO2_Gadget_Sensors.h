@@ -68,9 +68,7 @@ void initSensors() {
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(true);                     // [optional] debug mode
   sensors.detectI2COnly(true);                    // force to only i2c sensors
-  // uint32_t workaroundOffset = tempOffset*1000;    // workaraound https://t.me/canairio/18464
-  // sensors.setTempOffset(float(workaroundOffset/1000.0));
-
+  
   sensors.setTempOffset(tempOffset);
 
   sensors.init();
