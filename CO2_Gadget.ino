@@ -248,7 +248,7 @@ void setup() {
   // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
   // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
   Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
-  // setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
+  setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
   initBattery();
 #if defined SUPPORT_OLED
