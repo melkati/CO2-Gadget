@@ -11,18 +11,28 @@
 // Download the code as zip, extract it and copy the Folder TFT_eSPI
 //  => https://github.com/Xinyuan-LilyGO/TTGO-T-Display/archive/master.zip
 // to your Arduino library path
+
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include "bootlogo.h"
 #include "icons.h"
-
-#define SENSIRION_GREEN 0x6E66
-#define sw_version "v0.1"
+#include "ArchivoNarrow_Regular10pt7b.h"
+#include "FontCO2Gadget50ptDigits.h"
+// #define SENSIRION_GREEN 0x6E66
+// #define sw_version "v0.1"
 
 #define GFXFF 1
 #define FF99 &SensirionSimple25pt7b
 #define FF90 &ArchivoNarrow_Regular10pt7b
-#define FF95 &ArchivoNarrow_Regular50pt7b
+
+// RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
+// Flash: [==========]  96.6% (used 1899972 bytes from 1966080 bytes)
+// #define FF95 &ArchivoNarrow_Regular50pt7b
+
+// RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
+// Flash: [==========]  95.4% (used 1876292 bytes from 1966080 bytes)
+#define FF95 &FontCO2GadgetDigits50pt7b
+
 
 uint32_t TFTBrightness = 100;
 
@@ -39,9 +49,9 @@ void setTFTBrightness(uint32_t newBrightness) {
 
 void initDisplayTFT() {
 #if defined SUPPORT_TFT
-  pinMode(TFT_BL, OUTPUT);
+  pinMode(BACKLIGHT_PIN, OUTPUT);
   ledcSetup(0, 5000, 8);    // 0-15, 5000, 8
-  ledcAttachPin(TFT_BL, 0); // TFT_BL, 0 - 15
+  ledcAttachPin(BACKLIGHT_PIN, 0); // BACKLIGHT_PIN, 0 - 15
   setTFTBrightness(TFTBrightness);
   tft.init();
   tft.setRotation(1);
@@ -50,22 +60,22 @@ void initDisplayTFT() {
 
 void displaySplashScreenTFT() {
 #if defined SUPPORT_TFT
-  tft.fillScreen(TFT_WHITE);
-  tft.setTextColor(SENSIRION_GREEN, TFT_WHITE);
+  // tft.fillScreen(TFT_WHITE);
+  // tft.setTextColor(SENSIRION_GREEN, TFT_WHITE);
 
-  uint8_t defaultDatum = tft.getTextDatum();
-  tft.setTextDatum(TC_DATUM); // Top centre
+  // uint8_t defaultDatum = tft.getTextDatum();
+  // tft.setTextDatum(TC_DATUM); // Top centre
 
-  tft.setTextSize(1);
-  tft.setFreeFont(FF99);
-  tft.drawString("B", 120, 40);
+  // // tft.setTextSize(1);
+  // // tft.setFreeFont(FF99);
+  // // tft.drawString("B", 120, 40);
 
-  tft.setTextSize(1);
-  tft.drawString(sw_version, 120, 90, 2);
+  // // tft.setTextSize(1);
+  // // tft.drawString(sw_version, 120, 90, 2);
 
-  // Revert datum setting
-  tft.setTextDatum(defaultDatum);
-  delay(500);
+  // // Revert datum setting
+  // tft.setTextDatum(defaultDatum);
+  // delay(500);
   tft.fillScreen(TFT_WHITE);
   tft.setSwapBytes(true);
   tft.pushImage(0, 0, 240, 135, bootlogo);
@@ -165,7 +175,7 @@ void showTemperatureTFT(int32_t posX, int32_t posY) {
   tft.setTextDatum(BL_DATUM);
   tft.setSwapBytes(true);
   tft.pushImage(posX, posY-20, 16, 16, iconTemperature);
-  tft.drawString(String(temp, 1) + "ºC", posX+18, posY);
+  tft.drawString(String(temp, 1) + "~", posX+18, posY);
 #endif
 }
 
