@@ -73,81 +73,76 @@ void displaySplashScreenTFT() {
 #endif
 }
 
-void showHumidity(int32_t posX, int32_t posY) {
-#if defined SUPPORT_TFT
-  if (hum<=25) {
-    tft.setTextColor(TFT_RED, TFT_BLACK);
-  } else if (hum<30) tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  else if (hum<60) tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  else if (hum<70) tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  else tft.setTextColor(TFT_RED, TFT_BLACK);
 
-  tft.setTextDatum(BL_DATUM);
-  tft.drawString(String(hum, 0) + "%", 15*10, posY);
-#endif
-}
 
 void showBatteryIconTFT() {
   uint8_t batteryLevel = battery.level();
   
+  uint16_t color;
+  if (batteryLevel<20) {
+    color = TFT_RED;
+  } else {
+    color = TFT_WHITE;
+  } 
+  
+  tft.drawRect(tft.width() - 27, 2, 26, 12, color); // Battery outter rectangle
+  tft.drawLine(tft.width() - 2, 4, tft.width(), 10, color);
 
-  tft.drawRect(tft.width() - 27, 2, 26, 12, TFT_WHITE); // Battery outter rectangle
-  tft.drawLine(tft.width() - 2, 4, tft.width(), 10, TFT_WHITE);
   if (batteryLevel > 20)
   {
-    tft.fillRect(tft.width() - 25, 4, 4, 10, TFT_WHITE);
+    tft.fillRect(tft.width() - 25, 4, 4, 10, color);
   }
   if (batteryLevel > 40)
   {
-    tft.fillRect(tft.width() - 19, 4, 4, 10, TFT_WHITE);
+    tft.fillRect(tft.width() - 19, 4, 4, 10, color);
   }
   if (batteryLevel > 60)
   {
-    tft.fillRect(tft.width() - 13, 4, 4, 10, TFT_WHITE);
+    tft.fillRect(tft.width() - 13, 4, 4, 10, color);
   }
   if (batteryLevel > 80)
   {
-    tft.fillRect(tft.width() - 7, 4, 4, 10, TFT_WHITE);
+    tft.fillRect(tft.width() - 7, 4, 4, 10, color);
   }
 }
 
 void showWiFiIconTFT(int32_t posX, int32_t posY) {
   int8_t rssi = WiFi.RSSI();
-  tft.fillRoundRect(posX-2, posY-2, 12+4, 16+4, 2, TFT_BLUE);
+  tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_BLUE);
   if (!activeWIFI) {
-    tft.drawBitmap(posX, posY, iconWifiHigh, 12, 16, TFT_BLACK, TFT_DARKGREY);
-    tft.drawLine(posX+3, posY+3, 9, 13, TFT_RED);
+    tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_DARKGREY);
+    tft.drawLine(posX+3, posY+3, posX+10, posY+10, TFT_RED);
   } else {
     if (WiFi.status() == WL_CONNECTED) {
       if (rssi < 60)
-        tft.drawBitmap(posX, posY, iconWifiHigh, 12, 16, TFT_BLACK, TFT_GREEN);
+        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_GREEN);
       else if (rssi < 70)
-        tft.drawBitmap(posX, posY, iconWifiMid, 12, 16, TFT_BLACK, TFT_ORANGE);
+        tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_ORANGE);
       else if (rssi < 90)
-        tft.drawBitmap(posX, posY, iconWifiLow, 12, 16, TFT_BLACK, TFT_YELLOW);
+        tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_YELLOW);
     } else {
-      tft.drawBitmap(posX, posY, iconWifiLow, 12, 16, TFT_BLACK, TFT_RED);
+      tft.drawBitmap(posX, posY, iconWiFiEmpty, 16, 16, TFT_BLACK, TFT_RED);
     }
   }
 }
 
 void showBLEIconTFT(int32_t posX, int32_t posY) {
-  tft.fillRoundRect(posX-2, posY-2, 12+4, 16+4, 2, TFT_BLUE);
+  tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_BLUE);
   if (!activeBLE) {
-    tft.drawBitmap(posX, posY, iconBLE, 12, 16, TFT_BLACK, TFT_DARKGREY);
-    tft.drawLine(posX+3, posY+3, 9, 13, TFT_RED);
+    tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_DARKGREY);
+    tft.drawLine(posX+3, posY+3, posX+10, posY+10, TFT_RED);
   } else {
-    tft.drawBitmap(posX, posY, iconBLE, 12, 16, TFT_BLACK, TFT_GREEN);
+    tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_GREEN);
   }
 }
 
 void showMQTTIconTFT(int32_t posX, int32_t posY) {
-  tft.fillRoundRect(posX-2, posY-2, 12+4, 16+4, 2, TFT_BLUE);
+  tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_BLUE);
   if (!activeMQTT) {
-    tft.drawBitmap(posX, posY, iconMQTT, 12, 16, TFT_BLACK, TFT_DARKGREY);
-    tft.drawLine(posX+3, posY+3, 9, 13, TFT_RED);
+    tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
+    tft.drawLine(posX+3, posY+3, posX+10, posY+10, TFT_RED);
   } else {
-    tft.drawBitmap(posX, posY, iconMQTT, 12, 16, TFT_BLACK, TFT_GREEN);
+    tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_GREEN);
   }
 }
 
@@ -166,9 +161,27 @@ void showTemperatureTFT(int32_t posX, int32_t posY) {
     tft.setTextColor(TFT_DARKCYAN, TFT_BLACK);
   } else {
     tft.setTextColor(TFT_BLUE, TFT_BLACK);
-  }
+  }  
   tft.setTextDatum(BL_DATUM);
-  tft.drawString(String(temp, 1) + "ºC", 9*10, posY);
+  tft.setSwapBytes(true);
+  tft.pushImage(posX, posY-20, 16, 16, iconTemperature);
+  tft.drawString(String(temp, 1) + "ºC", posX+18, posY);
+#endif
+}
+
+void showHumidity(int32_t posX, int32_t posY) {
+#if defined SUPPORT_TFT
+  if (hum<=25) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (hum<30) tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  else if (hum<60) tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  else if (hum<70) tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  else tft.setTextColor(TFT_RED, TFT_BLACK);
+
+  tft.setTextDatum(BL_DATUM);
+  tft.setSwapBytes(true);
+  tft.pushImage(posX, posY-20, 16, 16, iconHumidity);
+  tft.drawString(String(hum, 0) + "%", posX+18, posY);
 #endif
 }
 
@@ -204,7 +217,7 @@ tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   tft.setTextDatum(BL_DATUM); // bottom left
-  tft.drawString("CO2", 0, 135);
+  // tft.drawString("CO2", 0, 135);
 
   
   
@@ -235,20 +248,16 @@ void showValuesTFT(uint16_t co2) {
   }
 
   tft.fillScreen(TFT_BLACK);
-
   uint8_t defaultDatum = tft.getTextDatum();
-
-  
-
   showCO2TFT(co2);
-  showBLEDeviceIdTFT(230, 135);
-  showVoltageTFT(0, 135);
+  // showBLEDeviceIdTFT(230, 135);
+  // showVoltageTFT(0, 135);
   showTemperatureTFT(0, 135);
-  showHumidity(0, 135);
+  showHumidity(180, 135);
   showBatteryIconTFT();
   showWiFiIconTFT(5, 3);
-  showBLEIconTFT(26, 3);
-  showMQTTIconTFT(47, 3);
+  showBLEIconTFT(31, 3);
+  showMQTTIconTFT(57, 3);
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);

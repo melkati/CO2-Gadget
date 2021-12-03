@@ -71,7 +71,9 @@ char tempBLEDeviceId[]  = "                              ";
 
 void setInMenu(bool isInMenu) {
   inMenu = isInMenu;
+  #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
+  #endif
 }
 
 void fillTempIPAddress() {
