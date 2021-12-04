@@ -12,7 +12,7 @@
 #include <SPI.h>
 #include "bootlogo.h"
 #include "icons.h"
-#include "ArchivoNarrow_Regular10pt7b.h"
+#include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
 
 #define GFXFF 1
