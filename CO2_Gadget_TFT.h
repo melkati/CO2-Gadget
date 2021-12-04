@@ -50,7 +50,9 @@ void displaySplashScreenTFT() {
 #if defined SUPPORT_TFT
   tft.fillScreen(TFT_WHITE);
   tft.setSwapBytes(true);
-  tft.pushImage(0, 0, 240, 135, bootlogo);
+  tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+  tft.pushImage(10, 50, 92, 72, CO2Logo);
+  tft.pushImage(112, 67, 122, 46, GadgetLogo);
 #endif
 }
 
