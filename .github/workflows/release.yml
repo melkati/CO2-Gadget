@@ -71,7 +71,7 @@ jobs:
           run: |
             # Create "normal" (no memory erase manifest)
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -93,7 +93,7 @@ jobs:
             #
             # Create "erase" (memory erase manifest)
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
-            echo "  \"name\": \"${{ github.event.repository.name }}- ${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
