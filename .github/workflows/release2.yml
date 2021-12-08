@@ -118,7 +118,7 @@ jobs:
             echo ${{ steps.createmanifest.outputs.manifest }}
 
         - name: Copy binary files
-          if: startsWith(github.ref, 'refs/tags/')
+          # if: startsWith(github.ref, 'refs/tags/')
           run: |
             ls -l .pio/build/${{ matrix.environment }}/
             ls -al .pio/build/${{ matrix.environment }}/ # list the files for confirmation.
