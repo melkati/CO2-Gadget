@@ -74,11 +74,6 @@ jobs:
             echo "::set-output name=date::$(date +'%d-%m-%Y')"
             echo "::set-output name=time::$(date +'%H:%M:%S')"
 
-        - name: Build release version
-          run: |
-            pio run --disable-auto-clean -e ${{ matrix.environment }}
-            # pio run -t buildfs --disable-auto-clean
-
         - name: Create manifest file
           id: createmanifest
           run: |
@@ -116,6 +111,11 @@ jobs:
 #           run:  |
 #             echo "Manifest file contents from variable:"
 #             echo ${{ steps.createmanifest.outputs.manifest }}
+
+        - name: Build release version
+          run: |
+            pio run --disable-auto-clean -e ${{ matrix.environment }}
+            pio run -t buildfs --disable-auto-clean
 
         - name: List files 1
           run: |
