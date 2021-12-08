@@ -65,8 +65,8 @@ jobs:
             echo "::set-output name=time::$(date +'%H:%M:%S')"
         - name: Build test version
           run: |
-            pio run -e ${{ matrix.environment }}
-            pio run -e ${{ matrix.environment }} -t buildfs
+            # pio run -e ${{ matrix.environment }}
+            pio run -e ${{ matrix.environment }} -t upload buildfs
         - name: Create manifest file
           id: createmanifest
           run: |
