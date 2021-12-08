@@ -100,7 +100,7 @@ jobs:
             echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)"
 
-        - name: Read manifest files with cat 
+        - name: Read manifest files
           run:  |
             echo "Manifest file contents readed with cat:"
             cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
