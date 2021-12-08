@@ -72,9 +72,10 @@ void initSensors() {
   sensors.setTempOffset(tempOffset);
 
   sensors.init();
-  if (sensors.isPmSensorConfigured())
-    Serial.println("-->[SENS] Sensor configured: " +
-                   sensors.getPmDeviceSelected());
+
+  if (!sensors.getMainDeviceSelected().isEmpty()) {
+    Serial.println("-->[SENS] Sensor configured: " + sensors.getMainDeviceSelected());
+  }
 
   delay(500);
 

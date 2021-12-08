@@ -31,7 +31,7 @@ result systemReboot() {
   Serial.println();
   Serial.println("Reboot CO2 Gadget at user request from menu...");
   //do some termination stuff here
-  if (sensors.getPmDeviceSelected() == "SCD30") {
+  if (sensors.getMainDeviceSelected().equals("SCD30")) {
     Serial.println("Resetting SCD30 sensor...");
     delay(100);
     sensors.scd30.reset();
