@@ -76,8 +76,8 @@ jobs:
 
         - name: Build release version
           run: |
-            pio run -e ${{ matrix.environment }} -t buildfs
-            # pio run -t buildfs
+            pio run --disable-auto-clean -e ${{ matrix.environment }}
+            # pio run -t buildfs --disable-auto-clean
 
         - name: Create manifest file
           id: createmanifest
