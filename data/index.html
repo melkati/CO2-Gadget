@@ -1,0 +1,82 @@
+<!-- See https://medium.com/@pppped/how-to-code-a-responsive-circular-percentage-chart-with-svg-and-css-3632f8cd7705 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>CO2-Gadget meter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+    integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="./style.css" />
+    <script defer type="text/javascript" src="./main.js"></script>
+</head>
+
+<body>
+  <div class="iconDarkLight" id="iconBulb">
+    <!-- <input type="checkbox"> -->
+    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+      <path fill="var(--icon-color)" d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+  </svg>
+  </div>
+  <div class="flex-wrapper">
+    <div class="single-chart">
+      <div class="tag">CO2</div>
+      <svg viewBox="0 0 36 36" class="circular-chart co2">
+        <path class="circle-bg"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <path class="circle"          
+          stroke-dasharray="50, 100"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <text x="18" y="20.35" class="percentage" id="CO2Value"> Init...</text>
+        <!-- <text x="18" y="20.35" class="percentage">
+          <tspan dy=".6em">CO2</tspan>
+          <tspan dx="0" dy="1.2em" id="CO2Value">Init...</tspan>
+          <tspan dx="0" dy="1.2em">ppm</tspan>
+        </text> -->
+      </svg>
+    </div>
+    
+    <div class="single-chart">
+      <div class="tag">Temperature</div>
+      <svg viewBox="0 0 36 36" class="circular-chart temp">
+        <path class="circle-bg"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <path class="circle"
+          stroke-dasharray="60, 100"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <text x="18" y="20.35" class="percentage" id="TempValue"> Init...</text>
+      </svg>
+    </div>
+  
+    <div class="single-chart">
+      <div class="tag">Humidity</div>
+      <svg viewBox="0 0 36 36" class="circular-chart humi">
+        <path class="circle-bg"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <path class="circle"
+          stroke-dasharray="90, 100"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <text x="18" y="20.35" class="percentage" id="HumValue"> Init...</text>
+      </svg>
+    </div>
+  </div>
+</body>
+
+</html>
