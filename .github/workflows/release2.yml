@@ -126,7 +126,9 @@ jobs:
           run: |
             ls -la .pio/build/${{ matrix.environment }}
             rm -rf ./firmware/${{ matrix.environment }}
+            mkdir ./firmware
             mkdir ./firmware/${{ matrix.environment }}
+            ls -la ./firmware
             ls -la ./firmware/${{ matrix.environment }}
             cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin
             cp .pio/build/${{ matrix.environment }}/partitions.bin  ./firmware/${{ matrix.environment }}/${{ github.event.repository.name }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin
