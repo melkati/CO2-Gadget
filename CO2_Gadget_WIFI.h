@@ -274,13 +274,14 @@ void initWifi() {
     mDNSName = WiFi.getHostname();
     initMDNS();
     #endif
-
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", MAIN_page);
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
       response->addHeader("Server","ESP Async Web Server");
       request->send(response);
-    });
+    });*/
+    SPIFFS.begin();
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", SIMPLE_page);
     });

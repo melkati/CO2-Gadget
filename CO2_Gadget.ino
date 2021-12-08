@@ -56,6 +56,8 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 // clang-format off
 /*****************************************************************************************************/
