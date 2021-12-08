@@ -76,8 +76,8 @@ jobs:
 
         - name: Build release version
           run: |
-            pio run -e ${{ matrix.environment }}
-            pio run -t buildfs
+            pio run -e ${{ matrix.environment }} -t buildfs
+            # pio run -t buildfs
 
         - name: Create manifest file
           id: createmanifest
