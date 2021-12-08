@@ -129,6 +129,9 @@ jobs:
 
             cp ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json ./firmware/${{ matrix.environment }}//${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
 
+            echo "ls -l -a ./firmware"
+            echo "ls -l -a ./firmware/${{ matrix.environment }}"
+
         - name: Create Release
           id: create_release
           uses: softprops/action-gh-release@v1
