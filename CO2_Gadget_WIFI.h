@@ -7,8 +7,6 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#include "index.h" //Web page header file
-
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
 #include "credentials.h"
 #endif
@@ -282,9 +280,6 @@ void initWifi() {
     });*/
     SPIFFS.begin();
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-    server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", SIMPLE_page);
-    });
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(co2));
     });
