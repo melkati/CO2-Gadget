@@ -42,7 +42,7 @@ void mqttReconnect() {
         Serial.printf("Connection status:  %d. (%d of %d retries)\n", mqttClient.state(), connectionRetries, maxConnectionRetries); // Possible States: https://pubsubclient.knolleary.net/api#state
         if (connectionRetries >= maxConnectionRetries) {
           activeMQTT = false;
-          Serial.printf("-->[MQTT] Max retries to connect to MQTT broker reached, disabling MQTT...");
+          Serial.printf("-->[MQTT] Max retries to connect to MQTT broker reached, disabling MQTT...\n");
         }
       }
     }

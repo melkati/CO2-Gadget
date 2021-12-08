@@ -31,7 +31,7 @@ result systemReboot() {
   Serial.println();
   Serial.println("Reboot CO2 Gadget at user request from menu...");
   //do some termination stuff here
-  if (sensors.getPmDeviceSelected() == "SCD30") {
+  if (sensors.getMainDeviceSelected().equals("SCD30")) {
     Serial.println("Resetting SCD30 sensor...");
     delay(100);
     sensors.scd30.reset();
@@ -71,7 +71,9 @@ char tempBLEDeviceId[]  = "                              ";
 
 void setInMenu(bool isInMenu) {
   inMenu = isInMenu;
+  #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] inMenu:\t %s\n", ((inMenu) ? "TRUE" : "FALSE"));
+  #endif
 }
 
 void fillTempIPAddress() {
@@ -712,7 +714,6 @@ void menu_init() {
   temperatureConfigMenu[0].disable();
 
   loadTempArraysWithActualValues();
-
   Serial.println("");
   Serial.println("-->[MENU] Use keys + - * /");
   Serial.println("-->[MENU] to control the menu navigation");
