@@ -15,6 +15,7 @@
 #include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
 
+// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 #define GFXFF 1
 #define FF90 &ArchivoNarrow_Regular10pt7b
 #define FF95 &FontCO2GadgetDigits50pt7b

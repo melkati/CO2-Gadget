@@ -1,3 +1,7 @@
+// https://iconarchive.com/show/farm-fresh-icons-by-fatcow/temperature-5-icon.html
+// https://www.flaticon.com/search?word=bluetooth&order_by=4&type=icon
+
+
 // 'wifi-icon', 16x16px
 const unsigned char iconWiFi [32] PROGMEM = {
 	0xff, 0xff, 0xff, 0xff, 0xf8, 0x1f, 0xc0, 0x03, 0x8f, 0xf1, 0x1f, 0xf8, 0xb8, 0x1d, 0xe1, 0x87, 
