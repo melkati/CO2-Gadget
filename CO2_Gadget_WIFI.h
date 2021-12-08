@@ -274,20 +274,16 @@ void initWifi() {
     mDNSName = WiFi.getHostname();
     initMDNS();
     #endif
-
-    // With simple_page
-    // RAM:   [==        ]  21.3% (used 69864 bytes from 327680 bytes)
-    // Flash: [========= ]  93.9% (used 1846304 bytes from 1966080 bytes)
-
-    // Without simple_page
-    // RAM:   [==        ]  21.3% (used 69864 bytes from 327680 bytes)
-    // Flash: [========= ]  93.8% (used 1843492 bytes from 1966080 bytes)
-
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", MAIN_page);
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
       response->addHeader("Server","ESP Async Web Server");
       request->send(response);
+    });*/
+    SPIFFS.begin();
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send_P(200, "text/html", SIMPLE_page);
     });
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(co2));
