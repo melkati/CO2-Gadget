@@ -50,6 +50,10 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
 
+        - name: Show enviroments
+          run: |
+            echo 
+
         - name: Set up Python ${{ matrix.python-version }}
           uses: actions/setup-python@v1
           with:
@@ -83,7 +87,8 @@ jobs:
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_skip_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_improv_wait_time\": 0," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -108,8 +113,7 @@ jobs:
         - name: Copy manifest files
           if: startsWith(github.ref, 'refs/tags/')
           run: |            
-            mkdir ./firmware
-            ls -la ./firmware            
+            mkdir ./firmware      
             cp ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
 
         - name: Build firmware file
@@ -119,7 +123,6 @@ jobs:
         - name: Copy firmware files
           if: startsWith(github.ref, 'refs/tags/')
           run: |
-            ls -la ./firmware
             cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin
             cp .pio/build/${{ matrix.environment }}/partitions.bin  ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin
             cp .pio/build/${{ matrix.environment }}/firmware.bin    ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin
