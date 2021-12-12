@@ -31,7 +31,7 @@ bool activeMQTT = true;
 bool debugSensors = false;
 bool inMenu = false;
 bool bleInitialized = false;
-uint8_t selectedCO2Sensor = 0;
+int8_t selectedCO2Sensor = -1;
 
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
