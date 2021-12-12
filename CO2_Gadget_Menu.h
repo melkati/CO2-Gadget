@@ -201,8 +201,8 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,OP("Test menu event", showEvent, anyEvent),
   EXIT("<Back"));
 
-enum SelCO2Sensors {Auto=0,MHZ19=4,CM1106=5,SENSEAIRS8=6};
-SelCO2Sensors setCO2Sensor;
+int8_t setCO2Sensor;
+const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
 result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("Setting TFT brightness at %d", TFTBrightness);
@@ -211,6 +211,8 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
   Serial.flush();
 #endif
   Serial.printf("CO2 Sensor selected: %d\n", setCO2Sensor);
+  selectedCO2Sensor = setCO2Sensor;
+  initSensors();
   return proceed;
 }
 
