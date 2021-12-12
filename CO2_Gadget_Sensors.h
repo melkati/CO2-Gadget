@@ -49,6 +49,7 @@ void onSensorDataOk() {
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
+  const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
@@ -67,19 +68,35 @@ void initSensors() {
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
   sensors.setDebugMode(false);                     // [optional] debug mode
-  sensors.detectI2COnly(true);                    // force to only i2c sensors
-  
   sensors.setTempOffset(tempOffset);
+  // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
-  sensors.init();
+  switch(selectedCO2Sensor) {
+    case Auto:
+      Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
+      sensors.detectI2COnly(true);                    // force to only i2c sensors
+      sensors.init();
+    case MHZ19:
+      Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+      sensors.detectI2COnly(false);
+      sensors.init(MHZ19);
+    case CM1106:
+      Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+      sensors.detectI2COnly(false);
+      sensors.init(CM1106);
+    case SENSEAIRS8:
+      Serial.println("-->[SENS] Trying to init CO2 sensor: Senseair S8");
+      sensors.detectI2COnly(false);
+      sensors.init(SENSEAIRS8);
+    default:
+      Serial.println("-->[SENS] Failed to init any CO2 sensor. Fallback to: Auto");
+      sensors.detectI2COnly(true);
+      sensors.init();
+  }
 
   if (!sensors.getMainDeviceSelected().isEmpty()) {
     Serial.println("-->[SENS] Sensor configured: " + sensors.getMainDeviceSelected());
   }
-
-  delay(500);
-
-  // sensors.setAutoSelfCalibration(false);
 }
 
 void sensorsLoop() {    

@@ -214,12 +214,6 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-// TOGGLE(setCO2Sensor,CO2SensorChooseMenu,"CO2 Sensor ",doNothing,noEvent,wrapStyle
-//   ,VALUE("Auto I2C",0,doNothing,noEvent)
-//   ,VALUE("MH-Z19",4,doNothing,noEvent)
-//   ,VALUE("CM1106",5,doNothing,noEvent)
-//   ,VALUE("Senseair S8",6,doNothing,noEvent));
-
 TOGGLE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
   ,VALUE("Auto (I2C)",Auto,doSetCO2Sensor,exitEvent)
   ,VALUE("MH-Z19",MHZ19,doSetCO2Sensor,exitEvent)
