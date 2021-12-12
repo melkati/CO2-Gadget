@@ -285,9 +285,7 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)  
   ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
-  #ifndef WIFI_PRIVACY
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
-  #endif  
   ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
@@ -616,8 +614,13 @@ void loadTempArraysWithActualValues() {
   Serial.println("#");  
   #endif
 
+  #ifdef WIFI_PRIVACY
+  paddedString = rightPad(" ", 30);
+  paddedString.toCharArray(tempMQTTPass, paddedString.length());
+  #else
   paddedString = rightPad(mqttPass, 30);
   paddedString.toCharArray(tempMQTTPass, paddedString.length());
+  #endif
   #ifdef DEBUG_ARDUINOMENU
   Serial.print("tempMQTTPass: #");
   Serial.print(tempMQTTPass);
@@ -632,8 +635,13 @@ void loadTempArraysWithActualValues() {
   Serial.println("#");
   #endif
 
+  #ifdef WIFI_PRIVACY
+  paddedString = rightPad(" ", 30);
+  paddedString.toCharArray(tempWiFiPasswrd, paddedString.length());
+  #else
   paddedString = rightPad(wifiPass, 30);
   paddedString.toCharArray(tempWiFiPasswrd, paddedString.length());
+  #endif
   #ifdef DEBUG_ARDUINOMENU
   Serial.print("tempWiFiPasswrd: #");
   Serial.print(tempWiFiPasswrd);
