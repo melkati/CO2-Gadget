@@ -67,7 +67,7 @@ void initSensors() {
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(false);                     // [optional] debug mode
+  sensors.setDebugMode(debugSensors);                     // [optional] debug mode
   sensors.setTempOffset(tempOffset);
   // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 

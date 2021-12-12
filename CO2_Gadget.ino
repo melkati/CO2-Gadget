@@ -28,6 +28,7 @@ String mDNSName     = "Unset";
 bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
+bool debugSensors = false;
 bool inMenu = false;
 bool bleInitialized = false;
 uint8_t selectedCO2Sensor = 0;

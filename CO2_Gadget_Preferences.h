@@ -33,6 +33,7 @@ void printPreferences() {
   #endif
   Serial.printf("hostName:\t#%s#\n", hostName.c_str());
   Serial.printf("selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
+  Serial.printf("debugSensors is:\t#%s#\n", ((debugSensors) ? "Enabled" : "Disabled"));
   Serial.println("");
 }
 
@@ -67,6 +68,8 @@ void initPreferences() {
   wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
   hostName = preferences.getString("hostName", hostName).c_str();
   selectedCO2Sensor = preferences.getUInt("selCO2Sensor", 0);
+  debugSensors = preferences.getBool("debugSensors", false);
+  
   rootTopic.trim();
   mqttClientId.trim();
   mqttBroker.trim();
@@ -116,5 +119,6 @@ void putPreferences() {
   preferences.putString("wifiPass", wifiPass);
   preferences.putString("hostName", hostName);
   preferences.putUInt("selCO2Sensor", selectedCO2Sensor);
+  preferences.putBool("debugSensors", debugSensors);
   preferences.end();
 }

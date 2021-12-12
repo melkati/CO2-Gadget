@@ -221,6 +221,15 @@ TOGGLE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
   ,VALUE("Senseair S8",SENSEAIRS8,doSetCO2Sensor,exitEvent)
 );
 
+result doSetDebugSensors(eventMask e, navNode &nav, prompt &item) {
+  sensors.setDebugMode(debugSensors);
+  return proceed;
+}
+
+TOGGLE(debugSensors, debugSensorsMenu, "Debug Sensors: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetDebugSensors, enterEvent)
+  ,VALUE("OFF", false, doSetDebugSensors, enterEvent));
+
 MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorChooseMenu)
   ,SUBMENU(autoSelfCalibrationMenu)
@@ -228,6 +237,7 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,FIELD(altidudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2OrangeRange, "Orange", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,SUBMENU(debugSensorsMenu)
   ,EXIT("<Back"));
 
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
