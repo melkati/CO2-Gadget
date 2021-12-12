@@ -49,6 +49,7 @@ void onSensorDataOk() {
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
+  const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, FAKE=127;
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
@@ -66,10 +67,9 @@ void initSensors() {
   sensors.setSampleTime(5); // config sensors sample time interval
   sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
   sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(false);                     // [optional] debug mode
-  sensors.detectI2COnly(true);                    // force to only i2c sensors
-  
+  sensors.setDebugMode(debugSensors);                     // [optional] debug mode
   sensors.setTempOffset(tempOffset);
+  // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
   sensors.init(sensors.SENSEAIRS8);
 
@@ -77,9 +77,30 @@ void initSensors() {
     Serial.println("-->[SENS] Sensor configured: " +
                    sensors.getPmDeviceSelected());
 
-  delay(500);
+  if (selectedCO2Sensor == AUTO) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
+    sensors.detectI2COnly(true);
+    sensors.init();
+  }
+  else if (selectedCO2Sensor == MHZ19) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+    sensors.detectI2COnly(false);
+    sensors.init(MHZ19);
+  }
+  else if (selectedCO2Sensor == CM1106) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+    sensors.detectI2COnly(false);
+    sensors.init(CM1106);
+  }
+  else if (selectedCO2Sensor == SENSEAIRS8) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
+    sensors.detectI2COnly(false);
+    sensors.init(SENSEAIRS8);
+  }
 
-  // sensors.setAutoSelfCalibration(false);
+  if (!sensors.getMainDeviceSelected().isEmpty()) {
+    Serial.println("-->[SENS] Sensor configured: " + sensors.getMainDeviceSelected());
+  }
 }
 
 void sensorsLoop() {    

@@ -1,0 +1,166 @@
+name: Release V2
+
+on:
+  push:
+    tags:
+        - 'v*'
+  workflow_dispatch:  
+
+jobs:
+
+    # get_default_envs:
+    #   name: Gather Environments
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #   - uses: actions/checkout@v2
+    #   - uses: actions/setup-python@v2
+    #   - name: Install PlatformIO
+    #     run: |
+    #       pip install -U platformio
+    #       platformio update
+    #   - name: Dump github context
+    #     run:   echo "$GITHUB_CONTEXT"
+    #     shell: bash
+    #     env:
+    #       GITHUB_CONTEXT: ${{ toJson(github) }}
+    #   - name: Get default environments
+    #     id: envs
+    #     run: |
+    #       echo "::set-output name=environments::$(pio project config --json-output | jq -cr '.[0][1][0][1]')"
+    #       echo ${{ steps.envs.outputs.environments }}
+    #   outputs:
+    #     environments: ${{ steps.envs.outputs.environments }}
+
+    build:
+        name: Create Release
+
+        runs-on: ubuntu-latest
+        # needs: get_default_envs
+
+        strategy:
+          matrix:
+            # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
+            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH]
+            # environment: [TTGO_TDISPLAY_SANDWICH]
+            # environment: [esp32dev, esp32dev-sandwich]
+            # environment: [esp32dev-sandwich]
+
+        steps: 
+
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Show enviroments
+          run: |
+            echo 
+
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v1
+          with:
+            python-version: ${{ matrix.python-version }}
+
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -U platformio
+            platformio update
+
+        - name: Get the version
+          id: get_version
+          run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
+        - name: Show version
+          run: echo ${{ steps.get_version.outputs.VERSION }}
+
+        - name: Get current date
+          id: date
+          run: |
+            echo "::set-output name=date::$(date +'%d-%m-%Y')"
+            echo "::set-output name=time::$(date +'%H:%M:%S')"
+
+        - name: Create manifest file
+          id: createmanifest
+          run: |
+            # Create manifest
+            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_improv_wait_time\": 0," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin\", \"offset\": 65536 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin\", \"offset\": 3997696 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "::set-output name=manifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)"
+
+        - name: Read manifest files
+          run:  |
+            echo "Manifest file contents readed with cat:"
+            cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+
+        - name: Copy manifest files
+          if: startsWith(github.ref, 'refs/tags/')
+          run: |            
+            mkdir ./firmware      
+            cp ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+
+        - name: Build firmware file
+          run: |
+            pio run -e ${{ matrix.environment }}
+
+        - name: Copy firmware files
+          if: startsWith(github.ref, 'refs/tags/')
+          run: |
+            cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin
+            cp .pio/build/${{ matrix.environment }}/partitions.bin  ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin
+            cp .pio/build/${{ matrix.environment }}/firmware.bin    ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin
+
+        - name: Build spiffs file
+          run: |
+            pio run -e ${{ matrix.environment }} -t buildfs
+
+        - name: Copy spiffs files
+          if: startsWith(github.ref, 'refs/tags/')
+          run: |
+            ls -la ./firmware
+            cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin
+
+        - name: Create Release
+          id: create_release
+          uses: softprops/action-gh-release@v1
+          if: startsWith(github.ref, 'refs/tags/')
+          with:
+            name: ${{ github.event.repository.name }}-${{ steps.get_version.outputs.VERSION }}
+            files: |
+              ./firmware/*.bin
+              ./firmware/*.json
+            draft: true
+            # prerelease: true
+            generate_release_notes: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}          
+        - name: 📂 Sync files - FTP-Deploy-Action
+          uses: SamKirkland/FTP-Deploy-Action@2.0.0
+          env:
+            FTP_SERVER: ${{ secrets.FTP_SERVER }}
+            FTP_USERNAME: ${{ secrets.FTP_USER }}
+            FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+            LOCAL_DIR: ./firmware/
+            REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
+            METHOD: sftp
+            PORT: 22
+            ARGS: --verbose
+        - name: Clean WP Rocket Cache
+          run: curl https://emariete.com/clean_cache.php

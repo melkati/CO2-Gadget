@@ -15,6 +15,7 @@
 #include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
 
+// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 #define GFXFF 1
 #define FF90 &ArchivoNarrow_Regular10pt7b
 #define FF95 &FontCO2GadgetDigits50pt7b
@@ -50,7 +51,9 @@ void displaySplashScreenTFT() {
 #if defined SUPPORT_TFT
   tft.fillScreen(TFT_WHITE);
   tft.setSwapBytes(true);
-  tft.pushImage(0, 0, 240, 135, bootlogo);
+  tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+  tft.pushImage(10, 50, 92, 72, CO2Logo);
+  tft.pushImage(112, 67, 122, 46, GadgetLogo);
 #endif
 }
 

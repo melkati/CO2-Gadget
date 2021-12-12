@@ -7,8 +7,6 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#include "index.h" //Web page header file
-
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
 #include "credentials.h"
 #endif
@@ -274,16 +272,14 @@ void initWifi() {
     mDNSName = WiFi.getHostname();
     initMDNS();
     #endif
-
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", MAIN_page);
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
       response->addHeader("Server","ESP Async Web Server");
       request->send(response);
-    });
-    server.on("/simple", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", SIMPLE_page);
-    });
+    });*/
+    SPIFFS.begin();
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(co2));
     });

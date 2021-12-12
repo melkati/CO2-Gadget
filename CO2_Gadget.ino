@@ -28,10 +28,10 @@ String mDNSName     = "Unset";
 bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
-
+bool debugSensors = false;
 bool inMenu = false;
-
 bool bleInitialized = false;
+int8_t selectedCO2Sensor = -1;
 
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
@@ -56,6 +56,8 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 // clang-format off
 /*****************************************************************************************************/

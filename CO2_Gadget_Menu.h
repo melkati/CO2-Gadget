@@ -31,7 +31,7 @@ result systemReboot() {
   Serial.println();
   Serial.println("Reboot CO2 Gadget at user request from menu...");
   //do some termination stuff here
-  if (sensors.getPmDeviceSelected() == "SCD30") {
+  if (sensors.getMainDeviceSelected().equals("SCD30")) {
     Serial.println("Resetting SCD30 sensor...");
     delay(100);
     sensors.scd30.reset();
@@ -68,6 +68,7 @@ char tempWiFiSSID[]     = "                              ";
 char tempWiFiPasswrd[]  = "                              ";
 char tempHostName[]     = "                              ";
 char tempBLEDeviceId[]  = "                              ";
+char tempCO2Sensor[]    = "                              ";
 
 void setInMenu(bool isInMenu) {
   inMenu = isInMenu;
@@ -187,6 +188,7 @@ result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
 }
 
 // clang-format off
+
 TOGGLE(autoSelfCalibration, autoSelfCalibrationMenu, "Autom. Cal.: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doNothing, noEvent)
   ,VALUE("OFF", false, doNothing, noEvent));
@@ -199,12 +201,45 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,OP("Test menu event", showEvent, anyEvent),
   EXIT("<Back"));
 
-MENU(co2RangesConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
+int8_t setCO2Sensor;
+const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
+result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("Setting TFT brightness at %d", TFTBrightness);
+  Serial.print(F("action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif
+  Serial.printf("CO2 Sensor selected: %d\n", setCO2Sensor);
+  selectedCO2Sensor = setCO2Sensor;
+  initSensors();
+  return proceed;
+}
+
+TOGGLE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
+  ,VALUE("Auto (I2C)",Auto,doSetCO2Sensor,exitEvent)
+  ,VALUE("MH-Z19",MHZ19,doSetCO2Sensor,exitEvent)
+  ,VALUE("CM1106",CM1106,doSetCO2Sensor,exitEvent)
+  ,VALUE("Senseair S8",SENSEAIRS8,doSetCO2Sensor,exitEvent)
+);
+
+result doSetDebugSensors(eventMask e, navNode &nav, prompt &item) {
+  sensors.setDebugMode(debugSensors);
+  return proceed;
+}
+
+TOGGLE(debugSensors, debugSensorsMenu, "Debug Sensors: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetDebugSensors, enterEvent)
+  ,VALUE("OFF", false, doSetDebugSensors, enterEvent));
+
+MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
+  ,SUBMENU(CO2SensorChooseMenu)
   ,SUBMENU(autoSelfCalibrationMenu)
   ,FIELD(ambientPressureValue, "Pres. Comp.", "mbar", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(altidudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2OrangeRange, "Orange", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
+  ,SUBMENU(debugSensorsMenu)
   ,EXIT("<Back"));
 
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
@@ -448,7 +483,7 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
-  ,SUBMENU(co2RangesConfigMenu)
+  ,SUBMENU(CO2SensorConfigMenu)
   ,SUBMENU(bleConfigMenu)
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
@@ -653,6 +688,14 @@ void loadTempArraysWithActualValues() {
   #ifdef DEBUG_ARDUINOMENU
   Serial.print("tempBLEDeviceId: #");
   Serial.print(tempBLEDeviceId);
+  Serial.println("#");
+  #endif
+
+  paddedString = rightPad(sensors.getMainDeviceSelected(), 30);
+  paddedString.toCharArray(tempCO2Sensor, paddedString.length());  
+  #ifdef DEBUG_ARDUINOMENU
+  Serial.print("tempCO2Sensor: #");
+  Serial.print(tempCO2Sensor);
   Serial.println("#");
   #endif
 

@@ -38,7 +38,7 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY-sandwich]
+            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH]
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
         steps: 
@@ -65,7 +65,8 @@ jobs:
             echo "::set-output name=time::$(date +'%H:%M:%S')"
         - name: Build test version
           run: |
-            pio run -e ${{ matrix.environment }}
+            # pio run -e ${{ matrix.environment }}
+            pio run -e ${{ matrix.environment }} -t upload buildfs
         - name: Create manifest file
           id: createmanifest
           run: |
@@ -84,7 +85,8 @@ jobs:
             echo "          { \"path\": \"bootloader_dio_40m.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json            
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"spiffs-${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin\", \"offset\": 3997696 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -107,6 +109,7 @@ jobs:
             echo "          { \"path\": \"partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin\", \"offset\": 65536 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
+            echo "          { \"path\": \"spiffs-${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin\", \"offset\": 3997696 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.erase.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
@@ -135,7 +138,8 @@ jobs:
           run: |
             mkdir .pio/build/${{ matrix.environment }}/output/
             mv .pio/build/${{ matrix.environment }}/firmware.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin
-            # mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-partitions.bin
+            mv .pio/build/${{ matrix.environment }}/spiffs.bin   .pio/build/spiffs-${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin
+            mv .pio/build/${{ matrix.environment }}/partitions.bin .pio/build/partitions-${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}.bin
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             mv ${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json .pio/build/${{ matrix.environment }}/output/${{ github.event.repository.name }}-${{ matrix.environment }}-erase.manifest.json
         - name: Create Release

@@ -1,0 +1,117 @@
+:root {
+  --font-color: #666;
+  --bg-color: #ffffff;
+  --title-color: #96eeea;
+  --icon-color: #6e6e6e;
+  --circle-color:  #eee;
+} 
+[theme='light']{
+  --font-color: #666;
+  --bg-color: #ffffff;
+  --title-color: #96eeea;
+  --icon-color: #6e6e6e;
+  --circle-color:  #eee;
+}
+[theme='dark']{
+  --font-color: #252525;
+  --bg-color: #000000;
+  --title-color: #29948f;
+  --icon-color: #d1d1d1;
+  --circle-color:  #474747;
+}
+body{
+  background-color: var(--bg-color);
+}
+.tag {
+  font: bolder large arial;
+  font-family: Arial;
+  display: flex; 
+  justify-content: space-around;
+  background-color:var(--title-color);
+  color: var(--font-color);
+}
+.flex-wrapper {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.single-chart {
+  width: 33%;
+  justify-content: space-around ;
+}
+
+.circular-chart {
+  display: block;
+  margin: 10px auto;
+  max-width: 80%;
+  max-height: 250px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: var(--circle-color);
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
+.circular-chart.co2 .circle {
+  stroke: #ff9f00;
+}
+
+.circular-chart.temp .circle {
+  stroke: #4CC790;
+}
+
+.circular-chart.humi .circle {
+  stroke: #3c9ee5;
+}
+
+.percentage {
+  fill: #666;
+  font-family: sans-serif;
+  font-size: 0.5em;
+  text-anchor: middle;
+}
+
+.iconDarkLight{
+  position: absolute;
+  top: 1.2%;
+  right: 2%;
+  background-color: transparent;
+  transition: transform .05s;
+}
+.iconDarkLight:active{
+transform: scale(1.5);
+}
+
+/*smartphone styles*/
+@media only screen and (max-width: 639px) {
+  .flex-wrapper {
+    flex-flow: column wrap;
+    align-items: center;
+  }
+  .single-chart {
+    display: flex;
+    justify-content: space-around;
+    height: 32vh;
+    width: 32vh;
+    flex-flow: wrap;
+  }
+  .tag {
+    font: bolder condensed 90% arial;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+  }
+}
