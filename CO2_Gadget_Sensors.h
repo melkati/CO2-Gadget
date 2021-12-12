@@ -41,8 +41,13 @@ void onSensorDataOk() {
   }
 
   co2 = sensors.getCO2();
-  temp = sensors.getCO2temp();
-  hum = sensors.getCO2humi();
+
+  hum = sensors.getHumidity();
+  if (hum == 0.0) hum = sensors.getCO2humi();
+
+  temp = sensors.getTemperature();
+  if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
   newReadingsAvailable = true;
 }
 
