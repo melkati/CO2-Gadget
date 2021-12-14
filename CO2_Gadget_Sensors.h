@@ -74,6 +74,19 @@ void initSensors() {
 
   Serial.println("-->[SENS] Detecting sensors..");
 
+  uint16_t defaultCO2MeasurementInterval = 5; // TODO: Move to preferences
+  // Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
+  // CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
+  #ifdef CSL_REVISION // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
+  if (sensors.getLibraryRevision()>340) {  
+    sensors.setSampleTime(defaultCO2MeasurementInterval * 2);
+  } else {
+    sensors.setSampleTime(defaultCO2MeasurementInterval);
+  }
+  #else
+  sensors.setSampleTime(defaultCO2MeasurementInterval);
+  #endif
+
     sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
     sensors.setOnErrorCallBack(
         &onSensorDataError);             // [optional] error callback
