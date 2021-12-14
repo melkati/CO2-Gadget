@@ -250,7 +250,7 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
 
 CHOOSE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
   ,VALUE("Auto (I2C)",Auto,doSetCO2Sensor, enterEvent)
-  ,VALUE("MH-Z19",MHZ19,doSetCO2Sensor, enterEvent)
+  ,VALUE("MH-Z19 (A/B/C/D)",MHZ19,doSetCO2Sensor, enterEvent)
   ,VALUE("CM1106",CM1106,doSetCO2Sensor, enterEvent)
   ,VALUE("Senseair S8",SENSEAIRS8,doSetCO2Sensor, enterEvent)
 );

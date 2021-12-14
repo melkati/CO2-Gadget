@@ -74,51 +74,50 @@ void initSensors() {
 
   Serial.println("-->[SENS] Detecting sensors..");
 
-  uint16_t defaultCO2MeasurementInterval = 5; // TODO: Move to preferences
-  // Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
-  // CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
-  #ifdef CSL_REVISION // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
-  if (sensors.getLibraryRevision()>340) {  
+  uint16_t defaultCO2MeasurementInterval = 5;  // TODO: Move to preferences
+// Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
+// CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
+#ifdef CSL_REVISION  // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
+  if (sensors.getLibraryRevision() > 340) {
     sensors.setSampleTime(defaultCO2MeasurementInterval * 2);
   } else {
     sensors.setSampleTime(defaultCO2MeasurementInterval);
   }
-  #else
+#else
   sensors.setSampleTime(defaultCO2MeasurementInterval);
-  #endif
+#endif
 
-    sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
-    sensors.setOnErrorCallBack(
-        &onSensorDataError);             // [optional] error callback
-    sensors.setDebugMode(debugSensors);  // [optional] debug mode
-    sensors.setTempOffset(tempOffset);
-    // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
-    // Sensors Lib
+  sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
+  sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
+  sensors.setDebugMode(debugSensors);              // [optional] debug mode
+  sensors.setTempOffset(tempOffset);
+  // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
+  // Sensors Lib
 
-    Serial.printf("Selected CO2 Sensor: %d\n", selectedCO2Sensor);
+  Serial.printf("Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
-    if (selectedCO2Sensor == AUTO) {
-      Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
-      sensors.detectI2COnly(true);
-      sensors.init();
-    } else if (selectedCO2Sensor == MHZ19) {
-      Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
-      sensors.detectI2COnly(false);
-      sensors.init(MHZ19);
-    } else if (selectedCO2Sensor == CM1106) {
-      Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
-      sensors.detectI2COnly(false);
-      sensors.init(CM1106);
-    } else if (selectedCO2Sensor == SENSEAIRS8) {
-      Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
-      sensors.detectI2COnly(false);
-      sensors.init(SENSEAIRS8);
-    }
+  if (selectedCO2Sensor == AUTO) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
+    sensors.detectI2COnly(true);
+    sensors.init();
+  } else if (selectedCO2Sensor == MHZ19) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+    sensors.detectI2COnly(false);
+    sensors.init(MHZ19);
+  } else if (selectedCO2Sensor == CM1106) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+    sensors.detectI2COnly(false);
+    sensors.init(CM1106);
+  } else if (selectedCO2Sensor == SENSEAIRS8) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
+    sensors.detectI2COnly(false);
+    sensors.init(SENSEAIRS8);
+  }
 
-    if (!sensors.getMainDeviceSelected().isEmpty()) {
-      Serial.println("-->[SENS] Sensor configured: " +
-                     sensors.getMainDeviceSelected());
-    }
+  if (!sensors.getMainDeviceSelected().isEmpty()) {
+    Serial.println("-->[SENS] Sensor configured: " +
+                   sensors.getMainDeviceSelected());
+  }
   }
 
 void sensorsLoop() {    
