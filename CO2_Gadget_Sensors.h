@@ -10,6 +10,7 @@
 #define I2C_SCL 22
 #endif
 
+bool firstCO2SensorInit = true;
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
@@ -40,14 +41,24 @@ void onSensorDataOk() {
   }
 
   co2 = sensors.getCO2();
-  temp = sensors.getCO2temp();
-  hum = sensors.getCO2humi();
+
+  hum = sensors.getHumidity();
+  if (hum == 0.0) hum = sensors.getCO2humi();
+
+  temp = sensors.getTemperature();
+  if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
   newReadingsAvailable = true;
 }
 
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
+  const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, FAKE=127;
+  if (firstCO2SensorInit) {
+    Serial.printf("-->[SENS] Using CanAirIO Sensorlib v%s Rev:%d", CSL_VERSION, CSL_REVISION);
+    firstCO2SensorInit = false;
+  }
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
@@ -62,24 +73,51 @@ void initSensors() {
 
   Serial.println("-->[SENS] Detecting sensors..");
 
-  sensors.setSampleTime(5); // config sensors sample time interval
-  sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-  sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
-  sensors.setDebugMode(false);                     // [optional] debug mode
-  sensors.detectI2COnly(true);                    // force to only i2c sensors
-  
+  uint16_t defaultCO2MeasurementInterval = 5;  // TODO: Move to preferences
+// Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
+// CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
+#ifdef CSL_REVISION  // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
+  if (sensors.getLibraryRevision() > 340) {
+    sensors.setSampleTime(defaultCO2MeasurementInterval * 2);
+  } else {
+    sensors.setSampleTime(defaultCO2MeasurementInterval);
+  }
+#else
+  sensors.setSampleTime(defaultCO2MeasurementInterval);
+#endif
+
+  sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
+  sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
+  sensors.setDebugMode(debugSensors);              // [optional] debug mode
   sensors.setTempOffset(tempOffset);
+  // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
+  // Sensors Lib
 
-  sensors.init();
+  Serial.printf("Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
-  if (!sensors.getMainDeviceSelected().isEmpty()) {
-    Serial.println("-->[SENS] Sensor configured: " + sensors.getMainDeviceSelected());
+  if (selectedCO2Sensor == AUTO) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
+    sensors.detectI2COnly(true);
+    sensors.init();
+  } else if (selectedCO2Sensor == MHZ19) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+    sensors.detectI2COnly(false);
+    sensors.init(MHZ19);
+  } else if (selectedCO2Sensor == CM1106) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+    sensors.detectI2COnly(false);
+    sensors.init(CM1106);
+  } else if (selectedCO2Sensor == SENSEAIRS8) {
+    Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
+    sensors.detectI2COnly(false);
+    sensors.init(SENSEAIRS8);
   }
 
-  delay(500);
-
-  // sensors.setAutoSelfCalibration(false);
-}
+  if (!sensors.getMainDeviceSelected().isEmpty()) {
+    Serial.println("-->[SENS] Sensor configured: " +
+                   sensors.getMainDeviceSelected());
+  }
+  }
 
 void sensorsLoop() {    
   sensors.loop();
