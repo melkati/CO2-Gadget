@@ -28,10 +28,10 @@ String mDNSName     = "Unset";
 bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
-
+bool debugSensors = false;
 bool inMenu = false;
-
 bool bleInitialized = false;
+int8_t selectedCO2Sensor = -1;
 
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
@@ -245,11 +245,14 @@ void setup() {
       READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); // save WatchDog register
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
   Serial.begin(115200);
+  delay(100);
   // Serial.printf("Total heap: %d", ESP.getHeapSize());
   // Serial.printf("Free heap: %d", ESP.getFreeHeap());
   // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
   // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
   Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV);
+  Serial.printf("\n-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
+  
   setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
   initBattery();
