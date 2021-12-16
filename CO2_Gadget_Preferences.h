@@ -11,7 +11,7 @@ void printPreferences() {
                 ((autoSelfCalibration) ? "Enabled" : "Disabled"));
   Serial.printf("co2OrangeRange:\t #%d#\n", co2OrangeRange);
   Serial.printf("co2RedRange:\t #%d#\n", co2RedRange);
-  Serial.printf("TFTBrightness:\t #%d#\n", TFTBrightness);
+  Serial.printf("DisplayBrightness:\t #%d#\n", DisplayBrightness);
   Serial.printf("activeBLE is:\t#%s#\n", ((activeBLE) ? "Enabled" : "Disabled"));
   Serial.printf("activeWIFI is:\t#%s#\n", ((activeWIFI) ? "Enabled" : "Disabled"));
   Serial.printf("activeMQTT is:\t#%s#\n", ((activeMQTT) ? "Enabled" : "Disabled"));
@@ -46,7 +46,7 @@ void initPreferences() {
   autoSelfCalibration = preferences.getBool("autoSelfCal", false);
   co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
   co2RedRange = preferences.getUInt("co2RedRange", 1000);
-  TFTBrightness = preferences.getUInt("TFTBrightness", 100);
+  DisplayBrightness = preferences.getUInt("DisplayBrightness", 100);
   activeBLE = preferences.getBool("activeBLE", true);
   activeWIFI = preferences.getBool("activeWIFI", false);
   activeMQTT = preferences.getBool("activeMQTT", false);
@@ -101,7 +101,7 @@ void putPreferences() {
   preferences.putBool("autoSelfCal", autoSelfCalibration);
   preferences.putUInt("co2OrangeRange", co2OrangeRange);
   preferences.putUInt("co2RedRange", co2RedRange);
-  preferences.putUInt("TFTBrightness", TFTBrightness);
+  preferences.putUInt("DisplayBrightness", DisplayBrightness);
   preferences.putBool("activeBLE", activeBLE);
   preferences.putBool("activeWIFI", activeWIFI);
   preferences.putBool("activeMQTT", activeMQTT);

@@ -10,7 +10,13 @@
 // clang-format on
 #include <menu.h>
 #include <menuIO/serialIO.h>
+#ifdef SUPPORT_TFT
 #include <menuIO/TFT_eSPIOut.h>
+#endif
+
+#ifdef SUPPORT_OLED
+#include <menuIO/u8g2Out.h>
+#endif
 // #include <menuIO/chainStream.h>
 #include <menuIO/esp8266Out.h> //must include this even if not doing web output...
 
@@ -195,12 +201,17 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
 
 result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
-  Serial.printf("-->[MENU] Setting TFT brightness at %d", TFTBrightness);
+  Serial.printf("-->[MENU] Setting TFT brightness at %d", DisplayBrightness);
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
-  setTFTBrightness(TFTBrightness);
+#ifdef SUPPORT_FTF
+  setTFTBrightness(DisplayBrightness);
+#endif
+#ifdef SUPPORT_OLED
+  setOLEDBrightness(DisplayBrightness);
+#endif
   return proceed;
 }
 
@@ -507,7 +518,7 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   ,VALUE("OFF", false, doNothing, noEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
-  ,FIELD(TFTBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,EXIT("<Back"));
@@ -606,19 +617,35 @@ serialIn serial(Serial);
 idx_t serialTops[MAX_DEPTH] = {0};
 serialOut outSerial(Serial, serialTops);
 
+#ifdef SUPPORT_TFT
 #define tft_WIDTH 240
 #define tft_HEIGHT 135
 #define fontW 12
 #define fontH 18
+#endif
+
+#ifdef SUPPORT_OLED
+#define tft_WIDTH 128
+#define tft_HEIGHT 64
+#define fontW 12
+#define fontH 18
+#endif
 
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode *nodes[sizeof(panels) /
                sizeof(panel)];      // navNodes to store navigation status
 panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
+#ifdef SUPPORT_TFT
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial,
                                        &eSpiOut}; // list of output devices
+#endif
+#ifdef SUPPORT_OLED
+u8g2Out eOledOut(u8g2, colors, eSpiTops, pList, fontW, fontH + 1);
+menuOut *constMEM outputs[] MEMMODE = {&outSerial,
+                                       &eOledOut}; // list of output devices
+#endif
 outputsList out(outputs,
                 sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
 

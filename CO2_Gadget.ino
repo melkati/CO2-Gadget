@@ -32,6 +32,7 @@ bool debugSensors = false;
 bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
+uint32_t DisplayBrightness = 100;
 
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
@@ -234,8 +235,8 @@ void displayLoop() {
     return;
 
   if (millis() > nextTimeToDisplayOff) {
-    Serial.println("-->[MAIN] Turning off display to save power");
-    setTFTBrightness(0); // Turn off the display
+    Serial.println("-->[MAIN] Turning off display to save power");    
+    turnOffDisplay();
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
