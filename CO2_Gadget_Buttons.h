@@ -6,8 +6,12 @@ Button2 btnUp(BTN_UP);   // Initialize the up button
 Button2 btnDwn(BTN_DWN); // Initialize the down button
 
 void IRAM_ATTR buttonUpISR() {
-  setTFTBrightness(TFTBrightness); // Turn on the display at TFTBrightness brightness
-  nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
+  if(actualTFTBrightness==0) // Turn on the display only if it's OFF
+  {
+    setTFTBrightness(TFTBrightness); // Turn on the display at TFTBrightness brightness
+    actualTFTBrightness = TFTBrightness;
+    nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
+  }
 }
 
 void buttonsInit() {
