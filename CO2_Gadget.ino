@@ -8,7 +8,7 @@
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
+/**/ #define UNITHOSTNAME "CO2-Gadget"
 /**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 /**/ #endif
 /*****************************************************************************************************/
@@ -32,6 +32,7 @@ bool debugSensors = false;
 bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
+uint32_t DisplayBrightness = 100;
 
 // Variables to control automatic display off to save power
 bool displayOffOnExternalPower = false;
@@ -43,6 +44,16 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
+
+#undef I2C_SDA
+#undef I2C_SCL
+#ifdef ALTERNATIVE_I2C_PINS
+#define I2C_SDA 22
+#define I2C_SCL 21
+#else
+#define I2C_SDA 21
+#define I2C_SCL 22
+#endif
 
 #include <Wire.h>
 #include "driver/adc.h"
@@ -243,7 +254,7 @@ void displayLoop() {
   
   if (millis() > nextTimeToDisplayOff) {
     Serial.println("-->[MAIN] Turning off display to save power");
-    setTFTBrightness(0); // Turn off the display
+    turnOffDisplay();
     actualTFTBrightness = 0;
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
@@ -266,8 +277,9 @@ void setup() {
   initPreferences();
   initBattery();
 #if defined SUPPORT_OLED
-  delay(100);
   initDisplayOLED();
+  delay(1000);
+  displaySplashScreenOLED();
   delay(1000);
 #endif
 #if defined SUPPORT_TFT
@@ -300,5 +312,5 @@ void loop() {
 #endif
   displayLoop();
   buttonsLoop();
-  nav.poll(); // this device only draws when needed
+  menuLoop();
 }

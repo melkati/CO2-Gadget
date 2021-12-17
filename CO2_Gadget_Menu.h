@@ -10,8 +10,16 @@
 // clang-format on
 #include <menu.h>
 #include <menuIO/serialIO.h>
+
+#ifdef SUPPORT_TFT
 #include <menuIO/TFT_eSPIOut.h>
-// #include <menuIO/chainStream.h>
+#endif
+
+#ifdef SUPPORT_OLED
+#include <menuIO/u8g2Out.h>
+#include <menuIO/chainStream.h>
+#endif
+
 #include <menuIO/esp8266Out.h> //must include this even if not doing web output...
 
 using namespace Menu;
@@ -195,12 +203,17 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
 
 result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
-  Serial.printf("-->[MENU] Setting TFT brightness at %d", TFTBrightness);
+  Serial.printf("-->[MENU] Setting TFT brightness at %d", DisplayBrightness);
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
 #endif
-  setTFTBrightness(TFTBrightness);
+#ifdef SUPPORT_FTF
+  setTFTBrightness(DisplayBrightness);
+#endif
+#ifdef SUPPORT_OLED
+  setOLEDBrightness(DisplayBrightness);
+#endif
   return proceed;
 }
 
@@ -507,7 +520,7 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   ,VALUE("OFF", false, doNothing, noEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
-  ,FIELD(TFTBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,EXIT("<Back"));
@@ -528,8 +541,8 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp" BUILD_GIT, doNothing, noEvent)
-  ,OP("Version" CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,OP("Comp " BUILD_GIT, doNothing, noEvent)
+  ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
   ,EXIT("<Back"));
@@ -555,8 +568,15 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(subMenu)
   ,EXIT("<Exit"));
 
+#define MAX_DEPTH 4
 
+serialIn serial(Serial);
 
+// define serial output device
+idx_t serialTops[MAX_DEPTH] = {0};
+serialOut outSerial(Serial, serialTops);
+
+#ifdef SUPPORT_TFT
 // define menu colors --------------------------------------------------------
 #define Black RGB565(0, 0, 0)
 #define Red RGB565(255, 0, 0)
@@ -596,15 +616,6 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
     {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,          (uint16_t)White}},  // cursorColor
     {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)DarkerOrange, (uint16_t)Red}},    // titleColor - Menu title color
 };
-// clang-format on
-
-#define MAX_DEPTH 4
-
-serialIn serial(Serial);
-
-// define serial output device
-idx_t serialTops[MAX_DEPTH] = {0};
-serialOut outSerial(Serial, serialTops);
 
 #define tft_WIDTH 240
 #define tft_HEIGHT 135
@@ -617,10 +628,49 @@ navNode *nodes[sizeof(panels) /
 panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
-menuOut *constMEM outputs[] MEMMODE = {&outSerial,
-                                       &eSpiOut}; // list of output devices
-outputsList out(outputs,
-                sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
+menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
+outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
+#endif
+
+#ifdef SUPPORT_OLED
+// define menu colors --------------------------------------------------------
+//each color is in the format:
+//  {{disabled normal,disabled selected},{enabled normal,enabled selected, enabled editing}}
+// this is a monochromatic color table
+const colorDef<uint8_t> colors[6] MEMMODE={
+  {{0,0},{0,1,1}},//bgColor
+  {{1,1},{1,0,0}},//fgColor
+  {{1,1},{1,0,0}},//valColor
+  {{1,1},{1,0,0}},//unitColor
+  {{0,1},{0,0,1}},//cursorColor
+  {{1,1},{1,0,0}},//titleColor
+};
+
+#define fontX 5
+#define fontY 10
+// #define MENUFONT u8g2_font_7x13_mf
+// #define fontX 7
+// #define fontY 16
+#define offsetX 1
+#define offsetY 2
+#define U8_Width 128
+#define U8_Height 64
+#define USE_HWI2C
+#define fontMarginX 2
+#define fontMarginY 2
+
+//define output device oled
+idx_t gfx_tops[MAX_DEPTH];
+PANELS(gfxPanels,{0,0,U8_Width/fontX,U8_Height/fontY});
+u8g2Out oledOut(u8g2,colors,gfx_tops,gfxPanels,fontX,fontY,offsetX,offsetY,fontMarginX,fontMarginY);
+
+//define outputs controller
+menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
+outputsList out(outputs,sizeof(outputs)/sizeof(menuOut*));//outputs list controller
+
+MENU_INPUTS(in,&serial);
+#endif
+// clang-format on
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
 
@@ -733,7 +783,6 @@ void loadTempArraysWithActualValues() {
 
 // when menu is suspended
 result idle(menuOut &o, idleEvent e) {
-#if defined SUPPORT_TFT
   if (e == idleStart) {
 #ifdef DEBUG_ARDUINOMENU
     Serial.println("-->[MENU] Event idleStart");
@@ -745,7 +794,12 @@ result idle(menuOut &o, idleEvent e) {
     Serial.println("-->[MENU] Event iddling");
     Serial.flush();
 #endif
+    #if defined SUPPORT_TFT
     showValuesTFT(co2);
+    #endif
+    #if defined SUPPORT_OLED
+    showValuesOLED(co2);
+    #endif
     readBatteryVoltage();
   } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
@@ -762,11 +816,29 @@ result idle(menuOut &o, idleEvent e) {
 #endif
   }
   return proceed;
+}
+
+void menuLoop() {
+#ifdef SUPPORT_TFT
+  nav.poll();  // this device only draws when needed
+#endif
+
+#ifdef SUPPORT_OLED
+  nav.doInput();
+  if (nav.sleepTask) {
+    showValuesOLED(co2);
+  } else {
+    if (nav.changed(0)) {
+      u8g2.firstPage();
+      do nav.doOutput();
+      while (u8g2.nextPage());
+    }
+  }
 #endif
 }
 
 void menu_init() {
-  nav.idleTask = idle; // function to be used when menu is suspended
+  nav.idleTask = idle; // function to be called when menu is suspended
   nav.idleOn(idle);
   nav.timeOut = 30;
   nav.showTitle = true;
