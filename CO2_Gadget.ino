@@ -268,7 +268,6 @@ void setup() {
   initPreferences();
   initBattery();
 #if defined SUPPORT_OLED
-  delay(100);
   initDisplayOLED();
   delay(1000);
   displaySplashScreenOLED();

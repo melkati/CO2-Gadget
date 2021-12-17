@@ -568,6 +568,13 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(subMenu)
   ,EXIT("<Exit"));
 
+#define MAX_DEPTH 4
+
+serialIn serial(Serial);
+
+// define serial output device
+idx_t serialTops[MAX_DEPTH] = {0};
+serialOut outSerial(Serial, serialTops);
 
 #ifdef SUPPORT_TFT
 // define menu colors --------------------------------------------------------
@@ -609,6 +616,20 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
     {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,          (uint16_t)White}},  // cursorColor
     {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)DarkerOrange, (uint16_t)Red}},    // titleColor - Menu title color
 };
+
+#define tft_WIDTH 240
+#define tft_HEIGHT 135
+#define fontW 12
+#define fontH 18
+
+const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
+navNode *nodes[sizeof(panels) /
+               sizeof(panel)];      // navNodes to store navigation status
+panelsList pList(panels, nodes, 1); // a list of panels and nodes
+idx_t eSpiTops[MAX_DEPTH] = {0};
+TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
+menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
+outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
 #endif
 
 #ifdef SUPPORT_OLED
@@ -624,25 +645,7 @@ const colorDef<uint8_t> colors[6] MEMMODE={
   {{0,1},{0,0,1}},//cursorColor
   {{1,1},{1,0,0}},//titleColor
 };
-#endif
-// clang-format on
 
-#define MAX_DEPTH 4
-
-serialIn serial(Serial);
-
-// define serial output device
-idx_t serialTops[MAX_DEPTH] = {0};
-serialOut outSerial(Serial, serialTops);
-
-#ifdef SUPPORT_TFT
-#define tft_WIDTH 240
-#define tft_HEIGHT 135
-#define fontW 12
-#define fontH 18
-#endif
-
-#ifdef SUPPORT_OLED
 #define fontX 5
 #define fontY 10
 // #define MENUFONT u8g2_font_7x13_mf
@@ -655,23 +658,7 @@ serialOut outSerial(Serial, serialTops);
 #define USE_HWI2C
 #define fontMarginX 2
 #define fontMarginY 2
-#endif
 
-#ifdef SUPPORT_TFT
-const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
-navNode *nodes[sizeof(panels) /
-               sizeof(panel)];      // navNodes to store navigation status
-panelsList pList(panels, nodes, 1); // a list of panels and nodes
-idx_t eSpiTops[MAX_DEPTH] = {0};
-TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
-menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
-outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
-#endif
-
-#ifdef SUPPORT_OLED
-// u8g2Out oledOut(u8g2, colors, eSpiTops, pList, fontW, fontH + 1);
-// u8g2Out oledOut(u8g2,colors,gfx_tops,gfxPanels,fontX,fontY,offsetX,offsetY,fontMarginX,fontMarginY);
-// menuOut *constMEM outputs[] MEMMODE = {&outSerial, &oledOut}; // list of output devices
 //define output device oled
 idx_t gfx_tops[MAX_DEPTH];
 PANELS(gfxPanels,{0,0,U8_Width/fontX,U8_Height/fontY});
@@ -682,11 +669,8 @@ menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
 outputsList out(outputs,sizeof(outputs)/sizeof(menuOut*));//outputs list controller
 
 MENU_INPUTS(in,&serial);
-// MENU_OUTPUTS(out,MAX_DEPTH
-//   ,U8G2_OUT(u8g2,colors,fontX,fontY,offsetX,offsetY,{0,0,U8_Width/fontX,U8_Height/fontY})
-//   ,SERIAL_OUT(Serial)
-// );
 #endif
+// clang-format on
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
 
@@ -854,7 +838,7 @@ void menuLoop() {
 }
 
 void menu_init() {
-  nav.idleTask = idle; // function to be used when menu is suspended
+  nav.idleTask = idle; // function to be called when menu is suspended
   nav.idleOn(idle);
   nav.timeOut = 30;
   nav.showTitle = true;
