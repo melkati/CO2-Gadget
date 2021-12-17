@@ -15,11 +15,6 @@
 #include <U8g2lib.h>
 #include "bootlogo.h"
 #include "icons.h"
-// U8X8_SH1106_128X64_NONAME_HW_I2C u8g2(/* reset=*/U8X8_PIN_NONE);
-// U8G2_SSD1306_128X64_NONAME_HW_I2C u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
-// U8G2_SSD1306_128X64_VCOMH0_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, I2C_SCL, I2C_SDA);//allow contrast change
-// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, I2C_SCL, I2C_SDA);
-// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
 // U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Page Buffer: firstPage/nextPage. Less RAM usage, Slower
 
