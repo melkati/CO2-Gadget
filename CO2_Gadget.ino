@@ -8,7 +8,7 @@
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
+/**/ #define UNITHOSTNAME "CO2-Gadget"
 /**/ // #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
 /**/ #endif
 /*****************************************************************************************************/
@@ -44,6 +44,16 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
+
+#undef I2C_SDA
+#undef I2C_SCL
+#ifdef ALTERNATIVE_I2C_PINS
+#define I2C_SDA 22
+#define I2C_SCL 21
+#else
+#define I2C_SDA 21
+#define I2C_SCL 22
+#endif
 
 #include <Wire.h>
 #include "driver/adc.h"
@@ -261,6 +271,8 @@ void setup() {
   delay(100);
   initDisplayOLED();
   delay(1000);
+  displaySplashScreenOLED();
+  delay(1000);
 #endif
 #if defined SUPPORT_TFT
   initDisplayTFT();
@@ -292,5 +304,5 @@ void loop() {
 #endif
   displayLoop();
   buttonsLoop();
-  nav.poll(); // this device only draws when needed
+  menuLoop();
 }

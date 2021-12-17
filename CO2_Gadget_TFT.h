@@ -192,7 +192,6 @@ void showCO2TFT(uint16_t co2) {
 }
 
 void showValuesTFT(uint16_t co2) {
-#if defined SUPPORT_TFT
   if (co2 > 9999) {
     co2 = 9999;
   }
@@ -215,7 +214,7 @@ void showValuesTFT(uint16_t co2) {
   // set default font for menu
   tft.setFreeFont(NULL);
   tft.setTextSize(2);
-#endif
 }
+
 #endif  // SUPPORT_WEBCONFIG
 #endif  // CO2_Gadget_TFT_h

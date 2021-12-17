@@ -13,13 +13,21 @@
 // clang-format on
 // #include <U8x8lib.h>
 #include <U8g2lib.h>
-U8X8_SH1106_128X64_NONAME_HW_I2C u8g2(/* reset=*/U8X8_PIN_NONE);
+#include "bootlogo.h"
+#include "icons.h"
+// U8X8_SH1106_128X64_NONAME_HW_I2C u8g2(/* reset=*/U8X8_PIN_NONE);
 // U8G2_SSD1306_128X64_NONAME_HW_I2C u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
-
+// U8G2_SSD1306_128X64_VCOMH0_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, I2C_SCL, I2C_SDA);//allow contrast change
+// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, I2C_SCL, I2C_SDA);
+// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
+// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Page Buffer: firstPage/nextPage. Less RAM usage, Slower
 
 char oled_msg[20];
 int displayWidth = 128;
 int displayHeight = 64;
+// #define MENUFONT u8g2_font_6x10_mf
+#define MENUFONT u8g2_font_5x8_mf
 
 void setOLEDBrightness(uint32_t newBrightness) {
   Serial.printf("Setting screen brightness value at %d\n (unfunctional. TO DO", newBrightness);
@@ -29,48 +37,42 @@ void turnOffDisplay() {
   setOLEDBrightness(0); // Turn off the display
 }
 
-void initDisplayOLED() {
-#if defined SUPPORT_OLED
-  u8g2.begin();
-  u8g2.setPowerSave(0);
-  u8g2.setFont(u8x8_font_chroma48medium8_r);
-  u8g2.drawString(0, 1, "  eMariete.com");
-  u8g2.drawString(0, 2, "   Sensirion");
-  u8g2.drawString(0, 3, "CO2 Gadget");
-  u8g2.drawString(0, 4, "Concentration Monitor");
-#endif
+void displaySplashScreenOLED() {
+  u8g2.clearDisplay();
+  u8g2.firstPage();
+  do {
+    // u8g2.drawXBMP(30, 0, 59, 20, eMarieteLogo);
+    // u8g2.drawXBM(7, 23, 46, 36, CO2Logo);
+    // u8g2.drawXBM(60, 32, 61, 23, GadgetLogo);
+    u8g2.drawXBM(0, 0, 128, 64, splash);
+  } while (u8g2.nextPage());
+  u8g2.setFont(MENUFONT);
 }
 
-void showValuesOLED(String text) {
-#if defined SUPPORT_OLED
-  u8g2.clearLine(2);
-  u8g2.clearLine(3);
-  u8g2.setFont(u8x8_font_chroma48medium8_r);
-  u8g2.drawString(0, 4, "CO2: ");
-  u8g2.setFont(u8x8_font_courB18_2x3_r);
-  sprintf(oled_msg, "%4d", co2); // If parameter string then: co2.c_str()
-  u8g2.drawString(4, 3, oled_msg);
-  u8g2.setFont(u8x8_font_chroma48medium8_r);
-  u8g2.drawString(12, 4, "ppm");
+void initDisplayOLED() {
+  Serial.printf("-->[OLED] Initialized: \t#%s#\n",
+                ((u8g2.begin()) ? "OK" : "Failed"));
+  u8g2.firstPage();
+  do {
+    u8g2.setFont(u8g2_font_ncenB12_tr);
+    u8g2.drawStr(0, 15, "  eMariete.com");
+    u8g2.drawStr(0, 33, "   CO2 Gadget");
+    u8g2.drawStr(0, 51, "  Air  Quality");
+  } while (u8g2.nextPage());
+  u8g2.setFont(MENUFONT);
+}
 
-  u8g2.clearLine(6);
-  sprintf(oled_msg, "T:%.1fC RH:%.0f%%", temp, hum);
-  u8g2.drawUTF8(0, 6, oled_msg);
-
-  if (activeWIFI) {
-  if (WiFi.status() != WL_CONNECTED) {
-    u8g2.clearLine(7);
-    u8g2.drawUTF8(0, 6, "WiFi unconnected");
-  } else {
-    u8g2.clearLine(7);
-    IPAddress ip = WiFi.localIP();
-    sprintf(oled_msg, "%s", ip.toString().c_str());
-    // sprintf("IP:%u.%u.%u.%u\n", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) &
-    // 0xff, ip >> 24);
-    u8g2.drawString(0, 7, oled_msg);
-  }
-  }
-#endif
+void showValuesOLED(uint16_t co2) {
+  u8g2.firstPage();
+  do {
+    u8g2.setFont(u8g2_font_7Segments_26x42_mn);
+    u8g2.setCursor(0, 44);
+    u8g2.print(co2);
+    u8g2.setFont(u8g2_font_5x7_tf);
+    u8g2.setCursor(110, 51);
+    u8g2.print("ppm");
+  } while (u8g2.nextPage());
+  u8g2.setFont(MENUFONT);
 }
 
 #endif  // SUPPORT_OLED
