@@ -233,6 +233,23 @@ String processor(const String& var) {
   return String();
 }
 
+void serialPrintMACAddress() {
+  byte mac[6];
+  WiFi.macAddress(mac);
+  Serial.print("[WiFi] MAC: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
+}
+
 void initWifi() {
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
@@ -266,6 +283,7 @@ void initWifi() {
       delay(500);
     }
     Serial.println("");
+    serialPrintMACAddress();
     Serial.print("-->[WiFi] WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
     #ifdef SUPPORT_MDNS
