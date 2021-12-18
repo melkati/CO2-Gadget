@@ -6,13 +6,17 @@ Button2 btnUp(BTN_UP);   // Initialize the up button
 Button2 btnDwn(BTN_DWN); // Initialize the down button
 
 void IRAM_ATTR buttonUpISR() {
-  #ifdef SUPPORT_TFT
-  setTFTBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
-  #endif
-  #ifdef SUPPORT_OLED
-  setOLEDBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
-  #endif
-  nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
+  if(actualTFTBrightness==0) // Turn on the display only if it's OFF
+  {
+    #ifdef SUPPORT_TFT
+      setTFTBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
+    #endif
+    #ifdef SUPPORT_OLED
+      setOLEDBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
+    #endif
+    actualTFTBrightness = DisplayBrightness;
+    nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
+  }
 }
 
 void buttonsInit() {
