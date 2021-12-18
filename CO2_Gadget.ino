@@ -232,8 +232,9 @@ void readingsLoop() {
   }
 }
 
+uint32_t actualTFTBrightness = 100; // To know if it's on or off
 void displayLoop() {
-  if (timeToDisplayOff == 0)
+  if (timeToDisplayOff == 0)  // TFT Always ON
     return;
 
   // If configured not to turn off the display on external power
@@ -242,11 +243,19 @@ void displayLoop() {
   if ((!displayOffOnExternalPower) &&
       (battery_voltage * 1000 > batteryFullyChargedMillivolts +
                                     (batteryFullyChargedMillivolts * 5 / 100)))
+  {
+    if(actualTFTBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
+    {
+      setTFTBrightness(TFTBrightness); // Turn on the display at TFTBrightness brightness
+      actualTFTBrightness = TFTBrightness;
+    }
     return;
-
+  }
+  
   if (millis() > nextTimeToDisplayOff) {
-    Serial.println("-->[MAIN] Turning off display to save power");    
+    Serial.println("-->[MAIN] Turning off display to save power");
     turnOffDisplay();
+    actualTFTBrightness = 0;
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
