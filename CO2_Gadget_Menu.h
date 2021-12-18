@@ -201,7 +201,7 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
   return quit;
 }
 
-result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
+result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] Setting TFT brightness at %d", DisplayBrightness);
   Serial.print(F("-->[MENU] action1 event:"));
@@ -209,7 +209,7 @@ result doSetTFTBrightness(eventMask e, navNode &nav, prompt &item) {
   Serial.flush();
 #endif
 #ifdef SUPPORT_FTF
-  setTFTBrightness(DisplayBrightness);
+  setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef SUPPORT_OLED
   setOLEDBrightness(DisplayBrightness);
@@ -520,7 +520,7 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   ,VALUE("OFF", false, doNothing, noEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
-  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetTFTBrightness, anyEvent, wrapStyle)
+  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, dosetDisplayBrightness, anyEvent, wrapStyle)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,EXIT("<Back"));
