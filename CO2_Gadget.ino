@@ -246,7 +246,7 @@ void displayLoop() {
   {
     if(actualDisplayBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
     {
-      setTFTBrightness(DisplayBrightness); // Turn on the display at TFTBrightness brightness
+      setDisplayBrightness(DisplayBrightness); // Turn on the display at TFTBrightness brightness
       actualDisplayBrightness = DisplayBrightness;
     }
     return;

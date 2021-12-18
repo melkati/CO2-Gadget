@@ -9,7 +9,7 @@ void IRAM_ATTR buttonUpISR() {
   if(actualDisplayBrightness==0) // Turn on the display only if it's OFF
   {
     #ifdef SUPPORT_TFT
-      setTFTBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
+      setDisplayBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
     #endif
     #ifdef SUPPORT_OLED
       setOLEDBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness
