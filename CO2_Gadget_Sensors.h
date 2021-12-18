@@ -1,15 +1,5 @@
 #include <Sensors.hpp>
 
-#undef I2C_SDA
-#undef I2C_SCL
-#ifdef ALTERNATIVE_I2C_PINS
-#define I2C_SDA 22
-#define I2C_SCL 21
-#else
-#define I2C_SDA 21
-#define I2C_SCL 22
-#endif
-
 bool firstCO2SensorInit = true;
 bool pendingCalibration = false;
 bool newReadingsAvailable = false;
@@ -56,7 +46,7 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 void initSensors() {
   const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, FAKE=127;
   if (firstCO2SensorInit) {
-    Serial.printf("-->[SENS] Using CanAirIO Sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
+    Serial.printf("-->[SENS] Using sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
     firstCO2SensorInit = false;
   }
   
