@@ -2,12 +2,16 @@ name: PlatformIO
 
 on:
   push:
-    branches:
-      - master
+    tags-ignore:
+      - 'v*'
+    # branches:
+    #   - master
 
   pull_request:
-    branches:
-      - master
+    # branches:
+    #   - master
+      
+  workflow_dispatch:
 
 jobs:
   build:
