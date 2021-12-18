@@ -28,7 +28,19 @@ This project support a large selection of boards, displays and sensors.
 
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
-Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported or easy to add.
+![ScreenShot2](https://user-images.githubusercontent.com/11509521/146636162-a2dac034-ccae-424a-bf4c-129d543b7d04.png)
+
+## OLED Displays
+
+CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library) so it's very easy to include support for them. Right now there is built in support for OLED I2C 1.3" 128x64 pixels display with a very basic layout for real time measurements (soon to be improved).
+
+![image](https://user-images.githubusercontent.com/11509521/146635925-1ea0139a-f32f-41c7-972a-78cf42f5057a.png)
+
+![image](https://user-images.githubusercontent.com/11509521/146636069-e38ea819-52cb-4ebe-bd90-8ae0d3724e82.png)
+
+## ESP32 Boards
+
+Supporting any other ESP32 board is very easy.
 
 # Supported sensors
 
