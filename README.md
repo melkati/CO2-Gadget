@@ -12,15 +12,15 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 # Features (WIP)
 
-- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, MH-Z19, Cubic CM1106
+- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, Winsen MH-Z19, Cubic CM1106
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
-- Management and configuration via on screen menu, serial port and web page
+- Management and configuration via on screen menu, serial port and web page*
 - Local data logger with upload to phone by BLE
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
-- Over the air updates OTA
+- Over the air updates OTA*
 
 # Supported hardware and build
 
@@ -28,7 +28,7 @@ This project support a large selection of boards, displays and sensors.
 
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
-Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported.
+Supporting any other ESP32 board is very easy. Also, the are a large number of displays already supported or easy to add.
 
 # Supported sensors
 
@@ -154,7 +154,7 @@ board_manager:
 
 #### Compiling and Installing
 
-With Arduino IDE you just have to select Program > Upload
+Within Arduino IDE you just have to select Program > Upload
 
 From `arduino-cli` you can load CO2 Gadget in an ESP32 board following these steps:
 
@@ -185,7 +185,7 @@ When creating a pull request, we recommend that you do the following:
 - [x] Test and enable WIFI feature
 - [x] Test and enable MQTT feature
 - [ ] Test and enable ESP-Now feature
-- [ ] Test and enable OLED Display support
+- [x] Test and enable OLED Display support
 - [ ] Implement full support for PM
 - [x] Enable enable and disable BLE, WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
 
