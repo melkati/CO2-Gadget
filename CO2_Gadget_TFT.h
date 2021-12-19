@@ -33,21 +33,21 @@ uint16_t iconDefaultColor = TFT_CYAN;
 TFT_eSPI tft =
     TFT_eSPI(135, 240); // Invoke library, pins defined in User_Setup.h
 
-void setTFTBrightness(uint32_t newBrightness) {
+void setDisplayBrightness(uint32_t newBrightness) {
   Serial.printf("Setting screen brightness value at %d\n", newBrightness);
   ledcWrite(0, newBrightness); // 0-15, 0-255 (with 8 bit resolution); 0=totally
                                // dark;255=totally shiny
 }
 
 void turnOffDisplay() {
-  setTFTBrightness(0); // Turn off the display
+  setDisplayBrightness(0); // Turn off the display
 }
 
 void initDisplayTFT() {
   pinMode(BACKLIGHT_PIN, OUTPUT);
   ledcSetup(0, 5000, 8);    // 0-15, 5000, 8
   ledcAttachPin(BACKLIGHT_PIN, 0); // TFT_BL, 0 - 15
-  setTFTBrightness(DisplayBrightness);
+  setDisplayBrightness(DisplayBrightness);
   tft.init();
   tft.setRotation(1);
 }
