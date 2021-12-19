@@ -35,6 +35,7 @@ int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
 
 // Variables to control automatic display off to save power
+uint32_t actualDisplayBrightness = 100; // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
 uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000); // Next time display should turn off
@@ -232,7 +233,6 @@ void readingsLoop() {
   }
 }
 
-uint32_t actualTFTBrightness = 100; // To know if it's on or off
 void displayLoop() {
   if (timeToDisplayOff == 0)  // TFT Always ON
     return;
@@ -244,10 +244,10 @@ void displayLoop() {
       (battery_voltage * 1000 > batteryFullyChargedMillivolts +
                                     (batteryFullyChargedMillivolts * 5 / 100)))
   {
-    if(actualTFTBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
+    if(actualDisplayBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
     {
-      setTFTBrightness(TFTBrightness); // Turn on the display at TFTBrightness brightness
-      actualTFTBrightness = TFTBrightness;
+      setDisplayBrightness(DisplayBrightness); // Turn on the display at TFTBrightness brightness
+      actualDisplayBrightness = DisplayBrightness;
     }
     return;
   }
@@ -255,7 +255,7 @@ void displayLoop() {
   if (millis() > nextTimeToDisplayOff) {
     Serial.println("-->[MAIN] Turning off display to save power");
     turnOffDisplay();
-    actualTFTBrightness = 0;
+    actualDisplayBrightness = 0;
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
