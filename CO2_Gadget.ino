@@ -13,7 +13,6 @@
 /**/ #endif
 /*****************************************************************************************************/
 // clang-format on
-
 // Next data always defined to be able to configure in menu
 String hostName     = UNITHOSTNAME;
 String rootTopic    = UNITHOSTNAME;
@@ -24,7 +23,6 @@ String mqttPass     = "";
 String wifiSSID     = WIFI_SSID_CREDENTIALS;
 String wifiPass     = WIFI_PW_CREDENTIALS;
 String mDNSName     = "Unset";
-
 bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
@@ -35,16 +33,30 @@ int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
 
 // Variables to control automatic display off to save power
+uint32_t actualDisplayBrightness = 100; // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0; // Time in seconds to turn off the display to save power.
 uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000); // Next time display should turn off
-uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 
+    
+          
+            
+    
+
+          
+          
+            
+    
+
+          
+    
+    @@ -232,7 +233,6 @@ void readingsLoop() {
+  
+uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
-
 #undef I2C_SDA
 #undef I2C_SCL
 #ifdef ALTERNATIVE_I2C_PINS
@@ -54,12 +66,10 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #define I2C_SDA 21
 #define I2C_SCL 22
 #endif
-
 #include <Wire.h>
 #include "driver/adc.h"
 #include "soc/soc.h" // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
-
 #include <WiFi.h>
 #ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
@@ -69,7 +79,6 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <SPIFFS.h>
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -77,9 +86,7 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-
 #include <CO2_Gadget_Sensors.h>
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -88,7 +95,6 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 /*****************************************************************************************************/
 // clang-format on
 #include <CO2_Gadget_WIFI.h>
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -97,7 +103,6 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 /*****************************************************************************************************/
 // clang-format on
 #include "CO2_Gadget_MQTT.h"
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -106,7 +111,6 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 /*****************************************************************************************************/
 // clang-format on
 #include "CO2_Gadget_BLE.h"
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -117,7 +121,6 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #if defined SUPPORT_OTA
 #include <AsyncElegantOTA.h>
 #endif
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -130,7 +133,6 @@ uint16_t vRef = 1100;
 uint16_t batteryDischargedMillivolts = 3500; // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is considered fully charged (100%).
 #include "CO2_Gadget_Battery.h"
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -141,7 +143,6 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 #if defined SUPPORT_OLED
 #include <CO2_Gadget_OLED.h>
 #endif
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -152,7 +153,6 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 #if defined SUPPORT_TFT
 #include "CO2_Gadget_TFT.h"
 #endif
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -161,7 +161,6 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 /*****************************************************************************************************/
 // clang-format on
 #include "CO2_Gadget_Preferences.h"
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -170,7 +169,6 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 /*****************************************************************************************************/
 // clang-format on
 #include "CO2_Gadget_Menu.h"
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -179,12 +177,9 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 /*****************************************************************************************************/
 // clang-format on
 #include "CO2_Gadget_Buttons.h"
-
 /*****************************************************************************************************/
-
 static int64_t lastReadingsCommunicationTime = 0;
 static int startCheckingAfterUs = 1900000;
-
 void processPendingCommands() {
   if (pendingCalibration == true) {
     if (calibrationValue != 0) {
@@ -197,7 +192,6 @@ void processPendingCommands() {
       pendingCalibration = false;
     }
   }
-
   if (pendingAmbientPressure == true) {
     if (ambientPressureValue != 0) {
       printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n",
@@ -212,7 +206,6 @@ void processPendingCommands() {
     }
   }
 }
-
 void readingsLoop() {
   if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
@@ -232,11 +225,19 @@ void readingsLoop() {
   }
 }
 
-uint32_t actualTFTBrightness = 100; // To know if it's on or off
 void displayLoop() {
   if (timeToDisplayOff == 0)  // TFT Always ON
     return;
 
+    
+        
+          
+    
+
+        
+    
+    @@ -244,18 +244,18 @@ void displayLoop() {
+  
   // If configured not to turn off the display on external power
   // and actual voltage is more than those of a maximum loaded batery + 5%, do
   // nothing and return
@@ -244,22 +245,31 @@ void displayLoop() {
       (battery_voltage * 1000 > batteryFullyChargedMillivolts +
                                     (batteryFullyChargedMillivolts * 5 / 100)))
   {
-    if(actualTFTBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
+    if(actualDisplayBrightness == 0) // When connect USB & TFT is OFF -> TURN IT ON
     {
-      setTFTBrightness(TFTBrightness); // Turn on the display at TFTBrightness brightness
-      actualTFTBrightness = TFTBrightness;
+      setTFTBrightness(DisplayBrightness); // Turn on the display at TFTBrightness brightness
+      actualDisplayBrightness = DisplayBrightness;
     }
     return;
   }
-  
+
   if (millis() > nextTimeToDisplayOff) {
     Serial.println("-->[MAIN] Turning off display to save power");
     turnOffDisplay();
-    actualTFTBrightness = 0;
+    actualDisplayBrightness = 0;
     nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
   }
 }
 
+    
+          
+            
+    
+
+          
+    
+    
+  
 void setup() {
   uint32_t brown_reg_temp =
       READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG); // save WatchDog register
@@ -300,7 +310,6 @@ void setup() {
                  brown_reg_temp); // enable brownout detector
   Serial.println("-->[STUP] Ready.");
 }
-
 void loop() {
   mqttClientLoop();
   sensorsLoop();
