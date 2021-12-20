@@ -250,11 +250,31 @@ void serialPrintMACAddress() {
   Serial.println(mac[0],HEX);
 }
 
-void initWifi() {
+bool checkStringIsNumerical(String myString) {
+  uint16_t Numbers = 0;
+
+  for (uint16_t i = 0; i < myString.length(); i++) {
+    if (myString[i] == '0' || myString[i] == '1' || myString[i] == '2' ||
+        myString[i] == '3' || myString[i] == '4' || myString[i] == '5' ||
+        myString[i] == '6' || myString[i] == '7' || myString[i] == '8' ||
+        myString[i] == '9') {
+      Numbers++;
+    }
+  }
+
+  if (Numbers == myString.length()) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+const char* PARAM_INPUT_1 = "MeasurementInterval";
+void initWifi() {  
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
-    WiFi.disconnect(true); //disconnect form wifi to set new wifi connection
+    WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFiEvent);
     // WiFi.setSleep(true);
@@ -266,17 +286,20 @@ void initWifi() {
     Serial.print("-->[WiFi] Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
       ++connectionRetries;
-      if (connectionRetries==maxConnectionRetries) {
+      if (connectionRetries == maxConnectionRetries) {
         activeWIFI = false;
-        Serial.printf("\n[WiFi] Not possible to connect to WiFi after %d tries.\nDisabling WiFi.\n", connectionRetries);
-          Serial.print("-->[WiFi] wifiSSID: #");
-          Serial.print(wifiSSID);
-          Serial.println("#");
-          #ifndef WIFI_PRIVACY
-          Serial.print("-->[WiFi] wifiPass: #");
-          Serial.print(wifiPass);
-          Serial.println("#");
-          #endif
+        Serial.printf(
+            "\n[WiFi] Not possible to connect to WiFi after %d "
+            "tries.\nDisabling WiFi.\n",
+            connectionRetries);
+        Serial.print("-->[WiFi] wifiSSID: #");
+        Serial.print(wifiSSID);
+        Serial.println("#");
+#ifndef WIFI_PRIVACY
+        Serial.print("-->[WiFi] wifiPass: #");
+        Serial.print(wifiPass);
+        Serial.println("#");
+#endif
         return;
       }
       Serial.print(".");
@@ -286,15 +309,15 @@ void initWifi() {
     serialPrintMACAddress();
     Serial.print("-->[WiFi] WiFi connected - IP = ");
     Serial.println(WiFi.localIP());
-    #ifdef SUPPORT_MDNS
+#ifdef SUPPORT_MDNS
     mDNSName = WiFi.getHostname();
     initMDNS();
-    #endif
+#endif
     /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", MAIN_page);
-      AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", MAIN_page, processor);
-      response->addHeader("Server","ESP Async Web Server");
-      request->send(response);
+      AsyncWebServerResponse *response = request->beginResponse_P(200,
+    "text/html", MAIN_page, processor); response->addHeader("Server","ESP Async
+    Web Server"); request->send(response);
     });*/
     SPIFFS.begin();
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
@@ -307,12 +330,24 @@ void initWifi() {
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(hum));
     });
+    server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) {
+      String inputString;
+      // <CO2-GADGET_IP>/update?MeasurementInterval=100
+      if (request->hasParam(PARAM_INPUT_1)) {
+        inputString = request->getParam(PARAM_INPUT_1)->value();
+        if (checkStringIsNumerical(inputString)) {
+          Serial.printf("-->[WiFi] Received /update command MeasurementInterval with parameter %s\n", inputString);
+          measurementInterval = inputString.toInt();
+        }        
+      };
+      request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+    });
     server.onNotFound([](AsyncWebServerRequest *request) {
       request->send(400, "text/plain", "Not found");
     });
 
 #ifdef SUPPORT_OTA
-    AsyncElegantOTA.begin(&server); // Start ElegantOTA
+    AsyncElegantOTA.begin(&server);  // Start ElegantOTA
     Serial.println("OTA ready");
 #endif
 
@@ -320,9 +355,7 @@ void initWifi() {
     Serial.println("-->[WiFi] HTTP server started");
 
     printWiFiStatus();
-  } 
-  else 
-  {
+  } else {
     disableWiFi();
   }
 }
