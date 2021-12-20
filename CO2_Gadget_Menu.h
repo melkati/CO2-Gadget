@@ -538,6 +538,7 @@ MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,OP("Comp " BUILD_GIT, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
+  ,OP("" FLAVOUR, doNothing, noEvent)
   ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
   ,EXIT("<Back"));
@@ -845,6 +846,7 @@ void menu_init() {
   informationMenu[2].disable();
   informationMenu[3].disable();
   informationMenu[4].disable();
+  informationMenu[5].disable();
   // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
   if (!activeWIFI) {
     activeMQTTMenu[0].disable(); // Make MQTT active field unselectable if WIFI is not active
