@@ -30,6 +30,7 @@ bool activeWIFI = true;
 bool activeMQTT = true;
 bool debugSensors = false;
 bool showFahrenheit = false;
+uint16_t measurementInterval = 10;
 bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
