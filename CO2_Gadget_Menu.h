@@ -505,9 +505,14 @@ result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+TOGGLE(showFahrenheit, showFahrenheitMenu, "Units: ", doNothing,noEvent, wrapStyle
+  ,VALUE("Celsius ", false, doNothing, noEvent)
+  ,VALUE("Fahrenheit ", true, doNothing, noEvent));
+
 MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
   ,FIELD(temp, "Temp", " deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset"," deg C",-50,50,1,0.1,doSetTempOffset,(eventMask)(enterEvent | exitEvent | updateEvent),wrapStyle)
+  ,SUBMENU(showFahrenheitMenu)
   ,EXIT("<Back"));
 
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle

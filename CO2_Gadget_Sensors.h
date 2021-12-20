@@ -12,7 +12,7 @@ bool autoSelfCalibration = false;
 float tempOffset = 0.0f;
 
 uint16_t co2 = 0;
-float temp, hum = 0;
+float temp, tempFahrenheit, hum = 0;
 
 uint16_t co2OrangeRange =
     700; // Default CO2 ppm concentration threshold to display values in orange
@@ -37,6 +37,8 @@ void onSensorDataOk() {
 
   temp = sensors.getTemperature();
   if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
+  tempFahrenheit = (temp * 1.8 + 32);
 
   newReadingsAvailable = true;
 }
