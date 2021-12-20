@@ -514,10 +514,38 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   ,VALUE("ON", true, doNothing, noEvent)
   ,VALUE("OFF", false, doNothing, noEvent));
 
+  
+result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
+    Serial.printf("[MENU] Setting doDisplayReverse to %b\n", doDisplayReverse);
+  #endif
+  #ifdef SUPPORT_FTF
+  if (displayReverse) {
+    ftf.setRotation(3);
+  } else {
+    tft.setRotation(1);
+  }
+  #endif
+  #ifdef SUPPORT_OLED
+  if (displayReverse) {
+    u8g2.setDisplayRotation(U8G2_R2);
+  } else {
+    u8g2.setDisplayRotation(U8G2_R0);
+  }
+  #endif
+  // nav.target-> dirty = true;
+  return proceed;
+}
+
+TOGGLE(displayReverse, activeDisplayReverse, "Orient: ", doNothing,noEvent, wrapStyle
+  ,VALUE("Normal", false, doNothing, noEvent)
+  ,VALUE("Reversed", true, doNothing, noEvent));
+
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, dosetDisplayBrightness, anyEvent, wrapStyle)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
+  ,SUBMENU(activeDisplayReverse)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle

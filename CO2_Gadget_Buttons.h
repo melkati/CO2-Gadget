@@ -14,7 +14,7 @@ void IRAM_ATTR buttonUpISR() {
   }
 }
 
-void buttonsInit() {
+void buttonsInit() {  
   // Interrupt Service Routine to turn on the display on button UP press 
   attachInterrupt(BTN_UP, buttonUpISR, RISING);
 

@@ -29,6 +29,7 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool debugSensors = false;
+bool displayReverse = false;
 bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
