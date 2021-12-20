@@ -86,27 +86,13 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 # Building from repository
 
-First you should edit some files with your own data and preferences.
+## With PlatformIO (recommended)
 
-Edit the credentials.h file substituting "MyWiFiSSID" with your own WiFi SSID and "some_secret_password" with your own WiFi password in:
+**Note:** If all you want is to flash CO2 Gadget into your board go [here:](https://emariete.com/en/meter-co2-gadget/). You don't need to compile the firmware.
 
-  ```
-  #define  WIFI_SSID_CREDENTIALS  "MyWiFiSSID"
-  #define  WIFI_PW_CREDENTIALS    "some_secret_password"
-  ```
-If you prefer not to keep sensitive data in a file, you can define this data in environment variables so you don't need a credentials.h file with your secrets. See platformio.ini file for instructions.
+### Prepare PlatformIO
 
-If you are planning to use MQTT with authentication, substitute "MyUser" with your own MQTT user and "another_secret_password" with your own MQTT user password:
-
-  ```
-  #define MQTT_USER_CREDENTIAL "MyUser"
-  #define MQTT_PW_CREDENTIAL "another_secret_password"
-  ```
-You are done with credentials. Save the file credentials.h
-
-### PlatformIO (recommended)
-
-Edit the file platformio.ini
+First you must edit the file platformio.ini to setup your preferences.
 
 If necessary adjust the upload and minitoring port configuration to match your situation.
 
@@ -117,11 +103,6 @@ If necessary adjust the upload and minitoring port configuration to match your s
   monitor_port = COM13
   ```
   
-If you are planning to use MQTT, edit the IP of your MQTT broker, substituting 192.168.1.145 with your broker IP address:
-  
-  ```
-  -D MQTT_BROKER_SERVER="\"192.168.1.146"\"
-  ```
 Save the file platformio.ini
 
 #### Compiling and Installing
@@ -129,25 +110,29 @@ Save the file platformio.ini
 We recommend PlatformIO because it is more easy than Arduino IDE. For this, please install first [PlatformIO](http://platformio.org/) and its command line tools (Windows, MacOs and Linux), **pio** command, then connect your compatible board to the USB and run the next command:
 
 ```python
-pio run --target upload
+pio run pio run -e TTGO_TDISPLAY_SANDWICH --target upload
 ```
-If using PlatformIO GUI, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Upload and Monitor (in the image the sanwitch version is selected).
+You must replace "TTGO_TDISPLAY_SANDWICH" with the flavour of CO2 Gadget you want copiled and uploaded (the are defined in platformio.ini or you can define your own).
 
-### Arduino
+If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
 
-These Arduino instructions are outdated. Sou must adapt it to your situation while I write some new instructions.
+## With Arduino
+
+**These Arduino instructions are outdated**. You must adapt it to your situation while I write some new instructions.
 
 #### Prerequisites
 
 To **compile this project with Arduino IDE** (the integrated development enviroment), you have to **install Arduino IDE**, and **add the libraries** referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), as **Arduino won't install it automatically** like PlatformIO does.
 
-To **compile this project with Arduino CLI** (the command line version of Arduino), you first need to install **arduino-cli** or the **Arduino IDE** with the libraries referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), because **Arduino won't install it automatically** like PlatformIO does.
-
 Also, you need to add the **alternative links** for supporting the ESP32 boards:
 
 For Arduino IDE: Adding the line **https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json** in: File > Preferences > Additional Boards Manager URLs.
 
-For Arduino CLI: Follow the next steps:
+In Arduino IDE seleect your board, COM port, etc. in the Tools menu and to upload to your board select Program -> Upload or click on the "upload" icon.
+
+To **compile this project with Arduino CLI** (the command line version of Arduino), you first need to install **arduino-cli** or the **Arduino IDE** with the libraries referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), because **Arduino won't install it automatically** like PlatformIO does.
+
+You must add the **alternative links** for supporting the ESP32 boards in Arduino CLI: Follow the next steps:
 
 ```bash
 arduino-cli config init
@@ -158,13 +143,8 @@ in the `.arduino15/arduino-cli.yaml` file add:
 ```yml
 board_manager:
   additional_urls:
-    - https://arduino.esp8266.com/stable/package_esp8266com_index.json
     - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 ``` 
-
-#### Compiling and Installing
-
-Within Arduino IDE you just have to select Program > Upload
 
 From `arduino-cli` you can load CO2 Gadget in an ESP32 board following these steps:
 
@@ -193,11 +173,12 @@ When creating a pull request, we recommend that you do the following:
 # TODO
 
 - [x] Test and enable WIFI feature
-- [x] Test and enable MQTT feature
-- [ ] Test and enable ESP-Now feature
+- [x] Test and enable TFT Display support
 - [x] Test and enable OLED Display support
+- [x] Test and enable MQTT feature
+- [x] Support enabling and disabling of BLE (Bluetooth Low Energy), WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
 - [ ] Implement full support for PM
-- [x] Enable enable and disable BLE, WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
+- [ ] Test and enable ESP-Now feature
 
 # Credits
 
