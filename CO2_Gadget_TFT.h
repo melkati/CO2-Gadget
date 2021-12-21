@@ -17,7 +17,7 @@
 #include <SPI.h>
 #include "bootlogo.h"
 #include "icons.h"
-// #include "FontArchivoNarrow_Regular10pt7b.h"
+#include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
 
 // https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
@@ -131,7 +131,11 @@ void showTemperatureTFT() {
   tft.setTextDatum(BL_DATUM);
   tft.setSwapBytes(true);
   tft.pushImage(2, tft.height()-22, 16, 16, iconTemperature);
-  tft.drawString(String(temp, 1) + "~" , 22 , tft.height()-2);
+  if (showFahrenheit) {
+    tft.drawString(String(tempFahrenheit, 1) + "~" , 22 , tft.height()-2);    
+  } else {
+    tft.drawString(String(temp, 1) + "~" , 22 , tft.height()-2);
+  }  
 }
 
 void showHumidity() {
