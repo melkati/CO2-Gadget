@@ -35,6 +35,8 @@ void printPreferences() {
   Serial.printf("selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
   Serial.printf("debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
   Serial.printf("displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);  
+  Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
+  Serial.printf("measInterval:\t #%d#\n", measurementInterval);
   Serial.println("");
 }
 
@@ -71,6 +73,8 @@ void initPreferences() {
   selectedCO2Sensor = preferences.getUInt("selCO2Sensor", 0);
   debugSensors = preferences.getBool("debugSensors", false);
   displayReverse = preferences.getBool("displayReverse", false);
+  showFahrenheit = preferences.getBool("showFahrenheit", false);
+  measurementInterval = preferences.getUInt("measInterval", 10);
   
   rootTopic.trim();
   mqttClientId.trim();
@@ -123,5 +127,7 @@ void putPreferences() {
   preferences.putUInt("selCO2Sensor", selectedCO2Sensor);
   preferences.putBool("debugSensors", debugSensors);
   preferences.putBool("displayReverse", displayReverse);
+  preferences.putBool("showFahrenheit", showFahrenheit);
+  preferences.putUInt("measInterval", measurementInterval);
   preferences.end();
 }
