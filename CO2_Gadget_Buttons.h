@@ -34,14 +34,9 @@ void buttonsInit() {
 }
 
 void reverseButtons(bool reversed) {
-  // Interrupt Service Routine to turn on the display on button UP press
   if (reversed) {
+    // Interrupt Service Routine to turn on the display on button UP press
     attachInterrupt(BTN_UP, buttonUpISR, RISING);
-  } else {
-    attachInterrupt(BTN_DWN, buttonUpISR, RISING);
-  }
-
-  if (reversed) {
     btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
     btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
     btnDwn.setClickHandler([](Button2 &b) {
@@ -56,6 +51,7 @@ void reverseButtons(bool reversed) {
       nav.doNav(upCmd);
     });
   } else {
+    attachInterrupt(BTN_DWN, buttonUpISR, RISING);
     btnUp.setLongClickTime(LONGCLICK_TIME_MS);
     btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
     btnUp.setClickHandler([](Button2 &b) {
