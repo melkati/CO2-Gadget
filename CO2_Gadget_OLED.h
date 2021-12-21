@@ -55,6 +55,11 @@ void initDisplayOLED() {
     u8g2.drawStr(0, 51, "  Air  Quality");
   } while (u8g2.nextPage());
   u8g2.setFont(MENUFONT);
+  if (displayReverse) {
+    u8g2.setDisplayRotation(U8G2_R2);
+  } else {
+    u8g2.setDisplayRotation(U8G2_R0);
+  }
 }
 
 void showValuesOLED(uint16_t co2) {

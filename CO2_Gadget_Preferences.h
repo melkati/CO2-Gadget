@@ -12,9 +12,9 @@ void printPreferences() {
   Serial.printf("co2OrangeRange:\t #%d#\n", co2OrangeRange);
   Serial.printf("co2RedRange:\t #%d#\n", co2RedRange);
   Serial.printf("DisplayBrightness:\t #%d#\n", DisplayBrightness);
-  Serial.printf("activeBLE is:\t#%s#\n", ((activeBLE) ? "Enabled" : "Disabled"));
-  Serial.printf("activeWIFI is:\t#%s#\n", ((activeWIFI) ? "Enabled" : "Disabled"));
-  Serial.printf("activeMQTT is:\t#%s#\n", ((activeMQTT) ? "Enabled" : "Disabled"));
+  Serial.printf("activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
+  Serial.printf("activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
+  Serial.printf("activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
   Serial.printf("rootTopic:\t#%s#\n", rootTopic.c_str());
   Serial.printf("batDischgd:\t #%d#\n", batteryDischargedMillivolts);
   Serial.printf("batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
@@ -26,14 +26,15 @@ void printPreferences() {
   Serial.printf("mqttPass:\t#%s#\n", mqttPass.c_str());
   #endif
   Serial.printf("tToDispOff:\t #%d#\n", timeToDisplayOff);
-  Serial.printf("dispOffOnExP:\t#%s#\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"));
+  Serial.printf("dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
   Serial.printf("wifiSSID:\t#%s#\n", wifiSSID.c_str());
   #ifndef WIFI_PRIVACY
   Serial.printf("wifiPass:\t#%s#\n", wifiPass.c_str());
   #endif
   Serial.printf("hostName:\t#%s#\n", hostName.c_str());
   Serial.printf("selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
-  Serial.printf("debugSensors is:\t#%s#\n", ((debugSensors) ? "Enabled" : "Disabled"));
+  Serial.printf("debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
+  Serial.printf("displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);  
   Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
   Serial.printf("measInterval:\t #%d#\n", measurementInterval);
   Serial.println("");
@@ -71,6 +72,7 @@ void initPreferences() {
   hostName = preferences.getString("hostName", hostName).c_str();
   selectedCO2Sensor = preferences.getUInt("selCO2Sensor", 0);
   debugSensors = preferences.getBool("debugSensors", false);
+  displayReverse = preferences.getBool("displayReverse", false);
   showFahrenheit = preferences.getBool("showFahrenheit", false);
   measurementInterval = preferences.getUInt("measInterval", 10);
   
@@ -124,6 +126,7 @@ void putPreferences() {
   preferences.putString("hostName", hostName);
   preferences.putUInt("selCO2Sensor", selectedCO2Sensor);
   preferences.putBool("debugSensors", debugSensors);
+  preferences.putBool("displayReverse", displayReverse);
   preferences.putBool("showFahrenheit", showFahrenheit);
   preferences.putUInt("measInterval", measurementInterval);
   preferences.end();

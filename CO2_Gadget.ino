@@ -32,6 +32,7 @@ bool activeBLE =  true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool debugSensors = false;
+bool displayReverse = false;
 bool showFahrenheit = false;
 uint16_t measurementInterval = 10;
 bool inMenu = false;
@@ -75,6 +76,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <SPIFFS.h>
+
+// Function definitions 
+void reverseButtons(bool reversed);
 
 // clang-format off
 /*****************************************************************************************************/

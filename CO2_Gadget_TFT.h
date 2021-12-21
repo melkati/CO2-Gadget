@@ -49,7 +49,11 @@ void initDisplayTFT() {
   ledcAttachPin(BACKLIGHT_PIN, 0); // TFT_BL, 0 - 15
   setDisplayBrightness(DisplayBrightness);
   tft.init();
-  tft.setRotation(1);
+  if (displayReverse) {
+    tft.setRotation(3);
+  } else {
+    tft.setRotation(1);
+  }
 }
 
 void displaySplashScreenTFT() {
