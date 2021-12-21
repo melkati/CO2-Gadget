@@ -72,6 +72,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include <FS.h>
 #include <SPIFFS.h>
 
+// Function definitions 
+void reverseButtons(bool reversed);
+
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
