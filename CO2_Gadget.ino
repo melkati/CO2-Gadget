@@ -4,6 +4,7 @@
 /*****************************************************************************************************/
 /* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
 /* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
+/*  THIS SECTION IS OUTDATED, IF YOU WANT TO USE ARDUINO YOU WILL HAVE TO SHORT IT OUT BY YOURSELF   */
 /**/ #ifndef PLATFORMIO
 /**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
