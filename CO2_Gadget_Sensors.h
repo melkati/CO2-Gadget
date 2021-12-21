@@ -46,7 +46,7 @@ void onSensorDataOk() {
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
 void initSensors() {
-  const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, FAKE=127;
+  const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO=127;
   if (firstCO2SensorInit) {
     Serial.printf("-->[SENS] Using sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
     firstCO2SensorInit = false;
@@ -109,7 +109,7 @@ void initSensors() {
     Serial.println("-->[SENS] Sensor configured: " +
                    sensors.getMainDeviceSelected());
   }
-  }
+}
 
 void sensorsLoop() {    
   sensors.loop();
