@@ -14,7 +14,7 @@ void IRAM_ATTR buttonUpISR() {
   }
 }
 
-void buttonsInit() {
+void buttonsInit() {  
   // Interrupt Service Routine to turn on the display on button UP press 
   attachInterrupt(BTN_UP, buttonUpISR, RISING);
 
@@ -33,8 +33,47 @@ void buttonsInit() {
   });
 }
 
-void buttonsLoop() {
-  // Check for button presses
-  btnUp.loop();
-  btnDwn.loop();
+void reverseButtons(bool reversed) {
+  // Interrupt Service Routine to turn on the display on button UP press
+  if (reversed) {
+    attachInterrupt(BTN_UP, buttonUpISR, RISING);
+  } else {
+    attachInterrupt(BTN_DWN, buttonUpISR, RISING);
+  }
+
+  if (reversed) {
+    btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
+    btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
+    btnDwn.setClickHandler([](Button2 &b) {
+      // Up
+      nav.doNav(downCmd);
+    });
+
+    btnUp.setLongClickTime(LONGCLICK_TIME_MS);
+    btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
+    btnUp.setClickHandler([](Button2 &b) {
+      // Down
+      nav.doNav(upCmd);
+    });
+  } else {
+    btnUp.setLongClickTime(LONGCLICK_TIME_MS);
+    btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
+    btnUp.setClickHandler([](Button2 &b) {
+      // Up
+      nav.doNav(downCmd);
+    });
+
+    btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
+    btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
+    btnDwn.setClickHandler([](Button2 &b) {
+      // Down
+      nav.doNav(upCmd);
+    });
+  }
 }
+
+  void buttonsLoop() {
+    // Check for button presses
+    btnUp.loop();
+    btnDwn.loop();
+  }
