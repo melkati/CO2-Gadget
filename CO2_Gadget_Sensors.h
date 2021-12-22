@@ -85,7 +85,7 @@ void initSensors() {
   // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
   // Sensors Lib
 
-  Serial.printf("Selected CO2 Sensor: %d\n", selectedCO2Sensor);
+  Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
   if (selectedCO2Sensor == AUTO) {
     Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
