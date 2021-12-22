@@ -118,7 +118,9 @@ void reverseButtons(bool reversed);
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
+#ifdef SUPPORT_BLE
 #include "CO2_Gadget_BLE.h"
+#endif
 
 // clang-format off
 /*****************************************************************************************************/
@@ -127,7 +129,7 @@ void reverseButtons(bool reversed);
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#if defined SUPPORT_OTA
+#ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
 #endif
 
@@ -232,7 +234,9 @@ void readingsLoop() {
       lastReadingsCommunicationTime = esp_timer_get_time();
       newReadingsAvailable = false;
       nav.idleChanged = true; // Must redraw display as there are new readings
+      #ifdef SUPPORT_BLE
       publishBLE();
+      #endif
       // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
       // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
       if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
@@ -300,7 +304,9 @@ void setup() {
   delay(2000);              // Enjoy the splash screen for 2 seconds
   tft.setTextSize(2);
 #endif
+#ifdef SUPPORT_BLE
   initBLE();
+#endif
   initWifi();
   initSensors();
   #ifdef SUPPORT_MQTT
