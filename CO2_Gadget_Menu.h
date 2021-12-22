@@ -282,6 +282,7 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(debugSensorsMenu)
   ,EXIT("<Back"));
 
+#ifdef SUPPORT_BLE
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("activeBLE", activeBLE);
@@ -298,6 +299,7 @@ MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,OP("You can't", doNothing, noEvent)
   ,OP("disable BLE.", doNothing, noEvent)
   ,EXIT("<Back"));
+#endif
 
 result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
@@ -556,7 +558,9 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorConfigMenu)
+  #ifdef SUPPORT_BLE
   ,SUBMENU(bleConfigMenu)
+  #endif
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
 #if defined SUPPORT_ESPNOW  
@@ -787,7 +791,11 @@ void loadTempArraysWithActualValues() {
   Serial.println("#");
   #endif
 
+  #ifdef SUPPORT_BLE
   paddedString = rightPad(gadgetBle.getDeviceIdString(), 30);
+  #else
+  paddedString = rightPad("Unavailable", 30);
+  #endif
   paddedString.toCharArray(tempBLEDeviceId, paddedString.length());  
   #ifdef DEBUG_ARDUINOMENU
   Serial.print("-->[MENU] tempBLEDeviceId: #");
