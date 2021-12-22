@@ -324,8 +324,9 @@ void loop() {
   sensorsLoop();
   processPendingCommands();
   readingsLoop();
-  BLELoop();
-  OTALoop();
+#ifdef SUPPORT_OTA
+  AsyncElegantOTA.loop();
+#endif  OTALoop();
   displayLoop();
   buttonsLoop();
   menuLoop();
