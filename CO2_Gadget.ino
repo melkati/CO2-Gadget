@@ -8,7 +8,7 @@
 /*            I WILL PREPARE THE CODE AND WRITE NEW INSTRUCTIONS AS TIME PERMITS.                    */
 /*                                                                                                   */
 /**/ #ifndef PLATFORMIO
-/**/ // #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
+/**/ #define SUPPORT_OTA            // Needs SUPPORT_WIFI - CURRENTLY NOT WORKING AWAITING FIX
 /**/ #define SUPPORT_TFT
 /**/ #define DEBUG_ARDUINOMENU
 /**/ #define UNITHOSTNAME "CO2-Gadget"
@@ -74,6 +74,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#ifdef SUPPORT_OTA
+#include <AsyncElegantOTA.h>
+#endif
 #include <FS.h>
 #include <SPIFFS.h>
 
@@ -321,12 +324,9 @@ void loop() {
   sensorsLoop();
   processPendingCommands();
   readingsLoop();
-#ifdef SUPPORT_BLE
-  BLELoop();
-#endif
 #ifdef SUPPORT_OTA
   AsyncElegantOTA.loop();
-#endif
+#endif  OTALoop();
   displayLoop();
   buttonsLoop();
   menuLoop();

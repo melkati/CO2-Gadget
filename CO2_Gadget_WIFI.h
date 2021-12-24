@@ -74,7 +74,7 @@ void printWiFiStatus() { // Print wifi status on serial monitor
   Serial.println(WiFi.localIP());
 
   // Print your WiFi shield's MAC address:
-  Serial.print("-->[WiFi] MAC Adress: ");
+  Serial.print("-->[WiFi] MAC Address: ");
   Serial.println(WiFi.macAddress());
   
   // Print the received signal strength:
@@ -200,12 +200,12 @@ void WiFiEvent(WiFiEvent_t event) {
 void initMDNS() {
   /*use mdns for host name resolution*/
   if (!MDNS.begin(hostName.c_str())) { // http://esp32.local
-    Serial.println("Error setting up MDNS responder!");
+    Serial.println("-->[WiFi] Error setting up MDNS responder!");
     while (1) {
       delay(1000);
     }
   }
-  Serial.print("mDNS responder started. CO2 Gadget web interface at: http://");
+  Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
   Serial.print(hostName);
   Serial.println(".local");
   MDNS.addService("http", "tcp", 80);
@@ -236,7 +236,7 @@ String processor(const String& var) {
 void serialPrintMACAddress() {
   byte mac[6];
   WiFi.macAddress(mac);
-  Serial.print("[WiFi] MAC: ");
+  Serial.print("-->[WiFi] MAC: ");
   Serial.print(mac[5],HEX);
   Serial.print(":");
   Serial.print(mac[4],HEX);
@@ -330,13 +330,13 @@ void initWifi() {
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(200, "text/plain", String(hum));
     });
-    server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
       String inputString;
-      // <CO2-GADGET_IP>/update?MeasurementInterval=100
+      // <CO2-GADGET_IP>/settings?MeasurementInterval=100
       if (request->hasParam(PARAM_INPUT_1)) {
         inputString = request->getParam(PARAM_INPUT_1)->value();
         if (checkStringIsNumerical(inputString)) {
-          Serial.printf("-->[WiFi] Received /update command MeasurementInterval with parameter %s\n", inputString);
+          Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
           measurementInterval = inputString.toInt();
         }        
       };
@@ -348,7 +348,7 @@ void initWifi() {
 
 #ifdef SUPPORT_OTA
     AsyncElegantOTA.begin(&server);  // Start ElegantOTA
-    Serial.println("OTA ready");
+    Serial.println("-->[WiFi] OTA ready");
 #endif
 
     server.begin();
@@ -358,4 +358,10 @@ void initWifi() {
   } else {
     disableWiFi();
   }
+}
+
+void OTALoop() {
+#ifdef SUPPORT_OTA
+  AsyncElegantOTA.loop();
+#endif
 }
