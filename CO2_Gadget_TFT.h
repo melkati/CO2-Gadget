@@ -43,6 +43,14 @@ void turnOffDisplay() {
   setDisplayBrightness(0); // Turn off the display
 }
 
+void displaySplashScreenTFT() {
+  tft.fillScreen(TFT_WHITE);
+  tft.setSwapBytes(true);
+  tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+  tft.pushImage(10, 50, 92, 72, CO2Logo);
+  tft.pushImage(112, 67, 122, 46, GadgetLogo);
+}
+
 void initDisplayTFT() {
   pinMode(BACKLIGHT_PIN, OUTPUT);
   ledcSetup(0, 5000, 8);    // 0-15, 5000, 8
@@ -54,14 +62,72 @@ void initDisplayTFT() {
   } else {
     tft.setRotation(1);
   }
+
+  displaySplashScreenTFT(); // Display init and splash screen
+  delay(2000);              // Enjoy the splash screen for 2 seconds
+  tft.setTextSize(2);
 }
 
-void displaySplashScreenTFT() {
-  tft.fillScreen(TFT_WHITE);
-  tft.setSwapBytes(true);
-  tft.pushImage(60, 12, 118, 40, eMarieteLogo);
-  tft.pushImage(10, 50, 92, 72, CO2Logo);
-  tft.pushImage(112, 67, 122, 46, GadgetLogo);
+/***************************************************************************************
+** Function name:           displayNotification
+** Description:             Display a boxed  notification in the display
+***************************************************************************************/
+// parameters:
+//      notificationText = string to display.
+//      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
+bool displayNotification(String notificationText, notificationTypes notificationType) {
+  uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+  // if (notificationType=1) {
+    textColor = TFT_RED;
+    boxColor = TFT_SILVER;
+    backgroundColor = TFT_BLUE;
+  // }
+
+  // TO-DO: Size rectangle to text size
+  // int16_t textWidth = tft.textWidth(notificationText);
+  // int16_t textHeight = tft.fontHeight();
+
+  tft.setViewport(boxMarging, boxMarging, tft.width() - boxMarging*2, tft.height() - boxMarging*2);
+  tft.fillRect( 0, 0, tft.width(), tft.height(), backgroundColor);
+  tft.drawRect( 0, 0, tft.width(), tft.height(), boxColor);
+  
+  tft.setTextDatum(CC_DATUM);
+  tft.setTextColor(textColor, backgroundColor);
+  tft.drawString(notificationText, tft.width()/2, tft.height()/2);
+  tft.resetViewport();
+  return true;
+}
+
+/***************************************************************************************
+** Function name:           displayNotification
+** Description:             Display a boxed two line notification in the display
+***************************************************************************************/
+// parameters:
+//      notificationText = string to display.
+//      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {
+  uint16_t textColor, boxColor, backgroundColor, boxMarging = 10;
+  // if (notificationType=1) {
+    textColor = TFT_RED;
+    boxColor = TFT_SILVER;
+    backgroundColor = TFT_BLUE;
+  // }
+
+  // TO-DO: Size rectangle to text size
+  int16_t textWidth  = tft.textWidth(notificationText);
+  int16_t textWidth2 = tft.textWidth(notificationText2);
+  // int16_t textHeight = tft.fontHeight();
+
+  tft.setViewport(boxMarging, boxMarging, tft.width() - boxMarging*2, tft.height() - boxMarging*2);
+  tft.fillRect( 0, 0, tft.width(), tft.height(), backgroundColor);
+  tft.drawRect( 0, 0, tft.width(), tft.height(), boxColor);
+  
+  tft.setTextDatum(TL_DATUM);
+  tft.setTextColor(textColor, backgroundColor);
+  tft.drawString(notificationText, tft.width()/2-textWidth/2, tft.height()/5*1+boxMarging);
+  tft.drawString(notificationText2, tft.width()/2-textWidth2/2, tft.height()/5*3-boxMarging);
+  tft.resetViewport();
+  return true;
 }
 
 void showBatteryIconTFT() {
