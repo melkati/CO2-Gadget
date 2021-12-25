@@ -141,7 +141,7 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
   case exitEvent: // leaving navigation level
     Serial.println(" exitEvent");
     break;
-  case returnEvent: // TODO:entering previous level (return)
+  case returnEvent: // TO-DO:entering previous level (return)
     Serial.println(" returnEvent");
     break;
   case focusEvent: // element just gained focus
@@ -150,10 +150,10 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
   case blurEvent: // element about to lose focus
     Serial.println(" blurEvent");
     break;
-  case selFocusEvent: // TODO:child just gained focus
+  case selFocusEvent: // TO-DO:child just gained focus
     Serial.println(" selFocusEvent");
     break;
-  case selBlurEvent: // TODO:child about to lose focus
+  case selBlurEvent: // TO-DO:child about to lose focus
     Serial.println(" selBlurEvent");
     break;
   case updateEvent: // Field value has been updated
