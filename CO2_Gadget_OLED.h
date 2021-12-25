@@ -44,6 +44,23 @@ void displaySplashScreenOLED() {
   u8g2.setFont(MENUFONT);
 }
 
+/***************************************************************************************
+** Function name:           displayNotification
+** Description:             Display a boxed  notification in the display
+***************************************************************************************/
+// parameters:
+//      notificationText = string to display.
+//      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
+bool displayNotification(String notificationText, notificationTypes notificationType) {
+  uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+  return true;
+}
+
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {
+  uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+  return true;
+}
+
 void initDisplayOLED() {
   Serial.printf("-->[OLED] Initialized: \t#%s#\n",
                 ((u8g2.begin()) ? "OK" : "Failed"));
@@ -60,6 +77,9 @@ void initDisplayOLED() {
   } else {
     u8g2.setDisplayRotation(U8G2_R0);
   }
+
+  displaySplashScreenOLED();
+  delay(2000);
 }
 
 void showValuesOLED(uint16_t co2) {

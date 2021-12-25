@@ -51,6 +51,8 @@ void initSensors() {
     Serial.printf("-->[SENS] Using sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
     firstCO2SensorInit = false;
   }
+
+  displayNotification("Init sensors", notifyInfo);
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)

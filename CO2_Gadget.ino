@@ -80,8 +80,11 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include <FS.h>
 #include <SPIFFS.h>
 
-// Function definitions 
+// Function and enum definitions 
 void reverseButtons(bool reversed);
+
+enum notificationTypes { notifyNothing, notifyInfo, notifyWarning, notifyError };
+bool displayNotification(String notificationText, notificationTypes notificationType);
 
 // clang-format off
 /*****************************************************************************************************/
@@ -294,15 +297,9 @@ void setup() {
   initBattery();
 #if defined SUPPORT_OLED
   initDisplayOLED();
-  delay(1000);
-  displaySplashScreenOLED();
-  delay(1000);
 #endif
 #if defined SUPPORT_TFT
-  initDisplayTFT();
-  displaySplashScreenTFT(); // Display init and splash screen
-  delay(2000);              // Enjoy the splash screen for 2 seconds
-  tft.setTextSize(2);
+  initDisplayTFT();  
 #endif
 #ifdef SUPPORT_BLE
   initBLE();
