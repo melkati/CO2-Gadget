@@ -12,8 +12,13 @@ void IRAM_ATTR buttonUpISR() {
     actualDisplayBrightness = DisplayBrightness;
     nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
   }
+  
 }
 
+void doubleClick(Button2& btn) {
+  Serial.println("-->[BUTT] Test double click...");
+  displayNotification("Test functionality", "double click", notifyInfo);
+}
 void buttonsInit() {  
   // Interrupt Service Routine to turn on the display on button UP press 
   attachInterrupt(BTN_UP, buttonUpISR, RISING);
@@ -31,6 +36,8 @@ void buttonsInit() {
     // Down
     nav.doNav(upCmd);
   });
+
+  btnDwn.setDoubleClickHandler(doubleClick);
 }
 
 void reverseButtons(bool reversed) {

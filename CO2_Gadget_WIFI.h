@@ -274,6 +274,7 @@ void initWifi() {
   uint16_t connectionRetries = 0;
   uint16_t maxConnectionRetries = 30;
   if (activeWIFI) {
+    displayNotification("Init WiFi", notifyInfo);
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA);
     WiFi.onEvent(WiFiEvent);
