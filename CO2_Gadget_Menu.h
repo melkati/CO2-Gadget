@@ -249,6 +249,7 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
     Serial.printf("-->[MENU] New CO2 Sensor selected: %d\n", setCO2Sensor);
     selectedCO2Sensor = setCO2Sensor;
     SetTempCO2Sensor(selectedCO2Sensor);
+    displayNotification("Init sensor", notifyInfo);
     initSensors();
   }  else {
     Serial.printf("-->[MENU] CO2 Sensor same as before (old:%d/selected:%d)\n", selectedCO2Sensor, setCO2Sensor);
