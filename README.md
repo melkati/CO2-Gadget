@@ -10,17 +10,18 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 ![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
 
-# Features (WIP)
+# Features
 
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, Winsen MH-Z19, Cubic CM1106
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
-- Management and configuration via on screen menu, serial port and web page*
+- Management and configuration via on screen menu and console (serial port)
 - Local data logger with upload to phone by BLE
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - Over the air updates OTA*
+- GPIO outputs to, for example, activation of air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
 
 # Supported hardware and build
 
@@ -30,6 +31,8 @@ As an example you can find a very detailed tutorial with step-by-step video on h
 
 ![image](https://user-images.githubusercontent.com/11509521/146636210-ee11a49a-5ebc-4e3c-a11e-91e2d8676410.png)
 
+For latest information on other hardware use (boards, sensors, displays, etc), please check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+
 ## OLED Displays
 
 CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library) so it's very easy to include support for them. Right now there is built in support for OLED I2C 1.3" 128x64 pixels display with a very basic layout for real time measurements (soon to be improved).
@@ -38,7 +41,26 @@ CO2 Gadget right now has support for many different OLED displays (by using the 
 
 ## ESP32 Boards
 
-Supporting any other ESP32 board is very easy.
+Supporting any other ESP32 board is very easy. Yoy just have to setup the pines accordly.
+
+These are the GPIOs used by each predefined board:
+
+| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32
+| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/34 | 27 | 25 | 32 | 32
+| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/34 | 27 | 25 | 32 | 32
+
+- Variant: Name of the firmware variant, or flavor.
+- Display: Display supported by each flavor.
+- RX / TX: Pins (GPIO) used for connection of sensors connected by Serial port.
+- I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
+- UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
+- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
+- Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
+- GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
+- GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 
 # Supported sensors
 
@@ -172,13 +194,9 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-- [x] Test and enable WIFI feature
-- [x] Test and enable TFT Display support
-- [x] Test and enable OLED Display support
-- [x] Test and enable MQTT feature
-- [x] Support enabling and disabling of BLE (Bluetooth Low Energy), WiFi and MQTT without recompiling by activating/deactivating on the buit in menu
 - [ ] Implement full support for PM
 - [ ] Test and enable ESP-Now feature
+- [ ] Full configuration vía web page
 
 # Credits
 
