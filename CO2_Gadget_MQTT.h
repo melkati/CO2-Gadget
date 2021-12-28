@@ -105,6 +105,18 @@ void publishFloatMQTT(String topic, float payload) {
   #endif
 }
 
+void publishStrMQTT(String topic, String payload) {
+  #ifdef SUPPORT_MQTT
+  payload.toCharArray(charPublish, payload.length());
+  topic = rootTopic + topic;
+  if (!inMenu) {
+  Serial.printf("-->[MQTT] Publishing %s to ", payload);
+  Serial.println("topic: " + topic);
+  mqttClient.publish((topic).c_str(), charPublish);
+  }
+  #endif
+}
+
 void initMQTT() {
   #ifdef SUPPORT_MQTT
   if (activeMQTT) {
@@ -123,6 +135,35 @@ void initMQTT() {
   #endif
 }
 
+void publishMQTTAlarms() {
+  static bool MQTTGreenAlarm, MQTTOrangeAlarm, MQTTRedAlarm = false;
+
+  if ((co2>=co2OrangeRange) && (MQTTGreenAlarm)) {
+    MQTTGreenAlarm = false;
+    publishStrMQTT("/green", "OFF");
+  }
+  if ((co2<co2OrangeRange)  && (!MQTTGreenAlarm)) {
+    MQTTGreenAlarm = true;
+    publishStrMQTT("/green", "ON");
+  }
+  if ((co2>=co2OrangeRange)  && (!MQTTOrangeAlarm)) {
+    MQTTOrangeAlarm = true;
+    publishStrMQTT("/orange", "ON");
+  }
+  if ((co2<co2OrangeRange-PIN_HYSTERESIS) && (MQTTOrangeAlarm)) {
+    MQTTOrangeAlarm = false;
+    publishStrMQTT("/orange", "OFF");
+  }
+  if ((co2>co2RedRange)  && (!MQTTRedAlarm)) {
+    MQTTRedAlarm = true;
+    publishStrMQTT("/red", "ON");
+  }
+  if ((co2<=co2RedRange-PIN_HYSTERESIS)  && (MQTTRedAlarm)) {
+    MQTTRedAlarm = false;
+    publishStrMQTT("/red", "OFF");
+  }
+}
+
 void publishMQTT() {
   #ifdef SUPPORT_MQTT
   if (activeMQTT) {
@@ -130,6 +171,7 @@ void publishMQTT() {
         publishIntMQTT("/co2", co2);
         publishFloatMQTT("/temp", temp);
         publishFloatMQTT("/humi", hum);
+        publishMQTTAlarms();
       }
       // Serial.print("Free heap: ");
       // Serial.println(ESP.getFreeHeap());
