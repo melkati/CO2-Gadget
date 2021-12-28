@@ -231,6 +231,28 @@ void processPendingCommands() {
   }
 }
 
+void initGPIO() {
+  pinMode(ORANGE_PIN, OUTPUT);
+  digitalWrite(ORANGE_PIN, LOW);
+  pinMode(RED_PIN, OUTPUT);
+  digitalWrite(RED_PIN, LOW);
+}
+
+void alarmsLoop() {
+  if (co2>co2OrangeRange) {
+    digitalWrite(ORANGE_PIN, ORANGE_PIN_HIGH);
+  }
+  if (co2<co2OrangeRange-PIN_HYSTERESIS) {
+    digitalWrite(ORANGE_PIN, ORANGE_PIN_LOW);
+  }
+  if (co2>co2RedRange) {
+    digitalWrite(RED_PIN, RED_PIN_HIGH);
+  }
+  if (co2<co2RedRange-PIN_HYSTERESIS) {
+    digitalWrite(RED_PIN, RED_PIN_LOW);
+  }
+}
+
 void readingsLoop() {
   if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
     if (newReadingsAvailable) {
@@ -295,6 +317,7 @@ void setup() {
   setCpuFrequencyMhz(80); // Lower CPU frecuency to reduce power consumption
   initPreferences();
   initBattery();
+  initGPIO();
 #if defined SUPPORT_OLED
   initDisplayOLED();
 #endif
@@ -319,6 +342,7 @@ void setup() {
 void loop() {
   mqttClientLoop();
   sensorsLoop();
+  alarmsLoop();
   processPendingCommands();
   readingsLoop();
   OTALoop();
