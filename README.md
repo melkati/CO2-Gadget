@@ -21,7 +21,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - Over the air updates OTA*
-- GPIO outputs to, for example, activate air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+- GPIO outputs to, for example, activation of air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
 
 # Supported hardware and build
 
@@ -41,7 +41,26 @@ CO2 Gadget right now has support for many different OLED displays (by using the 
 
 ## ESP32 Boards
 
-Supporting any other ESP32 board is very easy.
+Supporting any other ESP32 board is very easy. Yoy just have to setup the pines accordly.
+
+These are the GPIOs used by each predefined board:
+
+| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32
+| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/34 | 27 | 25 | 32 | 32
+| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/34 | 27 | 25 | 32 | 32
+
+- Variant: Name of the firmware variant, or flavor.
+- Display: Display supported by each flavor.
+- RX / TX: Pins (GPIO) used for connection of sensors connected by Serial port.
+- I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
+- UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
+- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
+- Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
+- GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
+- GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 
 # Supported sensors
 
