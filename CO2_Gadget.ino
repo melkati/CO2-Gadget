@@ -232,6 +232,8 @@ void processPendingCommands() {
 }
 
 void initGPIO() {
+  pinMode(GREEN_PIN, OUTPUT);
+  digitalWrite(GREEN_PIN, LOW);
   pinMode(ORANGE_PIN, OUTPUT);
   digitalWrite(ORANGE_PIN, LOW);
   pinMode(RED_PIN, OUTPUT);
@@ -239,6 +241,12 @@ void initGPIO() {
 }
 
 void alarmsLoop() {
+  if (co2>=co2OrangeRange) {
+    digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
+  }
+  if (co2<co2OrangeRange) {
+    digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
+  }
   if (co2>=co2OrangeRange) {
     digitalWrite(ORANGE_PIN, ORANGE_PIN_HIGH);
   }
