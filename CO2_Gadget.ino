@@ -239,7 +239,7 @@ void initGPIO() {
 }
 
 void alarmsLoop() {
-  if (co2>co2OrangeRange) {
+  if (co2>=co2OrangeRange) {
     digitalWrite(ORANGE_PIN, ORANGE_PIN_HIGH);
   }
   if (co2<co2OrangeRange-PIN_HYSTERESIS) {
@@ -248,7 +248,7 @@ void alarmsLoop() {
   if (co2>co2RedRange) {
     digitalWrite(RED_PIN, RED_PIN_HIGH);
   }
-  if (co2<co2RedRange-PIN_HYSTERESIS) {
+  if (co2<=co2RedRange-PIN_HYSTERESIS) {
     digitalWrite(RED_PIN, RED_PIN_LOW);
   }
 }
