@@ -45,12 +45,12 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery  
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32 | 34  
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32 | 34  
-| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/34 | 27 | 25 | 32 | 32 | 34  
-| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/34 | 27 | 25 | 32 | 32 | 34  
+| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32 | 34 | 26
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32 | 34 | 26
+| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/34 | 27 | 25 | 32 | 32 | 34 | 26
+| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/34 | 27 | 25 | 32 | 32 | 34 | 26
 
 - Variant: Name of the firmware variant, or flavor.
 - Display: Display supported by each flavor.
@@ -62,6 +62,7 @@ These are the GPIOs used by each predefined board:
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement. Keep in mind that on most ESP32 boards the maximum admissible voltage is 3.3V, so you will have to put a resistive divider at the input.
+- Neopixel GPIO: Pin to which you must connect the data line of the Neopixel or WS2812B LEDs (more types supported)
 
 # Supported sensors
 
