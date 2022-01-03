@@ -198,6 +198,15 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 // clang-format on
 #include "CO2_Gadget_Buttons.h"
 
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#include "CO2_Gadget_Neopixel.h"
+
 /*****************************************************************************************************/
 
 static int64_t lastReadingsCommunicationTime = 0;
@@ -326,6 +335,7 @@ void setup() {
   initPreferences();
   initBattery();
   initGPIO();
+  initNeopixel();
 #if defined SUPPORT_OLED
   initDisplayOLED();
 #endif
@@ -357,4 +367,5 @@ void loop() {
   displayLoop();
   buttonsLoop();
   menuLoop();
+  neopixelLoop();
 }
