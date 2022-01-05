@@ -200,6 +200,14 @@ When creating a pull request, we recommend that you do the following:
 - [ ] Test and enable ESP-Now feature
 - [ ] Full configuration vía web page
 
+# Useful information
+
+- [Everything about the Sensirion SCD30 NDIR dual-channel CO2 sensor](https://emariete.com/en/sensirion-scd30-co2-sensor-ndir-dual-channel/)
+- [Everything about the Sensirion SCD40 and the SCD41 RPAS CO2 sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41-2/)
+- [Everything about the Winsen MH-Z19 NDIR CO2 sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
+- [Everything about the Winsen Low Consumption CO2 Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
+- [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparison-co2-sensors-mh-z19b-vs-senseair-s8/)
+
 # Credits
 
 Thanks to all collaborators, contributors and [eMariete](https://emariete.com) community for testing and reports.
