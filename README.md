@@ -49,8 +49,8 @@ These are the GPIOs used by each predefined board:
 |:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 | TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32
 | TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32
-| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/34 | 27 | 25 | 32 | 32
-| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/34 | 27 | 25 | 32 | 32
+| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/36 | 27 | 25 | 32 | 32
+| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/36 | 27 | 25 | 32 | 32
 
 - Variant: Name of the firmware variant, or flavor.
 - Display: Display supported by each flavor.
