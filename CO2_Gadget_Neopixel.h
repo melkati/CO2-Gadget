@@ -44,7 +44,7 @@ void neopixelLoop() {
   if (co2 >= co2RedRange) {
     strip.fill(red);
   } else if (co2 >= co2OrangeRange) {
-    strip.fill(orange);
+    strip.fill(yellow);
   } else {
     strip.fill(red);
   }
