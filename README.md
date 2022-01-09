@@ -45,12 +45,13 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0  | 27 | 25 | 32 | 32
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0  | 27 | 25 | 32 | 32
-| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/0 | 27 | 25 | 32 | 32
-| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/0 | 27 | 25 | 32 | 32
+| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | 240×135          | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev_OLED	SSH1106  | 128×64           | 17/16   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev_OLED_OTA      | SSH1106-128×64   | 17/16	  | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+
 
 - Variant: Name of the firmware variant, or flavor.
 - Display: Display supported by each flavor.
@@ -61,6 +62,8 @@ These are the GPIOs used by each predefined board:
 - Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
+- GPIO Battery: Pin for battery voltage measurement. Keep in mind that on most ESP32 boards the maximum admissible voltage is 3.3V, so you will have to put a resistive divider at the input.
+- Neopixel GPIO: Pin to which you must connect the data line of the Neopixel or WS2812B LEDs (more types supported)
 
 # Supported sensors
 
@@ -197,6 +200,14 @@ When creating a pull request, we recommend that you do the following:
 - [ ] Implement full support for PM
 - [ ] Test and enable ESP-Now feature
 - [ ] Full configuration vía web page
+
+# Useful information
+
+- [Everything about the Sensirion SCD30 NDIR dual-channel CO2 sensor](https://emariete.com/en/sensirion-scd30-co2-sensor-ndir-dual-channel/)
+- [Everything about the Sensirion SCD40 and the SCD41 RPAS CO2 sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41-2/)
+- [Everything about the Winsen MH-Z19 NDIR CO2 sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
+- [Everything about the Winsen Low Consumption CO2 Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
+- [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparison-co2-sensors-mh-z19b-vs-senseair-s8/)
 
 # Credits
 
