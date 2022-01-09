@@ -10,8 +10,13 @@
 // clang-format on
 #include <Adafruit_NeoPixel.h>
 
+// Next data always defined to be able to configure in menu
+int16_t neopixelBrightness = 100;
+neoPixelType selectedNeopixelType = NEO_GRB + NEO_KHZ800;
+
 // Declare our NeoPixel strip object:
-Adafruit_NeoPixel strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, selectedNeopixelType);
 // Argument 1 = Number of pixels in NeoPixel strip
 // Argument 2 = Arduino pin number (most are valid)
 // Argument 3 = Pixel type flags, add together as needed:
@@ -50,4 +55,17 @@ void neopixelLoop() {
   }
   strip.show();
 }
+
+void setNeopixelBrightness(uint8_t newBrightness) {
+  Serial.printf("Setting neopixel brightness value at %d\n", newBrightness);
+  strip.setBrightness(newBrightness);
+  strip.show();
+}
+
+void setNeopixelType(neoPixelType newType) {
+  Serial.printf("Setting neopixel type value at %d\n", newType);
+  strip.updateType(newType);
+  strip.clear();
+}
+
 #endif  // CO2_Gadget_Neopixel_h

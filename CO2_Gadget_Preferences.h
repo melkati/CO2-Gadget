@@ -12,6 +12,8 @@ void printPreferences() {
   Serial.printf("co2OrangeRange:\t #%d#\n", co2OrangeRange);
   Serial.printf("co2RedRange:\t #%d#\n", co2RedRange);
   Serial.printf("DisplayBrightness:\t #%d#\n", DisplayBrightness);
+  Serial.printf("neopixBright:\t #%d#\n", neopixelBrightness);
+  Serial.printf("selNeopxType:\t #%d#\n", selectedNeopixelType);
   Serial.printf("activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
   Serial.printf("activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
   Serial.printf("activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
@@ -50,6 +52,8 @@ void initPreferences() {
   co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
   co2RedRange = preferences.getUInt("co2RedRange", 1000);
   DisplayBrightness = preferences.getUInt("DisplayBright", 100);
+  neopixelBrightness = preferences.getUInt("neopixBright", 100);
+  selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
   activeBLE = preferences.getBool("activeBLE", true);
   activeWIFI = preferences.getBool("activeWIFI", false);
   activeMQTT = preferences.getBool("activeMQTT", false);
@@ -108,6 +112,8 @@ void putPreferences() {
   preferences.putUInt("co2OrangeRange", co2OrangeRange);
   preferences.putUInt("co2RedRange", co2RedRange);
   preferences.putUInt("DisplayBright", DisplayBrightness);
+  preferences.putUInt("neopixBright", neopixelBrightness);
+  preferences.putUInt("selNeopxType", selectedNeopixelType);
   preferences.putBool("activeBLE", activeBLE);
   preferences.putBool("activeWIFI", activeWIFI);
   preferences.putBool("activeMQTT", activeMQTT);
