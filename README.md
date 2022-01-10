@@ -142,7 +142,12 @@ If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, p
 
 ## With Arduino
 
-**These Arduino instructions are outdated**. You must adapt it to your situation while I write some new instructions.
+**NOTE:**
+Currently neither the code is ready to compile with the Arduino IDE nor the instructions are up to date. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
+
+When the code is more stable and has fewer changes, I will adapt the code and write the instructions to compile with the Arduino IDE (right now it is modified very often with bugfixes and new functionalities and it takes me a lot of time to be aware of maintaining compatibility with the Arduino IDE).
+
+I recommend that you use VS Code with PlatformIO. On the internet you have many tutorials, and it is not as difficult at all as it seems.
 
 #### Prerequisites
 
