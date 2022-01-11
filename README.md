@@ -22,6 +22,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Receiving remote commands via MQTT
 - Over the air updates OTA*
 - GPIO outputs to, for example, activation of air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+- **LoRa/LoRaWAN** is in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
 
 # Supported hardware and build
 
