@@ -52,12 +52,14 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
 
+#ifdef ALTERNATIVE_I2C_PINS
 #undef I2C_SDA
 #undef I2C_SCL
-#ifdef ALTERNATIVE_I2C_PINS
 #define I2C_SDA 22
 #define I2C_SCL 21
 #else
+#undef I2C_SDA
+#undef I2C_SCL
 #define I2C_SDA 21
 #define I2C_SCL 22
 #endif
