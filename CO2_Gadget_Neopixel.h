@@ -27,18 +27,8 @@ Adafruit_NeoPixel strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, selectedNeopixelType);
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 
 uint32_t red = strip.Color(255, 0, 0);
-uint32_t blue = strip.Color(0, 255, 0);
-uint32_t lime = strip.Color(0, 0, 255);
-uint32_t magenta = strip.Color(255, 255, 0);
-uint32_t teal = strip.Color(0, 255, 255);
-uint32_t yellow = strip.Color(255, 0, 255);
-uint32_t white = strip.Color(255, 255, 255);
-uint32_t orange = strip.Color(255, 0, 128);
-uint32_t pink = strip.Color(255, 203, 192);
-uint32_t purple = strip.Color(128, 128, 0);
-uint32_t green = strip.Color(0, 0, 128);
-uint32_t brown = strip.Color(165, 42, 42);
-uint32_t maroon = strip.Color(128, 0, 0);
+uint32_t green = strip.Color(0, 255, 0);
+uint32_t yellow = strip.Color(255, 100, 0);
 
 void initNeopixel() {
     strip.begin();
@@ -46,14 +36,16 @@ void initNeopixel() {
 }
 
 void neopixelLoop() {
-  if (co2 >= co2RedRange) {
-    strip.fill(red);
-  } else if (co2 >= co2OrangeRange) {
-    strip.fill(yellow);
-  } else {
-    strip.fill(red);
+  if (co2 > 0) {  // Don't turn on led until there is CO2 Data
+    if (co2 >= co2RedRange) {
+      strip.fill(red);
+    } else if (co2 >= co2OrangeRange) {
+      strip.fill(yellow);
+    } else {
+      strip.fill(green);
+    }
+    strip.show();
   }
-  strip.show();
 }
 
 void setNeopixelBrightness(uint8_t newBrightness) {
