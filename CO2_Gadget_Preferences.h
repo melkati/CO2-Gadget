@@ -52,7 +52,7 @@ void initPreferences() {
   co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
   co2RedRange = preferences.getUInt("co2RedRange", 1000);
   DisplayBrightness = preferences.getUInt("DisplayBright", 100);
-  neopixelBrightness = preferences.getUInt("neopixBright", 100);
+  neopixelBrightness = preferences.getUInt("neopixBright", 50);
   selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
   activeBLE = preferences.getBool("activeBLE", true);
   activeWIFI = preferences.getBool("activeWIFI", false);
