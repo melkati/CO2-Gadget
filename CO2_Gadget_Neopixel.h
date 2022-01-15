@@ -30,8 +30,15 @@ uint32_t red = strip.Color(255, 0, 0);
 uint32_t green = strip.Color(0, 255, 0);
 uint32_t yellow = strip.Color(255, 100, 0);
 
+void setNeopixelBrightness(uint8_t newBrightness) {
+  Serial.printf("Setting neopixel brightness value at %d\n", newBrightness);
+  strip.setBrightness(newBrightness);
+  strip.show();
+}
+
 void initNeopixel() {
     strip.begin();
+    setNeopixelBrightness(neopixelBrightness);
     strip.show(); // Initialize all pixels to 'off'
 }
 
@@ -46,12 +53,6 @@ void neopixelLoop() {
     }
     strip.show();
   }
-}
-
-void setNeopixelBrightness(uint8_t newBrightness) {
-  Serial.printf("Setting neopixel brightness value at %d\n", newBrightness);
-  strip.setBrightness(newBrightness);
-  strip.show();
 }
 
 void setNeopixelType(neoPixelType newType) {
