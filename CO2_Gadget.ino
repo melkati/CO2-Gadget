@@ -52,12 +52,14 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #endif // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
 
+#ifdef ALTERNATIVE_I2C_PINS
 #undef I2C_SDA
 #undef I2C_SCL
-#ifdef ALTERNATIVE_I2C_PINS
 #define I2C_SDA 22
 #define I2C_SCL 21
 #else
+#undef I2C_SDA
+#undef I2C_SCL
 #define I2C_SDA 21
 #define I2C_SCL 22
 #endif
@@ -170,6 +172,15 @@ uint16_t batteryFullyChargedMillivolts = 4200; // Voltage of battery when it is 
 #if defined SUPPORT_TFT
 #include "CO2_Gadget_TFT.h"
 #endif
+
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#include "CO2_Gadget_Neopixel.h"
 
 // clang-format off
 /*****************************************************************************************************/
@@ -326,6 +337,7 @@ void setup() {
   initPreferences();
   initBattery();
   initGPIO();
+  initNeopixel();
 #if defined SUPPORT_OLED
   initDisplayOLED();
 #endif
@@ -357,4 +369,5 @@ void loop() {
   displayLoop();
   buttonsLoop();
   menuLoop();
+  neopixelLoop();
 }
