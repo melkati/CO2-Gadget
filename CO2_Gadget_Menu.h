@@ -562,16 +562,19 @@ result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {
     Serial.printf("[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
   #endif
   setNeopixelType(selectedNeopixelType);
+  strip.show();
   return proceed;
 }
 
 TOGGLE(selectedNeopixelType, activeNeopixelTypeMenu, "Neopixels: ", doNothing,noEvent, wrapStyle
   ,VALUE("NEO_GRB",  NEO_GRB  + NEO_KHZ800, doSetActiveNeopixelType, anyEvent)
   ,VALUE("NEO_RGB",  NEO_RGB  + NEO_KHZ800, doSetActiveNeopixelType, anyEvent)
-  ,VALUE("NEO_RGBW", NEO_RGBW + NEO_KHZ800, doSetActiveNeopixelType, anyEvent)
-  ,VALUE("NEO_GRB v1",  NEO_GRB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
-  ,VALUE("NEO_RGB v1",  NEO_RGB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
-  ,VALUE("NEO_RGBW v1", NEO_RGBW + NEO_KHZ400, doSetActiveNeopixelType, anyEvent));
+  ,VALUE("NEO_RGBW", NEO_RGBW + NEO_KHZ800, doSetActiveNeopixelType, anyEvent));
+
+  // Can add these really old Neopixel types if needed
+  // ,VALUE("NEO_GRB v1",  NEO_GRB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
+  // ,VALUE("NEO_RGB v1",  NEO_RGB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
+  // ,VALUE("NEO_RGBW v1", NEO_RGBW + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
 
 result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
@@ -581,6 +584,7 @@ result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
   Serial.flush();
 #endif
   setNeopixelBrightness(neopixelBrightness);
+  strip.show();
   return proceed;
 }
 

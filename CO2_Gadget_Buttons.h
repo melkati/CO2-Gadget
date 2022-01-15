@@ -1,4 +1,5 @@
 #include "Button2.h"
+#undef LONGCLICK_TIME_MS
 #define LONGCLICK_TIME_MS 300 // https://github.com/LennartHennigs/Button2/issues/10
 Button2 btnUp(BTN_UP);   // Initialize the up button
 Button2 btnDwn(BTN_DWN); // Initialize the down button
@@ -17,6 +18,7 @@ void doubleClick(Button2& btn) {
   Serial.println("-->[BUTT] Test double click...");
   displayNotification("Test functionality", "double click", notifyInfo);
 }
+
 void buttonsInit() {  
   // Interrupt Service Routine to turn on the display on button UP press 
   attachInterrupt(BTN_UP, buttonUpISR, RISING);
