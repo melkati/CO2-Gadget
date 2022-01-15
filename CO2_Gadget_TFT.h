@@ -43,7 +43,7 @@ void turnOffDisplay() {
   setDisplayBrightness(0); // Turn off the display
 }
 
-void displaySplashScreenTFT() {
+void displaySplashScreen() {
   tft.fillScreen(TFT_WHITE);
   tft.setSwapBytes(true);
   tft.pushImage(60, 12, 118, 40, eMarieteLogo);
@@ -51,7 +51,7 @@ void displaySplashScreenTFT() {
   tft.pushImage(112, 67, 122, 46, GadgetLogo);
 }
 
-void initDisplayTFT() {
+void initDisplay() {
   pinMode(BACKLIGHT_PIN, OUTPUT);
   ledcSetup(0, 5000, 8);    // 0-15, 5000, 8
   ledcAttachPin(BACKLIGHT_PIN, 0); // TFT_BL, 0 - 15
@@ -63,7 +63,7 @@ void initDisplayTFT() {
     tft.setRotation(1);
   }
 
-  displaySplashScreenTFT(); // Display init and splash screen
+  displaySplashScreen(); // Display init and splash screen
   delay(2000);              // Enjoy the splash screen for 2 seconds
   tft.setTextSize(2);
 }
@@ -130,7 +130,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
   return true;
 }
 
-void showBatteryIconTFT() {
+void showBatteryIcon() {
   uint8_t batteryLevel = battery.level();
   uint16_t color;
   if (batteryLevel<20) {
@@ -156,7 +156,7 @@ void showBatteryIconTFT() {
   tft.drawString(String(battery_voltage, 1) + "V", tft.width() - 35, 2);
 }
 
-void showWiFiIconTFT(int32_t posX, int32_t posY) {
+void showWiFiIcon(int32_t posX, int32_t posY) {
   int8_t rssi = WiFi.RSSI();
     tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_DARKGREY);
   if (!activeWIFI) {
@@ -175,7 +175,7 @@ void showWiFiIconTFT(int32_t posX, int32_t posY) {
   }
 }
 
-void showBLEIconTFT(int32_t posX, int32_t posY) {
+void showBLEIcon(int32_t posX, int32_t posY) {
     tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_DARKGREY);
   if (!activeBLE) {
     tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -184,7 +184,7 @@ void showBLEIconTFT(int32_t posX, int32_t posY) {
   }
 }
 
-void showMQTTIconTFT(int32_t posX, int32_t posY) {
+void showMQTTIcon(int32_t posX, int32_t posY) {
     tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_DARKGREY);
   if (!activeMQTT) {
     tft.drawBitmap(posX-1, posY-1, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -193,8 +193,7 @@ void showMQTTIconTFT(int32_t posX, int32_t posY) {
   }
 }
 
-void showTemperatureTFT() {
-  // Draw Voltaje number
+void showTemperature() {
   if (temp >= 30)      tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   else if (temp >= 10) tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   else                 tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);    
@@ -202,7 +201,7 @@ void showTemperatureTFT() {
   tft.setSwapBytes(true);
   tft.pushImage(2, tft.height()-22, 16, 16, iconTemperature);
   if (showFahrenheit) {
-    tft.drawString(String(tempFahrenheit, 1) + "~" , 22 , tft.height()-2);    
+    tft.drawString(String(tempFahrenheit, 1) + "~" , 22 , tft.height()-2);  // The "~" symbol has been redefined in custom font as the degree symbol
   } else {
     tft.drawString(String(temp, 1) + "~" , 22 , tft.height()-2);
   }  
@@ -220,7 +219,7 @@ void showHumidity() {
   tft.drawString(String(hum, 0) + "%", tft.width()-6, tft.height()-2);
 }
 
-void showVoltageTFT(int32_t posX, int32_t posY) {
+void showVoltage(int32_t posX, int32_t posY) {
   // Draw Voltaje number
   uint16_t battery_voltage = battery.voltage();
   if (battery_voltage <= 3.6) {
@@ -236,7 +235,7 @@ void showVoltageTFT(int32_t posX, int32_t posY) {
   tft.drawString(String(battery_voltage, 1) + "V", posX, posY);
 }
 
-void showBLEDeviceIdTFT(int32_t posX, int32_t posY) {  
+void showBLEDeviceId(int32_t posX, int32_t posY) {  
   #ifdef SUPPORT_BLE
   if (activeBLE) {
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -246,7 +245,10 @@ void showBLEDeviceIdTFT(int32_t posX, int32_t posY) {
   #endif
 }
 
-void showCO2TFT(uint16_t co2) {
+void showCO2(uint16_t co2) {
+  if (co2 > 9999) {
+    co2 = 9999;
+  }
   if (co2 >= co2RedRange) {
     tft.setTextColor(TFT_RED, TFT_BLACK);
   } else if (co2 >= co2OrangeRange) {
@@ -267,22 +269,18 @@ void showCO2TFT(uint16_t co2) {
   tft.drawString("ppm", tft.width()-4, 102);
 }
 
-void showValuesTFT(uint16_t co2) {
-  if (co2 > 9999) {
-    co2 = 9999;
-  }
-
+void displayShowValues(uint16_t co2) {
   tft.fillScreen(TFT_BLACK);
   uint8_t defaultDatum = tft.getTextDatum();
-  showCO2TFT(co2);
-  // showBLEDeviceIdTFT(230, 135);
-  // showVoltageTFT(0, 135);
-  showTemperatureTFT();
+  showCO2(co2);
+  // showBLEDeviceId(230, 135);
+  // showVoltage(0, 135);
+  showTemperature();
   showHumidity();
-  showBatteryIconTFT();
-  showWiFiIconTFT(24, 3);
-  showMQTTIconTFT(46, 3);
-  showBLEIconTFT(2, 3);
+  showBatteryIcon();
+  showWiFiIcon(24, 3);
+  showMQTTIcon(46, 3);
+  showBLEIcon(2, 3);
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);

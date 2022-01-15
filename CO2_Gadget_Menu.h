@@ -871,10 +871,10 @@ result idle(menuOut &o, idleEvent e) {
     Serial.flush();
 #endif
     #if defined SUPPORT_TFT
-    showValuesTFT(co2);
+    displayShowValues(co2);
     #endif
     #if defined SUPPORT_OLED
-    showValuesOLED(co2);
+    displayShowValues(co2);
     #endif
     readBatteryVoltage();
   } else if (e == idleEnd) {
@@ -902,7 +902,7 @@ void menuLoop() {
 #ifdef SUPPORT_OLED
   nav.doInput();
   if (nav.sleepTask) {
-    showValuesOLED(co2);
+    displayShowValues(co2);
   } else {
     if (nav.changed(0)) {
       u8g2.firstPage();
