@@ -557,6 +557,42 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeDisplayReverse)
   ,EXIT("<Back"));
 
+result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {
+  #ifdef DEBUG_ARDUINOMENU
+    Serial.printf("[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
+  #endif
+  setNeopixelType(selectedNeopixelType);
+  strip.show();
+  return proceed;
+}
+
+TOGGLE(selectedNeopixelType, activeNeopixelTypeMenu, "Neopixels: ", doNothing,noEvent, wrapStyle
+  ,VALUE("NEO_GRB",  NEO_GRB  + NEO_KHZ800, doSetActiveNeopixelType, anyEvent)
+  ,VALUE("NEO_RGB",  NEO_RGB  + NEO_KHZ800, doSetActiveNeopixelType, anyEvent)
+  ,VALUE("NEO_RGBW", NEO_RGBW + NEO_KHZ800, doSetActiveNeopixelType, anyEvent));
+
+  // Can add these really old Neopixel types if needed
+  // ,VALUE("NEO_GRB v1",  NEO_GRB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
+  // ,VALUE("NEO_RGB v1",  NEO_RGB  + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
+  // ,VALUE("NEO_RGBW v1", NEO_RGBW + NEO_KHZ400, doSetActiveNeopixelType, anyEvent)
+
+result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("-->[MENU] Setting TFT brightness at %d", neopixelBrightness);
+  Serial.print(F("-->[MENU] action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif
+  setNeopixelBrightness(neopixelBrightness);
+  strip.show();
+  return proceed;
+}
+
+MENU(neopixelConfigMenu, "Neopixel Config", doNothing, noEvent, wrapStyle
+  ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
+  ,SUBMENU(activeNeopixelTypeMenu)  
+  ,EXIT("<Back"));
+
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorConfigMenu)
   #ifdef SUPPORT_BLE
@@ -570,6 +606,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
+  ,SUBMENU(neopixelConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
