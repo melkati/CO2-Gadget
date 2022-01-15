@@ -79,7 +79,7 @@ void initDisplay() {
   }
 
   displaySplashScreen();
-  delay(2000);
+  delay(1000);
 }
 
 void displayShowValues(uint16_t co2) {
@@ -91,6 +91,14 @@ void displayShowValues(uint16_t co2) {
     u8g2.setFont(u8g2_font_5x7_tf);
     u8g2.setCursor(110, 51);
     u8g2.print("ppm");
+    u8g2.setCursor(1, u8g2.getDisplayHeight());
+    u8g2.print("T: ");
+    u8g2.print(temp,1);
+    u8g2.print(showFahrenheit ? "F" : "C");
+    u8g2.setCursor(85, u8g2.getDisplayHeight());
+    u8g2.print("HR: ");
+    u8g2.print(hum,0);
+    u8g2.print("%");
   } while (u8g2.nextPage());
   u8g2.setFont(MENUFONT);
 }
