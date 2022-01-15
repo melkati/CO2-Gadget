@@ -338,12 +338,7 @@ void setup() {
   initBattery();
   initGPIO();
   initNeopixel();
-#if defined SUPPORT_OLED
-  initDisplayOLED();
-#endif
-#if defined SUPPORT_TFT
-  initDisplayTFT();  
-#endif
+  initDisplay();
 #ifdef SUPPORT_BLE
   initBLE();
 #endif
