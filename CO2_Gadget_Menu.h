@@ -588,7 +588,7 @@ result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-MENU(neopixelConfigMenu, "Neopixel Config", doNothing, noEvent, wrapStyle
+MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
   ,SUBMENU(activeNeopixelTypeMenu)  
   ,EXIT("<Back"));
@@ -606,7 +606,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
-  ,SUBMENU(neopixelConfigMenu)
+  ,SUBMENU(outputsConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
