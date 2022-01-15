@@ -32,7 +32,7 @@ void turnOffDisplay() {
   setDisplayBrightness(0); // Turn off the display
 }
 
-void displaySplashScreenOLED() {
+void displaySplashScreen() {
   u8g2.clearDisplay();
   u8g2.firstPage();
   do {
@@ -61,7 +61,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
   return true;
 }
 
-void initDisplayOLED() {
+void initDisplay() {
   Serial.printf("-->[OLED] Initialized: \t#%s#\n",
                 ((u8g2.begin()) ? "OK" : "Failed"));
   u8g2.firstPage();
@@ -78,11 +78,11 @@ void initDisplayOLED() {
     u8g2.setDisplayRotation(U8G2_R0);
   }
 
-  displaySplashScreenOLED();
+  displaySplashScreen();
   delay(2000);
 }
 
-void showValuesOLED(uint16_t co2) {
+void displayShowValues(uint16_t co2) {
   u8g2.firstPage();
   do {
     u8g2.setFont(u8g2_font_7Segments_26x42_mn);
