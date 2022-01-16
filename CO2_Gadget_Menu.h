@@ -599,7 +599,7 @@ result doSetoutOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outputs Mode", doNothing,noEvent, wrapStyle
+TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outputs: ", doNothing,noEvent, wrapStyle
   ,VALUE("RGB LED", false, doSetoutOuputsRelayMode, anyEvent)
   ,VALUE("Relays", true, doSetoutOuputsRelayMode, anyEvent));
 
