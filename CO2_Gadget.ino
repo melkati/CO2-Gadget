@@ -39,6 +39,7 @@ bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
+bool outputsModeRelay = false;
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100; // To know if it's on or off
