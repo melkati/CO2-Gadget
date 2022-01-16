@@ -39,6 +39,7 @@ bool inMenu = false;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
+bool outputsModeRelay = false;
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100; // To know if it's on or off
@@ -82,8 +83,9 @@ uint64_t lastButtonUpTimeStamp = millis(); // Last time button UP was pressed
 #include <FS.h>
 #include <SPIFFS.h>
 
-// Function and enum definitions 
+// Functions and enum definitions 
 void reverseButtons(bool reversed);
+void outputsLoop();
 
 enum notificationTypes { notifyNothing, notifyInfo, notifyWarning, notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
@@ -245,31 +247,56 @@ void processPendingCommands() {
 void initGPIO() {
   pinMode(GREEN_PIN, OUTPUT);
   digitalWrite(GREEN_PIN, LOW);
-  pinMode(ORANGE_PIN, OUTPUT);
-  digitalWrite(ORANGE_PIN, LOW);
+  pinMode(BLUE_PIN, OUTPUT);
+  digitalWrite(BLUE_PIN, LOW);
   pinMode(RED_PIN, OUTPUT);
   digitalWrite(RED_PIN, LOW);
 }
 
-void alarmsLoop() {
-  if (co2>=co2OrangeRange) {
+void outputsRelays() {
+  if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
+  if (co2 >= co2OrangeRange) {
     digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
   }
-  if (co2<co2OrangeRange) {
+  if (co2 < co2OrangeRange) {
     digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
   }
-  if (co2>=co2OrangeRange) {
-    digitalWrite(ORANGE_PIN, ORANGE_PIN_HIGH);
+  if (co2 >= co2OrangeRange) {
+    digitalWrite(BLUE_PIN, BLUE_PIN_HIGH);
   }
-  if (co2<co2OrangeRange-PIN_HYSTERESIS) {
-    digitalWrite(ORANGE_PIN, ORANGE_PIN_LOW);
+  if (co2 < co2OrangeRange - PIN_HYSTERESIS) {
+    digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
   }
-  if (co2>co2RedRange) {
+  if (co2 > co2RedRange) {
     digitalWrite(RED_PIN, RED_PIN_HIGH);
   }
-  if (co2<=co2RedRange-PIN_HYSTERESIS) {
+  if (co2 <= co2RedRange - PIN_HYSTERESIS) {
     digitalWrite(RED_PIN, RED_PIN_LOW);
   }
+}
+
+void outputsRGBLeds() {
+  if ((outputsModeRelay) || (co2 == 0)) return;  // Don't turn on led until there is CO2 Data
+  if (co2 > co2RedRange) {
+    digitalWrite(RED_PIN, RED_PIN_HIGH);
+    digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
+    digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
+    return;
+  }
+  if (co2 >= co2OrangeRange) {
+    digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
+    digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
+    digitalWrite(RED_PIN, RED_PIN_HIGH);    
+    return;
+  }
+  digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
+  digitalWrite(BLUE_PIN, GREEN_PIN_LOW);
+  digitalWrite(RED_PIN, GREEN_PIN_LOW);
+}
+
+void outputsLoop() {
+  outputsRelays();
+  outputsRGBLeds();
 }
 
 void readingsLoop() {
@@ -357,7 +384,7 @@ void setup() {
 void loop() {
   mqttClientLoop();
   sensorsLoop();
-  alarmsLoop();
+  outputsLoop();
   processPendingCommands();
   readingsLoop();
   OTALoop();

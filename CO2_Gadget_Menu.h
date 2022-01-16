@@ -588,9 +588,25 @@ result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-MENU(neopixelConfigMenu, "Neopixel Config", doNothing, noEvent, wrapStyle
+result doSetoutOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("-->[MENU] Setting outputsModeRelay to %d", outputsModeRelay);
+  Serial.print(F("-->[MENU] action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif
+  outputsLoop();
+  return proceed;
+}
+
+TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outputs: ", doNothing,noEvent, wrapStyle
+  ,VALUE("RGB LED", false, doSetoutOuputsRelayMode, anyEvent)
+  ,VALUE("Relays", true, doSetoutOuputsRelayMode, anyEvent));
+
+MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
-  ,SUBMENU(activeNeopixelTypeMenu)  
+  ,SUBMENU(activeNeopixelTypeMenu)
+  ,SUBMENU(outputsModeMenu)
   ,EXIT("<Back"));
 
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
@@ -606,7 +622,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
-  ,SUBMENU(neopixelConfigMenu)
+  ,SUBMENU(outputsConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
