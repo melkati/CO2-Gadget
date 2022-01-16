@@ -39,6 +39,7 @@ void printPreferences() {
   Serial.printf("displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);  
   Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
   Serial.printf("measInterval:\t #%d#\n", measurementInterval);
+  Serial.printf("outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
   Serial.println("");
 }
 
@@ -79,7 +80,8 @@ void initPreferences() {
   displayReverse = preferences.getBool("displayReverse", false);
   showFahrenheit = preferences.getBool("showFahrenheit", false);
   measurementInterval = preferences.getUInt("measInterval", 10);
-  
+  outputsModeRelay = preferences.getUInt("outModeRelay", false);
+
   rootTopic.trim();
   mqttClientId.trim();
   mqttBroker.trim();
@@ -135,5 +137,6 @@ void putPreferences() {
   preferences.putBool("displayReverse", displayReverse);
   preferences.putBool("showFahrenheit", showFahrenheit);
   preferences.putUInt("measInterval", measurementInterval);
+  preferences.putBool("outModeRelay", outputsModeRelay);
   preferences.end();
 }
