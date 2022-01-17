@@ -158,9 +158,9 @@ jobs:
             FTP_USERNAME: ${{ secrets.FTP_USER }}
             FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
             LOCAL_DIR: ./firmware/
-            REMOTE_DIR: /public_html/wp-content/uploads/firmware/${{ github.event.repository.name }}/
-            METHOD: sftp
-            PORT: 22
+            REMOTE_DIR: /${{ github.event.repository.name }}/
+            METHOD: ftp
+            PORT: 21
             ARGS: --verbose
         - name: Clean WP Rocket Cache
           run: curl https://emariete.com/clean_cache.php
