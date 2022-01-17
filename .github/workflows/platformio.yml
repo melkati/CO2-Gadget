@@ -3,11 +3,7 @@ name: PlatformIO
 on:
   push:
     tags-ignore:
-    #  - 'v*'
-    # branches:
-    #   - master
-
-  pull_request:
+      - 'v*'
     # branches:
     #   - master
       
