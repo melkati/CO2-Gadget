@@ -45,6 +45,8 @@ jobs:
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
 
+        timeout-minutes: 15 # time out after 15 minutes (default is 360 minutes)
+
         steps: 
 
         - name: Checkout code
