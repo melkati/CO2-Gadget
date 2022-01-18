@@ -100,14 +100,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
 void initESPNow() {
     EspNowInititialized = false;
-    if (WiFi.status() == WL_CONNECTED) {
+    if ((activeWIFI) && (WiFi.status() == WL_CONNECTED)) {
         channelESPNow = WiFi.channel();
         Serial.printf("-->[ESPN] Initializing ESP-NOW in already connected WiFi channel: %u\n", channelESPNow);
-    }
-    else {
+    } else {
+        WiFi.mode(WIFI_STA);
         Serial.printf("-->[ESPN] Initializing ESP-NOW in channel: %u\n", channelESPNow);
     }
-        
+
     esp_wifi_set_channel(channelESPNow, WIFI_SECOND_CHAN_NONE);
 
     //Init ESP-NOW

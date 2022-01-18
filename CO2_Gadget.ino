@@ -29,6 +29,7 @@ String mDNSName = "Unset";
 bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
+bool activeESPNOW = true;
 bool debugSensors = false;
 bool displayReverse = false;
 bool showFahrenheit = false;

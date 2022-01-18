@@ -306,6 +306,11 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
     disableWiFi();
+    #ifdef SUPPORT_ESP-NOW
+    if (activeESPNOW) {
+      initESPNow();
+    }
+    #endif
   } else {
     initWifi();
     activeMQTT = preferences.getBool("activeMQTT", false);
@@ -498,7 +503,7 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
 
 result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting setTempOffset to %.2f\n",tempOffset);
+    Serial.printf("-->[MENU] Setting setTempOffset to %.2f\n",tempOffset);
   #endif
   sensors.setTempOffset(tempOffset);
   preferences.begin("CO2-Gadget", false);
@@ -525,7 +530,7 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   
 result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting doDisplayReverse to %s\n", ((displayReverse) ? "TRUE" : "FALSE"));
+    Serial.printf("-->[MENU] Setting doDisplayReverse to %s\n", ((displayReverse) ? "TRUE" : "FALSE"));
   #endif  
   reverseButtons(displayReverse);  
   #ifdef SUPPORT_TFT
@@ -559,7 +564,7 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
 
 result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
+    Serial.printf("-->[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
   #endif
   setNeopixelType(selectedNeopixelType);
   strip.show();
