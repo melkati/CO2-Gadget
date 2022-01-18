@@ -38,6 +38,9 @@ bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
 bool outputsModeRelay = false;
+uint8_t channelESPNow = 1;
+
+float battery_voltage = 0;
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
@@ -106,6 +109,13 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include <CO2_Gadget_WIFI.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                         INCLUDE ESP-NOW FUNCTIONALITY                             *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include <CO2_Gadget_ESP-NOW.h>
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -295,6 +305,9 @@ void readingsLoop() {
 #ifdef SUPPORT_MQTT
             publishMQTT();
 #endif
+#ifdef SUPPORT_ESP-NOW
+            publishESPNow();
+#endif
         }
     }
 }
@@ -349,6 +362,9 @@ void setup() {
 #endif
     initWifi();
     initSensors();
+#ifdef SUPPORT_ESP-NOW
+    initESPNow();
+#endif
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif

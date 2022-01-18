@@ -40,6 +40,7 @@ void printPreferences() {
   Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
   Serial.printf("measInterval:\t #%d#\n", measurementInterval);
   Serial.printf("outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
+  Serial.printf("channelESPNow:\t #%d#\n", channelESPNow);
   Serial.println("");
 }
 
@@ -80,7 +81,8 @@ void initPreferences() {
   displayReverse = preferences.getBool("displayReverse", false);
   showFahrenheit = preferences.getBool("showFahrenheit", false);
   measurementInterval = preferences.getUInt("measInterval", 10);
-  outputsModeRelay = preferences.getUInt("outModeRelay", false);
+  outputsModeRelay = preferences.getBool("outModeRelay", false);
+  channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
 
   rootTopic.trim();
   mqttClientId.trim();
@@ -138,5 +140,6 @@ void putPreferences() {
   preferences.putBool("showFahrenheit", showFahrenheit);
   preferences.putUInt("measInterval", measurementInterval);
   preferences.putBool("outModeRelay", outputsModeRelay);
+  preferences.putUInt("channelESPNow", channelESPNow);
   preferences.end();
 }
