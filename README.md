@@ -20,7 +20,8 @@ This repository is mainly addressed at developers. If you are an end user willin
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
-- Over the air updates OTA*
+- ESP-NOW communications protocol from Espressif for long range and low power consuption
+- Over the air updates OTA
 - GPIO outputs to, for example, activation of air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
 - **LoRa/LoRaWAN** is in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
 
@@ -202,8 +203,8 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
+- [x] Add ESP-NOW communications protocol from Espressif for long range and low power consuption
 - [ ] Implement full support for PM
-- [ ] Test and enable ESP-Now feature
 - [ ] Full configuration vía web page
 
 # Useful information
