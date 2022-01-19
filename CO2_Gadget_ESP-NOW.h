@@ -44,13 +44,9 @@ struct_message incomingReadings;
 
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-    Serial.print("-->[ESPN] Last Packet Send Status:\t");
-    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
     char macStr[18];
-    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-             mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-    Serial.print("-->[ESPN] Last Packet Sent to:\t\t");
-    Serial.println(macStr);
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    Serial.printf("-->[ESPN] Last packet sent to %s with status: %s\n", macStr, (status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail"));
 }
 
 // Callback when data is received
@@ -98,7 +94,40 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
     }
 }
 
+void printESPNowError(esp_err_t result) {
+    Serial.print("-->[ESPN] Error ");
+    Serial.print(result);
+    Serial.println(" sending the data");
+    if (result == ESP_ERR_ESPNOW_NOT_INIT) {
+        // How did we get so far!!
+        Serial.println("-->[ESPN] ESPNOW not Init.");
+    } else if (result == ESP_ERR_ESPNOW_ARG) {
+        Serial.println("-->[ESPN] Invalid Argument");
+    } else if (result == ESP_ERR_ESPNOW_INTERNAL) {
+        Serial.println("-->[ESPN] Internal Error");
+    } else if (result == ESP_ERR_ESPNOW_NO_MEM) {
+        Serial.println("-->[ESPN] ESP_ERR_ESPNOW_NO_MEM");
+    } else if (result == ESP_ERR_ESPNOW_NOT_FOUND) {
+        Serial.println("-->[ESPN] Peer not found.");
+    } else {
+        Serial.println("-->[ESPN] Not sure what happened");
+    }
+}
+
+void disableESPNow() {
+    esp_err_t result = esp_now_deinit();
+    if (result == ESP_OK) {
+        Serial.println("-->[ESPN] ESP-NOW stoped");
+    } else {
+        Serial.println("-->[ESPN] Error stoping SP-NOW");
+        printESPNowError(result);
+    }
+    activeESPNOW = false;
+    EspNowInititialized = false;
+}
+
 void initESPNow() {
+    if (!activeESPNOW) return;
     EspNowInititialized = false;
     if ((activeWIFI) && (WiFi.status() == WL_CONNECTED)) {
         channelESPNow = WiFi.channel();
@@ -133,33 +162,13 @@ void initESPNow() {
     // Register callback function to get the status of Trasnmitted packet
     esp_now_register_send_cb(OnDataSent);
 
+    activeESPNOW = true;
     EspNowInititialized = true;
 }
 
-void printESPNowError(esp_err_t result) {
-    Serial.print("-->[ESPN] Error ");
-    Serial.print(result);
-    Serial.println(" sending the data");
-    if (result == ESP_ERR_ESPNOW_NOT_INIT) {
-        // How did we get so far!!
-        Serial.println("-->[ESPN] ESPNOW not Init.");
-    } else if (result == ESP_ERR_ESPNOW_ARG) {
-        Serial.println("-->[ESPN] Invalid Argument");
-    } else if (result == ESP_ERR_ESPNOW_INTERNAL) {
-        Serial.println("-->[ESPN] Internal Error");
-    } else if (result == ESP_ERR_ESPNOW_NO_MEM) {
-        Serial.println("-->[ESPN] ESP_ERR_ESPNOW_NO_MEM");
-    } else if (result == ESP_ERR_ESPNOW_NOT_FOUND) {
-        Serial.println("-->[ESPN] Peer not found.");
-    } else {
-        Serial.println("-->[ESPN] Not sure what happened");
-    }
-}
-
 void publishESPNow() {
-    static ulong timeBetweenESPNowSend = 60000;  // Default 60 seconds
-    ulong timeLastESPNowSend = 0;
-    if ((millis() - timeLastESPNowSend + timeBetweenESPNowSend) > 0) {
+    if ((!activeESPNOW) || (!EspNowInititialized)) return;
+    if (millis() > nextTimeToPublishESPNow) {
         //Set values to send
         outgoingReadings.co2 = co2;
         outgoingReadings.temp = temp;
@@ -173,7 +182,8 @@ void publishESPNow() {
         } else {
             printESPNowError(result);
         }
-        timeLastESPNowSend = millis();
+        lastTimeESPNowPublished = millis();
+        nextTimeToPublishESPNow = lastTimeESPNowPublished + (timeBetweenESPNowPublish * 1000);
     }
 }
 
