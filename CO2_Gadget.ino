@@ -29,6 +29,7 @@ String mDNSName = "Unset";
 bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
+bool activeESPNOW = false;
 bool debugSensors = false;
 bool displayReverse = false;
 bool showFahrenheit = false;
@@ -38,6 +39,9 @@ bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 uint32_t DisplayBrightness = 100;
 bool outputsModeRelay = false;
+uint8_t channelESPNow = 1;
+
+float battery_voltage = 0;
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
@@ -45,6 +49,18 @@ bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                                         // Time in seconds to turn off the display to save power.
 uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff * 1000);  // Next time display should turn off
 uint64_t lastButtonUpTimeStamp = millis();                             // Last time button UP was pressed
+
+// Variables for MQTT timming TO-DO
+uint16_t timeBetweenMQTTPublish = 60;                                         // Time in seconds between MQTT transmisions
+uint16_t timeToKeepAliveMQTT = 300;                                           // Maximum time in seconds for MQTT transmisions
+uint64_t nextTimeToPublishMQTT = millis() + (timeBetweenMQTTPublish * 1000);  // Next time to publish MQTT
+uint64_t lastTimeMQTTPublished = millis();                                    // Time of last MQTT transmision
+
+// Variables for ESP-NOW timming
+uint16_t timeBetweenESPNowPublish = 60;                                           // Time in seconds between ESP-NOW transmisions
+uint16_t timeToKeepAliveESPNow = 300;                                             // Maximum time in seconds for ESP-NOW transmisions
+uint64_t nextTimeToPublishESPNow = millis() + (timeBetweenESPNowPublish * 1000);  // Next time to publish ESP-NOW
+uint64_t lastTimeESPNowPublished = millis();                                      // Time of last ESP-NOW transmision
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -106,6 +122,13 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include <CO2_Gadget_WIFI.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                         INCLUDE ESP-NOW FUNCTIONALITY                             *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include <CO2_Gadget_ESP-NOW.h>
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -295,6 +318,9 @@ void readingsLoop() {
 #ifdef SUPPORT_MQTT
             publishMQTT();
 #endif
+#ifdef SUPPORT_ESPNOW
+            publishESPNow();
+#endif
         }
     }
 }
@@ -326,8 +352,7 @@ void displayLoop() {
 }
 
 void setup() {
-    uint32_t brown_reg_temp =
-        READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
+    uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // disable brownout detector
     Serial.begin(115200);
     delay(100);
@@ -349,13 +374,15 @@ void setup() {
 #endif
     initWifi();
     initSensors();
+#ifdef SUPPORT_ESPNOW
+    initESPNow();
+#endif
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif
     menu_init();
     buttonsInit();
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG,
-                   brown_reg_temp);  // enable brownout detector
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     Serial.println("-->[STUP] Ready.");
 }
 

@@ -306,6 +306,11 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   if (!activeWIFI) {
     activeMQTT = false;
     disableWiFi();
+    #ifdef SUPPORT_ESPNOW
+    if (activeESPNOW) {
+      initESPNow();
+    }
+    #endif
   } else {
     initWifi();
     activeMQTT = preferences.getBool("activeMQTT", false);
@@ -361,7 +366,7 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeWIFIMenu)  
+  ,SUBMENU(activeWIFIMenu)
   ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
@@ -475,11 +480,26 @@ MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,EDIT("Pass", tempMQTTPass, alphaNum, doSetMQTTPass, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
-#if defined SUPPORT_ESPNOW
-MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
-  ,OP("Work In Progress", doNothing, noEvent)
+#ifdef SUPPORT_ESPNOW
+result doSetActiveESPNOW(eventMask e, navNode &nav, prompt &item) {
+  if (!activeESPNOW) {
+    disableESPNow();
+  } else {
+    initESPNow();
+  }
+  return proceed;
+}
+
+TOGGLE(activeESPNOW, activeESPNOWMenu, "ESP-NOW Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveESPNOW, exitEvent)
+  ,VALUE("OFF", false, doSetActiveESPNOW, exitEvent));
+
+MENU(espnowConfigMenu, "ESPNOW Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeESPNOWMenu)
+  ,FIELD(timeBetweenESPNowPublish, "TX Time: ", "Sec", 10, 360, 10, 100, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 #endif
+
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   battery.begin(vRef, voltageDividerRatio, &sigmoidal);
@@ -498,7 +518,7 @@ MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
 
 result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting setTempOffset to %.2f\n",tempOffset);
+    Serial.printf("-->[MENU] Setting setTempOffset to %.2f\n",tempOffset);
   #endif
   sensors.setTempOffset(tempOffset);
   preferences.begin("CO2-Gadget", false);
@@ -525,7 +545,7 @@ TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ",
   
 result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting doDisplayReverse to %s\n", ((displayReverse) ? "TRUE" : "FALSE"));
+    Serial.printf("-->[MENU] Setting doDisplayReverse to %s\n", ((displayReverse) ? "TRUE" : "FALSE"));
   #endif  
   reverseButtons(displayReverse);  
   #ifdef SUPPORT_TFT
@@ -559,7 +579,7 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
 
 result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
+    Serial.printf("-->[MENU] Setting selectedNeopixelType to %d\n",selectedNeopixelType);
   #endif
   setNeopixelType(selectedNeopixelType);
   strip.show();
@@ -616,7 +636,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   #endif
   ,SUBMENU(wifiConfigMenu)
   ,SUBMENU(mqttConfigMenu)
-#if defined SUPPORT_ESPNOW  
+#ifdef SUPPORT_ESPNOW
   ,SUBMENU(espnowConfigMenu)
 #endif  
   ,SUBMENU(batteryConfigMenu)

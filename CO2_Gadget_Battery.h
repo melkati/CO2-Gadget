@@ -17,8 +17,6 @@
 
 #include <Battery.h>
 
-float battery_voltage = 0;
-
 Battery battery(batteryDischargedMillivolts, batteryFullyChargedMillivolts, ADC_PIN);
 /**
  * 1 cell li-ion/li-poly battery wired to A0, continuous sensing, sigmoidal mapping function, cut off at 3000mV

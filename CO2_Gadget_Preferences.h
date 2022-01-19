@@ -17,6 +17,7 @@ void printPreferences() {
   Serial.printf("activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
   Serial.printf("activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
   Serial.printf("activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
+  Serial.printf("activeESPNOW is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeESPNOW);  
   Serial.printf("rootTopic:\t#%s#\n", rootTopic.c_str());
   Serial.printf("batDischgd:\t #%d#\n", batteryDischargedMillivolts);
   Serial.printf("batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
@@ -28,6 +29,10 @@ void printPreferences() {
   Serial.printf("mqttPass:\t#%s#\n", mqttPass.c_str());
   #endif
   Serial.printf("tToDispOff:\t #%d#\n", timeToDisplayOff);
+  Serial.printf("tToPubMQTT:\t #%d#\n", timeBetweenMQTTPublish);
+  Serial.printf("tToPubESPNow:\t #%d#\n", timeBetweenESPNowPublish);
+  Serial.printf("tKeepAlMQTT:\t #%d#\n", timeToKeepAliveMQTT);
+  Serial.printf("tKeepAlESPNow:\t #%d#\n", timeToKeepAliveESPNow);
   Serial.printf("dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
   Serial.printf("wifiSSID:\t#%s#\n", wifiSSID.c_str());
   #ifndef WIFI_PRIVACY
@@ -40,6 +45,7 @@ void printPreferences() {
   Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
   Serial.printf("measInterval:\t #%d#\n", measurementInterval);
   Serial.printf("outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
+  Serial.printf("channelESPNow:\t #%d#\n", channelESPNow);
   Serial.println("");
 }
 
@@ -58,6 +64,7 @@ void initPreferences() {
   activeBLE = preferences.getBool("activeBLE", true);
   activeWIFI = preferences.getBool("activeWIFI", false);
   activeMQTT = preferences.getBool("activeMQTT", false);
+  activeESPNOW = preferences.getBool("activeESPNOW", false);
   rootTopic = preferences.getString("rootTopic", rootTopic);
   mqttClientId = preferences.getString("mqttClientId", mqttClientId);
   mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
@@ -70,7 +77,12 @@ void initPreferences() {
   batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
   batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
   vRef = preferences.getUInt("vRef", 930); // Looks like, due to a bug, 930 is a goos starting number for vRef
-  timeToDisplayOff = preferences.getUInt("tToDispOff", 0);
+  timeToDisplayOff = preferences.getUInt("tToDispOff", 60);
+  timeBetweenMQTTPublish = preferences.getUInt("tToPubMQTT", 60);
+  timeBetweenESPNowPublish = preferences.getUInt("tToPubESPNow", 60);
+  timeToKeepAliveMQTT = preferences.getUInt("tKeepAlMQTT", 300);
+  timeToKeepAliveESPNow = preferences.getUInt("tKeepAlESPNow", 300);
+
   displayOffOnExternalPower = preferences.getBool("dispOffOnExP", false);
   wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
   wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
@@ -80,7 +92,8 @@ void initPreferences() {
   displayReverse = preferences.getBool("displayReverse", false);
   showFahrenheit = preferences.getBool("showFahrenheit", false);
   measurementInterval = preferences.getUInt("measInterval", 10);
-  outputsModeRelay = preferences.getUInt("outModeRelay", false);
+  outputsModeRelay = preferences.getBool("outModeRelay", false);
+  channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
 
   rootTopic.trim();
   mqttClientId.trim();
@@ -119,6 +132,7 @@ void putPreferences() {
   preferences.putBool("activeBLE", activeBLE);
   preferences.putBool("activeWIFI", activeWIFI);
   preferences.putBool("activeMQTT", activeMQTT);
+  preferences.putBool("activeESPNOW", activeESPNOW);
   preferences.putString("rootTopic", rootTopic);
   preferences.putUInt("batDischgd", batteryDischargedMillivolts);
   preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
@@ -128,6 +142,10 @@ void putPreferences() {
   preferences.putString("mqttUser", mqttUser);
   preferences.putString("mqttPass", mqttPass);
   preferences.putUInt("tToDispOff", timeToDisplayOff);
+  preferences.putUInt("tKeepAlMQTT", timeToKeepAliveMQTT);
+  preferences.putUInt("tKeepAlESPNow", timeToKeepAliveESPNow);
+  preferences.putUInt("tToPubMQTT", timeBetweenMQTTPublish);
+  preferences.putUInt("tToPubESPNow", timeBetweenESPNowPublish);
   preferences.putBool("dispOffOnExP", displayOffOnExternalPower);
   preferences.putString("wifiSSID", wifiSSID);
   preferences.putString("wifiPass", wifiPass);
@@ -138,5 +156,6 @@ void putPreferences() {
   preferences.putBool("showFahrenheit", showFahrenheit);
   preferences.putUInt("measInterval", measurementInterval);
   preferences.putBool("outModeRelay", outputsModeRelay);
+  preferences.putUInt("channelESPNow", channelESPNow);
   preferences.end();
 }
