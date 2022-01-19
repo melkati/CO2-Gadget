@@ -1,3 +1,5 @@
+#ifndef CO2_Gadget_WIFI
+#define CO2_Gadget_WIFI
 
 // clang-format off
 /*****************************************************************************************************/
@@ -8,6 +10,7 @@
 // clang-format on
 
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
+// If not using enviroment variables, you must fill data on file credentials.h.tpl and rename as credentials.h
 #include "credentials.h"
 #endif
 
@@ -15,74 +18,74 @@ WiFiClient espClient;
 AsyncWebServer server(80);
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-  Serial.print("-->[WiFi] WifiSetup: SSID = ");
-  Serial.print(ssid.c_str());
-  Serial.print(", Password = ");
-  Serial.println(password.c_str());
-  WiFi.begin(ssid.c_str(), password.c_str());
+    Serial.print("-->[WiFi] WifiSetup: SSID = ");
+    Serial.print(ssid.c_str());
+    Serial.print(", Password = ");
+    Serial.println(password.c_str());
+    WiFi.begin(ssid.c_str(), password.c_str());
 }
 
-void printWiFiStatus() { // Print wifi status on serial monitor
-  
-  // Get current status
-  //  WL_CONNECTED: assigned when connected to a WiFi network;
-  //  WL_NO_SHIELD: assigned when no WiFi shield is present;
-  //  WL_IDLE_STATUS: it is a temporary status assigned when WiFi.begin() is called and remains active until the number of attempts expires (resulting in WL_CONNECT_FAILED) or a connection is established (resulting in WL_CONNECTED);
-  //  WL_NO_SSID_AVAIL: assigned when no SSID are available;
-  //  WL_SCAN_COMPLETED: assigned when the scan networks is completed;
-  //  WL_CONNECT_FAILED: assigned when the connection fails for all the attempts;
-  //  WL_CONNECTION_LOST: assigned when the connection is lost;
-  //  WL_DISCONNECTED: assigned when disconnected from a network;
+void printWiFiStatus() {  // Print wifi status on serial monitor
 
-  Serial.print("-->[WiFi-Status] ");
-  switch (WiFi.status()) {
-    case WL_CONNECTED: 
-      Serial.println("WiFi connected");
-      break;
-    case WL_NO_SHIELD:
-      Serial.println("No WiFi HW detected");
-      break;
-    case WL_IDLE_STATUS:
-      Serial.println("Attempting...");
-      break;
-    case WL_NO_SSID_AVAIL:
-      Serial.println("No SSID available");
-      break;
-    case WL_SCAN_COMPLETED:
-      Serial.println("Networks scan completed");
-      break;
-    case WL_CONNECT_FAILED:
-      Serial.println("Connect failed");
-      break;
-    case WL_CONNECTION_LOST:
-      Serial.println("Connection lost");
-      break;
-    case WL_DISCONNECTED:
-      Serial.println("Disconnected");
-      break;
-    default: 
-      Serial.println("Unknown status");
-      break;
-  }
-    
-  // Print the SSID of the network you're attached to:
-  Serial.print("-->[WiFi] SSID: ");
-  Serial.println(WiFi.SSID());
+    // Get current status
+    //  WL_CONNECTED: assigned when connected to a WiFi network;
+    //  WL_NO_SHIELD: assigned when no WiFi shield is present;
+    //  WL_IDLE_STATUS: it is a temporary status assigned when WiFi.begin() is called and remains active until the number of attempts expires (resulting in WL_CONNECT_FAILED) or a connection is established (resulting in WL_CONNECTED);
+    //  WL_NO_SSID_AVAIL: assigned when no SSID are available;
+    //  WL_SCAN_COMPLETED: assigned when the scan networks is completed;
+    //  WL_CONNECT_FAILED: assigned when the connection fails for all the attempts;
+    //  WL_CONNECTION_LOST: assigned when the connection is lost;
+    //  WL_DISCONNECTED: assigned when disconnected from a network;
 
-  // Print your WiFi shield's IP address:
-  Serial.print("-->[WiFi] IP Address: ");
-  Serial.println(WiFi.localIP());
+    Serial.print("-->[WiFi-Status] ");
+    switch (WiFi.status()) {
+        case WL_CONNECTED:
+            Serial.println("WiFi connected");
+            break;
+        case WL_NO_SHIELD:
+            Serial.println("No WiFi HW detected");
+            break;
+        case WL_IDLE_STATUS:
+            Serial.println("Attempting...");
+            break;
+        case WL_NO_SSID_AVAIL:
+            Serial.println("No SSID available");
+            break;
+        case WL_SCAN_COMPLETED:
+            Serial.println("Networks scan completed");
+            break;
+        case WL_CONNECT_FAILED:
+            Serial.println("Connect failed");
+            break;
+        case WL_CONNECTION_LOST:
+            Serial.println("Connection lost");
+            break;
+        case WL_DISCONNECTED:
+            Serial.println("Disconnected");
+            break;
+        default:
+            Serial.println("Unknown status");
+            break;
+    }
 
-  // Print your WiFi shield's MAC address:
-  Serial.print("-->[WiFi] MAC Address: ");
-  Serial.println(WiFi.macAddress());
-  
-  // Print the received signal strength:
-  Serial.print("-->[WiFi] Signal strength (RSSI):");
-  Serial.print(WiFi.RSSI());
-  Serial.println(" dBm");
+    // Print the SSID of the network you're attached to:
+    Serial.print("-->[WiFi] SSID: ");
+    Serial.println(WiFi.SSID());
 
-  /*
+    // Print your WiFi shield's IP address:
+    Serial.print("-->[WiFi] IP Address: ");
+    Serial.println(WiFi.localIP());
+
+    // Print your WiFi shield's MAC address:
+    Serial.print("-->[WiFi] MAC Address: ");
+    Serial.println(WiFi.macAddress());
+
+    // Print the received signal strength:
+    Serial.print("-->[WiFi] Signal strength (RSSI):");
+    Serial.print(WiFi.RSSI());
+    Serial.println(" dBm");
+
+    /*
   // Print authentication used:
   Serial.print("Encryption type: ");
   switch (WiFi.encryptionType()) {
@@ -109,14 +112,13 @@ void printWiFiStatus() { // Print wifi status on serial monitor
       break;
   }
   */
-  
 }
 
 void WiFiEvent(WiFiEvent_t event) {
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
     switch (event) {
-        case SYSTEM_EVENT_WIFI_READY: 
+        case SYSTEM_EVENT_WIFI_READY:
             Serial.println("WiFi interface ready");
             break;
         case SYSTEM_EVENT_SCAN_DONE:
@@ -192,23 +194,24 @@ void WiFiEvent(WiFiEvent_t event) {
         case SYSTEM_EVENT_ETH_GOT_IP:
             Serial.println("Obtained IP address");
             break;
-        default: break;
+        default:
+            break;
     }
 }
 
 #ifdef SUPPORT_MDNS
 void initMDNS() {
-  /*use mdns for host name resolution*/
-  if (!MDNS.begin(hostName.c_str())) { // http://esp32.local
-    Serial.println("-->[WiFi] Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
+    /*use mdns for host name resolution*/
+    if (!MDNS.begin(hostName.c_str())) {  // http://esp32.local
+        Serial.println("-->[WiFi] Error setting up MDNS responder!");
+        while (1) {
+            delay(1000);
+        }
     }
-  }
-  Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
-  Serial.print(hostName);
-  Serial.println(".local");
-  MDNS.addService("http", "tcp", 80);
+    Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
+    Serial.print(hostName);
+    Serial.println(".local");
+    MDNS.addService("http", "tcp", 80);
 }
 #endif
 
@@ -219,150 +222,150 @@ void disableWiFi() {
 }
 
 // Replaces placeholder with actual values
-String processor(const String& var) {
-  //Serial.println(var);
-  if (var == "CO2") {
-    return String(co2);
-  }
-  else if (var == "TEMPERATURE") {
-    return String(temp);
-  }
-  else if (var == "HUMIDITY") {
-    return String(hum);
-  }
-  return String();
+String processor(const String &var) {
+    //Serial.println(var);
+    if (var == "CO2") {
+        return String(co2);
+    } else if (var == "TEMPERATURE") {
+        return String(temp);
+    } else if (var == "HUMIDITY") {
+        return String(hum);
+    }
+    return String();
 }
 
 void serialPrintMACAddress() {
-  byte mac[6];
-  WiFi.macAddress(mac);
-  Serial.print("-->[WiFi] MAC: ");
-  Serial.print(mac[5],HEX);
-  Serial.print(":");
-  Serial.print(mac[4],HEX);
-  Serial.print(":");
-  Serial.print(mac[3],HEX);
-  Serial.print(":");
-  Serial.print(mac[2],HEX);
-  Serial.print(":");
-  Serial.print(mac[1],HEX);
-  Serial.print(":");
-  Serial.println(mac[0],HEX);
+    byte mac[6];
+    WiFi.macAddress(mac);
+    Serial.print("-->[WiFi] MAC: ");
+    Serial.print(mac[5], HEX);
+    Serial.print(":");
+    Serial.print(mac[4], HEX);
+    Serial.print(":");
+    Serial.print(mac[3], HEX);
+    Serial.print(":");
+    Serial.print(mac[2], HEX);
+    Serial.print(":");
+    Serial.print(mac[1], HEX);
+    Serial.print(":");
+    Serial.println(mac[0], HEX);
 }
 
 bool checkStringIsNumerical(String myString) {
-  uint16_t Numbers = 0;
+    uint16_t Numbers = 0;
 
-  for (uint16_t i = 0; i < myString.length(); i++) {
-    if (myString[i] == '0' || myString[i] == '1' || myString[i] == '2' ||
-        myString[i] == '3' || myString[i] == '4' || myString[i] == '5' ||
-        myString[i] == '6' || myString[i] == '7' || myString[i] == '8' ||
-        myString[i] == '9') {
-      Numbers++;
+    for (uint16_t i = 0; i < myString.length(); i++) {
+        if (myString[i] == '0' || myString[i] == '1' || myString[i] == '2' ||
+            myString[i] == '3' || myString[i] == '4' || myString[i] == '5' ||
+            myString[i] == '6' || myString[i] == '7' || myString[i] == '8' ||
+            myString[i] == '9') {
+            Numbers++;
+        }
     }
-  }
 
-  if (Numbers == myString.length()) {
-    return true;
-  } else {
-    return false;
-  }
+    if (Numbers == myString.length()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-const char* PARAM_INPUT_1 = "MeasurementInterval";
-void initWifi() {  
-  uint16_t connectionRetries = 0;
-  uint16_t maxConnectionRetries = 30;
-  if (activeWIFI) {
-    displayNotification("Init WiFi", notifyInfo);
-    WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
-    WiFi.mode(WIFI_STA);
-    WiFi.onEvent(WiFiEvent);
-    // WiFi.setSleep(true);
-    // WiFi.setSleep(WIFI_PS_NONE);
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
-                  WiFi.setHostname(hostName.c_str()));
-    WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-    Serial.print("-->[WiFi] Connecting to WiFi");
-    while (WiFi.status() != WL_CONNECTED) {
-      ++connectionRetries;
-      if (connectionRetries == maxConnectionRetries) {
-        activeWIFI = false;
-        Serial.printf(
-            "\n[WiFi] Not possible to connect to WiFi after %d "
-            "tries.\nDisabling WiFi.\n",
-            connectionRetries);
-        Serial.print("-->[WiFi] wifiSSID: #");
-        Serial.print(wifiSSID);
-        Serial.println("#");
+const char *PARAM_INPUT_1 = "MeasurementInterval";
+void initWifi() {
+    uint16_t connectionRetries = 0;
+    uint16_t maxConnectionRetries = 30;
+    if (activeWIFI) {
+        displayNotification("Init WiFi", notifyInfo);
+        WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
+        WiFi.mode(WIFI_STA);
+        WiFi.onEvent(WiFiEvent);
+        // WiFi.setSleep(true);
+        // WiFi.setSleep(WIFI_PS_NONE);
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
+                      WiFi.setHostname(hostName.c_str()));
+        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
+        Serial.print("-->[WiFi] Connecting to WiFi");
+        while (WiFi.status() != WL_CONNECTED) {
+            ++connectionRetries;
+            if (connectionRetries == maxConnectionRetries) {
+                activeWIFI = false;
+                Serial.printf(
+                    "\n[WiFi] Not possible to connect to WiFi after %d "
+                    "tries.\nDisabling WiFi.\n",
+                    connectionRetries);
+                Serial.print("-->[WiFi] wifiSSID: #");
+                Serial.print(wifiSSID);
+                Serial.println("#");
 #ifndef WIFI_PRIVACY
-        Serial.print("-->[WiFi] wifiPass: #");
-        Serial.print(wifiPass);
-        Serial.println("#");
+                Serial.print("-->[WiFi] wifiPass: #");
+                Serial.print(wifiPass);
+                Serial.println("#");
 #endif
-        return;
-      }
-      Serial.print(".");
-      delay(500);
-    }
-    Serial.println("");
-    serialPrintMACAddress();
-    Serial.print("-->[WiFi] WiFi connected - IP = ");
-    Serial.println(WiFi.localIP());
+                return;
+            }
+            Serial.print(".");
+            delay(500);
+        }
+        Serial.println("");
+        serialPrintMACAddress();
+        Serial.print("-->[WiFi] WiFi connected - IP = ");
+        Serial.println(WiFi.localIP());
 #ifdef SUPPORT_MDNS
-    mDNSName = WiFi.getHostname();
-    initMDNS();
+        mDNSName = WiFi.getHostname();
+        initMDNS();
 #endif
-    /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send_P(200, "text/html", MAIN_page);
       AsyncWebServerResponse *response = request->beginResponse_P(200,
     "text/html", MAIN_page, processor); response->addHeader("Server","ESP Async
     Web Server"); request->send(response);
     });*/
-    SPIFFS.begin();
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-    server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", String(co2));
-    });
-    server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", String(temp));
-    });
-    server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", String(hum));
-    });
-    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-      String inputString;
-      // <CO2-GADGET_IP>/settings?MeasurementInterval=100
-      if (request->hasParam(PARAM_INPUT_1)) {
-        inputString = request->getParam(PARAM_INPUT_1)->value();
-        if (checkStringIsNumerical(inputString)) {
-          Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
-          measurementInterval = inputString.toInt();
-        }        
-      };
-      request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
-    });
-    server.onNotFound([](AsyncWebServerRequest *request) {
-      request->send(400, "text/plain", "Not found");
-    });
+        SPIFFS.begin();
+        server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+        server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
+            request->send(200, "text/plain", String(co2));
+        });
+        server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
+            request->send(200, "text/plain", String(temp));
+        });
+        server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
+            request->send(200, "text/plain", String(hum));
+        });
+        server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+            String inputString;
+            // <CO2-GADGET_IP>/settings?MeasurementInterval=100
+            if (request->hasParam(PARAM_INPUT_1)) {
+                inputString = request->getParam(PARAM_INPUT_1)->value();
+                if (checkStringIsNumerical(inputString)) {
+                    Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
+                    measurementInterval = inputString.toInt();
+                }
+            };
+            request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+        });
+        server.onNotFound([](AsyncWebServerRequest *request) {
+            request->send(400, "text/plain", "Not found");
+        });
 
 #ifdef SUPPORT_OTA
-    AsyncElegantOTA.begin(&server);  // Start ElegantOTA
-    Serial.println("-->[WiFi] OTA ready");
+        AsyncElegantOTA.begin(&server);  // Start ElegantOTA
+        Serial.println("-->[WiFi] OTA ready");
 #endif
 
-    server.begin();
-    Serial.println("-->[WiFi] HTTP server started");
+        server.begin();
+        Serial.println("-->[WiFi] HTTP server started");
 
-    printWiFiStatus();
-  } else {
-    disableWiFi();
-  }
+        printWiFiStatus();
+    } else {
+        disableWiFi();
+    }
 }
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
-  AsyncElegantOTA.loop();
+    AsyncElegantOTA.loop();
 #endif
 }
+
+#endif  // CO2_Gadget_WIFI

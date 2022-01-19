@@ -173,8 +173,8 @@ void publishMQTT() {
         publishFloatMQTT("/humi", hum);
         publishMQTTAlarms();
       }
-      // Serial.print("Free heap: ");
-      // Serial.println(ESP.getFreeHeap());
+      Serial.print("-->[MQTT] Free heap: ");
+      Serial.println(ESP.getFreeHeap());
   }
   #endif
 }
