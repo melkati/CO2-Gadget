@@ -116,6 +116,9 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 **Note:** If all you want is to flash CO2 Gadget into your board go [here:](https://emariete.com/en/meter-co2-gadget/). You don't need to compile the firmware.
 
+### Install PlatformIO
+
+You can use PlatfomIO CLI or VSCode win PlatformIO GUI (recomended). For installation see [PlatformIO installation instructions:](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 ### Prepare PlatformIO
 
 First you must edit the file platformio.ini to setup your preferences.
