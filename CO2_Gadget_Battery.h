@@ -8,23 +8,23 @@
 /*****************************************************************************************************/
 // clang-format on
 
-	// Battery info (percent charge).
-	const uint32_t voltageDividerR1Ohms = 100000; // Resistance of "R1" for voltage divider.
-	const uint32_t voltageDividerR2Ohms = 100000; // Resistance of "R2" for voltage divider.	
+// Battery info (percent charge).
+const uint32_t voltageDividerR1Ohms = 100000;  // Resistance of "R1" for voltage divider.
+const uint32_t voltageDividerR2Ohms = 100000;  // Resistance of "R2" for voltage divider.
 
-  // Voltage divider ratio for battery sense must be (R1 + R2) / R2 - see https://github.com/rlogiacco/BatterySense.
-  const float voltageDividerRatio = (voltageDividerR1Ohms + voltageDividerR2Ohms) / voltageDividerR2Ohms;
+// Voltage divider ratio for battery sense must be (R1 + R2) / R2 - see https://github.com/rlogiacco/BatterySense.
+const float voltageDividerRatio = (voltageDividerR1Ohms + voltageDividerR2Ohms) / voltageDividerR2Ohms;
 
 #include <Battery.h>
 
-Battery battery(batteryDischargedMillivolts, batteryFullyChargedMillivolts, ADC_PIN);
+Battery battery(batteryDischargedMillivolts, batteryFullyChargedMillivolts, ADC_BATTERY_PIN);
 /**
  * 1 cell li-ion/li-poly battery wired to A0, continuous sensing, sigmoidal mapping function, cut off at 3000mV
  * https://github.com/rlogiacco/BatterySense#lesser-than-5v-with-voltage-booster
  **/
 void initBattery() {
-  battery.onDemand(battery.ON_DEMAND_DISABLE, LOW);
-	battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+    battery.onDemand(battery.ON_DEMAND_DISABLE, LOW);
+    battery.begin(vRef, voltageDividerRatio, &sigmoidal);
 }
 
 float readBatteryVoltage() {
@@ -39,6 +39,6 @@ float readBatteryVoltage() {
 }
 
 uint8_t getBatteryPercentage() {
-  Serial.printf("Battery Level: %d%%\n", battery.level());
-  return battery.level();
+    Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+    return battery.level();
 }
