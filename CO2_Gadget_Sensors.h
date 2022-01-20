@@ -1,8 +1,8 @@
 #include <Sensors.hpp>
 
 bool firstCO2SensorInit = true;
-bool pendingCalibration = false;
-bool newReadingsAvailable = false;
+volatile bool pendingCalibration = false;
+volatile bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
 uint16_t customCalibrationValue = 415;
 bool pendingAmbientPressure = false;
@@ -11,7 +11,7 @@ uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = false;
 float tempOffset = 0.0f;
 
-uint16_t co2 = 0;
+volatile uint16_t co2 = 0;
 float temp, tempFahrenheit, hum = 0;
 
 uint16_t co2OrangeRange =
