@@ -41,26 +41,26 @@ uint32_t DisplayBrightness = 100;
 bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
 
+// Variables for Battery reading
 float battery_voltage = 0;
+uint16_t timeBetweenBatteryRead = 60;
+uint64_t lastTimeBatteryRead = 0;  // Time of last MQTT transmision
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                                         // Time in seconds to turn off the display to save power.
-uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff * 1000);  // Next time display should turn off
-uint64_t lastButtonUpTimeStamp = millis();                             // Last time button UP was pressed
+uint64_t lastTimeButtonPressed = 0;                                    // Last time stamp a button was pressed
 
 // Variables for MQTT timming TO-DO
-uint16_t timeBetweenMQTTPublish = 60;                                         // Time in seconds between MQTT transmisions
-uint16_t timeToKeepAliveMQTT = 300;                                           // Maximum time in seconds for MQTT transmisions
-uint64_t nextTimeToPublishMQTT = millis() + (timeBetweenMQTTPublish * 1000);  // Next time to publish MQTT
-uint64_t lastTimeMQTTPublished = millis();                                    // Time of last MQTT transmision
+uint16_t timeBetweenMQTTPublish = 60;                                  // Time in seconds between MQTT transmisions
+uint16_t timeToKeepAliveMQTT = 3600;                                    // Maximum time in seconds between MQTT transmisions - Default: 1 Hour
+uint64_t lastTimeMQTTPublished = 0;                                    // Time of last MQTT transmision
 
 // Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;                                           // Time in seconds between ESP-NOW transmisions
-uint16_t timeToKeepAliveESPNow = 300;                                             // Maximum time in seconds for ESP-NOW transmisions
-uint64_t nextTimeToPublishESPNow = millis() + (timeBetweenESPNowPublish * 1000);  // Next time to publish ESP-NOW
-uint64_t lastTimeESPNowPublished = millis();                                      // Time of last ESP-NOW transmision
+uint16_t timeBetweenESPNowPublish = 60;                                // Time in seconds between ESP-NOW transmisions
+uint16_t timeToKeepAliveESPNow = 3600;                                  // Maximum time in seconds between ESP-NOW transmisions - Default: 1 Hour
+uint64_t lastTimeESPNowPublished = 0;                                  // Time of last ESP-NOW transmision
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -160,7 +160,6 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#define ADC_PIN 34
 uint16_t vRef = 1100;
 uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
@@ -299,6 +298,7 @@ void outputsRGBLeds() {
 void outputsLoop() {
     outputsRelays();
     outputsRGBLeds();
+    neopixelLoop();
 }
 
 void readingsLoop() {
@@ -329,31 +329,26 @@ void displayLoop() {
     if (timeToDisplayOff == 0)  // TFT Always ON
         return;
 
-    // If configured not to turn off the display on external power
-    // and actual voltage is more than those of a maximum loaded batery + 5%, do
-    // nothing and return
-    if ((!displayOffOnExternalPower) &&
-        (battery_voltage * 1000 > batteryFullyChargedMillivolts +
-                                      (batteryFullyChargedMillivolts * 5 / 100))) {
-        if (actualDisplayBrightness == 0)  // When connect USB & TFT is OFF -> TURN IT ON
+    // If configured not to turn off the display on external power and actual voltage is more than those of a maximum loaded batery + 5%, do nothing and return
+    if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
+        if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
         {
-            setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
+            setDisplayBrightness(DisplayBrightness);  // Turn on the display
             actualDisplayBrightness = DisplayBrightness;
         }
         return;
     }
 
-    if (millis() > nextTimeToDisplayOff) {
+    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
         Serial.println("-->[MAIN] Turning off display to save power");
         turnOffDisplay();
         actualDisplayBrightness = 0;
-        nextTimeToDisplayOff = nextTimeToDisplayOff + (timeToDisplayOff * 1000);
     }
 }
 
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // disable brownout detector
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     delay(100);
     // Serial.printf("Total heap: %d", ESP.getHeapSize());
@@ -389,6 +384,7 @@ void setup() {
 void loop() {
     mqttClientLoop();
     sensorsLoop();
+    readBatteryVoltage();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
@@ -396,5 +392,4 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
-    neopixelLoop();
 }

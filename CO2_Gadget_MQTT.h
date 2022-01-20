@@ -18,7 +18,7 @@ void mqttReconnect() {
   uint16_t secondsBetweenRetries = 15; // Keep trying to connect to MQTT broker for 3 minutes (12 times every 15 secs)
   uint16_t maxConnectionRetries = 12;
   static uint16_t connectionRetries = 0;
-  if (millis() - timeStamp > (secondsBetweenRetries*1000)) { // Max one try each secondsBetweenRetries*1000 seconds
+  if (millis() - timeStamp >= (secondsBetweenRetries*1000)) { // Max one try each secondsBetweenRetries*1000 seconds
     timeStamp = millis();
     String subscriptionTopic;
     if (!mqttClient.connected()) {
@@ -165,18 +165,21 @@ void publishMQTTAlarms() {
 }
 
 void publishMQTT() {
-  #ifdef SUPPORT_MQTT
-  if (activeMQTT) {
-      if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
-        publishIntMQTT("/co2", co2);
-        publishFloatMQTT("/temp", temp);
-        publishFloatMQTT("/humi", hum);
-        publishMQTTAlarms();
-      }
-      Serial.print("-->[MQTT] Free heap: ");
-      Serial.println(ESP.getFreeHeap());
-  }
-  #endif
+#ifdef SUPPORT_MQTT
+    if (activeMQTT) {
+        if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
+            if (millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) {
+                publishIntMQTT("/co2", co2);
+                publishFloatMQTT("/temp", temp);
+                publishFloatMQTT("/humi", hum);
+                publishMQTTAlarms();
+                lastTimeMQTTPublished = millis();
+            }
+            // Serial.print("-->[MQTT] Free heap: ");
+            // Serial.println(ESP.getFreeHeap());
+        }
+    }
+#endif
 }
 
 void mqttClientLoop() {
