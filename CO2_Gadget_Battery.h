@@ -28,12 +28,14 @@ void initBattery() {
 }
 
 float readBatteryVoltage() {
-  static uint16_t batterySecondsBetweenReads = 60;
-  static uint64_t batteryTimeStamp = (-1 * (batterySecondsBetweenReads*1000));
-  if (millis() > batteryTimeStamp + (batterySecondsBetweenReads*1000)) { 
-    battery_voltage = (float)battery.voltage() / 1000;    
-  }
-  return(battery_voltage);
+    if ((millis() - lastTimeBatteryRead >= timeBetweenBatteryRead * 1000) || (lastTimeBatteryRead == 0)) {
+        battery_voltage = (float)battery.voltage() / 1000;
+        // Serial.print("-->[BATT] Battery read: ");
+        // Serial.print(battery_voltage);
+        // Serial.println("V");
+        lastTimeBatteryRead = millis();
+    }
+    return (battery_voltage);
 }
 
 uint8_t getBatteryPercentage() {

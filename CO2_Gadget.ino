@@ -42,6 +42,8 @@ bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
 
 float battery_voltage = 0;
+uint16_t timeBetweenBatteryRead = 60;
+uint64_t lastTimeBatteryRead = 0;  // Time of last MQTT transmission
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
@@ -51,16 +53,14 @@ uint64_t nextTimeToDisplayOff = millis() + (timeToDisplayOff * 1000);  // Next t
 uint64_t lastButtonUpTimeStamp = millis();                             // Last time button UP was pressed
 
 // Variables for MQTT timming TO-DO
-uint16_t timeBetweenMQTTPublish = 60;                                         // Time in seconds between MQTT transmisions
-uint16_t timeToKeepAliveMQTT = 300;                                           // Maximum time in seconds for MQTT transmisions
-uint64_t nextTimeToPublishMQTT = millis() + (timeBetweenMQTTPublish * 1000);  // Next time to publish MQTT
-uint64_t lastTimeMQTTPublished = millis();                                    // Time of last MQTT transmision
+uint16_t timeBetweenMQTTPublish = 60;                                  // Time in seconds between MQTT transmissions
+uint16_t timeToKeepAliveMQTT = 3600;                                    // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeMQTTPublished = 0;                                    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;                                           // Time in seconds between ESP-NOW transmisions
-uint16_t timeToKeepAliveESPNow = 300;                                             // Maximum time in seconds for ESP-NOW transmisions
-uint64_t nextTimeToPublishESPNow = millis() + (timeBetweenESPNowPublish * 1000);  // Next time to publish ESP-NOW
-uint64_t lastTimeESPNowPublished = millis();                                      // Time of last ESP-NOW transmision
+uint16_t timeBetweenESPNowPublish = 60;                                // Time in seconds between ESP-NOW transmissions
+uint16_t timeToKeepAliveESPNow = 3600;                                  // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeESPNowPublished = 0;                                  // Time of last ESP-NOW transmission
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
