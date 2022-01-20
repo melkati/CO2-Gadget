@@ -11,7 +11,6 @@ void IRAM_ATTR buttonUpISR() {
     actualDisplayBrightness = DisplayBrightness;
     lastTimeButtonPressed = millis();
   }
-  
 }
 
 void doubleClick(Button2& btn) {

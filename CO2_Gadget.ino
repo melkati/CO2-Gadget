@@ -43,14 +43,14 @@ uint8_t channelESPNow = 1;
 
 // Variables for Battery reading
 float battery_voltage = 0;
-uint16_t timeBetweenBatteryRead = 60;
+uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last MQTT transmission
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                                         // Time in seconds to turn off the display to save power.
-uint64_t lastTimeButtonPressed = 0;                                    // Last time stamp a button was pressed
+volatile uint64_t lastTimeButtonPressed = 0;                           // Last time stamp a button was pressed
 
 // Variables for MQTT timming TO-DO
 uint16_t timeBetweenMQTTPublish = 60;                                  // Time in seconds between MQTT transmissions
