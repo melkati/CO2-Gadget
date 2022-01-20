@@ -168,7 +168,7 @@ void initESPNow() {
 
 void publishESPNow() {
     if ((!activeESPNOW) || (!EspNowInititialized)) return;
-    if (millis() > nextTimeToPublishESPNow) {
+    if (millis() - lastTimeESPNowPublished >= timeBetweenESPNowPublish * 1000) {
         //Set values to send
         outgoingReadings.co2 = co2;
         outgoingReadings.temp = temp;
@@ -183,7 +183,6 @@ void publishESPNow() {
             printESPNowError(result);
         }
         lastTimeESPNowPublished = millis();
-        nextTimeToPublishESPNow = lastTimeESPNowPublished + (timeBetweenESPNowPublish * 1000);
     }
 }
 

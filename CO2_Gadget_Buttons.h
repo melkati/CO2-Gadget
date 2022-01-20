@@ -9,7 +9,7 @@ void IRAM_ATTR buttonUpISR() {
   {
     setDisplayBrightness(DisplayBrightness); // Turn on the display at DisplayBrightness brightness    
     actualDisplayBrightness = DisplayBrightness;
-    nextTimeToDisplayOff = millis() + (timeToDisplayOff*1000);
+    lastTimeButtonPressed = millis();
   }
   
 }
