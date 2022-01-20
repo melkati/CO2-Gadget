@@ -4,8 +4,8 @@ on:
   push:
     tags-ignore:
       - 'v*'
-    # branches:
-    #   - master
+    branches:
+      - master
       
   workflow_dispatch:
 
