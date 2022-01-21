@@ -25,7 +25,8 @@ int displayHeight = 64;
 #define MENUFONT u8g2_font_5x8_mf
 
 void setDisplayBrightness(uint32_t newBrightness) {
-  Serial.printf("Setting screen brightness value at %d\n (unfunctional. TO DO", newBrightness);
+  Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
+  u8g2.setContrast(newBrightness);
 }
 
 void turnOffDisplay() {
