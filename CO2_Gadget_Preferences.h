@@ -46,6 +46,12 @@ void printPreferences() {
   Serial.printf("measInterval:\t #%d#\n", measurementInterval);
   Serial.printf("outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
   Serial.printf("channelESPNow:\t #%d#\n", channelESPNow);
+  
+  Serial.printf("showTemp:\t #%s#\n",  ((displayShowTemperature) ? "Show" : "Hide"));
+  Serial.printf("showHumidity:\t #%s#\n",  ((displayShowHumidity) ? "Show" : "Hide"));
+  Serial.printf("showBattery:\t #%s#\n",  ((displayShowBattery) ? "Show" : "Hide"));
+  Serial.printf("showCO2:\t #%s#\n",  ((displayShowCO2) ? "Show" : "Hide"));
+  Serial.printf("showPM25:\t #%s#\n",  ((displayShowPM25) ? "Show" : "Hide"));
   Serial.println("");
 }
 
@@ -94,6 +100,12 @@ void initPreferences() {
   measurementInterval = preferences.getUInt("measInterval", 10);
   outputsModeRelay = preferences.getBool("outModeRelay", false);
   channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
+
+  displayShowTemperature = preferences.getBool("showTemp", true);
+  displayShowHumidity = preferences.getBool("showHumidity", true);
+  displayShowBattery = preferences.getBool("showBattery", true);
+  displayShowCO2 = preferences.getBool("showCO2", true);
+  displayShowPM25 = preferences.getBool("showPM25", true);
 
   rootTopic.trim();
   mqttClientId.trim();
@@ -157,5 +169,12 @@ void putPreferences() {
   preferences.putUInt("measInterval", measurementInterval);
   preferences.putBool("outModeRelay", outputsModeRelay);
   preferences.putUInt("channelESPNow", channelESPNow);
+
+  preferences.putBool("showTemp", displayShowTemperature);
+  preferences.putBool("showHumidity", displayShowHumidity);
+  preferences.putBool("showBattery", displayShowBattery);
+  preferences.putBool("showCO2", displayShowCO2);
+  preferences.putBool("showPM25", displayShowPM25);
+  
   preferences.end();
 }
