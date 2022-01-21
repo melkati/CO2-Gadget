@@ -4,40 +4,42 @@
 
 # CO2-Gadget
 
-An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-Now) and many supported sensors.
+An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
 
-This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and to load the firmware very easily, with one click in your browser (without having edit files, compile or install anything on your computer).
+This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and load the firmware very easily, with just two clicks in your browser (without having edit files, compile or install anything on your computer).
 
 ![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
 
 # Features
 
-- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD40, Sensirion SCD41, Senseair S8 LP, Winsen MH-Z19, Cubic CM1106
+- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
-- Management and configuration via on screen menu and console (serial port)
+- Management and configuration via on screen menu and console (USB/serial port)
 - Local data logger with upload to phone by BLE
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
-- GPIO outputs to, for example, activation of air circulation on threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
-- **LoRa/LoRaWAN** is in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
+- Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
+- Support for RGB LEDs
+- GPIO outputs to, for example, activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+- **LoRa/LoRaWAN** in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
 
 # Supported hardware and build
 
-This project support a large selection of boards, displays and sensors.
+This project support a large selection of ESP32 boards, displays and sensors.
 
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
 ![image](https://user-images.githubusercontent.com/11509521/146636210-ee11a49a-5ebc-4e3c-a11e-91e2d8676410.png)
 
-For latest information on other hardware use (boards, sensors, displays, etc), please check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
 
 ## OLED Displays
 
-CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library) so it's very easy to include support for them. Right now there is built in support for OLED I2C 1.3" 128x64 pixels display with a very basic layout for real time measurements (soon to be improved).
+CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompilad versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
 
 ![image](https://user-images.githubusercontent.com/11509521/146636267-a83d92e0-9f09-49cc-9d6b-e785336b9b3e.png) ![image](https://user-images.githubusercontent.com/11509521/146636248-8a8c7105-0ef9-423a-bb3f-83ba2f0ee7d8.png)
 
@@ -47,24 +49,24 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavour | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
+| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
 |:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 | TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
 | TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
 | esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
 | esp32dev_OLED_OTA      | SSH1106 128×64   | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
 
-- Variant: Name of the firmware variant, or flavor.
+- Flavor: Name of the firmware variant.
 - Display: Display supported by each flavor.
-- RX / TX: Pins (GPIO) used for connection of sensors connected by Serial port.
+- RX / TX: Pins (GPIO) used for sensors connected by serial port.
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
-- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
+- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off.
 - Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
-- GPIO Battery: Pin for battery voltage measurement. Keep in mind that on most ESP32 boards the maximum admissible voltage is 3.3V, so you will have to put a resistive divider at the input.
-- Neopixel GPIO: Pin to which you must connect the data line of the Neopixel or WS2812B LEDs (more types supported)
+- GPIO Battery: Pin for battery voltage measurement.
+- Neopixel GPIO: Pin to which you must connect the data line of the Neopixel (WS2812B) LEDs.
 
 # Supported sensors
 
@@ -118,12 +120,12 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 ### Install PlatformIO
 
-You can use PlatfomIO CLI or VSCode win PlatformIO GUI (recomended). For installation see [PlatformIO installation instructions:](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
+You can use PlatfomIO CLI or VSCode with PlatformIO GUI (recomended). For installation see [PlatformIO installation instructions:](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 ### Prepare PlatformIO
 
 First you must edit the file platformio.ini to setup your preferences.
 
-If necessary adjust the upload and minitoring port configuration to match your situation.
+If necessary adjust the upload and monitoring port configuration to match your situation.
 
   ```
   upload_speed = 921600
@@ -136,37 +138,37 @@ Save the file platformio.ini
 
 #### Compiling and Installing
 
-We recommend PlatformIO because it is more easy than Arduino IDE. For this, please install first [PlatformIO](http://platformio.org/) and its command line tools (Windows, MacOs and Linux), **pio** command, then connect your compatible board to the USB and run the next command:
+I recommend PlatformIO because it is more easy than Arduino IDE. For this, please install first [PlatformIO](http://platformio.org/) and its command line tools (Windows, MacOs and Linux), **pio** command, then connect your compatible board to the USB and run the next command:
 
 ```python
 pio run pio run -e TTGO_TDISPLAY_SANDWICH --target upload
 ```
-You must replace "TTGO_TDISPLAY_SANDWICH" with the flavour of CO2 Gadget you want copiled and uploaded (the are defined in platformio.ini or you can define your own).
+You must replace "TTGO_TDISPLAY_SANDWICH" with the flavor of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
 
-If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the"Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
+If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the "Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
 
 ## With Arduino
 
 **NOTE:**
-Currently neither the code is ready to compile with the Arduino IDE nor the instructions are up to date. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
+Currently neither the code is ready to compile with the Arduino IDE nor these instructions are up to date. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
 
-When the code is more stable and has fewer changes, I will adapt the code and write the instructions to compile with the Arduino IDE (right now it is modified very often with bugfixes and new functionalities and it takes me a lot of time to be aware of maintaining compatibility with the Arduino IDE).
+When the code is more stable and changes less often, I will update the code the instructions to compile with the Arduino IDE. Right now it is modified very often with bugfixes and new functionalities and it takes me a lot of time to be aware of maintaining compatibility with the Arduino IDE.
 
-I recommend that you use VS Code with PlatformIO. On the internet you have many tutorials, and it is not as difficult at all as it seems.
+I recommend that you use VS Code with PlatformIO. You have many tutorials on the internet, and it is not as difficult at all as it seems.
 
 #### Prerequisites
 
 To **compile this project with Arduino IDE** (the integrated development enviroment), you have to **install Arduino IDE**, and **add the libraries** referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), as **Arduino won't install it automatically** like PlatformIO does.
 
-Also, you need to add the **alternative links** for supporting the ESP32 boards:
+Also, you need to add support for ESP32 boards:
 
 For Arduino IDE: Adding the line **https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json** in: File > Preferences > Additional Boards Manager URLs.
 
-In Arduino IDE seleect your board, COM port, etc. in the Tools menu and to upload to your board select Program -> Upload or click on the "upload" icon.
+In Arduino IDE select your board, COM port, etc. in the Tools menu and to upload to your board select Program -> Upload or click on the "upload" icon.
 
 To **compile this project with Arduino CLI** (the command line version of Arduino), you first need to install **arduino-cli** or the **Arduino IDE** with the libraries referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), because **Arduino won't install it automatically** like PlatformIO does.
 
-You must add the **alternative links** for supporting the ESP32 boards in Arduino CLI: Follow the next steps:
+You must first add support for ESP32 boards in Arduino CLI: Follow the next steps:
 
 ```bash
 arduino-cli config init
@@ -206,8 +208,7 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-- [x] Add ESP-NOW communications protocol from Espressif for long range and low power consuption
-- [ ] Implement full support for PM
+- [ ] Implement full support for PM 2.5
 - [ ] Full configuration vía web page
 
 # Useful information
@@ -225,7 +226,7 @@ Thanks to all collaborators, contributors and [eMariete](https://emariete.com) c
 ---
 ## License
 
-    Copyright (C) 2021 CO2 Gadget Contributors
+    Copyright (C) 2021-2022 CO2 Gadget Contributors
     Contact: https://emariete.com
 
     This file is part of the CO2 Gadget firmware.
