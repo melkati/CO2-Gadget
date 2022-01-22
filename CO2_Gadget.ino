@@ -26,18 +26,27 @@ String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
 
+// Communication options
 bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
-bool debugSensors = false;
+
+// Display and menu options
+uint32_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
-uint16_t measurementInterval = 10;
+bool displayShowTemperature = true;
+bool displayShowHumidity = true;
+bool displayShowBattery = true;
+bool displayShowCO2 = true;
+bool displayShowPM25 = true;
+
+bool debugSensors = false;
 bool inMenu = false;
+uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
-uint32_t DisplayBrightness = 100;
 bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
 
