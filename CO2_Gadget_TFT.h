@@ -131,6 +131,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
 }
 
 void showBatteryIcon() {
+  if (!displayShowBattery) return;
   uint8_t batteryLevel = battery.level();
   uint16_t color;
   if (batteryLevel<20) {
@@ -194,6 +195,7 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
 }
 
 void showTemperature() {
+  if (!displayShowTemperature) return;
   if (temp >= 30)      tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   else if (temp >= 10) tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   else                 tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);    
@@ -208,6 +210,7 @@ void showTemperature() {
 }
 
 void showHumidity() {
+  if (!displayShowHumidity) return;
   if (hum<=25)     tft.setTextColor(TFT_WHITE, TFT_RED);
   else if (hum<40) tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   else if (hum<=60) tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
