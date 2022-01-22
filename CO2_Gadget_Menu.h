@@ -221,8 +221,8 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
   ,FIELD(customCalibrationValue, "Custom Cal: ", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
   ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
-  ,OP("Test menu event", showEvent, anyEvent),
   EXIT("<Back"));
+  // ,OP("Test menu event", showEvent, anyEvent),
 
 int8_t setCO2Sensor;
 const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
@@ -494,7 +494,7 @@ TOGGLE(activeESPNOW, activeESPNOWMenu, "ESP-NOW Enable: ", doNothing,noEvent, wr
 
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeESPNOWMenu)
-  ,FIELD(timeBetweenESPNowPublish, "TX Time: ", "Sec", 10, 360, 10, 100, doNothing, noEvent, noStyle)
+  ,FIELD(timeBetweenESPNowPublish, "TX Time: ", " Secs", 10, 360, 10, 100, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
 #endif
 
@@ -642,7 +642,7 @@ result doSetoutOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outputs: ", doNothing,noEvent, wrapStyle
+TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outs: ", doNothing,noEvent, wrapStyle
   ,VALUE("RGB LED", false, doSetoutOuputsRelayMode, anyEvent)
   ,VALUE("Relays", true, doSetoutOuputsRelayMode, anyEvent));
 
