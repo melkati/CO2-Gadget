@@ -492,7 +492,7 @@ TOGGLE(activeESPNOW, activeESPNOWMenu, "ESP-NOW Enable: ", doNothing,noEvent, wr
   ,VALUE("ON", true, doSetActiveESPNOW, exitEvent)
   ,VALUE("OFF", false, doSetActiveESPNOW, exitEvent));
 
-MENU(espnowConfigMenu, "ESPNOW Config", doNothing, noEvent, wrapStyle
+MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeESPNOWMenu)
   ,FIELD(timeBetweenESPNowPublish, "TX Time: ", "Sec", 10, 360, 10, 100, doNothing, noEvent, noStyle)
   ,EXIT("<Back"));
@@ -580,13 +580,13 @@ TOGGLE(displayShowBattery, activeDisplayShowBattery, "Battery: ", doNothing, noE
   ,VALUE("Hide", false, doDisplayReverse, enterEvent)
   ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
-// TOGGLE(displayShowCO2, activeDisplayShowCO2, "CO2: ", doNothing, noEvent, wrapStyle
-//   ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-//   ,VALUE("Show", true, doDisplayReverse, enterEvent));
+TOGGLE(displayShowCO2, activeDisplayShowCO2, "CO2: ", doNothing, noEvent, wrapStyle
+  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
+  ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
-// TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wrapStyle
-//   ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-//   ,VALUE("Show", true, doDisplayReverse, enterEvent));
+TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wrapStyle
+  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
+  ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, dosetDisplayBrightness, anyEvent, wrapStyle)
@@ -596,6 +596,8 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeDisplayShowTemperature)
   ,SUBMENU(activeDisplayShowHumidity)
   ,SUBMENU(activeDisplayShowBattery)
+  // ,SUBMENU(activeDisplayShowCO2)
+  // ,SUBMENU(activeDisplayShowPM25)
   ,EXIT("<Back"));
 
 result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {

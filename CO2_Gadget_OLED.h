@@ -84,24 +84,28 @@ void initDisplay() {
 }
 
 void displayShowValues(uint16_t co2) {
-  u8g2.firstPage();
-  do {
-    u8g2.setFont(u8g2_font_7Segments_26x42_mn);
-    u8g2.setCursor(0, 44);
-    u8g2.print(co2);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.setCursor(110, 51);
-    u8g2.print("ppm");
-    u8g2.setCursor(1, u8g2.getDisplayHeight());
-    u8g2.print("T: ");
-    u8g2.print(temp,1);
-    u8g2.print(showFahrenheit ? "F" : "C");
-    u8g2.setCursor(85, u8g2.getDisplayHeight());
-    u8g2.print("HR: ");
-    u8g2.print(hum,0);
-    u8g2.print("%");
-  } while (u8g2.nextPage());
-  u8g2.setFont(MENUFONT);
+    u8g2.firstPage();
+    do {
+        u8g2.setFont(u8g2_font_7Segments_26x42_mn);
+        u8g2.setCursor(0, 44);
+        u8g2.print(co2);
+        u8g2.setFont(u8g2_font_5x7_tf);
+        u8g2.setCursor(110, 51);
+        u8g2.print("ppm");
+        if (displayShowTemperature) {
+            u8g2.setCursor(1, u8g2.getDisplayHeight());
+            u8g2.print("T: ");
+            u8g2.print(temp, 1);
+            u8g2.print(showFahrenheit ? "F" : "C");
+        }
+        if (displayShowHumidity) {
+            u8g2.setCursor(85, u8g2.getDisplayHeight());
+            u8g2.print("HR: ");
+            u8g2.print(hum, 0);
+            u8g2.print("%");
+        }
+    } while (u8g2.nextPage());
+    u8g2.setFont(MENUFONT);
 }
 
 #endif  // SUPPORT_OLED
