@@ -221,7 +221,7 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   ,OP("Calibrate at 400ppm", doCalibration400ppm, enterEvent)
   ,FIELD(customCalibrationValue, "Custom Cal: ", "ppm", 400, 2000, 10, 10, showEvent, enterEvent, noStyle)
   ,OP("Calibrate at custom ppm", doCalibrationCustom, enterEvent)
-  EXIT("<Back"));
+  ,EXIT("<Back"));
   // ,OP("Test menu event", showEvent, anyEvent),
 
 int8_t setCO2Sensor;
