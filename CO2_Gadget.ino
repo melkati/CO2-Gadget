@@ -401,4 +401,5 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
+    BLELoop();
 }
