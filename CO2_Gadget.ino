@@ -402,5 +402,7 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
+    #ifdef SUPPORT_BLE
     BLELoop();
+    #endif
 }
