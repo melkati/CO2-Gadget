@@ -1,5 +1,5 @@
-#ifndef CO2_Gadget_ESP - NOW
-#define CO2_Gadget_ESP -NOW
+#ifndef CO2_Gadget_ESP_NOW
+#define CO2_Gadget_ESP_NOW
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -186,4 +186,4 @@ void publishESPNow() {
     }
 }
 
-#endif  // CO2_Gadget_ESP-NOW
+#endif  // CO2_Gadget_ESP_NOW
