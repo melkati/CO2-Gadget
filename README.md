@@ -42,8 +42,7 @@ For latest information on other hardware use (boards, sensors, displays, etc), p
 ## OLED Displays
 
 CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompilad versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
-
-![image](https://user-images.githubusercontent.com/11509521/146636267-a83d92e0-9f09-49cc-9d6b-e785336b9b3e.png) ![image](https://user-images.githubusercontent.com/11509521/146636248-8a8c7105-0ef9-423a-bb3f-83ba2f0ee7d8.png)
+![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
 
 ## ESP32 Boards
 
