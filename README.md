@@ -8,7 +8,9 @@ An easy to build CO2 Monitor/Meter with cell phone App for real time visualizati
 
 This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and load the firmware very easily, with just two clicks in your browser (without having edit files, compile or install anything on your computer).
 
-![CO2 Gadget](https://emariete.com/wp-content/uploads/2021/09/Medidor-CO2-Sensirion-MyAmbience-eMariete.png)
+<p align="center">
+<img width="810" alt="Medidor-de-CO2-Display-TFT-Color-con-TTGO-T-Display-Sensirion-SCD30-Bluetooth-LE-2-ENG" src="https://user-images.githubusercontent.com/11509521/153776844-bd79fdda-4fb0-41c5-b816-5bfd2c443ccc.png">
+</p> 
 
 # Features
 
@@ -40,8 +42,7 @@ For latest information on other hardware use (boards, sensors, displays, etc), p
 ## OLED Displays
 
 CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompilad versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
-
-![image](https://user-images.githubusercontent.com/11509521/146636267-a83d92e0-9f09-49cc-9d6b-e785336b9b3e.png) ![image](https://user-images.githubusercontent.com/11509521/146636248-8a8c7105-0ef9-423a-bb3f-83ba2f0ee7d8.png)
+![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
 
 ## ESP32 Boards
 
