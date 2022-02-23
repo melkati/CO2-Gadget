@@ -21,26 +21,37 @@ uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 // Peer info
 esp_now_peer_info_t peerInfo;
 
-int cmdNone = 0;  // TO-DO: Change to ENUM if it fits
-int cmdCalibration = 1;
-int cmdTest = 10;
+// Commands to send/receive via ESP-NOW
+int cmdCO2GadgetNone = 0;
+int cmdCO2GadgetCalibration = 1;
+int cmdCO2GadgetDeepSleepPeriod = 2;
+int cmdCO2GadgetTest = 10;
+
+typedef enum : uint8_t {
+    MSG_JSON = 0,
+    MSG_RESERVED = 1,
+    MSG_CO2GADGET = 2,
+    MSG_PULSECOUNTER = 3,
+    WS_OTHER = 128
+} messagetype_t;
 
 // Data structure to send
 // Must match the receiver structure
-typedef struct struct_message {
-    int id = ESPNOW_BOARD_ID;
-    float temp = 0;
-    float hum = 0;
-    uint16_t co2 = 0;
-    float battery = 0;
-    int readingId = 0;
-    int command = cmdNone;
+typedef struct struct_message_CO2_Gadget_t {
+    messagetype_t messageType = MSG_CO2GADGET;
+    int boardID;
+    float temp;
+    float hum;
+    uint16_t co2;
+    float battery;
+    int readingId;
+    int command = cmdCO2GadgetNone;
     uint16_t parameter = 0;
-} struct_message;
+} struct_message_CO2_Gadget_t;
 
 // Create two struct_message data structures for esp-now communications
-struct_message outgoingReadings;
-struct_message incomingReadings;
+struct_message_CO2_Gadget_t outgoingReadings;
+struct_message_CO2_Gadget_t incomingReadings;
 
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
@@ -53,7 +64,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
     memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
 
-    if (incomingReadings.id == ESPNOW_BOARD_ID) {
+    if (incomingReadings.boardID == ESPNOW_BOARD_ID) {
         Serial.println("-->[ESPN] Received data for this board via ESP-NOW");
         Serial.printf("-->[ESPN] Received bytes: %u (%u expected)\n", len, sizeof(incomingReadings));
 
@@ -78,7 +89,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
             Serial.printf("-->[ESPN] ERROR: Incorrect size of received data. Received bytes: %u (%u expected)\n", len, sizeof(incomingReadings));
         }
 
-        if ((incomingReadings.command == cmdCalibration) && (incomingReadings.id == ESPNOW_BOARD_ID)) {
+        if ((incomingReadings.command == cmdCO2GadgetCalibration) && (incomingReadings.boardID == ESPNOW_BOARD_ID)) {
             Serial.println("-->[ESPN] *****************************************************************************");
             Serial.print("-->[ESPN] ***** ");
             Serial.print(incomingReadings.command);
@@ -178,7 +189,7 @@ void publishESPNow() {
         // Send message via ESP-NOW
         esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingReadings, sizeof(outgoingReadings));
         if (result == ESP_OK) {
-            // Serial.println("Sent with success");
+            Serial.println("-->[ESPN] Sent with success");
         } else {
             printESPNowError(result);
         }
