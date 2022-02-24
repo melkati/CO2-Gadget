@@ -13,10 +13,9 @@
 
 bool EspNowInititialized = false;
 
-// Receiver AP MAC: E8:68:E7:0F:08:91
-// Receiver STA MAC: E8:68:E7:0F:08:90
-// uint8_t broadcastAddress[] = {0xE8, 0x68, 0xE7, 0x0F, 0x08, 0x90};
-uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+#define ESPNOW_PEER_MAC_ADDRESS {0xE8, 0x68, 0xE7, 0x0F, 0x08, 0x90}  // Change for your ESP-NOW Gateway STA MAC Address and uncomment
+// #define ESPNOW_PEER_MAC_ADDRESS {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}  // Or use this to broadcast and comment the previous one
+uint8_t broadcastAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // Peer info
 esp_now_peer_info_t peerInfo;
@@ -165,6 +164,10 @@ void initESPNow() {
     if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         Serial.println("-->[ESPN] Failed to add peer");
         return;
+    } else {
+        char macStr[18];
+        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
+        Serial.printf("-->[ESPN] Added ESP-NOW peer: %s\n", macStr);
     }
 
     // Register callback function that will be called when data is received
@@ -185,6 +188,7 @@ void publishESPNow() {
         outgoingReadings.temp = temp;
         outgoingReadings.hum = hum;
         outgoingReadings.battery = battery_voltage;
+        outgoingReadings.readingId++;
 
         // Send message via ESP-NOW
         esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingReadings, sizeof(outgoingReadings));
