@@ -120,9 +120,8 @@ void initPreferences() {
   //   Serial.printf("\n");
   // }
   // Serial.printf("key_size = %d sizeof(peerESPNowAddress) = %d\n", key_size, sizeof(peerESPNowAddress));
-  
+
   if (key_size = sizeof(peerESPNowAddress)) {
-    Serial.printf("memcpy(buffer, peerESPNowAddress, sizeof(peerESPNowAddress))\n");
     memcpy(peerESPNowAddress, buffer, sizeof(peerESPNowAddress));    
   }
 
