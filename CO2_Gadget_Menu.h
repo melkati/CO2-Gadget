@@ -561,7 +561,10 @@ result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
   Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
   Serial.flush();
 #endif
-  hexCharacterStringToBytes(peerESPNowAddress, tempESPNowAddress);  
+  esp_now_del_peer(peerESPNowAddress);
+  hexCharacterStringToBytes(peerESPNowAddress, tempESPNowAddress);
+  memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
+  esp_now_add_peer(&peerInfo);
   return proceed;
 }
 
@@ -987,9 +990,9 @@ void loadTempArraysWithActualValues() {
     Serial.println("#");
 #endif
 
+snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
 #ifdef DEBUG_ARDUINOMENU
     Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
-    snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
     Serial.print("-->[MENU] tempESPNowAddress: #");
     Serial.print(tempESPNowAddress);
     Serial.println("#");

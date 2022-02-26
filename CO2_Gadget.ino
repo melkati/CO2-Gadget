@@ -368,8 +368,9 @@ void setup() {
     // Serial.printf("Free heap: %d", ESP.getFreeHeap());
     // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
     // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
-    Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s Flavour: %s\nStarting up...\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
-    Serial.printf("\n-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("Starting up...\n");
+    Serial.printf("-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
 
     setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
     initPreferences();
