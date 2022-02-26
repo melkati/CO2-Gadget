@@ -12,10 +12,7 @@
 #include <esp_wifi.h>
 
 bool EspNowInititialized = false;
-
-#define ESPNOW_PEER_MAC_ADDRESS {0xE8, 0x68, 0xE7, 0x0F, 0x08, 0x90}  // Change for your ESP-NOW Gateway STA MAC Address and uncomment
-// #define ESPNOW_PEER_MAC_ADDRESS {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}  // Or use this to broadcast and comment the previous one
-uint8_t broadcastAddress[] = ESPNOW_PEER_MAC_ADDRESS;
+// uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // Peer info
 esp_now_peer_info_t peerInfo;
@@ -55,7 +52,7 @@ struct_message_CO2_Gadget_t incomingReadings;
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
     char macStr[18];
-    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     Serial.printf("-->[ESPN] Last packet sent to %s with status: %s\n", macStr, (status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail"));
 }
 
@@ -63,7 +60,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
     memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
 
-    if (incomingReadings.boardID == ESPNOW_BOARD_ID) {
+    if (incomingReadings.boardID == boardIdESPNow) {
         Serial.println("-->[ESPN] Received data for this board via ESP-NOW");
         Serial.printf("-->[ESPN] Received bytes: %u (%u expected)\n", len, sizeof(incomingReadings));
 
@@ -88,7 +85,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
             Serial.printf("-->[ESPN] ERROR: Incorrect size of received data. Received bytes: %u (%u expected)\n", len, sizeof(incomingReadings));
         }
 
-        if ((incomingReadings.command == cmdCO2GadgetCalibration) && (incomingReadings.boardID == ESPNOW_BOARD_ID)) {
+        if ((incomingReadings.command == cmdCO2GadgetCalibration) && (incomingReadings.boardID == boardIdESPNow)) {
             Serial.println("-->[ESPN] *****************************************************************************");
             Serial.print("-->[ESPN] ***** ");
             Serial.print(incomingReadings.command);
@@ -156,7 +153,7 @@ void initESPNow() {
     }
 
     //Register peer
-    memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+    memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
     peerInfo.channel = channelESPNow;
     peerInfo.encrypt = false;
 
@@ -166,7 +163,7 @@ void initESPNow() {
         return;
     } else {
         char macStr[18];
-        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", broadcastAddress[0], broadcastAddress[1], broadcastAddress[2], broadcastAddress[3], broadcastAddress[4], broadcastAddress[5]);
+        snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
         Serial.printf("-->[ESPN] Added ESP-NOW peer: %s\n", macStr);
     }
 
@@ -184,6 +181,7 @@ void publishESPNow() {
     if ((!activeESPNOW) || (!EspNowInititialized)) return;
     if (millis() - lastTimeESPNowPublished >= timeBetweenESPNowPublish * 1000) {
         //Set values to send
+        outgoingReadings.boardID = boardIdESPNow;
         outgoingReadings.co2 = co2;
         outgoingReadings.temp = temp;
         outgoingReadings.hum = hum;
@@ -191,7 +189,7 @@ void publishESPNow() {
         outgoingReadings.readingId++;
 
         // Send message via ESP-NOW
-        esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingReadings, sizeof(outgoingReadings));
+        esp_err_t result = esp_now_send(peerESPNowAddress, (uint8_t *)&outgoingReadings, sizeof(outgoingReadings));
         if (result == ESP_OK) {
             Serial.println("-->[ESPN] Sent with success");
         } else {

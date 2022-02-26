@@ -2,57 +2,59 @@
 Preferences preferences;
 
 void printPreferences() {
-  Serial.println("");
-  Serial.println("LOADED PREFERENCES FROM NVR:");
-  Serial.printf("customCalibrationValue: #%d#\n", customCalibrationValue);
-  Serial.printf("tempOffset:\t #%.1f#\n", tempOffset);
-  Serial.printf("altidudeMeters:\t #%d#\n", altidudeMeters);
-  Serial.printf("autoSelfCalibration:\t #%s#\n",
+  Serial.printf("-->[PREF] \n");
+  Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
+  Serial.printf("-->[PREF] customCalibrationValue: #%d#\n", customCalibrationValue);
+  Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
+  Serial.printf("-->[PREF] altidudeMeters:\t #%d#\n", altidudeMeters);
+  Serial.printf("-->[PREF] autoSelfCalibration:\t #%s#\n",
                 ((autoSelfCalibration) ? "Enabled" : "Disabled"));
-  Serial.printf("co2OrangeRange:\t #%d#\n", co2OrangeRange);
-  Serial.printf("co2RedRange:\t #%d#\n", co2RedRange);
-  Serial.printf("DisplayBrightness:\t #%d#\n", DisplayBrightness);
-  Serial.printf("neopixBright:\t #%d#\n", neopixelBrightness);
-  Serial.printf("selNeopxType:\t #%d#\n", selectedNeopixelType);
-  Serial.printf("activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
-  Serial.printf("activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
-  Serial.printf("activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
-  Serial.printf("activeESPNOW is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeESPNOW);  
-  Serial.printf("rootTopic:\t#%s#\n", rootTopic.c_str());
-  Serial.printf("batDischgd:\t #%d#\n", batteryDischargedMillivolts);
-  Serial.printf("batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
-  Serial.printf("vRef:\t #%d#\n", vRef);
-  Serial.printf("mqttClientId:\t#%s#\n", mqttClientId.c_str());
-  Serial.printf("mqttBroker:\t#%s#\n", mqttBroker.c_str());
-  Serial.printf("mqttUser:\t#%s#\n", mqttUser.c_str());
+  Serial.printf("-->[PREF] co2OrangeRange:\t #%d#\n", co2OrangeRange);
+  Serial.printf("-->[PREF] co2RedRange:\t #%d#\n", co2RedRange);
+  Serial.printf("-->[PREF] DisplayBrightness:\t #%d#\n", DisplayBrightness);
+  Serial.printf("-->[PREF] neopixBright:\t #%d#\n", neopixelBrightness);
+  Serial.printf("-->[PREF] selNeopxType:\t #%d#\n", selectedNeopixelType);
+  Serial.printf("-->[PREF] activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
+  Serial.printf("-->[PREF] activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
+  Serial.printf("-->[PREF] activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
+  Serial.printf("-->[PREF] activeESPNOW is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeESPNOW);  
+  Serial.printf("-->[PREF] rootTopic:\t#%s#\n", rootTopic.c_str());
+  Serial.printf("-->[PREF] batDischgd:\t #%d#\n", batteryDischargedMillivolts);
+  Serial.printf("-->[PREF] batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
+  Serial.printf("-->[PREF] vRef:\t #%d#\n", vRef);
+  Serial.printf("-->[PREF] mqttClientId:\t#%s#\n", mqttClientId.c_str());
+  Serial.printf("-->[PREF] mqttBroker:\t#%s#\n", mqttBroker.c_str());
+  Serial.printf("-->[PREF] mqttUser:\t#%s#\n", mqttUser.c_str());
   #ifndef WIFI_PRIVACY
-  Serial.printf("mqttPass:\t#%s#\n", mqttPass.c_str());
+  Serial.printf("-->[PREF] mqttPass:\t#%s#\n", mqttPass.c_str());
   #endif
-  Serial.printf("tToDispOff:\t #%d#\n", timeToDisplayOff);
-  Serial.printf("tToPubMQTT:\t #%d#\n", timeBetweenMQTTPublish);
-  Serial.printf("tToPubESPNow:\t #%d#\n", timeBetweenESPNowPublish);
-  Serial.printf("tKeepAlMQTT:\t #%d#\n", timeToKeepAliveMQTT);
-  Serial.printf("tKeepAlESPNow:\t #%d#\n", timeToKeepAliveESPNow);
-  Serial.printf("dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
-  Serial.printf("wifiSSID:\t#%s#\n", wifiSSID.c_str());
+  Serial.printf("-->[PREF] tToDispOff:\t #%d#\n", timeToDisplayOff);
+  Serial.printf("-->[PREF] tToPubMQTT:\t #%d#\n", timeBetweenMQTTPublish);
+  Serial.printf("-->[PREF] tToPubESPNow:\t #%d#\n", timeBetweenESPNowPublish);
+  Serial.printf("-->[PREF] tKeepAlMQTT:\t #%d#\n", timeToKeepAliveMQTT);
+  Serial.printf("-->[PREF] tKeepAlESPNow:\t #%d#\n", timeToKeepAliveESPNow);
+  Serial.printf("-->[PREF] dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
+  Serial.printf("-->[PREF] wifiSSID:\t#%s#\n", wifiSSID.c_str());
   #ifndef WIFI_PRIVACY
-  Serial.printf("wifiPass:\t#%s#\n", wifiPass.c_str());
+  Serial.printf("-->[PREF] wifiPass:\t#%s#\n", wifiPass.c_str());
   #endif
-  Serial.printf("hostName:\t#%s#\n", hostName.c_str());
-  Serial.printf("selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
-  Serial.printf("debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
-  Serial.printf("displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);  
-  Serial.printf("showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
-  Serial.printf("measInterval:\t #%d#\n", measurementInterval);
-  Serial.printf("outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
-  Serial.printf("channelESPNow:\t #%d#\n", channelESPNow);
+  Serial.printf("-->[PREF] hostName:\t#%s#\n", hostName.c_str());
+  Serial.printf("-->[PREF] selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
+  Serial.printf("-->[PREF] debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
+  Serial.printf("-->[PREF] displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);  
+  Serial.printf("-->[PREF] showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
+  Serial.printf("-->[PREF] measInterval:\t #%d#\n", measurementInterval);
+  Serial.printf("-->[PREF] outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));  
+  Serial.printf("-->[PREF] channelESPNow:\t #%d#\n", channelESPNow);
+  Serial.printf("-->[PREF] boardIdESPNow:\t #%d#\n", boardIdESPNow);
+  Serial.printf("-->[PREF] peerESPNow:\t #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
   
-  Serial.printf("showTemp:\t #%s#\n",  ((displayShowTemperature) ? "Show" : "Hide"));
-  Serial.printf("showHumidity:\t #%s#\n",  ((displayShowHumidity) ? "Show" : "Hide"));
-  Serial.printf("showBattery:\t #%s#\n",  ((displayShowBattery) ? "Show" : "Hide"));
-  Serial.printf("showCO2:\t #%s#\n",  ((displayShowCO2) ? "Show" : "Hide"));
-  Serial.printf("showPM25:\t #%s#\n",  ((displayShowPM25) ? "Show" : "Hide"));
-  Serial.println("");
+  Serial.printf("-->[PREF] showTemp:\t #%s#\n",  ((displayShowTemperature) ? "Show" : "Hide"));
+  Serial.printf("-->[PREF] showHumidity:\t #%s#\n",  ((displayShowHumidity) ? "Show" : "Hide"));
+  Serial.printf("-->[PREF] showBattery:\t #%s#\n",  ((displayShowBattery) ? "Show" : "Hide"));
+  Serial.printf("-->[PREF] showCO2:\t #%s#\n",  ((displayShowCO2) ? "Show" : "Hide"));
+  Serial.printf("-->[PREF] showPM25:\t #%s#\n",  ((displayShowPM25) ? "Show" : "Hide"));
+  Serial.printf("-->[PREF] \n");
 }
 
 void initPreferences() {
@@ -100,6 +102,29 @@ void initPreferences() {
   measurementInterval = preferences.getUInt("measInterval", 10);
   outputsModeRelay = preferences.getBool("outModeRelay", false);
   channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
+  boardIdESPNow = preferences.getUInt("boardIdESPNow", 0);  
+
+  size_t key_size = preferences.getBytesLength("peerESPNow");
+  uint8_t buffer[key_size];
+  preferences.getBytes("peerESPNow", buffer, key_size);
+
+  // Serial.printf("-->[PREF] Current size of \"%s\": %d\n", "peerESPNow", key_size);
+  // if (key_size > 0) {
+  //   Serial.print("    Data");
+  //   uint8_t existingData[key_size];
+  //   size_t count = preferences.getBytes("peerESPNow", existingData, key_size);
+  //   Serial.printf("-->[PREF] [%d]:", count);
+  //   for (size_t i = 0; i < count; i++) {
+  //     Serial.printf("-->[PREF]  %02x", existingData[i]);
+  //   }
+  //   Serial.printf("\n");
+  // }
+  // Serial.printf("key_size = %d sizeof(peerESPNowAddress) = %d\n", key_size, sizeof(peerESPNowAddress));
+  
+  if (key_size = sizeof(peerESPNowAddress)) {
+    Serial.printf("memcpy(buffer, peerESPNowAddress, sizeof(peerESPNowAddress))\n");
+    memcpy(peerESPNowAddress, buffer, sizeof(peerESPNowAddress));    
+  }
 
   displayShowTemperature = preferences.getBool("showTemp", true);
   displayShowHumidity = preferences.getBool("showHumidity", true);
@@ -120,8 +145,8 @@ void initPreferences() {
 }
 
 void putPreferences() {
-  Serial.println("");
-  Serial.println("Saving preferences to NVR");
+  Serial.printf("-->[PREF] \n");
+  Serial.printf("-->[PREF] Saving preferences to NVR\n");
   rootTopic.trim();
   mqttClientId.trim();
   mqttBroker.trim();
@@ -169,7 +194,9 @@ void putPreferences() {
   preferences.putUInt("measInterval", measurementInterval);
   preferences.putBool("outModeRelay", outputsModeRelay);
   preferences.putUInt("channelESPNow", channelESPNow);
-
+  preferences.putUInt("boardIdESPNow", boardIdESPNow);
+  preferences.putBytes("peerESPNow", peerESPNowAddress, 6);
+  
   preferences.putBool("showTemp", displayShowTemperature);
   preferences.putBool("showHumidity", displayShowHumidity);
   preferences.putBool("showBattery", displayShowBattery);

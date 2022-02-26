@@ -72,8 +72,7 @@ altMENU(confirmReboot, subMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu:
 char tempIPAddress[16];
 
 // list of allowed characters
-const char *const digit = "0123456789";
-const char *const hexChars MEMMODE = "0123456789ABCDEF";
+const char *const hexChars[] MEMMODE = {"0123456789ABCDEF"};
 const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
 const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}?¿"};
 const char *const ssidChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@%&/()=-*^~:.{}¿"};
@@ -91,6 +90,7 @@ char tempWiFiPasswrd[] = "                              ";
 char tempHostName[] = "                              ";
 char tempBLEDeviceId[] = "                              ";
 char tempCO2Sensor[] = "                              ";
+char tempESPNowAddress[] = "            ";
 
 void setInMenu(bool isInMenu) {
     inMenu = isInMenu;
@@ -349,7 +349,7 @@ result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
 
 result doSetHostName(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
-  Serial.printf("-->[MENU] Setting WiFi Password to #%s#\n", tempWiFiPasswrd);
+  Serial.printf("-->[MENU] Setting HostName to #%s#\n", tempHostName);
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
@@ -492,9 +492,84 @@ TOGGLE(activeESPNOW, activeESPNOWMenu, "ESP-NOW Enable: ", doNothing,noEvent, wr
   ,VALUE("ON", true, doSetActiveESPNOW, exitEvent)
   ,VALUE("OFF", false, doSetActiveESPNOW, exitEvent));
 
+
+byte nibble(char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+
+  return 0;  // Not a valid hexadecimal character
+}
+
+void hexCharacterStringToBytes(byte *byteArray, const char *hexString) // https://forum.arduino.cc/t/hex-string-to-byte-array/563827/4
+{
+  bool oddLength = strlen(hexString) & 1;
+
+  byte currentByte = 0;
+  byte byteIndex = 0;
+
+  for (byte charIndex = 0; charIndex < strlen(hexString); charIndex++)
+  {
+    bool oddCharIndex = charIndex & 1;
+
+    if (oddLength)
+    {
+      // If the length is odd
+      if (oddCharIndex)
+      {
+        // odd characters go in high nibble
+        currentByte = nibble(hexString[charIndex]) << 4;
+      }
+      else
+      {
+        // Even characters go into low nibble
+        currentByte |= nibble(hexString[charIndex]);
+        byteArray[byteIndex++] = currentByte;
+        currentByte = 0;
+      }
+    }
+    else
+    {
+      // If the length is even
+      if (!oddCharIndex)
+      {
+        // Odd characters go into the high nibble
+        currentByte = nibble(hexString[charIndex]) << 4;
+      }
+      else
+      {
+        // Odd characters go into low nibble
+        currentByte |= nibble(hexString[charIndex]);
+        byteArray[byteIndex++] = currentByte;
+        currentByte = 0;
+      }
+    }
+  }
+}
+
+result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("-->[MENU] Setting ESP-NOW Peer to: #%s#\n", tempESPNowAddress);
+  Serial.print(F("-->[MENU] action1 event:"));
+  Serial.println(e);
+  Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+  Serial.flush();
+#endif
+  hexCharacterStringToBytes(peerESPNowAddress, tempESPNowAddress);  
+  return proceed;
+}
+
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeESPNOWMenu)
   ,FIELD(timeBetweenESPNowPublish, "TX Time: ", " Secs", 10, 360, 10, 100, doNothing, noEvent, noStyle)
+  ,FIELD(boardIdESPNow, "Board ID: ", "", 0, 254, 1, 10, doNothing, noEvent, noStyle)
+  ,EDIT("Peer MAC: ", tempESPNowAddress, hexChars, doSetPeerESPNow,  exitEvent, wrapStyle)
   ,EXIT("<Back"));
 #endif
 
@@ -909,6 +984,14 @@ void loadTempArraysWithActualValues() {
 #ifdef DEBUG_ARDUINOMENU
     Serial.print("-->[MENU] tempCO2Sensor: #");
     Serial.print(tempCO2Sensor);
+    Serial.println("#");
+#endif
+
+#ifdef DEBUG_ARDUINOMENU
+    Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    Serial.print("-->[MENU] tempESPNowAddress: #");
+    Serial.print(tempESPNowAddress);
     Serial.println("#");
 #endif
 
