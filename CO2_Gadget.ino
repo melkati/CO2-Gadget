@@ -25,6 +25,8 @@ String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
+// String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
+uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // Communication options
 bool activeBLE = true;
@@ -49,6 +51,7 @@ bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
+uint16_t boardIdESPNow = 0;
 
 // Variables for Battery reading
 float battery_voltage = 0;
