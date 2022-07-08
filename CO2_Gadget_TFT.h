@@ -46,9 +46,10 @@ void turnOffDisplay() {
 void displaySplashScreen() {
   tft.fillScreen(TFT_WHITE);
   tft.setSwapBytes(true);
-  tft.pushImage(60, 12, 118, 40, eMarieteLogo);
-  tft.pushImage(10, 50, 92, 72, CO2Logo);
-  tft.pushImage(112, 67, 122, 46, GadgetLogo);
+  tft.pushImage(1, 1, 240, 135, newLogo);
+  //tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+  //tft.pushImage(10, 50, 92, 72, CO2Logo);
+  //tft.pushImage(112, 67, 122, 46, GadgetLogo);
 }
 
 void initDisplay() {
@@ -78,9 +79,9 @@ void initDisplay() {
 bool displayNotification(String notificationText, notificationTypes notificationType) {
   uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
   // if (notificationType=1) {
-    textColor = TFT_RED;
-    boxColor = TFT_SILVER;
-    backgroundColor = TFT_BLUE;
+    textColor = TFT_WHITE;
+    boxColor = TFT_OLIVE;
+    backgroundColor = TFT_GREY;
   // }
 
   // TO-DO: Size rectangle to text size
