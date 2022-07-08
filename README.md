@@ -1,3 +1,11 @@
+# Qucik note on my change
+
+1 - looking to do autconfig from my internal config portal
+2 - posting in JSON to MQTT
+3 - sps 30
+
+
+
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)

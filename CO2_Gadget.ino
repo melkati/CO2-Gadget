@@ -17,7 +17,7 @@
 
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
-String rootTopic = UNITHOSTNAME;
+String rootTopic = MQTT_ROOT_TOPIC;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
@@ -40,7 +40,7 @@ bool displayReverse = false;
 bool showFahrenheit = false;
 bool displayShowTemperature = true;
 bool displayShowHumidity = true;
-bool displayShowBattery = true;
+bool displayShowBattery = false;
 bool displayShowCO2 = true;
 bool displayShowPM25 = true;
 

@@ -675,7 +675,7 @@ MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeDisplayShowHumidity)
   ,SUBMENU(activeDisplayShowBattery)
   // ,SUBMENU(activeDisplayShowCO2)
-  // ,SUBMENU(activeDisplayShowPM25)
+  ,SUBMENU(activeDisplayShowPM25)
   ,EXIT("<Back"));
 
 result doSetActiveNeopixelType(eventMask e, navNode &nav, prompt &item) {
