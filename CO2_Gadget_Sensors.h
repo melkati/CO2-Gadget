@@ -8,8 +8,9 @@ uint16_t customCalibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
-bool autoSelfCalibration = false;
+bool autoSelfCalibration = true;
 float tempOffset = 0.0f;
+uint16_t readingPM25 = 0.0;
 
 volatile uint16_t co2 = 0;
 float temp, tempFahrenheit, hum = 0;
@@ -22,12 +23,13 @@ uint16_t co2RedRange =
           // (user can change on menu and save on preferences)
 
 void onSensorDataOk() {
-  if (!inMenu) {
+  if (!inMenu) { //if not in the config menu
     Serial.print("-->[SENS] CO2: " + sensors.getStringCO2());
     Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
     Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
     Serial.print(" H: " + String(sensors.getHumidity()));
     Serial.println(" T: " + String(sensors.getTemperature()));
+    Serial.println(" PM25: " + String(sensors.getPM25()));
   }
 
   co2 = sensors.getCO2();
@@ -39,6 +41,8 @@ void onSensorDataOk() {
   if (temp == 0.0) temp = sensors.getCO2temp();  // TO-DO: temp could be 0.0
 
   tempFahrenheit = (temp * 1.8 + 32);
+
+  readingPM25 = sensors.getPM25();
 
   newReadingsAvailable = true;
 }
@@ -52,7 +56,7 @@ void initSensors() {
     firstCO2SensorInit = false;
   }
 
-  displayNotification("Init sensors", notifyInfo);
+  displayNotification("starting sensors", notifyInfo);
   
   #ifdef ENABLE_PIN
   // Turn On the Sensor (reserved for future use)
@@ -84,13 +88,14 @@ void initSensors() {
   sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
   sensors.setDebugMode(debugSensors);              // [optional] debug mode
   sensors.setTempOffset(tempOffset);
-  // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
+  //put in other setup for sensors here
+  //sensors.calib(true); // TO-DO: Implement in CanAirIO
   // Sensors Lib
-
+// this part below needs to be fixed to not focus on the co2 only
   Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
   if (selectedCO2Sensor == AUTO) {
-    Serial.println("-->[SENS] Trying to init CO2 sensor: Auto (I2C)");
+    Serial.println("-->[SENS] Trying to init sensors: Auto (I2C)");
     sensors.detectI2COnly(true);
     sensors.init();
   } else if (selectedCO2Sensor == MHZ19) {
@@ -105,6 +110,9 @@ void initSensors() {
     Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
     sensors.detectI2COnly(false);
     sensors.init(SENSEAIRS8);
+  } else {
+    sensors.detectI2COnly(false);
+    sensors.init();
   }
 
   if (!sensors.getMainDeviceSelected().isEmpty()) {

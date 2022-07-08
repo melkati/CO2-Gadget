@@ -17,7 +17,7 @@
 
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
-String rootTopic = UNITHOSTNAME;
+String rootTopic = MQTT_ROOT_TOPIC;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
