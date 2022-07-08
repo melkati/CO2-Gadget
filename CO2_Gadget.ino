@@ -40,7 +40,7 @@ bool displayReverse = false;
 bool showFahrenheit = false;
 bool displayShowTemperature = true;
 bool displayShowHumidity = true;
-bool displayShowBattery = true;
+bool displayShowBattery = false;
 bool displayShowCO2 = true;
 bool displayShowPM25 = true;
 
