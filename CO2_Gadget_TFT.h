@@ -81,7 +81,7 @@ bool displayNotification(String notificationText, notificationTypes notification
   // if (notificationType=1) {
     textColor = TFT_WHITE;
     boxColor = TFT_OLIVE;
-    backgroundColor = TFT_GREY;
+    backgroundColor = TFT_DARKGREY;
   // }
 
   // TO-DO: Size rectangle to text size
