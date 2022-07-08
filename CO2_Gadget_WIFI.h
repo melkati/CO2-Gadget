@@ -289,7 +289,7 @@ void initWifi() {
         while (WiFi.status() != WL_CONNECTED) {
             ++connectionRetries;
             if (connectionRetries == maxConnectionRetries) {
-                activeWIFI = false;
+                //activeWIFI = false;
                 Serial.printf(
                     "\n[WiFi] Not possible to connect to WiFi after %d "
                     "tries.\nDisabling WiFi.\n",
@@ -297,6 +297,7 @@ void initWifi() {
                 Serial.print("-->[WiFi] wifiSSID: #");
                 Serial.print(wifiSSID);
                 Serial.println("#");
+                ESP.restart();
 #ifndef WIFI_PRIVACY
                 Serial.print("-->[WiFi] wifiPass: #");
                 Serial.print(wifiPass);
