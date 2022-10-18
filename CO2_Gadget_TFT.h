@@ -19,15 +19,15 @@
 #include "icons.h"
 #include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
-#include "FreeSans24pt7b.h"
-#include "FreeSans9pt7b.h"
+//#include "FontFreeSans24pt7b.h"
+//#include "FontFreeSans9pt7b.h"
 
 // https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 #define GFXFF 1
 #define FF90 &ArchivoNarrow_Regular10pt7b
 #define FF95 &FontCO2GadgetDigits50pt7b
-#define FF24 &FreeSans24pt7b
-#define FF9 &FreeSans9pt7b
+//#define FF24 &FreeSans24pt7b
+//#define FF9 &FreeSans9pt7b
 
 // RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
 // Flash: [==========]  95.3% (used 1874104 bytes from 1966080 bytes)
@@ -268,12 +268,12 @@ void showCO2(uint16_t co2) {
   tft.setTextSize(1);
   // Draw CO2 number
   tft.setTextDatum(BR_DATUM); // bottom right
-  tft.setFreeFont(FF24); //FF95
+  tft.setFreeFont(FF95); //FF95
   tft.drawString(String(co2), tft.width()-39, 112);
 
   // Draw CO2 unit
   tft.setTextDatum(BR_DATUM); // bottom right
-  tft.setFreeFont(FF9); //FF90
+  tft.setFreeFont(FF90); //FF90
   tft.drawString("ppm", tft.width()-4, 102);
 }
 

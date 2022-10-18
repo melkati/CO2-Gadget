@@ -246,7 +246,7 @@ void processPendingCommands() {
             printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n",
                    ambientPressureValue);
             pendingAmbientPressure = false;
-            sensors.scd30.setAmbientPressure(ambientPressureValue);
+            sensors.scd30.setAmbientPressure(ambientPressureValue); // setAmbientPressure
         } else {
             printf(
                 "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "

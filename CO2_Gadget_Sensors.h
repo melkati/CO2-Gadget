@@ -24,12 +24,15 @@ uint16_t co2RedRange =
 
 void onSensorDataOk() {
   if (!inMenu) { //if not in the config menu
-    Serial.print("-->[SENS] CO2: " + sensors.getStringCO2());
+    Serial.print("-->[SENS] CO2: " + String(sensors.getCO2())); //.getStringCO2()
     Serial.print(" CO2humi: " + String(sensors.getCO2humi()));
     Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
     Serial.print(" H: " + String(sensors.getHumidity()));
     Serial.print(" T: " + String(sensors.getTemperature()));
-    Serial.println(" PM25: " + String(sensors.getPM25()));
+    Serial.print(" PM1: " + String(sensors.getStringPM1()));
+    Serial.print(" PM4: " + String(sensors.getStringPM4()));        
+    Serial.print(" PM25: " + String(sensors.getStringPM25()));
+    Serial.println(" PM10: " + String(sensors.getStringPM10()));    
   }
 
   co2 = sensors.getCO2();
