@@ -7,6 +7,7 @@
 // clang-format on
 #ifdef SUPPORT_MQTT
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 char charPublish[20];
 PubSubClient mqttClient(espClient);
@@ -169,9 +170,26 @@ void publishMQTT() {
     if (activeMQTT) {
         if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
             if (millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) {
+              String output;
+              StaticJsonDocument<192> doc;
+
+              doc["pm10 standard"] = aqi.PM1;
+              doc["pm25 standard"] = aqi.PM25;
+              doc["pm40 standard"] = aqi.PM4;
+              doc["pm100 standard"] = aqi.PM10;
+              doc["co2"] = co2;
+              doc["humidity"] = hum;
+              doc["temperature_C"] = temp;
+              doc["sensorname"] = "TTGO";
+
+              serializeJson(doc, output);
+              publishStrMQTT("/display", output);
+
                 publishIntMQTT("/co2", co2);
                 publishFloatMQTT("/temp", temp);
                 publishFloatMQTT("/humi", hum);
+                publishStrMQTT("/pm25", String(aqi.PM25));
+
                 publishMQTTAlarms();
                 lastTimeMQTTPublished = millis();
             }

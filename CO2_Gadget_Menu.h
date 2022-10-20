@@ -1014,7 +1014,7 @@ result idle(menuOut &o, idleEvent e) {
         Serial.flush();
 #endif
 #if defined SUPPORT_TFT
-        displayShowValues(co2);
+        displayShowValues(co2, aqi);
 #endif
 #if defined SUPPORT_OLED
         displayShowValues(co2);

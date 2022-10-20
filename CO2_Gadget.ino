@@ -74,6 +74,15 @@ uint16_t timeBetweenESPNowPublish = 60;                                // Time i
 uint16_t timeToKeepAliveESPNow = 3600;                                  // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
 uint64_t lastTimeESPNowPublished = 0;                                  // Time of last ESP-NOW transmission
 
+struct aqiHolder {
+  uint16_t PM1;
+  uint16_t PM4;
+  uint16_t PM10;
+  uint16_t PM25; 
+};
+
+aqiHolder aqi;
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif  // ifdef BUILD_GIT

@@ -104,6 +104,12 @@ void displayShowValues(uint16_t co2) {
             u8g2.print(hum, 0);
             u8g2.print("%");
         }
+        if (displayShowPM25) {
+            u8g2.setCursor(85, u8g2.getDisplayHeight());
+            u8g2.print("PM25: ");
+            u8g2.print(pm25, 0);
+            u8g2.print("");
+        }
     } while (u8g2.nextPage());
     u8g2.setFont(MENUFONT);
 }

@@ -10,9 +10,9 @@ uint16_t ambientPressureValue = 0;
 uint16_t altidudeMeters = 600;
 bool autoSelfCalibration = true;
 float tempOffset = 0.0f;
-uint16_t readingPM25 = 0.0;
 
 volatile uint16_t co2 = 0;
+
 float temp, tempFahrenheit, hum = 0;
 
 uint16_t co2OrangeRange =
@@ -29,10 +29,10 @@ void onSensorDataOk() {
     Serial.print(" CO2temp: " + String(sensors.getCO2temp()));
     Serial.print(" H: " + String(sensors.getHumidity()));
     Serial.print(" T: " + String(sensors.getTemperature()));
-    Serial.print(" PM1: " + String(sensors.getStringPM1()));
-    Serial.print(" PM4: " + String(sensors.getStringPM4()));        
-    Serial.print(" PM25: " + String(sensors.getStringPM25()));
-    Serial.println(" PM10: " + String(sensors.getStringPM10()));    
+    Serial.print(" PM1: " + String(sensors.getPM1()));
+    Serial.print(" PM4: " + String(sensors.getPM4()));        
+    Serial.print(" PM25: " + String(sensors.getPM25()));
+    Serial.println(" PM10: " + String(sensors.getPM10()));    
   }
 
   co2 = sensors.getCO2();
@@ -45,7 +45,8 @@ void onSensorDataOk() {
 
   tempFahrenheit = (temp * 1.8 + 32);
 
-  readingPM25 = sensors.getPM25();
+  //readingPM25 = sensors.getPM25();
+  aqi = { sensors.getPM1(), sensors.getPM4(), sensors.getPM10(), sensors.getPM25() };
 
   newReadingsAvailable = true;
 }

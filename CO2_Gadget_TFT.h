@@ -19,15 +19,13 @@
 #include "icons.h"
 #include "FontArchivoNarrow_Regular10pt7b.h"
 #include "FontCO2Gadget50ptDigits.h"
-//#include "FontFreeSans24pt7b.h"
-//#include "FontFreeSans9pt7b.h"
 
 // https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 #define GFXFF 1
 #define FF90 &ArchivoNarrow_Regular10pt7b
 #define FF95 &FontCO2GadgetDigits50pt7b
-//#define FF24 &FreeSans24pt7b
-//#define FF9 &FreeSans9pt7b
+#define FF24 &FreeSans24pt7b
+#define FF9 &FreeSans9pt7b
 
 // RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
 // Flash: [==========]  95.3% (used 1874104 bytes from 1966080 bytes)
@@ -268,7 +266,7 @@ void showCO2(uint16_t co2) {
   tft.setTextSize(1);
   // Draw CO2 number
   tft.setTextDatum(BR_DATUM); // bottom right
-  tft.setFreeFont(FF95); //FF95
+  tft.setFreeFont(FF24); //FF95
   tft.drawString(String(co2), tft.width()-39, 112);
 
   // Draw CO2 unit
@@ -277,15 +275,41 @@ void showCO2(uint16_t co2) {
   tft.drawString("ppm", tft.width()-4, 102);
 }
 
-void showAQI(uint16_t AQI) {
- 
+void showAQI(aqiHolder aqi) {
+  if (aqi.PM25 >= 50) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+  } else if (aqi.PM25 >= 25) {
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+  } else {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  }
+  tft.setTextSize(1);
+  // Draw CO2 number
+  tft.setTextDatum(BR_DATUM); // bottom right
+  tft.setFreeFont(FF24); //FF95
+  tft.drawString(String(aqi.PM25), tft.width()-49, 70);
+
+  // Draw CO2 unit
+  tft.setTextDatum(BR_DATUM); // bottom right
+  tft.setFreeFont(FF90); //FF90
+  tft.drawString("PM25", tft.width()-4, 60);
+
+    // Draw CO2 number
+  tft.setTextDatum(BR_DATUM); // bottom right
+  tft.setFreeFont(FF24); //FF95
+  tft.drawString(String(aqi.PM10), tft.width()-149, 70);
+
+  // Draw CO2 unit
+  tft.setTextDatum(BR_DATUM); // bottom right
+  tft.setFreeFont(FF90); //FF90
+  tft.drawString("PM10", tft.width()-104, 60);
 }
 
-void displayShowValues(uint16_t co2) {
+void displayShowValues(uint16_t co2, aqiHolder aqi) {
   tft.fillScreen(TFT_BLACK);
   uint8_t defaultDatum = tft.getTextDatum();
   showCO2(co2);
-  showAQI(1121);
+  showAQI(aqi);
   // showBLEDeviceId(230, 135);
   // showVoltage(0, 135);
   showTemperature();
