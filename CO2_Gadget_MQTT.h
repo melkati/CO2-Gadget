@@ -26,6 +26,7 @@ void mqttReconnect() {
       Serial.printf("-->[MQTT] Attempting MQTT connection... ");
       // Attempt to connect            
       if (mqttClient.connect((mqttClientId).c_str(), (mqttUser).c_str(), (mqttPass).c_str())) {
+        mqttClient.setBufferSize(512);
         Serial.printf("connected\n");
         Serial.print("-->[MQTT] rootTopic: ");
         Serial.println(rootTopic);
@@ -108,12 +109,15 @@ void publishFloatMQTT(String topic, float payload) {
 
 void publishStrMQTT(String topic, String payload) {
   #ifdef SUPPORT_MQTT
-  payload.toCharArray(charPublish, payload.length());
-  topic = rootTopic + topic;
+  payload.toCharArray(charPublish, payload.length()+1);
+  //topic = rootTopic + topic;
+  topic = "baargsiitsch/environment/Outside/Outside/AirQuality/CO2-Gadget/display";
   if (!inMenu) {
-  Serial.printf("-->[MQTT] Publishing %s to ", payload);
+  //Serial.printf("-->[MQTT] Publishing %s to ", payload);
   Serial.println("topic: " + topic);
+  Serial.println("payload: " + payload);
   mqttClient.publish((topic).c_str(), charPublish);
+  //mqttClient.publish((topic).c_str(), payload);
   }
   #endif
 }
@@ -171,26 +175,28 @@ void publishMQTT() {
         if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
             if (millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) {
               String output;
-              StaticJsonDocument<192> doc;
+              StaticJsonDocument<198> doc;
 
-              doc["pm10 standard"] = aqi.PM1;
-              doc["pm25 standard"] = aqi.PM25;
-              doc["pm40 standard"] = aqi.PM4;
-              doc["pm100 standard"] = aqi.PM10;
-              doc["co2"] = co2;
-              doc["humidity"] = hum;
-              doc["temperature_C"] = temp;
-              doc["sensorname"] = "TTGO";
+              doc["PM1"] = aqi.PM1;
+              doc["PM25"] = aqi.PM25;
+              doc["PM4"] = aqi.PM4;
+              doc["PM10"] = aqi.PM10;
+              doc["CO2"] = co2;
+              doc["Humidity"] = hum;
+              doc["Temperature_C"] = temp;
+              doc["Temperature_F"] = (temp * 1.8) + 32;
+              doc["Sensorname"] = "TTGO";
 
               serializeJson(doc, output);
+              Serial.print(output);
               publishStrMQTT("/display", output);
 
-                publishIntMQTT("/co2", co2);
-                publishFloatMQTT("/temp", temp);
-                publishFloatMQTT("/humi", hum);
-                publishStrMQTT("/pm25", String(aqi.PM25));
+                //publishIntMQTT("/co2", co2);
+                //publishFloatMQTT("/temp", temp);
+                //publishFloatMQTT("/humi", hum);
+                //publishStrMQTT("/pm25", String(aqi.PM25));
 
-                publishMQTTAlarms();
+                //publishMQTTAlarms();
                 lastTimeMQTTPublished = millis();
             }
             // Serial.print("-->[MQTT] Free heap: ");

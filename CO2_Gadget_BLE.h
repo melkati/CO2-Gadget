@@ -15,10 +15,10 @@ void initBLE() {
       Serial.println(gadgetBle.getDeviceIdString());
       bleInitialized = true;
     }
-    // if (activeWIFI) {
-    //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-    //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-    // }
+    if (activeWIFI) {
+       gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+       gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+     }
   }
 }
 
