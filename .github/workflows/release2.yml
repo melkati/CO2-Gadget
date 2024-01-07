@@ -106,7 +106,6 @@ jobs:
             echo "  ]" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
             echo "}" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
             echo "manifest=$(cat CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json)" >> $GITHUB_OUTPUT            
-            # echo "manifest=$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)" >> $GITHUB_OUTPUT
 
         - name: Read manifest files
           run:  |
