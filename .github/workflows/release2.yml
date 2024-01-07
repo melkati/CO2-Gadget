@@ -1,4 +1,4 @@
-name: Release V2
+name: Release V2.1
 
 on:
   push:
@@ -84,28 +84,29 @@ jobs:
           id: createmanifest
           run: |
             # Create manifest
-            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_improv_wait_time\": 0," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin\", \"offset\": 65536 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin\", \"offset\": 3997696 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "manifest=$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)" >> $GITHUB_OUTPUT
+            echo "{" > CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"name\": \"CO2-Gadget-TTGO_TDISPLAY_SANDWICH\"," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"version\": \"refs/heads/master\"," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"compilation_date\": \"07-01-2024\"," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"compilation_time\": \"13:27:19\"," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"new_install_prompt_erase\": true," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"new_install_improv_wait_time\": 0," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  \"builds\": [" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "      {" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "        \"chipFamily\": \"ESP32\"," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "        \"improv\": false," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "        \"parts\": [" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "          { \"path\": \"CO2-Gadget-TTGO_TDISPLAY_SANDWICH-refs/heads/master-bootloader.bin\", \"offset\": 4096  }," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "          { \"path\": \"CO2-Gadget-TTGO_TDISPLAY_SANDWICH-refs/heads/master-partitions.bin\", \"offset\": 32768 }," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "          { \"path\": \"CO2-Gadget-TTGO_TDISPLAY_SANDWICH-refs/heads/master-firmware.bin\", \"offset\": 65536 }," >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "          { \"path\": \"CO2-Gadget-TTGO_TDISPLAY_SANDWICH-refs/heads/master-spiffs.bin\", \"offset\": 3997696 }" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "        ]" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "      }" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "  ]" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "}" >> CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json
+            echo "manifest=$(cat CO2-Gadget-TTGO_TDISPLAY_SANDWICH.manifest.json)" >> $GITHUB_OUTPUT            
+            # echo "manifest=$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json)" >> $GITHUB_OUTPUT
 
         - name: Read manifest files
           run:  |
