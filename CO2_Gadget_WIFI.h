@@ -345,7 +345,7 @@ void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
 
 void initWifi() {
     if (activeWIFI) {
-        troubledWiFi = false;
+        troubledWIFI = false;
         WiFiConnectionRetries = 0;
         displayNotification("Init WiFi", notifyInfo);
         Serial.print("-->[WiFi] Initializing WiFi...\n");
