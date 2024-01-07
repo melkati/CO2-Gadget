@@ -109,6 +109,8 @@ jobs:
 
         - name: Read manifest files
           run:  |
+            echo "Manifest:"
+            echo ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "Manifest file contents readed with cat:"
             cat ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
 
