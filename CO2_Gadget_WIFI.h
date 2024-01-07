@@ -89,7 +89,7 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
   // Print authentication used:
   Serial.print("Encryption type: ");
   switch (WiFi.encryptionType()) {
-    case WIFI_AUTH_OPEN: 
+    case WIFI_AUTH_OPEN:
       Serial.println("Open WiFi");
       break;
     case WIFI_AUTH_WEP:
@@ -107,14 +107,14 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
     case WIFI_AUTH_WPA2_ENTERPRISE:
       Serial.println("WPA2-Enterprise");
       break;
-    default: 
+    default:
       Serial.println("Unknown encryption type");
       break;
   }
   */
 }
 
-void WiFiEvent(WiFiEvent_t event) {
+void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
     switch (event) {
@@ -223,7 +223,7 @@ void disableWiFi() {
 
 // Replaces placeholder with actual values
 String processor(const String &var) {
-    //Serial.println(var);
+    // Serial.println(var);
     if (var == "CO2") {
         return String(co2);
     } else if (var == "TEMPERATURE") {
@@ -270,42 +270,109 @@ bool checkStringIsNumerical(String myString) {
     }
 }
 
+void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+}
+
+void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
+    WiFiConnectionRetries = 0;
+    timeTroubledWIFI = 0;
+    troubledMQTT = false;
+    Serial.println("-->[WiFi-event] WiFi connected");
+    Serial.print("-->[WiFi-event] IP address: ");
+    Serial.println(WiFi.localIP());
+}
+
+void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+    ++WiFiConnectionRetries;
+    Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
+    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
+    Serial.println(info.wifi_sta_disconnected.reason);
+    Serial.print("-->[WiFi-event] Retries: ");
+    Serial.print(WiFiConnectionRetries);
+    Serial.print(" of ");
+    Serial.println(maxWiFiConnectionRetries);
+
+    if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
+        disableWiFi();
+        troubledWIFI = true;
+        timeTroubledWIFI = millis();
+        Serial.printf(
+            "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
+            WiFiConnectionRetries);
+    }
+}
+
 const char *PARAM_INPUT_1 = "MeasurementInterval";
+
+void initWebServer() {
+    SPIFFS.begin();
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(co2));
+    });
+    server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(temp));
+    });
+    server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(hum));
+    });
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String inputString;
+        // <CO2-GADGET_IP>/settings?MeasurementInterval=100
+        if (request->hasParam(PARAM_INPUT_1)) {
+            inputString = request->getParam(PARAM_INPUT_1)->value();
+            if (checkStringIsNumerical(inputString)) {
+                Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
+                measurementInterval = inputString.toInt();
+            }
+        };
+        request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+    });
+    server.onNotFound([](AsyncWebServerRequest *request) {
+        request->send(400, "text/plain", "Not found");
+    });
+}
+
+void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
+    // Check if the event is one of the events you are already handling
+    if (event != WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED &&
+        event != WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP &&
+        event != WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+        // Call the WiFiEvent function only if the event is not one of the above
+        WiFiEvent(event, info);
+    }
+}
+
 void initWifi() {
-    uint16_t connectionRetries = 0;
-    uint16_t maxConnectionRetries = 30;
     if (activeWIFI) {
+        troubledWiFi = false;
+        WiFiConnectionRetries = 0;
         displayNotification("Init WiFi", notifyInfo);
+        Serial.print("-->[WiFi] Initializing WiFi...\n");
         WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
+        delay(1000);
         WiFi.mode(WIFI_STA);
-        WiFi.onEvent(WiFiEvent);
-        // WiFi.setSleep(true);
-        // WiFi.setSleep(WIFI_PS_NONE);
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
                       WiFi.setHostname(hostName.c_str()));
-        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
+
+        WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
+        WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+        WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+        WiFi.onEvent(customWiFiEventHandler);
+
+        // Possible to optimize battery (further investigation needed)
+        // WiFi.setSleep(true);
+        // WiFi.setSleep(WIFI_PS_NONE);
+
         Serial.print("-->[WiFi] Connecting to WiFi");
+        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
         while (WiFi.status() != WL_CONNECTED) {
-            ++connectionRetries;
-            if (connectionRetries == maxConnectionRetries) {
-                activeWIFI = false;
-                Serial.printf(
-                    "\n[WiFi] Not possible to connect to WiFi after %d "
-                    "tries.\nDisabling WiFi.\n",
-                    connectionRetries);
-                Serial.print("-->[WiFi] wifiSSID: #");
-                Serial.print(wifiSSID);
-                Serial.println("#");
-#ifndef WIFI_PRIVACY
-                Serial.print("-->[WiFi] wifiPass: #");
-                Serial.print(wifiPass);
-                Serial.println("#");
-#endif
-                return;
-            }
             Serial.print(".");
             delay(500);
+            if (troubledWIFI) {
+                return;
+            }
         }
         Serial.println("");
         serialPrintMACAddress();
@@ -315,38 +382,7 @@ void initWifi() {
         mDNSName = WiFi.getHostname();
         initMDNS();
 #endif
-        /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", MAIN_page);
-      AsyncWebServerResponse *response = request->beginResponse_P(200,
-    "text/html", MAIN_page, processor); response->addHeader("Server","ESP Async
-    Web Server"); request->send(response);
-    });*/
-        SPIFFS.begin();
-        server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-        server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", String(co2));
-        });
-        server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", String(temp));
-        });
-        server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", String(hum));
-        });
-        server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-            String inputString;
-            // <CO2-GADGET_IP>/settings?MeasurementInterval=100
-            if (request->hasParam(PARAM_INPUT_1)) {
-                inputString = request->getParam(PARAM_INPUT_1)->value();
-                if (checkStringIsNumerical(inputString)) {
-                    Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
-                    measurementInterval = inputString.toInt();
-                }
-            };
-            request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
-        });
-        server.onNotFound([](AsyncWebServerRequest *request) {
-            request->send(400, "text/plain", "Not found");
-        });
+        initWebServer();
 
 #ifdef SUPPORT_OTA
         AsyncElegantOTA.begin(&server);  // Start ElegantOTA
@@ -357,8 +393,18 @@ void initWifi() {
         Serial.println("-->[WiFi] HTTP server started");
 
         printWiFiStatus();
+
+        // Try to connect to MQTT broker on next loop if needed
+        troubledMQTT = false;
+
     } else {
         disableWiFi();
+    }
+}
+
+void wifiClientLoop() {
+    if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
+        initWifi();
     }
 }
 

@@ -33,6 +33,14 @@ bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
+bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
+bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
+uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
+uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
+uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
+uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
+uint16_t WiFiConnectionRetries = 0;
+uint16_t maxWiFiConnectionRetries = 5;
 
 // Display and menu options
 uint32_t DisplayBrightness = 100;
@@ -56,23 +64,23 @@ uint16_t boardIdESPNow = 0;
 // Variables for Battery reading
 float battery_voltage = 0;
 uint16_t timeBetweenBatteryRead = 15;
-uint64_t lastTimeBatteryRead = 0;  // Time of last MQTT transmission
+uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
-uint16_t timeToDisplayOff = 0;                                         // Time in seconds to turn off the display to save power.
-volatile uint64_t lastTimeButtonPressed = 0;                           // Last time stamp a button was pressed
+uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
+volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
 
 // Variables for MQTT timming TO-DO
-uint16_t timeBetweenMQTTPublish = 60;                                  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;                                    // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
-uint64_t lastTimeMQTTPublished = 0;                                    // Time of last MQTT transmission
+uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;                                // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;                                  // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
-uint64_t lastTimeESPNowPublished = 0;                                  // Time of last ESP-NOW transmission
+uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -96,7 +104,7 @@ uint64_t lastTimeESPNowPublished = 0;                                  // Time o
 
 #include "driver/adc.h"
 #include "soc/rtc_cntl_reg.h"  // disable brownout problems
-#include "soc/soc.h"  // disable brownout problems
+#include "soc/soc.h"           // disable brownout problems
 
 #ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
@@ -324,9 +332,9 @@ void readingsLoop() {
 #endif
             // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
             // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
-            if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
-                Serial.println("-->[MAIN] WiFi not connected");
-            }
+            // if ((!troubledWIFI) && (activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
+            //     Serial.println("-->[MAIN] WiFi not connected");
+            // }
 #ifdef SUPPORT_MQTT
             publishMQTT();
 #endif
@@ -396,6 +404,7 @@ void setup() {
 }
 
 void loop() {
+    wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
@@ -406,7 +415,7 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
-    #ifdef SUPPORT_BLE
+#ifdef SUPPORT_BLE
     BLELoop();
-    #endif
+#endif
 }
