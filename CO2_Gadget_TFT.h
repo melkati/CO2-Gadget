@@ -293,6 +293,7 @@ void displayShowValues(uint16_t co2) {
   showWiFiIcon(24, 3);
   showMQTTIcon(46, 3);
   showBLEIcon(2, 3);
+  showEspNowIcon(68, 3);
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
