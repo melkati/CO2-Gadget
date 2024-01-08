@@ -27,7 +27,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
 - Support for RGB LEDs
 - GPIO outputs to, for example, activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
-- **LoRa/LoRaWAN** in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
+- ~~-LoRa/LoRaWAN in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).~~
 
 # Supported hardware and build
 
