@@ -227,7 +227,7 @@ Thanks to all collaborators, contributors and [eMariete](https://emariete.com) c
 ---
 ## License
 
-    Copyright (C) 2021-2022 CO2 Gadget Contributors
+    Copyright (C) 2021-2024 CO2 Gadget Contributors
     Contact: https://emariete.com
 
     This file is part of the CO2 Gadget firmware.
