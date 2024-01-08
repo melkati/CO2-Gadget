@@ -188,9 +188,18 @@ void showBLEIcon(int32_t posX, int32_t posY) {
 void showMQTTIcon(int32_t posX, int32_t posY) {
     tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_DARKGREY);
   if (!activeMQTT) {
-    tft.drawBitmap(posX-1, posY-1, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
+    tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
   } else {
-    tft.drawBitmap(posX-1, posY-1, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
+    tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
+  }
+}
+
+void showEspNowIcon(int32_t posX, int32_t posY) {
+    tft.drawRoundRect(posX-2, posY-2, 16+4, 16+4, 2, TFT_DARKGREY);
+  if (!activeESPNOW) {
+    tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
+  } else {
+    tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
   }
 }
 
@@ -284,6 +293,7 @@ void displayShowValues(uint16_t co2) {
   showWiFiIcon(24, 3);
   showMQTTIcon(46, 3);
   showBLEIcon(2, 3);
+  showEspNowIcon(68, 3);
 
   // Revert datum setting
   tft.setTextDatum(defaultDatum);
