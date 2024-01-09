@@ -18,7 +18,7 @@
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
 String rootTopic = UNITHOSTNAME;
-String discoveryTopic = MQTT_DISCOVERY_PREFIX + String(UNITHOSTNAME) + "/config";
+String discoveryTopic = MQTT_DISCOVERY_PREFIX;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
@@ -26,6 +26,7 @@ String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
+String MACAddress = "Unset";
 // String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 

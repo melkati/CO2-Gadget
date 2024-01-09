@@ -148,9 +148,9 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
     configTopic = field;
 
     if (field == "problem") {  // Special binary sensor which is based on error topic
-        topicFull = "homeassistant/binary_sensor/" + maintopic + "/" + configTopic + "/config";
+        topicFull = discoveryTopic + "binary_sensor/" + maintopic + "/" + configTopic + "/config";
     } else {
-        topicFull = "homeassistant/sensor/" + maintopic + "/" + configTopic + "/config";
+        topicFull = discoveryTopic + "sensor/" + maintopic + "/" + configTopic + "/config";
     }
 
     /* See MQTT Discovery documentation for payload format */
@@ -213,76 +213,27 @@ bool publishMQTTDiscovery(int qos) {
     }
 
     // clang-format off
-    //                                             Device Class         | State Class       | Entity Category   | Group  | Field        | User Friendly Name    | Icon                      | Unit
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "s",        qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "CPUtemp",     "CPU Temperature",      "thermometer",              "°C",       qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "interval",    "Interval",             "clock-time-eight-outline", "min",      qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
+    //                                          Device Class        | State Class       | Entity Category   | Group  | Field        | User Friendly Name    | Icon                      | Unit
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "s",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
+ // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "CPUtemp",     "CPU Temperature",      "thermometer",              "°C",       qos);
+ // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "interval",    "Interval",             "clock-time-eight-outline", "min",      qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
 
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",       "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",          "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("humidity",             "",                  "",                "",      "humi",        "Humidity",             "water-percent",                        "%",        qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "error",       "Error",                "alert-circle-outline",     "",         qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "json",        "JSON",                 "code-json",                "",         qos);
-    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "",                 "",      "problem",     "Problem",              "alert-outline",            "",         qos);  // Special binary sensor which is based on error topic
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",   "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",      "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("humidity",         "",                  "",                "",      "humi",        "Humidity",             "water-percent",                        "%",        qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "diagnostic",       "",      "error",       "Error",                "alert-circle-outline",     "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "diagnostic",       "",      "json",        "JSON",                 "code-json",                "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "",                 "",      "problem",     "Problem",              "alert-outline",            "",         qos);  // Special binary sensor which is based on error topic
     // clang-format on
 
     Serial.println("Successfully published all MQTT Discovery topics");
     return allSendsSuccessed;
-}
-
-void publishMQTTDiscoveryOld() {
-    // Mensaje de descubrimiento en formato JSON
-    String discoveryMessage =
-        "{"
-        "\"name\":\"" +
-        String(mqttClientId) +
-        "\","
-        "\"device_class\":\"power\","
-        "\"unit_of_measurement\":\"W\","
-        "\"state_topic\":\"" +
-        String(rootTopic) + String(mqttClientId) +
-        "/state\","
-        "\"value_template\":\"{{ value_json.power }}\","
-        "\"device\": {"
-        "\"name\":\"" +
-        String(mqttClientId) +
-        "\","
-        "\"sw_version\":\"1.0\","
-        "\"model\":\"V1\","
-        "\"manufacturer\":\"YourManufacturer\","
-        "\"identifiers\":[\"" +
-        String(mqttClientId) +
-        "\"]"
-        "}"
-        "}";
-
-    // Calculate the required buffer size
-    size_t bufferSize = strlen(discoveryMessage.c_str()) + 1;
-
-    // Print the required buffer size
-    Serial.print("Required buffer size: ");
-    Serial.println(bufferSize);
-
-    // Print rootTopic, mqttClientId, and the message before publishing
-    Serial.println("Root Topic: " + String(rootTopic));
-    Serial.println("Client ID: " + String(mqttClientId));
-    Serial.println("Discovery message to be published:");
-    Serial.println(discoveryMessage);
-
-    // Publish the discovery message to the configuration topic
-    if (mqttClient.publish((String(discoveryTopic)).c_str(), "{\"name\":\"CO2-Gadget-S\",\"device_class\":\"power\",\"unit_of_measurement\":\"W\",\"state_topic\":\"SCD30CO2-Gadget-S/state\",\"value_template\":\"{{ value_json.power }}\",\"device\": {\"name\":\"CO2-Gadget-S\",\"sw_version\":\"1.0\",\"model\":\"V1\",\"manufacturer\":\"YourManufacturer\",\"identifiers\":[\"CO2-Gadget-S\"]}}", true)) {
-        // if (mqttClient.publish((String(rootTopic) + String(mqttClientId) + "/config").c_str(), discoveryMessage.c_str(), true)) {
-        Serial.println("Discovery message successfully published");
-    } else {
-        Serial.println("Failed to publish discovery message");
-        Serial.println("MQTT Connection State: " + String(mqttClient.state()));
-    }
 }
 
 void initMQTT() {
@@ -333,6 +284,18 @@ void publishMQTTAlarms() {
     }
 }
 
+void publishMQTTSystemData() {
+    publishIntMQTT("/uptime", millis() / 1000);
+    publishIntMQTT("/freeMem", ESP.getFreeHeap());
+    publishIntMQTT("/wifiRSSI", WiFi.RSSI());
+    // publishFloatMQTT("/CPUtemp", 30);
+    // publishIntMQTT("/interval", 60);
+    publishStrMQTT("/IP", WiFi.localIP().toString());
+    publishStrMQTT("/MAC", WiFi.macAddress());
+    publishStrMQTT("/hostname", hostName);
+    publishStrMQTT("/status", "OK");
+}
+
 void publishMQTT() {
 #ifdef SUPPORT_MQTT
     if (activeMQTT) {
@@ -342,6 +305,7 @@ void publishMQTT() {
                 publishFloatMQTT("/temp", temp);
                 publishFloatMQTT("/humi", hum);
                 publishMQTTAlarms();
+                publishMQTTSystemData();
                 lastTimeMQTTPublished = millis();
             }
             // Serial.print("-->[MQTT] Free heap: ");
