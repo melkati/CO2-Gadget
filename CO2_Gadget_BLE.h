@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_BLE_h
+#define CO2_Gadget_BLE_h
+
 #include "Sensirion_GadgetBle_Lib.h"
 GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 
@@ -37,3 +40,5 @@ void BLELoop() {
     delay(3);
   }
 }
+
+#endif // CO2_Gadget_BLE_h

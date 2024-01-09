@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Sensors_h
+#define CO2_Gadget_Sensors_h
+
 #include <Sensors.hpp>
 
 bool firstCO2SensorInit = true;
@@ -116,3 +119,5 @@ void initSensors() {
 void sensorsLoop() {    
   sensors.loop();
 }
+
+#endif  // CO2_Gadget_Sensors_h

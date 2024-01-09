@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Menu_h
+#define CO2_Gadget_Menu_h
+
 // Based on
 // https://drive.google.com/file/d/1_qGqs3XpFQRoT-u5-GK8aJk6f0aI7EA3/view?usp=drive_web
 
@@ -1087,3 +1090,5 @@ void menu_init() {
     Serial.println("-->[MENU] to control the menu navigation");
     Serial.println("");
 }
+
+#endif  // CO2_Gadget_Menu_h
