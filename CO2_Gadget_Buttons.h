@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Buttons_h
+#define CO2_Gadget_Buttons_h
+
 #include "Button2.h"
 #undef LONGCLICK_TIME_MS
 #define LONGCLICK_TIME_MS 300  // https://github.com/LennartHennigs/Button2/issues/10
@@ -79,3 +82,5 @@ void buttonsLoop() {
     btnUp.loop();
     btnDwn.loop();
 }
+
+#endif  // CO2_Gadget_Buttons_h

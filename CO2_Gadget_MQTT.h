@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_MQTT_h
+#define CO2_Gadget_MQTT_h
+
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -200,3 +203,5 @@ void mqttClientLoop() {
     }
 #endif
 }
+
+#endif  // CO2_Gadget_MQTT_h

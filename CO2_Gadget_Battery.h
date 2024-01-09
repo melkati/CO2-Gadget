@@ -1,3 +1,5 @@
+#ifndef CO2_Gadget_Battery_h
+#define CO2_Gadget_Battery_h
 
 // clang-format off
 /*****************************************************************************************************/
@@ -42,3 +44,5 @@ uint8_t getBatteryPercentage() {
     Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
     return battery.level();
 }
+
+#endif  // CO2_Gadget_Battery_h
