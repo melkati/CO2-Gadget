@@ -372,13 +372,13 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     delay(100);
-    // Serial.printf("Total heap: %d", ESP.getHeapSize());
-    // Serial.printf("Free heap: %d", ESP.getFreeHeap());
-    // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
-    // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
-    Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    Serial.printf("-->[STUP] Total heap: %d", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Total PSRAM: %d", ESP.getPsramSize());
+    Serial.printf("-->[STUP] Free PSRAM: %d", ESP.getFreePsram());
     Serial.printf("Starting up...\n");
-    Serial.printf("-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
 
     setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
     initPreferences();
