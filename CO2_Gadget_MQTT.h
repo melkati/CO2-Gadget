@@ -113,14 +113,176 @@ void publishFloatMQTT(String topic, float payload) {
 
 void publishStrMQTT(String topic, String payload) {
 #ifdef SUPPORT_MQTT
-    payload.toCharArray(charPublish, payload.length());
     topic = rootTopic + topic;
     if (!inMenu) {
-        Serial.printf("-->[MQTT] Publishing %s to ", payload);
+        Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
-        mqttClient.publish((topic).c_str(), charPublish);
+        mqttClient.publish(topic.c_str(), payload.c_str());
     }
 #endif
+}
+
+void publishStrDiscoveryMQTT(String topic, String payload) {
+#ifdef SUPPORT_MQTT
+    if (!inMenu) {
+        Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
+        Serial.println("topic: " + topic);
+        mqttClient.publish(topic.c_str(), payload.c_str());
+    }
+#endif
+}
+
+bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entityCategory,
+                            String group, String field, String name, String icon, String unit,
+                            int qos) {
+    String version = String(CO2_GADGET_VERSION) + String(CO2_GADGET_REV) + " (" + String(FLAVOUR) + ")";
+    String hw_version = String(FLAVOUR);
+    // Serial.println("Version: " + version);
+
+    String maintopic = String(rootTopic);
+
+    String topicFull;
+    String configTopic;
+    String payload;
+
+    configTopic = field;
+
+    if (field == "problem") {  // Special binary sensor which is based on error topic
+        topicFull = "homeassistant/binary_sensor/" + maintopic + "/" + configTopic + "/config";
+    } else {
+        topicFull = "homeassistant/sensor/" + maintopic + "/" + configTopic + "/config";
+    }
+
+    /* See MQTT Discovery documentation for payload format */
+    payload = String("{") +
+              "\"~\": \"" + maintopic + "\"," +
+              "\"unique_id\": \"" + maintopic + "-" + configTopic + "\"," +
+              "\"object_id\": \"" + maintopic + "_" + configTopic + "\"," +
+              "\"name\": \"" + name + "\"," +
+              "\"icon\": \"mdi:" + icon + "\"," +
+              "\"unit_of_measurement\": \"" + unit + "\",";
+
+    if (field == "problem") {  // Special binary sensor which is based on error topic
+        payload += "\"state_topic\": \"~/error\",";
+        payload += "\"value_template\": \"{{ 'OFF' if 'no error' in value else 'ON'}}\",";
+    } else {
+        payload += "\"state_topic\": \"~/" + field + "\",";
+    }
+
+    if (deviceClass != "") {
+        payload += "\"device_class\": \"" + deviceClass + "\",";
+    }
+
+    if (stateClass != "") {
+        payload += "\"state_class\": \"" + stateClass + "\",";
+    }
+
+    if (entityCategory != "") {
+        payload += "\"entity_category\": \"" + entityCategory + "\",";
+    }
+
+    payload += String("\"device\": {") +
+               "\"identifiers\": [\"" + maintopic + "\"]," +
+               "\"name\": \"" + maintopic + "\"," +
+               "\"model\": \"CO2 Gadget\"," +
+               "\"manufacturer\": \"emariete.com\"," +
+               "\"hw_version\": \"" + hw_version + "\"," +
+               "\"sw_version\": \"" + version + "\"," +
+               "\"configuration_url\": \"http://" + WiFi.localIP().toString() + "\"" +
+               "}" +
+               "}";
+
+    // Replace the following line with your MQTT publish function
+    // return MQTTPublish(topicFull, payload, qos, true);
+    Serial.print("MQTT Publish Topic: ");
+    Serial.println(topicFull);
+    Serial.print("MQTT Publish Payload: ");
+    Serial.println(payload);
+    // topicFull = "Test";
+    // payload = "Test";
+    publishStrDiscoveryMQTT(topicFull, payload);
+    return true;
+}
+
+bool publishMQTTDiscovery(int qos) {
+    bool allSendsSuccessed = false;
+
+    if (!mqttClient.connected()) {
+        Serial.println("Unable to send MQTT Discovery Topics, we are not connected to the MQTT broker!");
+        return false;
+    }
+
+    // clang-format off
+    //                                             Device Class         | State Class       | Entity Category   | Group  | Field        | User Friendly Name    | Icon                      | Unit
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "s",        qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "CPUtemp",     "CPU Temperature",      "thermometer",              "°C",       qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "interval",    "Interval",             "clock-time-eight-outline", "min",      qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
+
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",       "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",          "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("humidity",             "",                  "",                "",      "humi",        "Humidity",             "water-percent",                        "%",        qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "error",       "Error",                "alert-circle-outline",     "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "json",        "JSON",                 "code-json",                "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "",                 "",      "problem",     "Problem",              "alert-outline",            "",         qos);  // Special binary sensor which is based on error topic
+    // clang-format on
+
+    Serial.println("Successfully published all MQTT Discovery topics");
+    return allSendsSuccessed;
+}
+
+void publishMQTTDiscoveryOld() {
+    // Mensaje de descubrimiento en formato JSON
+    String discoveryMessage =
+        "{"
+        "\"name\":\"" +
+        String(mqttClientId) +
+        "\","
+        "\"device_class\":\"power\","
+        "\"unit_of_measurement\":\"W\","
+        "\"state_topic\":\"" +
+        String(rootTopic) + String(mqttClientId) +
+        "/state\","
+        "\"value_template\":\"{{ value_json.power }}\","
+        "\"device\": {"
+        "\"name\":\"" +
+        String(mqttClientId) +
+        "\","
+        "\"sw_version\":\"1.0\","
+        "\"model\":\"V1\","
+        "\"manufacturer\":\"YourManufacturer\","
+        "\"identifiers\":[\"" +
+        String(mqttClientId) +
+        "\"]"
+        "}"
+        "}";
+
+    // Calculate the required buffer size
+    size_t bufferSize = strlen(discoveryMessage.c_str()) + 1;
+
+    // Print the required buffer size
+    Serial.print("Required buffer size: ");
+    Serial.println(bufferSize);
+
+    // Print rootTopic, mqttClientId, and the message before publishing
+    Serial.println("Root Topic: " + String(rootTopic));
+    Serial.println("Client ID: " + String(mqttClientId));
+    Serial.println("Discovery message to be published:");
+    Serial.println(discoveryMessage);
+
+    // Publish the discovery message to the configuration topic
+    if (mqttClient.publish((String(discoveryTopic)).c_str(), "{\"name\":\"CO2-Gadget-S\",\"device_class\":\"power\",\"unit_of_measurement\":\"W\",\"state_topic\":\"SCD30CO2-Gadget-S/state\",\"value_template\":\"{{ value_json.power }}\",\"device\": {\"name\":\"CO2-Gadget-S\",\"sw_version\":\"1.0\",\"model\":\"V1\",\"manufacturer\":\"YourManufacturer\",\"identifiers\":[\"CO2-Gadget-S\"]}}", true)) {
+        // if (mqttClient.publish((String(rootTopic) + String(mqttClientId) + "/config").c_str(), discoveryMessage.c_str(), true)) {
+        Serial.println("Discovery message successfully published");
+    } else {
+        Serial.println("Failed to publish discovery message");
+        Serial.println("MQTT Connection State: " + String(mqttClient.state()));
+    }
 }
 
 void initMQTT() {
@@ -136,6 +298,7 @@ void initMQTT() {
         Serial.printf("-->[MQTT] Initializing MQTT to broker IP: %s\n", mqttBroker.c_str());
         mqttClient.setServer(mqttBroker.c_str(), 1883);
         mqttClient.setCallback(callbackMQTT);
+        mqttClient.setBufferSize(1024);
         mqttReconnect();
     }
 #endif
@@ -200,6 +363,12 @@ void mqttClientLoop() {
         if (mqttClient.connected()) {
             mqttClient.loop();
         }
+    }
+
+    if (!mqttDiscoverySent && mqttClient.connected()) {
+        Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
+        publishMQTTDiscovery(0);
+        mqttDiscoverySent = true;
     }
 #endif
 }

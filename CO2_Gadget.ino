@@ -18,6 +18,7 @@
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
 String rootTopic = UNITHOSTNAME;
+String discoveryTopic = MQTT_DISCOVERY_PREFIX + String(UNITHOSTNAME) + "/config";
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
@@ -41,6 +42,7 @@ uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connec
 uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 5;
+bool mqttDiscoverySent = false;         
 
 // Display and menu options
 uint32_t DisplayBrightness = 100;
