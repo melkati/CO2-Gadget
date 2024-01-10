@@ -304,16 +304,21 @@ const char *PARAM_INPUT_1 = "MeasurementInterval";
 
 void initWebServer() {
     SPIFFS.begin();
+
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(co2));
     });
+
     server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(temp));
     });
+
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(hum));
     });
+
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
         String inputString;
         // <CO2-GADGET_IP>/settings?MeasurementInterval=100
@@ -326,6 +331,28 @@ void initWebServer() {
         };
         request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
     });
+
+    // Serve the preferences page
+    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/preferences.html", String(), false, processor);
+    });
+
+    // // Handler to process preferences
+    // server.on("/savePreferences", HTTP_POST, [](AsyncWebServerRequest *request) {
+    //     // Process the POST request and apply changes in preferences
+    //     String preferencesData = request->getParam("plain")->value();
+
+    //     // Use ArduinoJson to parse the received JSON data
+    //     DynamicJsonDocument jsonDoc(4096);
+    //     deserializeJson(jsonDoc, preferencesData);
+
+    //     // Update preferences
+    //     // ...
+
+    //     // Send response to the client
+    //     request->send(200, "application/json", "{\"message\":\"Preferences updated successfully\"}");
+    // });
+
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
@@ -373,8 +400,8 @@ void initWifi() {
             }
         }
         Serial.println("");
-        Serial.print("-->[WiFi] MAC: ");        
-        Serial.println(MACAddress);        
+        Serial.print("-->[WiFi] MAC: ");
+        Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
 #ifdef SUPPORT_MDNS
