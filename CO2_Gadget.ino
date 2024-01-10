@@ -382,26 +382,33 @@ void batteryLoop() {
 
 void utilityLoop() {
     if (battery_voltage > 4.5) {
+        Serial.flush();
+        Serial.end();
         setCpuFrequencyMhz(240);  // High CPU frecuency when working on USB power
+        Serial.begin(115200);
     } else {
+        Serial.flush();
+        Serial.end();
         setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
+        Serial.begin(115200);
     }
 }
+
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
     delay(100);
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
     Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-    Serial.printf("-->[STUP] Total heap: %d", ESP.getHeapSize());
-    Serial.printf("-->[STUP] Free heap: %d", ESP.getFreeHeap());
-    Serial.printf("-->[STUP] Total PSRAM: %d", ESP.getPsramSize());
-    Serial.printf("-->[STUP] Free PSRAM: %d", ESP.getFreePsram());
-    Serial.printf("Starting up...\n");
+    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
+    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+    Serial.printf("-->[STUP] Starting up...\n\n");
 
-    setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
     initPreferences();
     initBattery();
     initGPIO();
