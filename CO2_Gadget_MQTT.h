@@ -122,12 +122,12 @@ void publishStrMQTT(String topic, String payload) {
 #endif
 }
 
-void publishStrDiscoveryMQTT(String topic, String payload) {
+void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
     if (!inMenu) {
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
-        mqttClient.publish(topic.c_str(), payload.c_str());
+        mqttClient.publish(topic.c_str(), payload.c_str(), true);
     }
 #endif
 }
@@ -152,7 +152,7 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
         topicFull = discoveryTopic + "sensor/" + maintopic + "/" + configTopic + "/config";
     }
 
-    /* See MQTT Discovery documentation for payload format */
+    /* See https://www.home-assistant.io/docs/mqtt/discovery/ */
     payload = String("{") +
               "\"~\": \"" + maintopic + "\"," +
               "\"unique_id\": \"" + maintopic + "-" + configTopic + "\"," +
@@ -199,7 +199,7 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
     Serial.println(payload);
     // topicFull = "Test";
     // payload = "Test";
-    publishStrDiscoveryMQTT(topicFull, payload);
+    publishStrDiscoveryMQTT(topicFull, payload, qos);
     return true;
 }
 
@@ -212,14 +212,16 @@ bool publishMQTTDiscovery(int qos) {
     }
 
     // clang-format off
+    // TO-DO: Add MAC Address, Hostname, IP and Status to discovery. Don't know why they are not working (home assistant doesn't show them)
+    //
     //                                          Device Class        | State Class       | Entity Category   | Group  | Field        | User Friendly Name    | Icon                      | Unit
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "s",        qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
+    // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "battery",     "Battery",              "",                         "%",        qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "voltage",     "Voltage",              "",                         "V",        qos);
 
