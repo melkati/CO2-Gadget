@@ -22,6 +22,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
+- MQTT Discovery protocol for Home Assistant (and others supporting it as HomeSeer with mcsMQTT)
 - ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
