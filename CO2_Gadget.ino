@@ -366,6 +366,13 @@ void displayLoop() {
     }
 }
 
+void utilityLoop() {
+    if (battery_voltage > 4.5) {
+        setCpuFrequencyMhz(240);  // High CPU frecuency when working on USB power
+    } else {
+        setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
+    }
+}
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
@@ -408,6 +415,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
