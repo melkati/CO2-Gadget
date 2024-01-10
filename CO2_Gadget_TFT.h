@@ -252,7 +252,7 @@ void showBLEDeviceId(int32_t posX, int32_t posY) {
   if (activeBLE) {
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextDatum(BR_DATUM); // bottom right
-    tft.drawString(gadgetBle.getDeviceIdString(), posX, posY);
+    tft.drawString(provider.getDeviceIdString(), posX, posY);
   }
   #endif
 }

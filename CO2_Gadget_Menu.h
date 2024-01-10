@@ -970,7 +970,7 @@ void loadTempArraysWithActualValues() {
 #endif
 
 #ifdef SUPPORT_BLE
-    paddedString = rightPad(gadgetBle.getDeviceIdString(), 30);
+    paddedString = rightPad(provider.getDeviceIdString(), 30);
 #else
     paddedString = rightPad("Unavailable", 30);
 #endif
