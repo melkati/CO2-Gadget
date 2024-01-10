@@ -1,3 +1,6 @@
+#ifndef Credentials_h
+#define Credentials_h
+
 #ifndef CREDENTIALS_H
 #define CREDENTIALS_H
 
@@ -7,3 +10,5 @@
 #define MQTT_PW_CREDENTIAL "another_secret_password"
 
 #endif
+
+#endif  // Credentials_h
