@@ -41,7 +41,6 @@ float readBatteryVoltage() {
 }
 
 uint8_t getBatteryPercentage() {
-    Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
     return battery.level();
 }
 

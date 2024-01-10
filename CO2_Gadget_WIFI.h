@@ -25,6 +25,20 @@ void onWifiSettingsChanged(std::string ssid, std::string password) {
     WiFi.begin(ssid.c_str(), password.c_str());
 }
 
+String getMACAddressAsString() {
+    byte mac[6];
+    WiFi.macAddress(mac);
+
+    String macAddress = String(mac[5], HEX) + ":" +
+                        String(mac[4], HEX) + ":" +
+                        String(mac[3], HEX) + ":" +
+                        String(mac[2], HEX) + ":" +
+                        String(mac[1], HEX) + ":" +
+                        String(mac[0], HEX);
+
+    return macAddress;
+}
+
 void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Get current status
@@ -78,7 +92,8 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Print your WiFi shield's MAC address:
     Serial.print("-->[WiFi] MAC Address: ");
-    Serial.println(WiFi.macAddress());
+    MACAddress = getMACAddressAsString();
+    Serial.println(MACAddress);
 
     // Print the received signal strength:
     Serial.print("-->[WiFi] Signal strength (RSSI):");
@@ -234,23 +249,6 @@ String processor(const String &var) {
     return String();
 }
 
-void serialPrintMACAddress() {
-    byte mac[6];
-    WiFi.macAddress(mac);
-    Serial.print("-->[WiFi] MAC: ");
-    Serial.print(mac[5], HEX);
-    Serial.print(":");
-    Serial.print(mac[4], HEX);
-    Serial.print(":");
-    Serial.print(mac[3], HEX);
-    Serial.print(":");
-    Serial.print(mac[2], HEX);
-    Serial.print(":");
-    Serial.print(mac[1], HEX);
-    Serial.print(":");
-    Serial.println(mac[0], HEX);
-}
-
 bool checkStringIsNumerical(String myString) {
     uint16_t Numbers = 0;
 
@@ -375,7 +373,8 @@ void initWifi() {
             }
         }
         Serial.println("");
-        serialPrintMACAddress();
+        Serial.print("-->[WiFi] MAC: ");        
+        Serial.println(MACAddress);        
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
 #ifdef SUPPORT_MDNS
