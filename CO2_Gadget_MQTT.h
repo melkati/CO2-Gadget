@@ -137,7 +137,6 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
                             int qos) {
     String version = String(CO2_GADGET_VERSION) + String(CO2_GADGET_REV) + " (" + String(FLAVOUR) + ")";
     String hw_version = String(FLAVOUR);
-    // Serial.println("Version: " + version);
 
     String maintopic = String(rootTopic);
 
@@ -219,10 +218,10 @@ bool publishMQTTDiscovery(int qos) {
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
- // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "CPUtemp",     "CPU Temperature",      "thermometer",              "°C",       qos);
- // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "interval",    "Interval",             "clock-time-eight-outline", "min",      qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "battery",     "Battery",              "",                         "%",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "voltage",     "Voltage",              "",                         "V",        qos);
 
     allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",   "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",      "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
@@ -286,14 +285,20 @@ void publishMQTTAlarms() {
 
 void publishMQTTSystemData() {
     publishIntMQTT("/uptime", millis() / 1000);
+    publishFloatMQTT("/voltage", battery_voltage);
+    publishIntMQTT("/battery", battery_level);
     publishIntMQTT("/freeMem", ESP.getFreeHeap());
     publishIntMQTT("/wifiRSSI", WiFi.RSSI());
-    // publishFloatMQTT("/CPUtemp", 30);
-    // publishIntMQTT("/interval", 60);
     publishStrMQTT("/IP", WiFi.localIP().toString());
     publishStrMQTT("/MAC", WiFi.macAddress());
     publishStrMQTT("/hostname", hostName);
     publishStrMQTT("/status", "OK");
+}
+
+void publishMeasurementsMQTT() {
+    publishIntMQTT("/co2", co2);
+    publishFloatMQTT("/temp", temp);
+    publishFloatMQTT("/humi", hum);
 }
 
 void publishMQTT() {
@@ -301,9 +306,7 @@ void publishMQTT() {
     if (activeMQTT) {
         if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
             if (millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) {
-                publishIntMQTT("/co2", co2);
-                publishFloatMQTT("/temp", temp);
-                publishFloatMQTT("/humi", hum);
+                publishMeasurementsMQTT();
                 publishMQTTAlarms();
                 publishMQTTSystemData();
                 lastTimeMQTTPublished = millis();
