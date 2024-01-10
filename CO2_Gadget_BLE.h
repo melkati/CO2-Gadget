@@ -2,7 +2,6 @@
 #define CO2_Gadget_BLE_h
 
 #include "Sensirion_Gadget_BLE.h"
-// GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
 NimBLELibraryWrapper lib;
 DataProvider provider(lib, DataType::T_RH_CO2_ALT);
 
@@ -14,7 +13,7 @@ void initBLE() {
             Serial.println(provider.getDeviceIdString());
             return;  // If BLE is already initialized do nothing and return
         } else {
-            // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds
+            // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
             provider.begin();
             Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
