@@ -18,6 +18,7 @@
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
 String rootTopic = UNITHOSTNAME;
+String discoveryTopic = MQTT_DISCOVERY_PREFIX;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
@@ -25,6 +26,7 @@ String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
+String MACAddress = "Unset";
 // String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
@@ -41,6 +43,7 @@ uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connec
 uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 5;
+bool mqttDiscoverySent = false;
 
 // Display and menu options
 uint32_t DisplayBrightness = 100;
@@ -63,6 +66,7 @@ uint16_t boardIdESPNow = 0;
 
 // Variables for Battery reading
 float battery_voltage = 0;
+uint8_t battery_level = 0;
 uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
@@ -229,6 +233,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                      SETUP PUSH BUTTONS FUNCTIONALITY                             *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+#include "Arduino.h"
 #include "CO2_Gadget_Buttons.h"
 
 /*****************************************************************************************************/
@@ -366,19 +371,28 @@ void displayLoop() {
     }
 }
 
+void batteryLoop() {
+    const float lastBatteryVoltage = battery_voltage;
+    readBatteryVoltage();
+    if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
+        battery_level = getBatteryPercentage();
+        Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+    }
+}
+
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     delay(100);
-    // Serial.printf("Total heap: %d", ESP.getHeapSize());
-    // Serial.printf("Free heap: %d", ESP.getFreeHeap());
-    // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
-    // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
-    Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    Serial.printf("-->[STUP] Total heap: %d", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Total PSRAM: %d", ESP.getPsramSize());
+    Serial.printf("-->[STUP] Free PSRAM: %d", ESP.getFreePsram());
     Serial.printf("Starting up...\n");
-    Serial.printf("-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
 
     setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
     initPreferences();
@@ -404,10 +418,10 @@ void setup() {
 }
 
 void loop() {
+    batteryLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    readBatteryVoltage();
     outputsLoop();
     processPendingCommands();
     readingsLoop();

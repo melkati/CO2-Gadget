@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Preferences_h
+#define CO2_Gadget_Preferences_h
+
 #include <Preferences.h>
 Preferences preferences;
 
@@ -204,3 +207,5 @@ void putPreferences() {
   
   preferences.end();
 }
+
+#endif  // CO2_Gadget_Preferences_h
