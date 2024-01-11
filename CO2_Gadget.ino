@@ -401,7 +401,11 @@ void setup() {
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
     delay(100);
+    #ifdef AUTO_VERSION
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
+    #else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    #endif
     Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
     Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
     Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
