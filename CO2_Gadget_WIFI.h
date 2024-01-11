@@ -332,6 +332,11 @@ void initWebServer() {
         request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
     });
 
+    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    String preferencesJson = getPreferencesAsJson();
+    request->send(200, "application/json", preferencesJson); });
+
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);

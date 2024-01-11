@@ -1,6 +1,8 @@
 #ifndef CO2_Gadget_Preferences_h
 #define CO2_Gadget_Preferences_h
 
+
+#include <ArduinoJson.h>
 #include <Preferences.h>
 Preferences preferences;
 
@@ -206,6 +208,67 @@ void putPreferences() {
   preferences.putBool("showPM25", displayShowPM25);
   
   preferences.end();
+}
+
+String getPreferencesAsJson()
+{
+  preferences.begin("CO2-Gadget", false);
+
+  DynamicJsonDocument doc(512);
+
+  doc["customCalValue"] = preferences.getInt("customCalValue", 415);
+  doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
+  doc["altidudeMeters"] = preferences.getInt("altidudeMeters", 0);
+  doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
+  doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
+  doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
+  doc["DisplayBright"] = preferences.getInt("DisplayBright", 100);
+  doc["neopixBright"] = preferences.getInt("neopixBright", 50);
+  doc["selNeopxType"] = preferences.getInt("selNeopxType", NEO_GRB + NEO_KHZ800);
+  doc["activeBLE"] = preferences.getBool("activeBLE", true);
+  doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
+  doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
+  doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
+  doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
+  doc["batDischgd"] = preferences.getInt("batDischgd", 3500);
+  doc["batChargd"] = preferences.getInt("batChargd", 4200);
+  doc["vRef"] = preferences.getInt("vRef", 930);
+  doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
+  doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
+  doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
+  // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
+  doc["tToDispOff"] = preferences.getInt("tToDispOff", 60);
+  doc["tKeepAlMQTT"] = preferences.getInt("tKeepAlMQTT", 300);
+  doc["tKeepAlESPNow"] = preferences.getInt("tKeepAlESPNow", 300);
+  doc["tToPubMQTT"] = preferences.getInt("tToPubMQTT", 60);
+  doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
+  doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
+  doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
+  doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
+  doc["hostName"] = preferences.getString("hostName", hostName);
+  doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
+  doc["debugSensors"] = preferences.getBool("debugSensors", false);
+  doc["displayReverse"] = preferences.getBool("displayReverse", false);
+  doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
+  doc["measInterval"] = preferences.getInt("measInterval", 10);
+  doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
+  doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
+  doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
+  doc["peerESPNow"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
+  doc["showTemp"] = preferences.getBool("showTemp", true);
+  doc["showHumidity"] = preferences.getBool("showHumidity", true);
+  doc["showBattery"] = preferences.getBool("showBattery", true);
+  doc["showCO2"] = preferences.getBool("showCO2", true);
+  doc["showPM25"] = preferences.getBool("showPM25", true);
+  doc["measInterval"] = preferences.getInt("measInterval", 10);
+  preferences.end();
+
+  String preferencesJson;
+  serializeJson(doc, preferencesJson);
+  Serial.println("Preferences JSON @ getPreferencesAsJson: " + preferencesJson);
+  Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
+
+  return preferencesJson;
 }
 
 #endif  // CO2_Gadget_Preferences_h

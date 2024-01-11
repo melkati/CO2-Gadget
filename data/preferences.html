@@ -1,50 +1,3 @@
-<script>
-  var customCalibrationValue = 415;
-  var tempOffset = 0;
-  var altitudeMeters = 0;
-  var autoSelfCalibration = false;
-  var co2OrangeRange = 700;
-  var co2RedRange = 1000;
-  var displayBrightness = 100;
-  var neopixelBrightness = 50;
-  var selectedNeopixelType = "";
-  var activeBLE = true;
-  var activeWIFI = false;
-  var activeMQTT = false;
-  var activeESPNOW = false;
-  var rootTopic = "esp32co2monitor";
-  var mqttClientId = "esp32co2monitor";
-  var mqttBroker = "";
-  var mqttUser = "";
-  var mqttPass = "";
-  var batteryDischargedMillivolts = 3500;
-  var batteryFullyChargedMillivolts = 4200;
-  var vRef = 930;
-  var timeToDisplayOff = 60;
-  var timeBetweenMQTTPublish = 60;
-  var timeBetweenESPNowPublish = 60;
-  var timeToKeepAliveMQTT = 300;
-  var timeToKeepAliveESPNow = 300;
-  var displayOffOnExternalPower = false;
-  var wifiSSID = "";
-  var wifiPass = "";
-  var hostName = "";
-  var selectedCO2Sensor = 0;
-  var debugSensors = false;
-  var displayReverse = false;
-  var showFahrenheit = false;
-  var measurementInterval = 10;
-  var outputsModeRelay = false;
-  var channelESPNow = 0;
-  var boardIdESPNow = 0;
-  var peerESPNowAddress = "";
-  var displayShowTemperature = true;
-  var displayShowHumidity = true;
-  var displayShowBattery = true;
-  var displayShowCO2 = true;
-  var displayShowPM25 = true;
-</script>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -52,39 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./style.css" />
-  <title>Preferences Configuration</title>
-  <!-- <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 20px auto;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    form {
-      display: grid;
-      gap: 10px;
-    }
-
-    label {
-      font-weight: bold;
-    }
-
-    button {
-      padding: 10px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style> -->
+  <title>CO2 Gadget Configuration</title>
 </head>
 
 <body>
+  <div class="container">
 
   <h1>CO2 Gadget Preferences</h1>
 
@@ -132,7 +57,7 @@
         <legend>CO2 Sensor</legend>
 
         <div>
-          <label for="selectedCO2Sensor">Selected CO2 Sensor:</label>
+          <label for="selectedCO2Sensor">Selected Sensor:</label>
           <input type="number" id="selectedCO2Sensor" name="selectedCO2Sensor" value="">
         </div>
 
@@ -146,19 +71,15 @@
           <input type="number" id="customCalibrationValue" name="customCalibrationValue" value="">
         </div>
 
-        <fieldset>
-          <legend>CO2 Ranges</legend>
+        <div>
+          <label for="co2OrangeRange">Orange level:</label>
+          <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="">
+        </div>
 
-          <div>
-            <label for="co2OrangeRange">CO2 Orange Range:</label>
-            <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="">
-          </div>
-
-          <div>
-            <label for="co2RedRange">CO2 Red Range:</label>
-            <input type="number" id="co2RedRange" name="co2RedRange" value="">
-          </div>
-        </fieldset>
+        <div>
+          <label for="co2RedRange">Red level:</label>
+          <input type="number" id="co2RedRange" name="co2RedRange" value="">
+        </div>
       </fieldset>
 
       <fieldset>
@@ -192,17 +113,20 @@
 
     <!-- NeoPixel Group -->
     <fieldset>
-      <legend>NeoPixel</legend>
+      <legend>Outputs</legend>
+      <fieldset>
+        <legend>NeoPixel</legend>
 
-      <div>
-        <label for="neopixelBrightness">NeoPixel Brightness:</label>
-        <input type="number" id="neopixelBrightness" name="neopixelBrightness" value="">
-      </div>
+        <div>
+          <label for="neopixelBrightness">NeoPixel Brightness:</label>
+          <input type="number" id="neopixelBrightness" name="neopixelBrightness" value="">
+        </div>
 
-      <div>
-        <label for="selectedNeopixelType">Selected NeoPixel Type:</label>
-        <input type="number" id="selectedNeopixelType" name="selectedNeopixelType" value="">
-      </div>
+        <div>
+          <label for="selectedNeopixelType">Selected NeoPixel Type:</label>
+          <input type="number" id="selectedNeopixelType" name="selectedNeopixelType" value="">
+        </div>
+      </fieldset>
     </fieldset>
 
     <!-- Connectivity Group -->
@@ -210,17 +134,17 @@
       <legend>Connectivity</legend>
 
       <div>
-        <label for="activeBLE">Active BLE:</label>
+        <label for="activeBLE">BLE:</label>
         <input type="checkbox" id="activeBLE" name="activeBLE">
       </div>
 
       <div>
-        <label for="activeMQTT">Active MQTT:</label>
+        <label for="activeMQTT">MQTT:</label>
         <input type="checkbox" id="activeMQTT" name="activeMQTT">
       </div>
 
       <div>
-        <label for="activeESPNOW">Active ESPNOW:</label>
+        <label for="activeESPNOW">ESPNOW:</label>
         <input type="checkbox" id="activeESPNOW" name="activeESPNOW">
       </div>
     </fieldset>
@@ -234,15 +158,10 @@
         <input type="text" id="mqttClientId" name="mqttClientId" value="">
       </div>
 
-      <fieldset>
-        <legend>Root Topic</legend>
-
-        <div>
-          <label for="rootTopic">Root Topic:</label>
-          <input type="text" id="rootTopic" name="rootTopic" value="">
-        </div>
-
-      </fieldset>
+      <div>
+        <label for="rootTopic">Root Topic:</label>
+        <input type="text" id="rootTopic" name="rootTopic" value="">
+      </div>
 
       <div>
         <label for="mqttBroker">MQTT Broker:</label>
@@ -315,32 +234,32 @@
       <legend>Display Preferences</legend>
 
       <div>
-        <label for="displayShowTemperature">Display Show Temperature:</label>
+        <label for="displayShowTemperature">Show Temperature:</label>
         <input type="checkbox" id="displayShowTemperature" name="displayShowTemperature">
       </div>
 
       <div>
-        <label for="displayShowHumidity">Display Show Humidity:</label>
+        <label for="displayShowHumidity">Show Humidity:</label>
         <input type="checkbox" id="displayShowHumidity" name="displayShowHumidity">
       </div>
 
       <div>
-        <label for="displayShowBattery">Display Show Battery:</label>
+        <label for="displayShowBattery">Show Battery:</label>
         <input type="checkbox" id="displayShowBattery" name="displayShowBattery">
       </div>
 
       <div>
-        <label for="displayShowCO2">Display Show CO2:</label>
+        <label for="displayShowCO2">Show CO2:</label>
         <input type="checkbox" id="displayShowCO2" name="displayShowCO2">
       </div>
 
       <div>
-        <label for="displayShowPM25">Display Show PM25:</label>
+        <label for="displayShowPM25">Show PM25:</label>
         <input type="checkbox" id="displayShowPM25" name="displayShowPM25">
       </div>
 
       <div>
-        <label for="displayOffOnExternalPower">Display Off on External Power:</label>
+        <label for="displayOffOnExternalPower">Turn Off on USB Power:</label>
         <input type="checkbox" id="displayOffOnExternalPower" name="displayOffOnExternalPower">
       </div>
 
@@ -349,14 +268,11 @@
         <input type="checkbox" id="displayReverse" name="displayReverse">
       </div>
 
-      <fieldset>
-        <legend>Display Brightness</legend>
 
-        <div>
-          <label for="displayBrightness">Display Brightness:</label>
-          <input type="number" id="displayBrightness" name="displayBrightness" value="">
-        </div>
-      </fieldset>
+      <div>
+        <label for="displayBrightness">Display Brightness:</label>
+        <input type="number" id="displayBrightness" name="displayBrightness" value="">
+      </div>
     </fieldset>
 
     <!-- Sensor Debug Group -->
@@ -371,51 +287,188 @@
 
     <button type="button" onclick="savePreferences()">Save Preferences</button>
   </form>
-
+  </div>
 
   <script>
+
     // Function to set initial values in the form
-    function setInitialValues() {
-      document.getElementById("customCalibrationValue").value = customCalibrationValue;
-      document.getElementById("tempOffset").value = tempOffset;
-      document.getElementById("altitudeMeters").value = altitudeMeters;
-      document.getElementById("autoSelfCalibration").checked = autoSelfCalibration;
-      document.getElementById("co2OrangeRange").value = co2OrangeRange;
-      document.getElementById("co2RedRange").value = co2RedRange;
-      document.getElementById("displayBrightness").value = displayBrightness;
-      document.getElementById("neopixelBrightness").value = neopixelBrightness;
-      document.getElementById("selectedNeopixelType").value = selectedNeopixelType;
-      document.getElementById("activeBLE").checked = activeBLE;
-      document.getElementById("activeWIFI").checked = activeWIFI;
-      document.getElementById("activeMQTT").checked = activeMQTT;
-      document.getElementById("activeESPNOW").checked = activeESPNOW;
-      document.getElementById("rootTopic").value = rootTopic;
-      document.getElementById("batteryDischargedMillivolts").value = batteryDischargedMillivolts;
-      document.getElementById("batteryFullyChargedMillivolts").value = batteryFullyChargedMillivolts;
-      document.getElementById("vRef").value = vRef;
-      document.getElementById("timeToDisplayOff").value = timeToDisplayOff;
-      document.getElementById("timeBetweenMQTTPublish").value = timeBetweenMQTTPublish;
-      document.getElementById("timeBetweenESPNowPublish").value = timeBetweenESPNowPublish;
-      document.getElementById("timeToKeepAliveMQTT").value = timeToKeepAliveMQTT;
-      document.getElementById("timeToKeepAliveESPNow").value = timeToKeepAliveESPNow;
-      document.getElementById("displayOffOnExternalPower").checked = displayOffOnExternalPower;
-      document.getElementById("wifiSSID").value = wifiSSID;
-      document.getElementById("wifiPass").value = wifiPass;
-      document.getElementById("hostName").value = hostName;
-      document.getElementById("selectedCO2Sensor").value = selectedCO2Sensor;
-      document.getElementById("debugSensors").checked = debugSensors;
-      document.getElementById("displayReverse").checked = displayReverse;
-      document.getElementById("showFahrenheit").checked = showFahrenheit;
-      document.getElementById("measurementInterval").value = measurementInterval;
-      document.getElementById("outputsModeRelay").checked = outputsModeRelay;
-      document.getElementById("channelESPNow").value = channelESPNow;
-      document.getElementById("boardIdESPNow").value = boardIdESPNow;
-      document.getElementById("peerESPNowAddress").value = peerESPNowAddress;
-      document.getElementById("displayShowTemperature").checked = displayShowTemperature;
-      document.getElementById("displayShowHumidity").checked = displayShowHumidity;
-      document.getElementById("displayShowBattery").checked = displayShowBattery;
-      document.getElementById("displayShowCO2").checked = displayShowCO2;
-      document.getElementById("displayShowPM25").checked = displayShowPM25;
+    // function setInitialValues() {
+    //   document.getElementById("customCalibrationValue").value = customCalibrationValue;
+    //   document.getElementById("tempOffset").value = tempOffset;
+    //   document.getElementById("altitudeMeters").value = altitudeMeters;
+    //   document.getElementById("autoSelfCalibration").checked = autoSelfCalibration;
+    //   document.getElementById("co2OrangeRange").value = co2OrangeRange;
+    //   document.getElementById("co2RedRange").value = co2RedRange;
+    //   document.getElementById("displayBrightness").value = displayBrightness;
+    //   document.getElementById("neopixelBrightness").value = neopixelBrightness;
+    //   document.getElementById("selectedNeopixelType").value = selectedNeopixelType;
+    //   document.getElementById("activeBLE").checked = activeBLE;
+    //   document.getElementById("activeWIFI").checked = activeWIFI;
+    //   document.getElementById("activeMQTT").checked = activeMQTT;
+    //   document.getElementById("activeESPNOW").checked = activeESPNOW;
+    //   document.getElementById("rootTopic").value = rootTopic;
+    //   document.getElementById("batteryDischargedMillivolts").value = batteryDischargedMillivolts;
+    //   document.getElementById("batteryFullyChargedMillivolts").value = batteryFullyChargedMillivolts;
+    //   document.getElementById("vRef").value = vRef;
+    //   document.getElementById("timeToDisplayOff").value = timeToDisplayOff;
+    //   document.getElementById("timeBetweenMQTTPublish").value = timeBetweenMQTTPublish;
+    //   document.getElementById("timeBetweenESPNowPublish").value = timeBetweenESPNowPublish;
+    //   document.getElementById("timeToKeepAliveMQTT").value = timeToKeepAliveMQTT;
+    //   document.getElementById("timeToKeepAliveESPNow").value = timeToKeepAliveESPNow;
+    //   document.getElementById("displayOffOnExternalPower").checked = displayOffOnExternalPower;
+    //   document.getElementById("wifiSSID").value = wifiSSID;
+    //   document.getElementById("wifiPass").value = wifiPass;
+    //   document.getElementById("hostName").value = hostName;
+    //   document.getElementById("selectedCO2Sensor").value = selectedCO2Sensor;
+    //   document.getElementById("debugSensors").checked = debugSensors;
+    //   document.getElementById("displayReverse").checked = displayReverse;
+    //   document.getElementById("showFahrenheit").checked = showFahrenheit;
+    //   document.getElementById("measurementInterval").value = measurementInterval;
+    //   document.getElementById("outputsModeRelay").checked = outputsModeRelay;
+    //   document.getElementById("channelESPNow").value = channelESPNow;
+    //   document.getElementById("boardIdESPNow").value = boardIdESPNow;
+    //   document.getElementById("peerESPNowAddress").value = peerESPNowAddress;
+    //   document.getElementById("displayShowTemperature").checked = displayShowTemperature;
+    //   document.getElementById("displayShowHumidity").checked = displayShowHumidity;
+    //   document.getElementById("displayShowBattery").checked = displayShowBattery;
+    //   document.getElementById("displayShowCO2").checked = displayShowCO2;
+    //   document.getElementById("displayShowPM25").checked = displayShowPM25;
+    // }
+
+    // Function to load preferences from the server and populate the form
+    function loadPreferencesFromServer() {
+      let getPreferencesDebug = true; // Set to false to disable debug output
+
+      fetch('/getPreferences')
+        .then(response => response.json())
+        .then(preferences => {
+          if (getPreferencesDebug) {
+            console.log('Received preferences:', preferences);
+          }
+
+          // Populate the form with the received preferences
+
+
+          if (getPreferencesDebug) console.log('Setting activeWIFI to:', preferences.activeWIFI);
+          document.getElementById("activeWIFI").checked = preferences.activeWIFI;
+
+          if (getPreferencesDebug) console.log('Setting wifiSSID to:', preferences.wifiSSID);
+          document.getElementById("wifiSSID").value = preferences.wifiSSID;
+
+          if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
+          document.getElementById("wifiPass").value = preferences.wifiPass;
+
+          if (getPreferencesDebug) console.log('Setting hostName to:', preferences.hostName);
+          document.getElementById("hostName").value = preferences.hostName;
+
+          if (getPreferencesDebug) console.log('Setting selectedCO2Sensor to:', preferences.selCO2Sensor);
+          document.getElementById("selectedCO2Sensor").value = preferences.selCO2Sensor;
+
+          if (getPreferencesDebug) console.log('Setting autoSelfCalibration to:', preferences.autoSelfCal);
+          document.getElementById("autoSelfCalibration").checked = preferences.autoSelfCal;
+
+          if (getPreferencesDebug) console.log('Setting customCalibrationValue to:', preferences.customCalValue);
+          document.getElementById("customCalibrationValue").value = preferences.customCalValue;
+
+          if (getPreferencesDebug) console.log('Setting co2OrangeRange to:', preferences.co2OrangeRange);
+          document.getElementById("co2OrangeRange").value = preferences.co2OrangeRange;
+
+          if (getPreferencesDebug) console.log('Setting co2RedRange to:', preferences.co2RedRange);
+          document.getElementById("co2RedRange").value = preferences.co2RedRange;
+
+          if (getPreferencesDebug) console.log('Setting tempOffset to:', preferences.tempOffset);
+          document.getElementById("tempOffset").value = preferences.tempOffset;
+
+          if (getPreferencesDebug) console.log('Setting showFahrenheit to:', preferences.showFahrenheit);
+          document.getElementById("showFahrenheit").checked = preferences.showFahrenheit;
+
+          if (getPreferencesDebug) console.log('Setting altitudeMeters to:', preferences.altidudeMeters);
+          document.getElementById("altitudeMeters").value = preferences.altidudeMeters;
+
+          if (getPreferencesDebug) console.log('Setting neopixBright to:', preferences.neopixBright);
+          document.getElementById("neopixelBrightness").value = preferences.neopixBright;
+
+          if (getPreferencesDebug) console.log('Setting selNeopxType to:', preferences.selNeopxType);
+          document.getElementById("selectedNeopixelType").value = preferences.selNeopxType;
+          
+          if (getPreferencesDebug) console.log('Setting activeBLE to:', preferences.activeBLE);
+          document.getElementById("activeBLE").checked = preferences.activeBLE;
+
+          if (getPreferencesDebug) console.log('Setting activeMQTT to:', preferences.activeMQTT);
+          document.getElementById("activeMQTT").checked = preferences.activeMQTT;
+
+          if (getPreferencesDebug) console.log('Setting activeESPNOW to:', preferences.activeESPNOW);
+          document.getElementById("activeESPNOW").checked = preferences.activeESPNOW;
+
+          if (getPreferencesDebug) console.log('Setting mqttClientId to:', preferences.mqttClientId);
+          document.getElementById("mqttClientId").value = preferences.mqttClientId;
+          
+          if (getPreferencesDebug) console.log('Setting rootTopic to:', preferences.rootTopic);
+          document.getElementById("rootTopic").value = preferences.rootTopic;
+
+          if (getPreferencesDebug) console.log('Setting mqttBroker to:', preferences.mqttBroker);
+          document.getElementById("mqttBroker").value = preferences.mqttBroker;
+
+          if (getPreferencesDebug) console.log('Setting mqttUser to:', preferences.mqttUser);
+          document.getElementById("mqttUser").value = preferences.mqttUser;
+
+          // if (getPreferencesDebug) console.log('Setting mqttPass to:', preferences.mqttPass);
+          // document.getElementById("mqttPass").value = preferences.mqttPass;
+
+          if (getPreferencesDebug) console.log('Setting batDischgd to:', preferences.batDischgd);
+          document.getElementById("batteryDischargedMillivolts").value = preferences.batDischgd;
+
+          if (getPreferencesDebug) console.log('Setting batChargd to:', preferences.batChargd);
+          document.getElementById("batteryFullyChargedMillivolts").value = preferences.batChargd;
+
+          if (getPreferencesDebug) console.log('Setting vRef to:', preferences.vRef);
+          document.getElementById("vRef").value = preferences.vRef;
+          
+          if (getPreferencesDebug) console.log('Setting timeToDisplayOff to:', preferences.tToDispOff);
+          document.getElementById("timeToDisplayOff").value = preferences.tToDispOff;
+
+          if (getPreferencesDebug) console.log('Setting timeBetweenMQTTPublish to:', preferences.tToPubMQTT);
+          document.getElementById("timeBetweenMQTTPublish").value = preferences.tToPubMQTT;
+
+          if (getPreferencesDebug) console.log('Setting timeBetweenESPNowPublish to:', preferences.tToPubESPNow);
+          document.getElementById("timeBetweenESPNowPublish").value = preferences.tToPubESPNow;
+
+          if (getPreferencesDebug) console.log('Setting timeToKeepAliveMQTT to:', preferences.tKeepAlMQTT);
+          document.getElementById("timeToKeepAliveMQTT").value = preferences.tKeepAlMQTT;
+
+          if (getPreferencesDebug) console.log('Setting timeToKeepAliveESPNow to:', preferences.tKeepAlESPNow);
+          document.getElementById("timeToKeepAliveESPNow").value = preferences.tKeepAlESPNow;
+
+          if (getPreferencesDebug) console.log('Setting displayShowTemperature to:', preferences.showTemp);
+          document.getElementById("displayShowTemperature").checked = preferences.showTemp;
+
+          if (getPreferencesDebug) console.log('Setting displayShowHumidity to:', preferences.showHumidity);
+          document.getElementById("displayShowHumidity").checked = preferences.showHumidity;
+
+          if (getPreferencesDebug) console.log('Setting displayShowBattery to:', preferences.showBattery);
+          document.getElementById("displayShowBattery").checked = preferences.showBattery;
+
+          if (getPreferencesDebug) console.log('Setting displayShowCO2 to:', preferences.showCO2);
+          document.getElementById("displayShowCO2").checked = preferences.showCO2;
+
+          if (getPreferencesDebug) console.log('Setting displayShowPM25 to:', preferences.showPM25);
+          document.getElementById("displayShowPM25").checked = preferences.showPM25;
+
+          if (getPreferencesDebug) console.log('Setting displayOffOnExternalPower to:', preferences.dispOffOnExP);
+          document.getElementById("displayOffOnExternalPower").checked = preferences.dispOffOnExP;
+
+          if (getPreferencesDebug) console.log('Setting displayReverse to:', preferences.displayReverse);
+          document.getElementById("displayReverse").checked = preferences.displayReverse;
+
+          if (getPreferencesDebug) console.log('Setting DisplayBright to:', preferences.DisplayBright);
+          document.getElementById("displayBrightness").value = preferences.DisplayBright;
+
+          if (getPreferencesDebug) console.log('Setting debugSensors to:', preferences.debugSensors);
+          document.getElementById("debugSensors").checked = preferences.debugSensors;
+          
+
+        })
+        .catch(error => console.error('Error al obtener preferencias:', error));
     }
 
     // Function to save preferences
@@ -481,7 +534,7 @@
     }
 
     // Set initial values when the page loads
-    document.addEventListener("DOMContentLoaded", setInitialValues);
+    document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
   </script>
 
 
