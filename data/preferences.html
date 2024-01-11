@@ -4,149 +4,207 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preferences Configuration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: grid;
+            gap: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
 <h1>Preferences Configuration</h1>
 
 <form id="preferencesForm">
-    <!-- Calibration -->
-    <label for="customCalibrationValue">Custom Calibration Value:</label>
-    <input type="number" id="customCalibrationValue" name="customCalibrationValue"><br>
+    <!-- Calibration Group -->
+    <fieldset>
+        <legend>Calibration</legend>
+        <label for="customCalibrationValue">Custom Calibration Value:</label>
+        <input type="number" id="customCalibrationValue" name="customCalibrationValue">
+    </fieldset>
 
-    <!-- Temperature Offset -->
-    <label for="tempOffset">Temperature Offset:</label>
-    <input type="number" step="0.1" id="tempOffset" name="tempOffset"><br>
+    <!-- Temperature Group -->
+    <fieldset>
+        <legend>Temperature</legend>
+        <label for="tempOffset">Temperature Offset:</label>
+        <input type="number" step="0.1" id="tempOffset" name="tempOffset">
+        <label for="showFahrenheit">Show Fahrenheit:</label>
+        <input type="checkbox" id="showFahrenheit" name="showFahrenheit">
+    </fieldset>
 
-    <!-- Altitude -->
-    <label for="altitudeMeters">Altitude (meters):</label>
-    <input type="number" id="altitudeMeters" name="altitudeMeters"><br>
+    <!-- Altitude Group -->
+    <fieldset>
+        <legend>Altitude</legend>
+        <label for="altitudeMeters">Altitude (meters):</label>
+        <input type="number" id="altitudeMeters" name="altitudeMeters">
+    </fieldset>
 
-    <!-- Auto Calibration -->
-    <label for="autoSelfCalibration">Auto Self Calibration:</label>
-    <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration"><br>
+    <!-- Auto Calibration Group -->
+    <fieldset>
+        <legend>Auto Calibration</legend>
+        <label for="autoSelfCalibration">Auto Self Calibration:</label>
+        <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
+    </fieldset>
 
-    <!-- CO2 Ranges -->
-    <label for="co2OrangeRange">CO2 Orange Range:</label>
-    <input type="number" id="co2OrangeRange" name="co2OrangeRange"><br>
-    <label for="co2RedRange">CO2 Red Range:</label>
-    <input type="number" id="co2RedRange" name="co2RedRange"><br>
+    <!-- CO2 Ranges Group -->
+    <fieldset>
+        <legend>CO2 Ranges</legend>
+        <label for="co2OrangeRange">CO2 Orange Range:</label>
+        <input type="number" id="co2OrangeRange" name="co2OrangeRange">
+        <label for="co2RedRange">CO2 Red Range:</label>
+        <input type="number" id="co2RedRange" name="co2RedRange">
+    </fieldset>
 
-    <!-- Display Brightness -->
-    <label for="displayBrightness">Display Brightness:</label>
-    <input type="number" id="displayBrightness" name="displayBrightness"><br>
+    <!-- Display Brightness Group -->
+    <fieldset>
+        <legend>Display Brightness</legend>
+        <label for="displayBrightness">Display Brightness:</label>
+        <input type="number" id="displayBrightness" name="displayBrightness">
+    </fieldset>
 
-    <!-- NeoPixel Brightness -->
-    <label for="neopixelBrightness">NeoPixel Brightness:</label>
-    <input type="number" id="neopixelBrightness" name="neopixelBrightness"><br>
+    <!-- NeoPixel Group -->
+    <fieldset>
+        <legend>NeoPixel</legend>
+        <label for="neopixelBrightness">NeoPixel Brightness:</label>
+        <input type="number" id="neopixelBrightness" name="neopixelBrightness">
+        <label for="selectedNeopixelType">Selected NeoPixel Type:</label>
+        <input type="number" id="selectedNeopixelType" name="selectedNeopixelType">
+    </fieldset>
 
-    <!-- Selected NeoPixel Type -->
-    <label for="selectedNeopixelType">Selected NeoPixel Type:</label>
-    <input type="number" id="selectedNeopixelType" name="selectedNeopixelType"><br>
+    <!-- Connectivity Group -->
+    <fieldset>
+        <legend>Connectivity</legend>
+        <label for="activeBLE">Active BLE:</label>
+        <input type="checkbox" id="activeBLE" name="activeBLE">
+        <label for="activeWIFI">Active WIFI:</label>
+        <input type="checkbox" id="activeWIFI" name="activeWIFI">
+        <label for="activeMQTT">Active MQTT:</label>
+        <input type="checkbox" id="activeMQTT" name="activeMQTT">
+        <label for="activeESPNOW">Active ESPNOW:</label>
+        <input type="checkbox" id="activeESPNOW" name="activeESPNOW">
+    </fieldset>
 
-    <!-- BLE, WIFI, MQTT, ESPNOW -->
-    <label for="activeBLE">Active BLE:</label>
-    <input type="checkbox" id="activeBLE" name="activeBLE"><br>
-    <label for="activeWIFI">Active WIFI:</label>
-    <input type="checkbox" id="activeWIFI" name="activeWIFI"><br>
-    <label for="activeMQTT">Active MQTT:</label>
-    <input type="checkbox" id="activeMQTT" name="activeMQTT"><br>
-    <label for="activeESPNOW">Active ESPNOW:</label>
-    <input type="checkbox" id="activeESPNOW" name="activeESPNOW"><br>
+    <!-- Root Topic Group -->
+    <fieldset>
+        <legend>Root Topic</legend>
+        <label for="rootTopic">Root Topic:</label>
+        <input type="text" id="rootTopic" name="rootTopic">
+    </fieldset>
 
-    <!-- Root Topic -->
-    <label for="rootTopic">Root Topic:</label>
-    <input type="text" id="rootTopic" name="rootTopic"><br>
+    <!-- Battery Group -->
+    <fieldset>
+        <legend>Battery</legend>
+        <label for="batteryDischargedMillivolts">Battery Discharged Millivolts:</label>
+        <input type="number" id="batteryDischargedMillivolts" name="batteryDischargedMillivolts">
+        <label for="batteryFullyChargedMillivolts">Battery Fully Charged Millivolts:</label>
+        <input type="number" id="batteryFullyChargedMillivolts" name="batteryFullyChargedMillivolts">
+    </fieldset>
 
-    <!-- Battery Millivolts -->
-    <label for="batteryDischargedMillivolts">Battery Discharged Millivolts:</label>
-    <input type="number" id="batteryDischargedMillivolts" name="batteryDischargedMillivolts"><br>
-    <label for="batteryFullyChargedMillivolts">Battery Fully Charged Millivolts:</label>
-    <input type="number" id="batteryFullyChargedMillivolts" name="batteryFullyChargedMillivolts"><br>
+    <!-- VRef Group -->
+    <fieldset>
+        <legend>VRef</legend>
+        <label for="vRef">VRef:</label>
+        <input type="number" id="vRef" name="vRef">
+    </fieldset>
 
-    <!-- VRef -->
-    <label for="vRef">VRef:</label>
-    <input type="number" id="vRef" name="vRef"><br>
+    <!-- MQTT Credentials Group -->
+    <fieldset>
+        <legend>MQTT Credentials</legend>
+        <label for="mqttClientId">MQTT Client ID:</label>
+        <input type="text" id="mqttClientId" name="mqttClientId">
+        <label for="mqttBroker">MQTT Broker:</label>
+        <input type="text" id="mqttBroker" name="mqttBroker">
+        <label for="mqttUser">MQTT User:</label>
+        <input type="text" id="mqttUser" name="mqttUser">
+        <label for="mqttPass">MQTT Password:</label>
+        <input type="password" id="mqttPass" name="mqttPass">
+    </fieldset>
 
-    <!-- MQTT Credentials -->
-    <label for="mqttClientId">MQTT Client ID:</label>
-    <input type="text" id="mqttClientId" name="mqttClientId"><br>
-    <label for="mqttBroker">MQTT Broker:</label>
-    <input type="text" id="mqttBroker" name="mqttBroker"><br>
-    <label for="mqttUser">MQTT User:</label>
-    <input type="text" id="mqttUser" name="mqttUser"><br>
-    <label for="mqttPass">MQTT Password:</label>
-    <input type="password" id="mqttPass" name="mqttPass"><br>
+    <!-- Time Settings Group -->
+    <fieldset>
+        <legend>Time Settings</legend>
+        <label for="timeToDisplayOff">Time to Display Off (seconds):</label>
+        <input type="number" id="timeToDisplayOff" name="timeToDisplayOff">
+        <label for="timeBetweenMQTTPublish">Time Between MQTT Publish (seconds):</label>
+        <input type="number" id="timeBetweenMQTTPublish" name="timeBetweenMQTTPublish">
+        <label for="timeBetweenESPNowPublish">Time Between ESPNOW Publish (seconds):</label>
+        <input type="number" id="timeBetweenESPNowPublish" name="timeBetweenESPNowPublish">
+        <label for="timeToKeepAliveMQTT">Time to Keep Alive MQTT (seconds):</label>
+        <input type="number" id="timeToKeepAliveMQTT" name="timeToKeepAliveMQTT">
+        <label for="timeToKeepAliveESPNow">Time to Keep Alive ESPNOW (seconds):</label>
+        <input type="number" id="timeToKeepAliveESPNow" name="timeToKeepAliveESPNow">
+    </fieldset>
 
-    <!-- Time Settings -->
-    <label for="timeToDisplayOff">Time to Display Off (seconds):</label>
-    <input type="number" id="timeToDisplayOff" name="timeToDisplayOff"><br>
-    <label for="timeBetweenMQTTPublish">Time Between MQTT Publish (seconds):</label>
-    <input type="number" id="timeBetweenMQTTPublish" name="timeBetweenMQTTPublish"><br>
-    <label for="timeBetweenESPNowPublish">Time Between ESPNOW Publish (seconds):</label>
-    <input type="number" id="timeBetweenESPNowPublish" name="timeBetweenESPNowPublish"><br>
-    <label for="timeToKeepAliveMQTT">Time to Keep Alive MQTT (seconds):</label>
-    <input type="number" id="timeToKeepAliveMQTT" name="timeToKeepAliveMQTT"><br>
-    <label for="timeToKeepAliveESPNow">Time to Keep Alive ESPNOW (seconds):</label>
-    <input type="number" id="timeToKeepAliveESPNow" name="timeToKeepAliveESPNow"><br>
+    <!-- Display Off on External Power Group -->
+    <fieldset>
+        <legend>Display Off on External Power</legend>
+        <label for="displayOffOnExternalPower">Display Off on External Power:</label>
+        <input type="checkbox" id="displayOffOnExternalPower" name="displayOffOnExternalPower">
+    </fieldset>
 
-    <!-- Display Off on External Power -->
-    <label for="displayOffOnExternalPower">Display Off on External Power:</label>
-    <input type="checkbox" id="displayOffOnExternalPower" name="displayOffOnExternalPower"><br>
+    <!-- WiFi Credentials Group -->
+    <fieldset>
+        <legend>WiFi Credentials</legend>
+        <label for="wifiSSID">WiFi SSID:</label>
+        <input type="text" id="wifiSSID" name="wifiSSID">
+        <label for="wifiPass">WiFi Password:</label>
+        <input type="password" id="wifiPass" name="wifiPass">
+    </fieldset>
 
-    <!-- WiFi Credentials -->
-    <label for="wifiSSID">WiFi SSID:</label>
-    <input type="text" id="wifiSSID" name="wifiSSID"><br>
-    <label for="wifiPass">WiFi Password:</label>
-    <input type="password" id="wifiPass" name="wifiPass"><br>
+    <!-- Host Name Group -->
+    <fieldset>
+        <legend>Host Name</legend>
+        <label for="hostName">Host Name:</label>
+        <input type="text" id="hostName" name="hostName">
+    </fieldset>
 
-    <!-- Host Name -->
-    <label for="hostName">Host Name:</label>
-    <input type="text" id="hostName" name="hostName"><br>
+    <!-- CO2 Sensor Group -->
+    <fieldset>
+        <legend>CO2 Sensor</legend>
+        <label for="selectedCO2Sensor">Selected CO2 Sensor:</label>
+        <input type="number" id="selectedCO2Sensor" name="selectedCO2Sensor">
+    </fieldset>
 
-    <!-- Selected CO2 Sensor -->
-    <label for="selectedCO2Sensor">Selected CO2 Sensor:</label>
-    <input type="number" id="selectedCO2Sensor" name="selectedCO2Sensor"><br>
+    <!-- Sensor Debug Group -->
+    <fieldset>
+        <legend>Sensor Debug</legend>
+        <label for="debugSensors">Debug Sensors:</label>
+        <input type="checkbox" id="debugSensors" name="debugSensors">
+    </fieldset>
 
-    <!-- Sensor Debug -->
-    <label for="debugSensors">Debug Sensors:</label>
-    <input type="checkbox" id="debugSensors" name="debugSensors"><br>
-
-    <!-- Display Reverse -->
-    <label for="displayReverse">Display Reverse:</label>
-    <input type="checkbox" id="displayReverse" name="displayReverse"><br>
-
-    <!-- Show Fahrenheit -->
-    <label for="showFahrenheit">Show Fahrenheit:</label>
-    <input type="checkbox" id="showFahrenheit" name="showFahrenheit"><br>
-
-    <!-- Measurement Interval -->
-    <label for="measurementInterval">Measurement Interval (seconds):</label>
-    <input type="number" id="measurementInterval" name="measurementInterval"><br>
-
-    <!-- Outputs Mode Relay -->
-    <label for="outputsModeRelay">Outputs Mode Relay:</label>
-    <input type="checkbox" id="outputsModeRelay" name="outputsModeRelay"><br>
-
-    <!-- ESP-NOW Settings -->
-    <label for="channelESPNow">ESP-NOW Channel:</label>
-    <input type="number" id="channelESPNow" name="channelESPNow"><br>
-    <label for="boardIdESPNow">ESP-NOW Board ID:</label>
-    <input type="number" id="boardIdESPNow" name="boardIdESPNow"><br>
-    <label for="peerESPNowAddress">ESP-NOW Peer Address:</label>
-    <input type="text" id="peerESPNowAddress" name="peerESPNowAddress"><br>
-
-    <!-- Display Preferences -->
-    <label for="displayShowTemperature">Display Show Temperature:</label>
-    <input type="checkbox" id="displayShowTemperature" name="displayShowTemperature"><br>
-    <label for="displayShowHumidity">Display Show Humidity:</label>
-    <input type="checkbox" id="displayShowHumidity" name="displayShowHumidity"><br>
-    <label for="displayShowBattery">Display Show Battery:</label>
-    <input type="checkbox" id="displayShowBattery" name="displayShowBattery"><br>
-    <label for="displayShowCO2">Display Show CO2:</label>
-    <input type="checkbox" id="displayShowCO2" name="displayShowCO2"><br>
-    <label for="displayShowPM25">Display Show PM25:</label>
-    <input type="checkbox" id="displayShowPM25" name="displayShowPM25"><br>
+    <!-- Display Preferences Group -->
+    <fieldset>
+        <legend>Display Preferences</legend>
+        <label for="displayShowTemperature">Display Show Temperature:</label>
+        <input type="checkbox" id="displayShowTemperature" name="displayShowTemperature">
+        <label for="displayShowHumidity">Display Show Humidity:</label>
+        <input type="checkbox" id="displayShowHumidity" name="displayShowHumidity">
+        <label for="displayShowBattery">Display Show Battery:</label>
+        <input type="checkbox" id="displayShowBattery" name="displayShowBattery">
+        <label for="displayShowCO2">Display Show CO2:</label>
+        <input type="checkbox" id="displayShowCO2" name="displayShowCO2">
+        <label for="displayShowPM25">Display Show PM25:</label>
+        <input type="checkbox" id="displayShowPM25" name="displayShowPM25">
+    </fieldset>
 
     <button type="button" onclick="savePreferences()">Save Preferences</button>
 </form>
@@ -155,50 +213,8 @@
     function savePreferences() {
         // Collect preferences data from the form
         var preferencesData = {};
-        preferencesData.customCalibrationValue = document.getElementById('customCalibrationValue').value;
-        preferencesData.tempOffset = document.getElementById('tempOffset').value;
-        preferencesData.altitudeMeters = document.getElementById('altitudeMeters').value;
-        preferencesData.autoSelfCalibration = document.getElementById('autoSelfCalibration').checked;
-        preferencesData.co2OrangeRange = document.getElementById('co2OrangeRange').value;
-        preferencesData.co2RedRange = document.getElementById('co2RedRange').value;
-        preferencesData.displayBrightness = document.getElementById('displayBrightness').value;
-        preferencesData.neopixelBrightness = document.getElementById('neopixelBrightness').value;
-        preferencesData.selectedNeopixelType = document.getElementById('selectedNeopixelType').value;
-        preferencesData.activeBLE = document.getElementById('activeBLE').checked;
-        preferencesData.activeWIFI = document.getElementById('activeWIFI').checked;
-        preferencesData.activeMQTT = document.getElementById('activeMQTT').checked;
-        preferencesData.activeESPNOW = document.getElementById('activeESPNOW').checked;
-        preferencesData.rootTopic = document.getElementById('rootTopic').value;
-        preferencesData.batteryDischargedMillivolts = document.getElementById('batteryDischargedMillivolts').value;
-        preferencesData.batteryFullyChargedMillivolts = document.getElementById('batteryFullyChargedMillivolts').value;
-        preferencesData.vRef = document.getElementById('vRef').value;
-        preferencesData.mqttClientId = document.getElementById('mqttClientId').value;
-        preferencesData.mqttBroker = document.getElementById('mqttBroker').value;
-        preferencesData.mqttUser = document.getElementById('mqttUser').value;
-        preferencesData.mqttPass = document.getElementById('mqttPass').value;
-        preferencesData.timeToDisplayOff = document.getElementById('timeToDisplayOff').value;
-        preferencesData.timeBetweenMQTTPublish = document.getElementById('timeBetweenMQTTPublish').value;
-        preferencesData.timeBetweenESPNowPublish = document.getElementById('timeBetweenESPNowPublish').value;
-        preferencesData.timeToKeepAliveMQTT = document.getElementById('timeToKeepAliveMQTT').value;
-        preferencesData.timeToKeepAliveESPNow = document.getElementById('timeToKeepAliveESPNow').value;
-        preferencesData.displayOffOnExternalPower = document.getElementById('displayOffOnExternalPower').checked;
-        preferencesData.wifiSSID = document.getElementById('wifiSSID').value;
-        preferencesData.wifiPass = document.getElementById('wifiPass').value;
-        preferencesData.hostName = document.getElementById('hostName').value;
-        preferencesData.selectedCO2Sensor = document.getElementById('selectedCO2Sensor').value;
-        preferencesData.debugSensors = document.getElementById('debugSensors').checked;
-        preferencesData.displayReverse = document.getElementById('displayReverse').checked;
-        preferencesData.showFahrenheit = document.getElementById('showFahrenheit').checked;
-        preferencesData.measurementInterval = document.getElementById('measurementInterval').value;
-        preferencesData.outputsModeRelay = document.getElementById('outputsModeRelay').checked;
-        preferencesData.channelESPNow = document.getElementById('channelESPNow').value;
-        preferencesData.boardIdESPNow = document.getElementById('boardIdESPNow').value;
-        preferencesData.peerESPNowAddress = document.getElementById('peerESPNowAddress').value;
-        preferencesData.displayShowTemperature = document.getElementById('displayShowTemperature').checked;
-        preferencesData.displayShowHumidity = document.getElementById('displayShowHumidity').checked;
-        preferencesData.displayShowBattery = document.getElementById('displayShowBattery').checked;
-        preferencesData.displayShowCO2 = document.getElementById('displayShowCO2').checked;
-        preferencesData.displayShowPM25 = document.getElementById('displayShowPM25').checked;
+        // Populate preferencesData with form values
+        // ...
 
         // Send the preferences data to the server
         var xhr = new XMLHttpRequest();
