@@ -29,12 +29,12 @@
 
         <div>
           <label for="wifiSSID">WiFi SSID:</label>
-          <input type="text" id="wifiSSID" name="wifiSSID" value="">
+          <input type="text" id="wifiSSID" name="wifiSSID" value="" readonly>
         </div>
 
         <div>
           <label for="wifiPass">WiFi Password:</label>
-          <input type="password" id="wifiPass" name="wifiPass" value="">
+          <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
         </div>
 
       </fieldset>
@@ -109,11 +109,16 @@
           <input type="number" id="altitudeMeters" name="altitudeMeters" value="">
         </div>
       </fieldset>
+      <div>
+        <label for="measurementInterval">Measurement Interval (seconds):</label>
+        <input type="number" id="measurementInterval" name="measurementInterval" value="">
+      </div>
     </fieldset>
 
-    <!-- NeoPixel Group -->
+    <!-- Outputs Group -->
     <fieldset>
       <legend>Outputs</legend>
+      <!-- NeoPixel Group -->
       <fieldset>
         <legend>NeoPixel</legend>
 
@@ -127,6 +132,10 @@
           <input type="number" id="selectedNeopixelType" name="selectedNeopixelType" value="">
         </div>
       </fieldset>
+      <div>
+        <label for="outputsModeRelay">Outputs Mode Relay:</label>
+        <input type="checkbox" id="outputsModeRelay" name="outputsModeRelay">
+      </div>
     </fieldset>
 
     <!-- Connectivity Group -->
@@ -178,6 +187,26 @@
         <input type="password" id="mqttPass" name="mqttPass" value="">
       </div>
     </fieldset>
+
+    <!-- ESP-NOW Configuration Group -->
+    <fieldset>
+      <legend>ESP-NOW Configuration</legend>
+
+      <div>
+        <label for="channelESPNow">Channel:</label>
+        <input type="number" id="channelESPNow" name="channelESPNow" value="">
+      </div>
+
+      <div>
+        <label for="boardIdESPNow">Board ID:</label>
+        <input type="number" id="boardIdESPNow" name="boardIdESPNow" value="">
+      </div>
+
+      <div>
+        <label for="peerESPNowAddress">Peer Address:</label>
+        <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
+      </div>
+    </fieldset>    
 
     <!-- Battery Group -->
     <fieldset>
@@ -291,50 +320,6 @@
 
   <script>
 
-    // Function to set initial values in the form
-    // function setInitialValues() {
-    //   document.getElementById("customCalibrationValue").value = customCalibrationValue;
-    //   document.getElementById("tempOffset").value = tempOffset;
-    //   document.getElementById("altitudeMeters").value = altitudeMeters;
-    //   document.getElementById("autoSelfCalibration").checked = autoSelfCalibration;
-    //   document.getElementById("co2OrangeRange").value = co2OrangeRange;
-    //   document.getElementById("co2RedRange").value = co2RedRange;
-    //   document.getElementById("displayBrightness").value = displayBrightness;
-    //   document.getElementById("neopixelBrightness").value = neopixelBrightness;
-    //   document.getElementById("selectedNeopixelType").value = selectedNeopixelType;
-    //   document.getElementById("activeBLE").checked = activeBLE;
-    //   document.getElementById("activeWIFI").checked = activeWIFI;
-    //   document.getElementById("activeMQTT").checked = activeMQTT;
-    //   document.getElementById("activeESPNOW").checked = activeESPNOW;
-    //   document.getElementById("rootTopic").value = rootTopic;
-    //   document.getElementById("batteryDischargedMillivolts").value = batteryDischargedMillivolts;
-    //   document.getElementById("batteryFullyChargedMillivolts").value = batteryFullyChargedMillivolts;
-    //   document.getElementById("vRef").value = vRef;
-    //   document.getElementById("timeToDisplayOff").value = timeToDisplayOff;
-    //   document.getElementById("timeBetweenMQTTPublish").value = timeBetweenMQTTPublish;
-    //   document.getElementById("timeBetweenESPNowPublish").value = timeBetweenESPNowPublish;
-    //   document.getElementById("timeToKeepAliveMQTT").value = timeToKeepAliveMQTT;
-    //   document.getElementById("timeToKeepAliveESPNow").value = timeToKeepAliveESPNow;
-    //   document.getElementById("displayOffOnExternalPower").checked = displayOffOnExternalPower;
-    //   document.getElementById("wifiSSID").value = wifiSSID;
-    //   document.getElementById("wifiPass").value = wifiPass;
-    //   document.getElementById("hostName").value = hostName;
-    //   document.getElementById("selectedCO2Sensor").value = selectedCO2Sensor;
-    //   document.getElementById("debugSensors").checked = debugSensors;
-    //   document.getElementById("displayReverse").checked = displayReverse;
-    //   document.getElementById("showFahrenheit").checked = showFahrenheit;
-    //   document.getElementById("measurementInterval").value = measurementInterval;
-    //   document.getElementById("outputsModeRelay").checked = outputsModeRelay;
-    //   document.getElementById("channelESPNow").value = channelESPNow;
-    //   document.getElementById("boardIdESPNow").value = boardIdESPNow;
-    //   document.getElementById("peerESPNowAddress").value = peerESPNowAddress;
-    //   document.getElementById("displayShowTemperature").checked = displayShowTemperature;
-    //   document.getElementById("displayShowHumidity").checked = displayShowHumidity;
-    //   document.getElementById("displayShowBattery").checked = displayShowBattery;
-    //   document.getElementById("displayShowCO2").checked = displayShowCO2;
-    //   document.getElementById("displayShowPM25").checked = displayShowPM25;
-    // }
-
     // Function to load preferences from the server and populate the form
     function loadPreferencesFromServer() {
       let getPreferencesDebug = true; // Set to false to disable debug output
@@ -355,8 +340,8 @@
           if (getPreferencesDebug) console.log('Setting wifiSSID to:', preferences.wifiSSID);
           document.getElementById("wifiSSID").value = preferences.wifiSSID;
 
-          if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
-          document.getElementById("wifiPass").value = preferences.wifiPass;
+          // if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
+          // document.getElementById("wifiPass").value = preferences.wifiPass;
 
           if (getPreferencesDebug) console.log('Setting hostName to:', preferences.hostName);
           document.getElementById("hostName").value = preferences.hostName;
@@ -384,6 +369,21 @@
 
           if (getPreferencesDebug) console.log('Setting altitudeMeters to:', preferences.altidudeMeters);
           document.getElementById("altitudeMeters").value = preferences.altidudeMeters;
+
+          if (getPreferencesDebug) console.log('Setting measurementInterval to:', preferences.measurementInterval);
+          document.getElementById("measurementInterval").value = preferences.measurementInterval;
+
+          if (getPreferencesDebug) console.log('Setting outputsModeRelay to:', preferences.outputsModeRelay);
+          document.getElementById("outputsModeRelay").checked = preferences.outputsModeRelay;
+
+          if (getPreferencesDebug) console.log('Setting channelESPNow to:', preferences.channelESPNow);
+          document.getElementById("channelESPNow").value = preferences.channelESPNow;
+
+          if (getPreferencesDebug) console.log('Setting boardIdESPNow to:', preferences.boardIdESPNow);
+          document.getElementById("boardIdESPNow").value = preferences.boardIdESPNow;
+
+          if (getPreferencesDebug) console.log('Setting peerESPNowAddress to:', preferences.peerESPNowAddress);
+          document.getElementById("peerESPNowAddress").value = preferences.peerESPNowAddress;
 
           if (getPreferencesDebug) console.log('Setting neopixBright to:', preferences.neopixBright);
           document.getElementById("neopixelBrightness").value = preferences.neopixBright;
@@ -526,7 +526,7 @@
       // Handle the response from the server
       xhr.onload = function () {
         if (xhr.status === 200) {
-          alert("Preferences updated successfully!");
+          console.log("Preferences updated successfully!");
         } else {
           alert("Error updating preferences. Please try again.");
         }

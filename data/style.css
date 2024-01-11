@@ -39,6 +39,14 @@ body {
   margin: 20px auto;
 }
 
+h1 {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  justify-content: center;
+}
+
 #preferencesForm {
   background-color: #ffffff;
   border-radius: 8px;
@@ -60,7 +68,7 @@ legend {
 }
 
 label {
-  display: block;
+  display: inline-block;
   margin-bottom: 8px;
 }
 

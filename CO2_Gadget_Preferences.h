@@ -244,17 +244,17 @@ String getPreferencesAsJson()
   doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
   doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
   doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
-  doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
+  // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
   doc["hostName"] = preferences.getString("hostName", hostName);
   doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
   doc["debugSensors"] = preferences.getBool("debugSensors", false);
   doc["displayReverse"] = preferences.getBool("displayReverse", false);
   doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-  doc["measInterval"] = preferences.getInt("measInterval", 10);
+  doc["measurementInterval"] = preferences.getInt("measInterval", 10);
   doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
   doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
   doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
-  doc["peerESPNow"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
+  doc["peerESPNowAddress"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
   doc["showTemp"] = preferences.getBool("showTemp", true);
   doc["showHumidity"] = preferences.getBool("showHumidity", true);
   doc["showBattery"] = preferences.getBool("showBattery", true);
@@ -269,6 +269,57 @@ String getPreferencesAsJson()
   Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
 
   return preferencesJson;
+}
+
+boolean handleSavePreferencesfromJSON(String jsonPreferences)
+{
+  // Crea un objeto JSON para almacenar las preferencias
+  DynamicJsonDocument jsonDocument(1024); // Ajusta el tamaño según sea necesario
+
+  // Intenta deserializar el cuerpo JSON de la solicitud
+  DeserializationError error = deserializeJson(jsonDocument, jsonPreferences);
+  if (error)
+  {
+    // Manejar el error al deserializar JSON
+    Serial.print("Error al deserializar JSON: ");
+    Serial.println(error.c_str());
+    // request->send(400, "text/plain", "Error en el formato de las preferencias");
+    return false;
+  }
+
+  // Guarda las preferencias en la memoria no volátil (Preferences)
+  try
+  {
+    preferences.begin("CO2-Gadget", false);
+    // preferences.putInt("pwmChannel", jsonDocument["pwmChannel"]);
+    // preferences.putInt("pwmPin", jsonDocument["pwmPin"]);
+    // preferences.putInt("dutyCycle", jsonDocument["dutyCycle"]);
+    // preferences.putInt("dutyCycleStep", jsonDocument["dutyCycleStep"]);
+    // preferences.putInt("pwmResolution", jsonDocument["pwmResolution"]);
+    // preferences.putInt("pwmFrequency", jsonDocument["pwmFrequency"]);
+
+    // preferences.putFloat("SweepStart", jsonDocument["SweepStartVoltage"]);
+    // preferences.putFloat("SweepEnd", jsonDocument["SweepEndVoltage"]);
+    // preferences.putFloat("SweepInc", jsonDocument["SweepVoltageIncrement"]);
+
+    // preferences.putBool("usePWM", jsonDocument["usePWM"]);
+    // preferences.putBool("useMCP4725", jsonDocument["useMCP4725"]);
+    // preferences.putBool("teleportSerial", jsonDocument["teleportSerialOutput"]);
+    preferences.end();
+  }
+  catch (const std::exception &e)
+  {
+    // Manage error while storing preferences
+    Serial.print("Error storing preferences: ");
+    Serial.println(e.what());
+    // request->send(500, "text/plain", "Internal Server Error Storing Preferences"); 
+    return false;
+  }
+
+  // Envía una respuesta exitosa
+  // request->send(200, "text/plain", "Preferences saved successfully");
+  Serial.println("Preferences saved successfully @ handleSavePreferencesfromJSON()");
+  return true;
 }
 
 #endif  // CO2_Gadget_Preferences_h

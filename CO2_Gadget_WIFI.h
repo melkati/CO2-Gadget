@@ -342,25 +342,47 @@ void initWebServer() {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
-    // // Handler to process preferences
-    // server.on("/savePreferences", HTTP_POST, [](AsyncWebServerRequest *request) {
-    //     // Process the POST request and apply changes in preferences
-    //     String preferencesData = request->getParam("plain")->value();
+    // Handler to process preferences
+    server.on("/savePreferences2", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // Process the POST request and apply changes in preferences
+        String preferencesData = request->getParam("plain")->value();
 
-    //     // Use ArduinoJson to parse the received JSON data
-    //     DynamicJsonDocument jsonDoc(4096);
-    //     deserializeJson(jsonDoc, preferencesData);
+        // Use ArduinoJson to parse the received JSON data
+        DynamicJsonDocument jsonDoc(4096);
+        deserializeJson(jsonDoc, preferencesData);
 
-    //     // Update preferences
-    //     // ...
+        // Update preferences
+        // ...
+        Serial.println("-->[WiFi] Received preferences to save:");
+        serializeJsonPretty(jsonDoc, Serial);
+        Serial.println();        
 
-    //     // Send response to the client
-    //     request->send(200, "application/json", "{\"message\":\"Preferences updated successfully\"}");
-    // });
+        // Send response to the client
+        request->send(200, "application/json", "{\"message\":\"Preferences updated successfully\"}");
+    });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
+
+    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                                         {
+  StaticJsonDocument<200> data;
+  if (json.is<JsonArray>())
+  {
+    data = json.as<JsonArray>();
+  }
+  else if (json.is<JsonObject>())
+  {
+    data = json.as<JsonObject>();
+  }
+  String response;
+  serializeJson(data, response);
+  request->send(200, "application/json", response);
+  Serial.print("Received data: "); Serial.println(response);
+  handleSavePreferencesfromJSON(response); });
+
+  server.addHandler(handler);    
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {

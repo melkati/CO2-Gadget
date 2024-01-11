@@ -116,6 +116,7 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include "AsyncJson.h"
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
 #endif
