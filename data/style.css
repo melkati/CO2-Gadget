@@ -3,33 +3,62 @@
   --bg-color: #ffffff;
   --title-color: #96eeea;
   --icon-color: #6e6e6e;
-  --circle-color:  #eee;
-} 
-[theme='light']{
+  --circle-color: #eee;
+}
+
+[theme='light'] {
   --font-color: #666;
   --bg-color: #ffffff;
   --title-color: #96eeea;
   --icon-color: #6e6e6e;
-  --circle-color:  #eee;
+  --circle-color: #eee;
 }
-[theme='dark']{
+
+[theme='dark'] {
   --font-color: #252525;
   --bg-color: #000000;
   --title-color: #29948f;
   --icon-color: #d1d1d1;
-  --circle-color:  #474747;
+  --circle-color: #474747;
 }
-body{
+
+body {
   background-color: var(--bg-color);
+  font-family: Arial, sans-serif;
+  margin: 20px auto;
 }
+
+h1 {
+  text-align: center;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label, legend {
+  font-weight: bold;
+}
+
+button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 .tag {
   font: bolder large arial;
   font-family: Arial;
-  display: flex; 
+  display: flex;
   justify-content: space-around;
-  background-color:var(--title-color);
+  background-color: var(--title-color);
   color: var(--font-color);
 }
+
 .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
@@ -37,7 +66,7 @@ body{
 
 .single-chart {
   width: 33%;
-  justify-content: space-around ;
+  justify-content: space-around;
 }
 
 .circular-chart {
@@ -85,15 +114,16 @@ body{
   text-anchor: middle;
 }
 
-.iconDarkLight{
+.iconDarkLight {
   position: absolute;
   top: 1.2%;
   right: 2%;
   background-color: transparent;
   transition: transform .05s;
 }
-.iconDarkLight:active{
-transform: scale(1.5);
+
+.iconDarkLight:active {
+  transform: scale(1.5);
 }
 
 /*smartphone styles*/
@@ -102,6 +132,7 @@ transform: scale(1.5);
     flex-flow: column wrap;
     align-items: center;
   }
+
   .single-chart {
     display: flex;
     justify-content: space-around;
@@ -109,6 +140,7 @@ transform: scale(1.5);
     width: 32vh;
     flex-flow: wrap;
   }
+
   .tag {
     font: bolder condensed 90% arial;
     writing-mode: vertical-rl;
