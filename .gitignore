@@ -7,3 +7,5 @@ Bootlogo
 extra_envs.ini
 credentials.h
 
+auto_firmware_version.py
+platformio_extra_configs.ini
