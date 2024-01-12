@@ -125,8 +125,8 @@ void publishStrMQTT(String topic, String payload) {
 void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
     if (!inMenu) {
-        Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
-        Serial.println("topic: " + topic);
+        // Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
+        // Serial.println("topic: " + topic);
         mqttClient.publish(topic.c_str(), payload.c_str(), true);
     }
 #endif
@@ -191,14 +191,6 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
                "}" +
                "}";
 
-    // Replace the following line with your MQTT publish function
-    // return MQTTPublish(topicFull, payload, qos, true);
-    Serial.print("MQTT Publish Topic: ");
-    Serial.println(topicFull);
-    Serial.print("MQTT Publish Payload: ");
-    Serial.println(payload);
-    // topicFull = "Test";
-    // payload = "Test";
     publishStrDiscoveryMQTT(topicFull, payload, qos);
     return true;
 }
@@ -207,7 +199,7 @@ bool publishMQTTDiscovery(int qos) {
     bool allSendsSuccessed = false;
 
     if (!mqttClient.connected()) {
-        Serial.println("Unable to send MQTT Discovery Topics, we are not connected to the MQTT broker!");
+        Serial.println("-->[MQTT] Unable to send MQTT Discovery Topics, we are not connected to the MQTT broker!");
         return false;
     }
 
@@ -233,7 +225,7 @@ bool publishMQTTDiscovery(int qos) {
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "",                 "",      "problem",     "Problem",              "alert-outline",            "",         qos);  // Special binary sensor which is based on error topic
     // clang-format on
 
-    Serial.println("Successfully published all MQTT Discovery topics");
+    Serial.println("-->[MQTT] Successfully published all MQTT Discovery topics");
     return allSendsSuccessed;
 }
 
@@ -335,7 +327,7 @@ void mqttClientLoop() {
     }
 
     if (!mqttDiscoverySent && mqttClient.connected()) {
-        Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
+        // Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
         publishMQTTDiscovery(0);
         mqttDiscoverySent = true;
     }
