@@ -214,7 +214,7 @@ String getPreferencesAsJson()
 {
   preferences.begin("CO2-Gadget", false);
 
-  DynamicJsonDocument doc(512);
+  DynamicJsonDocument doc(1024);
 
   doc["customCalValue"] = preferences.getInt("customCalValue", 415);
   doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
@@ -265,7 +265,6 @@ String getPreferencesAsJson()
 
   String preferencesJson;
   serializeJson(doc, preferencesJson);
-  Serial.println("Preferences JSON @ getPreferencesAsJson: " + preferencesJson);
   Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
 
   return preferencesJson;
