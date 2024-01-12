@@ -382,15 +382,17 @@ void batteryLoop() {
 }
 
 void utilityLoop() {
-    if (battery_voltage > 4.5) {
+    const int16_t actualCPUFrequency = 0;
+
+    if (battery_voltage > 4.5 && actualCPUFrequency != 240) {
         Serial.flush();
         Serial.end();
-        setCpuFrequencyMhz(240);  // High CPU frecuency when working on USB power
+        setCpuFrequencyMhz(240);  // High CPU frequency when working on USB power
         Serial.begin(115200);
-    } else {
+    } else if (actualCPUFrequency != 80) {
         Serial.flush();
         Serial.end();
-        setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
+        setCpuFrequencyMhz(80);  // Lower CPU frequency to reduce power consumption
         Serial.begin(115200);
     }
 }
@@ -442,7 +444,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    utilityLoop();
+    // utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
