@@ -444,7 +444,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    // utilityLoop();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
