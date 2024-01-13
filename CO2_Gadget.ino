@@ -403,7 +403,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
-    delay(100);
+    delay(50);
     #ifdef AUTO_VERSION
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
     #else

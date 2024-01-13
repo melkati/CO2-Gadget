@@ -85,7 +85,8 @@ input[type="number"] {
 }
 
 input[type="checkbox"] {
-  width: auto; /* Ajusta el ancho automáticamente */
+  width: auto;
+  /* Ajusta el ancho automáticamente */
   margin-bottom: 10px;
   box-sizing: border-box;
   border: 1px solid #ccc;
@@ -101,6 +102,21 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
+  margin-left: 10px;
+}
+
+/* Style for the reset button */
+#resetButton {
+  background-color: red;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#buttonContainer {
+  text-align: right;
 }
 
 button:hover {
@@ -108,7 +124,8 @@ button:hover {
 }
 
 .container {
-  max-width: 600px; /* Ajusta el ancho máximo según tus preferencias */
+  max-width: 600px;
+  /* Ajusta el ancho máximo según tus preferencias */
   margin: 0 auto;
 }
 

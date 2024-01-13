@@ -220,7 +220,7 @@ void initMDNS() {
     if (!MDNS.begin(hostName.c_str())) {  // http://esp32.local
         Serial.println("-->[WiFi] Error setting up MDNS responder!");
         while (1) {
-            delay(1000);
+            delay(100);
         }
     }
     Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
@@ -340,16 +340,21 @@ void initWebServer() {
     String preferencesJson = getActualSettingsAsJson();
     request->send(200, "application/json", preferencesJson); });
 
-
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
+    server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // Trigger a software reset
+        Serial.flush();
+        ESP.restart();
+        request->send(200, "text/plain", "ESP32 reset initiated");
+    });
+
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
-
     AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
@@ -385,7 +390,7 @@ void initWifi() {
         displayNotification("Init WiFi", notifyInfo);
         Serial.print("-->[WiFi] Initializing WiFi...\n");
         WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
-        delay(1000);
+        delay(500);
         WiFi.mode(WIFI_STA);
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
