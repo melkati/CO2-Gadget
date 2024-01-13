@@ -365,8 +365,8 @@
           if (getPreferencesDebug) console.log('Setting showFahrenheit to:', preferences.showFahrenheit);
           document.getElementById("showFahrenheit").checked = preferences.showFahrenheit;
 
-          if (getPreferencesDebug) console.log('Setting altitudeMeters to:', preferences.altidudeMeters);
-          document.getElementById("altitudeMeters").value = preferences.altidudeMeters;
+          if (getPreferencesDebug) console.log('Setting altitudeMeters to:', preferences.altitudeMeters);
+          document.getElementById("altitudeMeters").value = preferences.altitudeMeters;
 
           if (getPreferencesDebug) console.log('Setting measurementInterval to:', preferences.measurementInterval);
           document.getElementById("measurementInterval").value = preferences.measurementInterval;
@@ -449,8 +449,8 @@
           if (getPreferencesDebug) console.log('Setting showCO2 to:', preferences.showCO2);
           document.getElementById("showCO2").checked = preferences.showCO2;
 
-          if (getPreferencesDebug) console.log('Setting showPM25 to:', preferences.showPM25);
-          document.getElementById("showPM25").checked = preferences.showPM25;
+          // if (getPreferencesDebug) console.log('Setting showPM25 to:', preferences.showPM25);
+          // document.getElementById("showPM25").checked = preferences.showPM25;
 
           if (getPreferencesDebug) console.log('Setting dispOffOnExP to:', preferences.dispOffOnExP);
           document.getElementById("dispOffOnExP").checked = preferences.dispOffOnExP;
@@ -509,7 +509,7 @@
         showHumidity: document.getElementById("showHumidity").checked,
         showBattery: document.getElementById("showBattery").checked,
         showCO2: document.getElementById("showCO2").checked,
-        showPM25: document.getElementById("showPM25").checked,
+        // showPM25: document.getElementById("showPM25").checked,
         mqttClientId: document.getElementById("mqttClientId").value,
         mqttBroker: document.getElementById("mqttBroker").value,
         mqttUser: document.getElementById("mqttUser").value
@@ -545,37 +545,37 @@
     document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
   </script>
 
-<script>
-  function restartESP32() {
-    // Show a confirmation dialog
-    var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
+  <script>
+    function restartESP32() {
+      // Show a confirmation dialog
+      var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
 
-    // If the user confirms, proceed with the restart
-    if (isConfirmed) {
-      // Send a request to the ESP32 endpoint to trigger a reset
-      fetch('/restart-esp32', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reset: true }),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          // Reset successful, you can add any additional handling here
-          console.log('ESP32 restart initiated');
+      // If the user confirms, proceed with the restart
+      if (isConfirmed) {
+        // Send a request to the ESP32 endpoint to trigger a reset
+        fetch('/restart-esp32', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reset: true }),
         })
-        .catch(error => {
-          // Handle errors during the reset process
-          console.error('Error restarting ESP32:', error);
-        });
-    } else {
-      // User chose not to restart, you can add additional logic or leave it empty
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            // Reset successful, you can add any additional handling here
+            console.log('ESP32 restart initiated');
+          })
+          .catch(error => {
+            // Handle errors during the reset process
+            console.error('Error restarting ESP32:', error);
+          });
+      } else {
+        // User chose not to restart, you can add additional logic or leave it empty
+      }
     }
-  }
-</script>
+  </script>
 
 
 

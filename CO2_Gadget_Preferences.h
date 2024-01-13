@@ -10,7 +10,7 @@ void printPreferences() {
     Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
     Serial.printf("-->[PREF] customCalValue: #%d#\n", customCalibrationValue);
     Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
-    Serial.printf("-->[PREF] altidudeMeters:\t #%d#\n", altidudeMeters);
+    Serial.printf("-->[PREF] altitudeMeters:\t #%d#\n", altitudeMeters);
     Serial.printf("-->[PREF] autoSelfCalibration:\t #%s#\n",
                   ((autoSelfCalibration) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] co2OrangeRange:\t #%d#\n", co2OrangeRange);
@@ -66,7 +66,7 @@ void initPreferences() {
     // preferences.clear(); // Remove all preferences
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
-    altidudeMeters = preferences.getUInt("altidudeMeters", 0);
+    altitudeMeters = preferences.getUInt("altitudeMeters", 0);
     autoSelfCalibration = preferences.getBool("autoSelfCal", false);
     co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
     co2RedRange = preferences.getUInt("co2RedRange", 1000);
@@ -162,7 +162,7 @@ void putPreferences() {
     preferences.begin("CO2-Gadget", false);
     preferences.putUInt("customCalValue", customCalibrationValue);
     preferences.putFloat("tempOffset", tempOffset);
-    preferences.putUInt("altidudeMeters", altidudeMeters);
+    preferences.putUInt("altitudeMeters", altitudeMeters);
     preferences.putBool("autoSelfCal", autoSelfCalibration);
     preferences.putUInt("co2OrangeRange", co2OrangeRange);
     preferences.putUInt("co2RedRange", co2RedRange);
@@ -216,7 +216,7 @@ String getPreferencesAsJson() {
 
     doc["customCalValue"] = preferences.getInt("customCalValue", 415);
     doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
-    doc["altidudeMeters"] = preferences.getInt("altidudeMeters", 0);
+    doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
     doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
     doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
     doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
@@ -272,7 +272,7 @@ String getActualSettingsAsJson() {
 
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = tempOffset;
-    doc["altidudeMeters"] = altidudeMeters;
+    doc["altitudeMeters"] = altitudeMeters;
     doc["autoSelfCal"] = autoSelfCalibration;
     doc["co2OrangeRange"] = co2OrangeRange;
     doc["co2RedRange"] = co2RedRange;
@@ -350,7 +350,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         preferences.begin("CO2-Gadget", false);
         customCalibrationValue = JsonDocument["customCalValue"];
         tempOffset = JsonDocument["tempOffset"];
-        altidudeMeters = JsonDocument["altidudeMeters"];
+        altitudeMeters = JsonDocument["altitudeMeters"];
         autoSelfCalibration = JsonDocument["autoSelfCal"];
         co2OrangeRange = JsonDocument["co2OrangeRange"];
         co2RedRange = JsonDocument["co2RedRange"];
@@ -384,7 +384,16 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         outputsModeRelay = JsonDocument["outModeRelay"];
         channelESPNow = JsonDocument["channelESPNow"];
         boardIdESPNow = JsonDocument["boardIdESPNow"];
-        // peerESPNowAddress = JsonDocument["peerESPNowAddress"].as<String>().c_str();
+
+        // Get the MAC address for peerESPNowAddress as a string from JSON
+        String peerESPNowAddressStr = JsonDocument["peerESPNowAddress"].as<String>();
+        // Convert the string to an array of uint8_t
+        uint8_t peerESPNowAddress[6];
+        const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
+        for (int i = 0; i < 6; i++) {
+            peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
+        }
+
         displayShowTemperature = JsonDocument["showTemp"];
         displayShowHumidity = JsonDocument["showHumidity"];
         displayShowBattery = JsonDocument["showBattery"];
@@ -394,7 +403,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
         // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
         preferences.end();
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         // Manage error while storing preferences
         Serial.print("Error storing preferences: ");
         Serial.println(e.what());
