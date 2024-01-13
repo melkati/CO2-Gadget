@@ -349,7 +349,10 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
     try {
         preferences.begin("CO2-Gadget", false);
         customCalibrationValue = JsonDocument["customCalValue"];
-        tempOffset = JsonDocument["tempOffset"];
+        if (tempOffset != float(JsonDocument["tempOffset"])) {
+            tempOffset = float(JsonDocument["tempOffset"]);
+            sensors.setTempOffset(tempOffset);
+        }
         altitudeMeters = JsonDocument["altitudeMeters"];
         autoSelfCalibration = JsonDocument["autoSelfCal"];
         co2OrangeRange = JsonDocument["co2OrangeRange"];
