@@ -332,57 +332,40 @@ void initWebServer() {
         request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
     });
 
-    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
     String preferencesJson = getPreferencesAsJson();
     request->send(200, "application/json", preferencesJson); });
+
+    server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String preferencesJson = getActualSettingsAsJson();
+    request->send(200, "application/json", preferencesJson); });
+
 
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
-    // Handler to process preferences
-    server.on("/savePreferences2", HTTP_POST, [](AsyncWebServerRequest *request) {
-        // Process the POST request and apply changes in preferences
-        String preferencesData = request->getParam("plain")->value();
-
-        // Use ArduinoJson to parse the received JSON data
-        DynamicJsonDocument jsonDoc(4096);
-        deserializeJson(jsonDoc, preferencesData);
-
-        // Update preferences
-        // ...
-        Serial.println("-->[WiFi] Received preferences to save:");
-        serializeJsonPretty(jsonDoc, Serial);
-        Serial.println();        
-
-        // Send response to the client
-        request->send(200, "application/json", "{\"message\":\"Preferences updated successfully\"}");
-    });
-
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
 
-    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json)
-                                                                         {
-  StaticJsonDocument<200> data;
-  if (json.is<JsonArray>())
-  {
-    data = json.as<JsonArray>();
-  }
-  else if (json.is<JsonObject>())
-  {
-    data = json.as<JsonObject>();
-  }
-  String response;
-  serializeJson(data, response);
-  request->send(200, "application/json", response);
-  Serial.print("Received data: "); Serial.println(response);
-  handleSavePreferencesfromJSON(response); });
+    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        StaticJsonDocument<2048> data;
+        if (json.is<JsonArray>()) {
+            data = json.as<JsonArray>();
+        } else if (json.is<JsonObject>()) {
+            data = json.as<JsonObject>();
+        }
+        String response;
+        serializeJson(data, response);
+        request->send(200, "application/json", response);
+        Serial.print("-->[WiFi] Received /savepreferences command with parameter ");
+        Serial.println(response);
+        handleSavePreferencesfromJSON(response);
+    });
 
-  server.addHandler(handler);    
+    server.addHandler(handler);
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
