@@ -357,7 +357,12 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         autoSelfCalibration = JsonDocument["autoSelfCal"];
         co2OrangeRange = JsonDocument["co2OrangeRange"];
         co2RedRange = JsonDocument["co2RedRange"];
-        DisplayBrightness = JsonDocument["DisplayBright"];
+        if (DisplayBrightness != JsonDocument["DisplayBright"]) {
+            DisplayBrightness = JsonDocument["DisplayBright"];
+#ifdef SUPPORT_OLED || SUPPORT_TFT
+            setDisplayBrightness(DisplayBrightness);
+#endif
+        }
         neopixelBrightness = JsonDocument["neopixBright"];
         selectedNeopixelType = JsonDocument["selNeopxType"];
         activeBLE = JsonDocument["activeBLE"];
