@@ -209,7 +209,9 @@ result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
     Serial.println(e);
     Serial.flush();
 #endif
+#ifdef SUPPORT_OLED || SUPPORT_TFT
     setDisplayBrightness(DisplayBrightness);
+#endif
     return proceed;
 }
 
@@ -841,7 +843,6 @@ panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
-outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
 #endif
 
 #ifdef SUPPORT_OLED
@@ -878,10 +879,16 @@ u8g2Out oledOut(u8g2,colors,gfx_tops,gfxPanels,fontX,fontY,offsetX,offsetY,fontM
 
 //define outputs controller
 menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
-outputsList out(outputs,sizeof(outputs)/sizeof(menuOut*));//outputs list controller
 
 MENU_INPUTS(in,&serial);
 #endif
+
+#if (!SUPPORT_OLED && !SUPPORT_TFT)
+menuOut* outputs[]{&outSerial};//No display, only serial output
+#endif
+
+outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
+
 // clang-format on
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
@@ -1040,12 +1047,10 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-#ifdef SUPPORT_TFT
+    nav.doInput();//Do input, even if no display, as serial menu needs this
+#if defined(SUPPORT_TFT)
     nav.poll();  // this device only draws when needed
-#endif
-
-#ifdef SUPPORT_OLED
-    nav.doInput();
+#elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
         displayShowValues(co2);
     } else {
@@ -1053,6 +1058,12 @@ void menuLoop() {
             u8g2.firstPage();
             do nav.doOutput();
             while (u8g2.nextPage());
+        }
+    }
+#else //For serial only output
+    if (!nav.sleepTask) {
+        if (nav.changed(0)) {
+            nav.doOutput();
         }
     }
 #endif
