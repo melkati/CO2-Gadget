@@ -15,9 +15,11 @@ This repository is mainly addressed at developers. If you are an end user willin
 # Features
 
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106
+- Support for popular color and monocrome displays
+- Fully functional without display (display not needed)
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
-- Management and configuration via on screen menu and console (USB/serial port)
+- Management and configuration via on screen menu, internal web page and console (USB/serial port)
 - Local data logger with upload to phone by BLE
 - WIFI connection
 - Sending of data via MQTT
