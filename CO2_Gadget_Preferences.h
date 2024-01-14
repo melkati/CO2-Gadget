@@ -74,7 +74,7 @@ void initPreferences() {
     neopixelBrightness = preferences.getUInt("neopixBright", 50);
     selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
     activeBLE = preferences.getBool("activeBLE", true);
-    activeWIFI = preferences.getBool("activeWIFI", false);
+    activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
     rootTopic = preferences.getString("rootTopic", rootTopic);
