@@ -74,7 +74,7 @@ void initPreferences() {
     neopixelBrightness = preferences.getUInt("neopixBright", 50);
     selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
     activeBLE = preferences.getBool("activeBLE", true);
-    activeWIFI = preferences.getBool("activeWIFI", false);
+    activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
     rootTopic = preferences.getString("rootTopic", rootTopic);
@@ -357,7 +357,12 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         autoSelfCalibration = JsonDocument["autoSelfCal"];
         co2OrangeRange = JsonDocument["co2OrangeRange"];
         co2RedRange = JsonDocument["co2RedRange"];
-        DisplayBrightness = JsonDocument["DisplayBright"];
+        if (DisplayBrightness != JsonDocument["DisplayBright"]) {
+            DisplayBrightness = JsonDocument["DisplayBright"];
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+            setDisplayBrightness(DisplayBrightness);
+#endif
+        }
         neopixelBrightness = JsonDocument["neopixBright"];
         selectedNeopixelType = JsonDocument["selNeopxType"];
         activeBLE = JsonDocument["activeBLE"];
