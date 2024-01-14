@@ -96,6 +96,11 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 #undef I2C_SCL
 #define I2C_SDA 22
 #define I2C_SCL 21
+#elif defined(CUSTOM_I2C_SDA) && defined(CUSTOM_I2C_SCL)
+#undef I2C_SDA
+#undef I2C_SCL
+#define I2C_SDA CUSTOM_I2C_SDA
+#define I2C_SCL CUSTOM_I2C_SCL
 #else
 #undef I2C_SDA
 #undef I2C_SCL
@@ -133,7 +138,11 @@ enum notificationTypes { notifyNothing,
                          notifyWarning,
                          notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
-
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
+#if (!SUPPORT_OLED && !SUPPORT_TFT)
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {return true;}
+bool displayNotification(String notificationText, notificationTypes notificationType) {return true;}
+#endif
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                                   SETUP SENSORS                                   *********/
@@ -359,7 +368,9 @@ void displayLoop() {
     if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
         if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
         {
+#ifdef SUPPORT_OLED || SUPPORT_TFT
             setDisplayBrightness(DisplayBrightness);  // Turn on the display
+#endif
             actualDisplayBrightness = DisplayBrightness;
         }
         return;
@@ -367,7 +378,9 @@ void displayLoop() {
 
     if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
         Serial.println("-->[MAIN] Turning off display to save power");
+#ifdef SUPPORT_OLED || SUPPORT_TFT
         turnOffDisplay();
+#endif
         actualDisplayBrightness = 0;
     }
 }
@@ -437,7 +450,9 @@ void setup() {
     initBattery();
     initGPIO();
     initNeopixel();
+#ifdef SUPPORT_OLED || SUPPORT_TFT
     initDisplay();
+#endif
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
