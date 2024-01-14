@@ -209,7 +209,7 @@ result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
     Serial.println(e);
     Serial.flush();
 #endif
-#ifdef SUPPORT_OLED || SUPPORT_TFT
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     setDisplayBrightness(DisplayBrightness);
 #endif
     return proceed;

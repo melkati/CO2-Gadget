@@ -140,9 +140,13 @@ enum notificationTypes { notifyNothing,
 bool displayNotification(String notificationText, notificationTypes notificationType);
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
 #if (!SUPPORT_OLED && !SUPPORT_TFT)
-bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {return true;}
-bool displayNotification(String notificationText, notificationTypes notificationType) {return true;}
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
+bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+void setDisplayBrightness(uint32_t newBrightness);
+#endif
+
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                                   SETUP SENSORS                                   *********/
@@ -368,7 +372,7 @@ void displayLoop() {
     if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
         if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
         {
-#ifdef SUPPORT_OLED || SUPPORT_TFT
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
             setDisplayBrightness(DisplayBrightness);  // Turn on the display
 #endif
             actualDisplayBrightness = DisplayBrightness;
@@ -378,7 +382,7 @@ void displayLoop() {
 
     if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
         Serial.println("-->[MAIN] Turning off display to save power");
-#ifdef SUPPORT_OLED || SUPPORT_TFT
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         turnOffDisplay();
 #endif
         actualDisplayBrightness = 0;
@@ -419,7 +423,6 @@ void utilityLoop() {
     }
 }
 
-
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
@@ -450,7 +453,7 @@ void setup() {
     initBattery();
     initGPIO();
     initNeopixel();
-#ifdef SUPPORT_OLED || SUPPORT_TFT
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     initDisplay();
 #endif
 #ifdef SUPPORT_BLE

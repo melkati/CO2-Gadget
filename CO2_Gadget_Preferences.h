@@ -359,7 +359,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         co2RedRange = JsonDocument["co2RedRange"];
         if (DisplayBrightness != JsonDocument["DisplayBright"]) {
             DisplayBrightness = JsonDocument["DisplayBright"];
-#ifdef SUPPORT_OLED || SUPPORT_TFT
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
             setDisplayBrightness(DisplayBrightness);
 #endif
         }
