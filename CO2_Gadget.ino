@@ -116,6 +116,8 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+
+#include "AsyncJson.h"
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
 #endif
@@ -137,8 +139,31 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                                   SETUP SENSORS                                   *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
 #include <CO2_Gadget_Sensors.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+uint16_t vRef = 1100;
+uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
+#include "CO2_Gadget_Battery.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Neopixel.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********        FUNCTIONALITY TO STORE PREFERENCES IN NON VOLATILE MEMORY                  *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Preferences.h"
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -181,16 +206,6 @@ bool displayNotification(String notificationText, notificationTypes notification
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-uint16_t vRef = 1100;
-uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
-uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
-#include "CO2_Gadget_Battery.h"
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********               INCLUDE OLED DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -206,20 +221,6 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 #if defined SUPPORT_TFT
 #include "CO2_Gadget_TFT.h"
 #endif
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-#include "CO2_Gadget_Neopixel.h"
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********        FUNCTIONALITY TO STORE PREFERENCES IN NON VOLATILE MEMORY                  *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-#include "CO2_Gadget_Preferences.h"
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -381,20 +382,30 @@ void batteryLoop() {
 }
 
 void utilityLoop() {
-    const int16_t actualCPUFrequency = 0;
+    static float lastCheckedVoltage = 0;
+    int16_t actualCPUFrequency = getCpuFrequencyMhz();
 
     if (battery_voltage > 4.5 && actualCPUFrequency != 240) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
         Serial.flush();
         Serial.end();
         setCpuFrequencyMhz(240);  // High CPU frequency when working on USB power
         Serial.begin(115200);
-    } else if (actualCPUFrequency != 80) {
+        lastCheckedVoltage = battery_voltage;
+    } else if (battery_voltage < 4.5 && actualCPUFrequency != 80) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to 80MHz\n", battery_voltage);
         Serial.flush();
         Serial.end();
         setCpuFrequencyMhz(80);  // Lower CPU frequency to reduce power consumption
         Serial.begin(115200);
+        lastCheckedVoltage = battery_voltage;
+    } else if (battery_voltage != lastCheckedVoltage) {
+        // The voltage has changed, but the CPU frequency is already at the desired value.
+        // Handle any additional actions needed in this case.
+        lastCheckedVoltage = battery_voltage;
     }
 }
+
 
 // application entry point
 void setup() {
@@ -402,13 +413,24 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
-    delay(100);
+    delay(50);
+#ifdef AUTO_VERSION
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
+#else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+#endif
     Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
     Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
     Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
     Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
     Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+
+    // Get the size of the flash memory
+    uint32_t flash_size = ESP.getFlashChipSize();
+    Serial.printf("-->[STUP] Flash size: %d\n", flash_size);
+    Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+    Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+
     Serial.printf("-->[STUP] Starting up...\n\n");
 
     initPreferences();
@@ -439,7 +461,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    // utilityLoop();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
