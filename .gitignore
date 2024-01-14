@@ -3,7 +3,9 @@
 *.old
 *.bin
 *.ino.cpp
+*.py
 Bootlogo
+platformio_extra_configs.ini
 extra_envs.ini
 credentials.h
 

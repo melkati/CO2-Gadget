@@ -13,6 +13,12 @@ setInterval(function () {
     getHumidityData();
 }, 60000); // 60000mS  update rate
 
+window.onload = function() {
+    getCO2Data();
+    getTemperatureData();
+    getHumidityData();
+};
+
 function getCO2Data() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {

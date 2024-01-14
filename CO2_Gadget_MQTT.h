@@ -87,15 +87,15 @@ void callbackMQTT(char *topic, byte *message, unsigned int length) {
     }
 }
 
-void publishIntMQTT(String topic, int16_t payload) {
+void publishIntMQTT(String topic, int64_t payload) {
 #ifdef SUPPORT_MQTT
     dtostrf(payload, 0, 0, charPublish);
     topic = rootTopic + topic;
     if (!inMenu) {
         Serial.printf("-->[MQTT] Publishing %d to ", payload);
         Serial.println("topic: " + topic);
-        mqttClient.publish((topic).c_str(), charPublish);
     }
+    mqttClient.publish((topic).c_str(), charPublish);
 #endif
 }
 
@@ -106,8 +106,8 @@ void publishFloatMQTT(String topic, float payload) {
     if (!inMenu) {
         Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
         Serial.println("topic: " + topic);
-        mqttClient.publish((topic).c_str(), charPublish);
     }
+    mqttClient.publish((topic).c_str(), charPublish);
 #endif
 }
 
@@ -117,8 +117,8 @@ void publishStrMQTT(String topic, String payload) {
     if (!inMenu) {
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
-        mqttClient.publish(topic.c_str(), payload.c_str());
     }
+    mqttClient.publish(topic.c_str(), payload.c_str());
 #endif
 }
 
@@ -127,8 +127,8 @@ void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
     if (!inMenu) {
         // Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
         // Serial.println("topic: " + topic);
-        mqttClient.publish(topic.c_str(), payload.c_str(), true);
     }
+    mqttClient.publish(topic.c_str(), payload.c_str(), true);
 #endif
 }
 
