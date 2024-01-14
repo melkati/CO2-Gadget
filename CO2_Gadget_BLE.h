@@ -1,39 +1,45 @@
-#include "Sensirion_GadgetBle_Lib.h"
-GadgetBle gadgetBle = GadgetBle(GadgetBle::DataType::T_RH_CO2_ALT);
+#ifndef CO2_Gadget_BLE_h
+#define CO2_Gadget_BLE_h
+
+#include "Sensirion_Gadget_BLE.h"
+NimBLELibraryWrapper lib;
+DataProvider provider(lib, DataType::T_RH_CO2_ALT);
 
 void initBLE() {
-  if (activeBLE) {
-    if (bleInitialized) {
-      Serial.print(
-          "-->[SBLE] Sensirion GadgetBle Lib already initialized with deviceId = ");
-      Serial.println(gadgetBle.getDeviceIdString());
-      return; // If BLE is already initialized do nothing and return
-    } else {
-      gadgetBle.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds
-      gadgetBle.begin();
-      Serial.print("-->[SBLE] Sensirion GadgetBle Lib initialized with deviceId = ");
-      Serial.println(gadgetBle.getDeviceIdString());
-      bleInitialized = true;
+    if (activeBLE) {
+        if (bleInitialized) {
+            Serial.print(
+                "-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
+            Serial.println(provider.getDeviceIdString());
+            return;  // If BLE is already initialized do nothing and return
+        } else {
+            // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
+            provider.begin();
+            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
+            Serial.println(provider.getDeviceIdString());
+            bleInitialized = true;
+        }
+        // if (activeWIFI) {
+        //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
+        //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
+        // }
     }
-    // if (activeWIFI) {
-    //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-    //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-    // }
-  }
 }
 
 void publishBLE() {
-  if (activeBLE) {
-    gadgetBle.writeCO2(co2);
-    gadgetBle.writeTemperature(temp);
-    gadgetBle.writeHumidity(hum);
-    gadgetBle.commit();
-  }
+    if (activeBLE) {
+        provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+        provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+        provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+        provider.commitSample();
+    }
 }
 
 void BLELoop() {
-  if (activeBLE) {
-    gadgetBle.handleEvents();
-    delay(3);
-  }
+    if (activeBLE) {
+        provider.handleDownload();
+        delay(3);
+    }
 }
+
+#endif  // CO2_Gadget_BLE_h

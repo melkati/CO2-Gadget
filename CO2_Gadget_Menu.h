@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Menu_h
+#define CO2_Gadget_Menu_h
+
 // Based on
 // https://drive.google.com/file/d/1_qGqs3XpFQRoT-u5-GK8aJk6f0aI7EA3/view?usp=drive_web
 
@@ -277,7 +280,7 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorChooseMenu)
   ,SUBMENU(autoSelfCalibrationMenu)
   ,FIELD(ambientPressureValue, "Pres. Comp.", "mbar", 0, 2000, 10, 10, doNothing, noEvent, noStyle)
-  ,FIELD(altidudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing, noEvent, noStyle)
+  ,FIELD(altitudeMeters, "Altitude", "mtrs", 0, 9999, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2OrangeRange, "Orange", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(co2RedRange, "Red", "ppm", 400, 2000, 10, 10, doNothing, noEvent, noStyle)
   ,SUBMENU(debugSensorsMenu)
@@ -974,7 +977,7 @@ void loadTempArraysWithActualValues() {
 #endif
 
 #ifdef SUPPORT_BLE
-    paddedString = rightPad(gadgetBle.getDeviceIdString(), 30);
+    paddedString = rightPad(provider.getDeviceIdString(), 30);
 #else
     paddedString = rightPad("Unavailable", 30);
 #endif
@@ -1098,3 +1101,5 @@ void menu_init() {
     Serial.println("-->[MENU] to control the menu navigation");
     Serial.println("");
 }
+
+#endif  // CO2_Gadget_Menu_h

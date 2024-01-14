@@ -1,3 +1,6 @@
+#ifndef CO2_Gadget_Sensors_h
+#define CO2_Gadget_Sensors_h
+
 #include <Sensors.hpp>
 
 bool firstCO2SensorInit = true;
@@ -7,7 +10,7 @@ uint16_t calibrationValue = 415;
 uint16_t customCalibrationValue = 415;
 bool pendingAmbientPressure = false;
 uint16_t ambientPressureValue = 0;
-uint16_t altidudeMeters = 600;
+uint16_t altitudeMeters = 600;
 bool autoSelfCalibration = false;
 float tempOffset = 0.0f;
 
@@ -116,3 +119,5 @@ void initSensors() {
 void sensorsLoop() {    
   sensors.loop();
 }
+
+#endif  // CO2_Gadget_Sensors_h

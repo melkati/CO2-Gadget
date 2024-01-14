@@ -22,12 +22,13 @@ This repository is mainly addressed at developers. If you are an end user willin
 - WIFI connection
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
+- MQTT Discovery protocol for Home Assistant (and others supporting it as HomeSeer with mcsMQTT)
 - ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
 - Support for RGB LEDs
 - GPIO outputs to, for example, activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
-- **LoRa/LoRaWAN** in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).
+- ~~-LoRa/LoRaWAN in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).~~
 
 # Supported hardware and build
 
@@ -227,7 +228,7 @@ Thanks to all collaborators, contributors and [eMariete](https://emariete.com) c
 ---
 ## License
 
-    Copyright (C) 2021-2022 CO2 Gadget Contributors
+    Copyright (C) 2021-2024 CO2 Gadget Contributors
     Contact: https://emariete.com
 
     This file is part of the CO2 Gadget firmware.

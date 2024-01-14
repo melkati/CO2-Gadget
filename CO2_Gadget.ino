@@ -18,6 +18,7 @@
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
 String rootTopic = UNITHOSTNAME;
+String discoveryTopic = MQTT_DISCOVERY_PREFIX;
 String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
@@ -25,6 +26,7 @@ String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
+String MACAddress = "Unset";
 // String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
@@ -33,6 +35,15 @@ bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
+bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
+bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
+uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
+uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
+uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
+uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
+uint16_t WiFiConnectionRetries = 0;
+uint16_t maxWiFiConnectionRetries = 5;
+bool mqttDiscoverySent = false;
 
 // Display and menu options
 uint32_t DisplayBrightness = 100;
@@ -55,24 +66,25 @@ uint16_t boardIdESPNow = 0;
 
 // Variables for Battery reading
 float battery_voltage = 0;
+uint8_t battery_level = 0;
 uint16_t timeBetweenBatteryRead = 15;
-uint64_t lastTimeBatteryRead = 0;  // Time of last MQTT transmission
+uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
-uint16_t timeToDisplayOff = 0;                                         // Time in seconds to turn off the display to save power.
-volatile uint64_t lastTimeButtonPressed = 0;                           // Last time stamp a button was pressed
+uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
+volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
 
 // Variables for MQTT timming TO-DO
-uint16_t timeBetweenMQTTPublish = 60;                                  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;                                    // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
-uint64_t lastTimeMQTTPublished = 0;                                    // Time of last MQTT transmission
+uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;                                // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;                                  // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
-uint64_t lastTimeESPNowPublished = 0;                                  // Time of last ESP-NOW transmission
+uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
+uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -101,7 +113,7 @@ uint64_t lastTimeESPNowPublished = 0;                                  // Time o
 
 #include "driver/adc.h"
 #include "soc/rtc_cntl_reg.h"  // disable brownout problems
-#include "soc/soc.h"  // disable brownout problems
+#include "soc/soc.h"           // disable brownout problems
 
 #ifdef SUPPORT_MDNS
 #include <ESPmDNS.h>
@@ -109,6 +121,8 @@ uint64_t lastTimeESPNowPublished = 0;                                  // Time o
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+
+#include "AsyncJson.h"
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
 #endif
@@ -134,8 +148,31 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                                   SETUP SENSORS                                   *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
 #include <CO2_Gadget_Sensors.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+uint16_t vRef = 1100;
+uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
+#include "CO2_Gadget_Battery.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Neopixel.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********        FUNCTIONALITY TO STORE PREFERENCES IN NON VOLATILE MEMORY                  *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Preferences.h"
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -178,16 +215,6 @@ bool displayNotification(String notificationText, notificationTypes notification
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-uint16_t vRef = 1100;
-uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
-uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
-#include "CO2_Gadget_Battery.h"
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********               INCLUDE OLED DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -206,20 +233,6 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********               SETUP NEOPIXEL (ES2812b AND OTHERS) LED FUNCTIONALITY               *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-#include "CO2_Gadget_Neopixel.h"
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********        FUNCTIONALITY TO STORE PREFERENCES IN NON VOLATILE MEMORY                  *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-#include "CO2_Gadget_Preferences.h"
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
 /*********                         INCLUDE MENU FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -230,6 +243,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                      SETUP PUSH BUTTONS FUNCTIONALITY                             *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+#include "Arduino.h"
 #include "CO2_Gadget_Buttons.h"
 
 /*****************************************************************************************************/
@@ -333,9 +347,9 @@ void readingsLoop() {
 #endif
             // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
             // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
-            if ((activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
-                Serial.println("-->[MAIN] WiFi not connected");
-            }
+            // if ((!troubledWIFI) && (activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
+            //     Serial.println("-->[MAIN] WiFi not connected");
+            // }
 #ifdef SUPPORT_MQTT
             publishMQTT();
 #endif
@@ -371,21 +385,67 @@ void displayLoop() {
     }
 }
 
+void batteryLoop() {
+    const float lastBatteryVoltage = battery_voltage;
+    readBatteryVoltage();
+    if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
+        battery_level = getBatteryPercentage();
+        Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+    }
+}
+
+void utilityLoop() {
+    static float lastCheckedVoltage = 0;
+    int16_t actualCPUFrequency = getCpuFrequencyMhz();
+
+    if (battery_voltage > 4.5 && actualCPUFrequency != 240) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
+        Serial.flush();
+        Serial.end();
+        setCpuFrequencyMhz(240);  // High CPU frequency when working on USB power
+        Serial.begin(115200);
+        lastCheckedVoltage = battery_voltage;
+    } else if (battery_voltage < 4.5 && actualCPUFrequency != 80) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to 80MHz\n", battery_voltage);
+        Serial.flush();
+        Serial.end();
+        setCpuFrequencyMhz(80);  // Lower CPU frequency to reduce power consumption
+        Serial.begin(115200);
+        lastCheckedVoltage = battery_voltage;
+    } else if (battery_voltage != lastCheckedVoltage) {
+        // The voltage has changed, but the CPU frequency is already at the desired value.
+        // Handle any additional actions needed in this case.
+        lastCheckedVoltage = battery_voltage;
+    }
+}
+
+
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
-    delay(100);
-    // Serial.printf("Total heap: %d", ESP.getHeapSize());
-    // Serial.printf("Free heap: %d", ESP.getFreeHeap());
-    // Serial.printf("Total PSRAM: %d", ESP.getPsramSize());
-    // Serial.printf("Free PSRAM: %d", ESP.getFreePsram());
-    Serial.printf("\n-->[MAIN] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
-    Serial.printf("Starting up...\n");
-    Serial.printf("-->[MAIN] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    delay(50);
+#ifdef AUTO_VERSION
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
+#else
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+#endif
+    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
+    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
 
-    setCpuFrequencyMhz(80);  // Lower CPU frecuency to reduce power consumption
+    // Get the size of the flash memory
+    uint32_t flash_size = ESP.getFlashChipSize();
+    Serial.printf("-->[STUP] Flash size: %d\n", flash_size);
+    Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+    Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+
+    Serial.printf("-->[STUP] Starting up...\n\n");
+
     initPreferences();
     initBattery();
     initGPIO();
@@ -411,9 +471,12 @@ void setup() {
 }
 
 void loop() {
+    batteryLoop();
+    wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
@@ -421,7 +484,7 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
-    #ifdef SUPPORT_BLE
+#ifdef SUPPORT_BLE
     BLELoop();
-    #endif
+#endif
 }
