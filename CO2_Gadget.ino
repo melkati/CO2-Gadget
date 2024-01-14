@@ -116,6 +116,7 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+
 #include "AsyncJson.h"
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
@@ -156,7 +157,6 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include "CO2_Gadget_Neopixel.h"
-
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -404,16 +404,23 @@ void setup() {
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
     delay(50);
-    #ifdef AUTO_VERSION
+#ifdef AUTO_VERSION
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
-    #else
+#else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
-    #endif
+#endif
     Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
     Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
     Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
     Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
     Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+
+    // Get the size of the flash memory
+    uint32_t flash_size = ESP.getFlashChipSize();
+    Serial.printf("-->[STUP] Flash size: %d\n", flash_size);
+    Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+    Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+
     Serial.printf("-->[STUP] Starting up...\n\n");
 
     initPreferences();
