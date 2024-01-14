@@ -220,7 +220,7 @@ void initMDNS() {
     if (!MDNS.begin(hostName.c_str())) {  // http://esp32.local
         Serial.println("-->[WiFi] Error setting up MDNS responder!");
         while (1) {
-            delay(1000);
+            delay(100);
         }
     }
     Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
@@ -304,16 +304,21 @@ const char *PARAM_INPUT_1 = "MeasurementInterval";
 
 void initWebServer() {
     SPIFFS.begin();
+
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(co2));
     });
+
     server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(temp));
     });
+
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(hum));
     });
+
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
         String inputString;
         // <CO2-GADGET_IP>/settings?MeasurementInterval=100
@@ -326,9 +331,46 @@ void initWebServer() {
         };
         request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
     });
+
+    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String preferencesJson = getPreferencesAsJson();
+    request->send(200, "application/json", preferencesJson); });
+
+    server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String preferencesJson = getActualSettingsAsJson();
+    request->send(200, "application/json", preferencesJson); });
+
+    // Serve the preferences page
+    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/preferences.html", String(), false, processor);
+    });
+
+    server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // Trigger a software reset
+        Serial.flush();
+        ESP.restart();
+        request->send(200, "text/plain", "ESP32 reset initiated");
+    });
+
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
+    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        StaticJsonDocument<2048> data;
+        if (json.is<JsonArray>()) {
+            data = json.as<JsonArray>();
+        } else if (json.is<JsonObject>()) {
+            data = json.as<JsonObject>();
+        }
+        String response;
+        serializeJson(data, response);
+        request->send(200, "application/json", response);
+        Serial.print("-->[WiFi] Received /savepreferences command with parameter ");
+        Serial.println(response);
+        handleSavePreferencesfromJSON(response);
+    });
+
+    server.addHandler(handler);
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -348,7 +390,7 @@ void initWifi() {
         displayNotification("Init WiFi", notifyInfo);
         Serial.print("-->[WiFi] Initializing WiFi...\n");
         WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
-        delay(1000);
+        delay(500);
         WiFi.mode(WIFI_STA);
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
@@ -373,8 +415,8 @@ void initWifi() {
             }
         }
         Serial.println("");
-        Serial.print("-->[WiFi] MAC: ");        
-        Serial.println(MACAddress);        
+        Serial.print("-->[WiFi] MAC: ");
+        Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
 #ifdef SUPPORT_MDNS
