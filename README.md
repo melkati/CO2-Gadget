@@ -44,7 +44,7 @@ For latest information on other hardware use (boards, sensors, displays, etc), p
 
 ## OLED Displays
 
-CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompilad versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
+CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompiled versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
 ![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
 
 ## ESP32 Boards
@@ -59,6 +59,8 @@ These are the GPIOs used by each predefined board:
 | TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
 | esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
 | esp32dev_OLED_OTA      | SSH1106 128×64   | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
 
 - Flavor: Name of the firmware variant.
 - Display: Display supported by each flavor.
