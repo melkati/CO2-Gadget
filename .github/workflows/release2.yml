@@ -48,12 +48,12 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            # environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, esp32dev_OLED, esp32dev_OLED_OTA]
-            environment: [TTGO_TDISPLAY_SANDWICH]
+            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, esp32dev_OLED, esp32dev_OLED_OTA,esp32dev, esp32dev]
+            # environment: [TTGO_TDISPLAY_SANDWICH]
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
 
-        timeout-minutes: 15 # time out after 15 minutes (default is 360 minutes)
+        timeout-minutes: 30 # time out after 30 minutes (default is 360 minutes)
 
         steps: 
 
