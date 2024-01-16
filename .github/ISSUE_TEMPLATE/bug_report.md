@@ -7,6 +7,21 @@ assignees: ''
 
 ---
 
+**CO2 Gadget version and flavour**
+
+Paste the two first serial log lines, as:
+
+```
+-->[STUP] CO2 Gadget Version: 0.8.031-feature-improv Flavour: TTGO T-Display Sandwich (Git HEAD: fe86fdc)
+-->[STUP] Version compiled: Jan 16 2024 at 09:17:12
+```
+
+**CO2 Gadget installation method?**
+
+- Easy Web flasher? 
+- Compiled and uploaded by you (how)?
+- Other?
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
