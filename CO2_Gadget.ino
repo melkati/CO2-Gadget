@@ -187,6 +187,13 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********                         INCLUDE IMPROV FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Improv.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********                         INCLUDE ESP-NOW FUNCTIONALITY                             *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -475,11 +482,12 @@ void setup() {
 
 void loop() {
     batteryLoop();
+    improvLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    utilityLoop();
+    // utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
@@ -491,3 +499,4 @@ void loop() {
     BLELoop();
 #endif
 }
+
