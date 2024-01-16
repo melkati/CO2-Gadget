@@ -409,10 +409,19 @@ void initWifi() {
         WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
         while (WiFi.status() != WL_CONNECTED) {
             Serial.print(".");
-            delay(500);
+            delay(1000);
+            if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
+                disableWiFi();
+                troubledWIFI = true;
+                timeTroubledWIFI = millis();
+                Serial.printf(
+                    "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
+                    WiFiConnectionRetries);
+            }
             if (troubledWIFI) {
                 return;
             }
+            WiFiConnectionRetries++;
         }
         Serial.println("");
         Serial.print("-->[WiFi] MAC: ");
