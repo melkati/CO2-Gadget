@@ -42,7 +42,7 @@ uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
 uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
-uint16_t maxWiFiConnectionRetries = 5;
+uint16_t maxWiFiConnectionRetries = 20;
 bool mqttDiscoverySent = false;
 
 // Display and menu options
@@ -391,10 +391,12 @@ void displayLoop() {
 
 void batteryLoop() {
     const float lastBatteryVoltage = battery_voltage;
-    readBatteryVoltage();
-    if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
-        battery_level = getBatteryPercentage();
-        Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+    if (!inMenu) {
+        readBatteryVoltage();
+        if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
+            battery_level = getBatteryPercentage();
+            Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+        }
     }
 }
 
