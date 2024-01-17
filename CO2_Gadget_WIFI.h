@@ -383,6 +383,19 @@ void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
     }
 }
 
+// easy to use helper-function for non-blocking timing
+boolean TimePeriodIsOver(unsigned long &startOfPeriod, unsigned long TimePeriod) {
+    unsigned long currentMillis = millis();
+    if (currentMillis - startOfPeriod >= TimePeriod) {
+        // more time than TimePeriod has elapsed since last time if-condition was true
+        startOfPeriod = currentMillis;  // a new period starts right here so set new starttime
+        return true;
+    } else
+        return false;  // actual TimePeriod is NOT yet over
+}
+
+unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
+
 void initWifi() {
     if (activeWIFI) {
         troubledWIFI = false;
@@ -407,13 +420,48 @@ void initWifi() {
 
         Serial.print("-->[WiFi] Connecting to WiFi");
         WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-        while (WiFi.status() != WL_CONNECTED) {
-            Serial.print(".");
-            delay(500);
-            if (troubledWIFI) {
-                return;
+
+        // Wait for connection
+        while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+            yield();                                   // very important to execute yield to make it work
+            if (TimePeriodIsOver(MyTestTimer, 500)) {  // once every 500 miliseconds
+                Serial.print(".");                     // print a dot
+                WiFiConnectionRetries++;
+                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after 30 dots = 15 seconds restart
+                    Serial.println();
+                    Serial.print("not connected ");
+                }
             }
         }
+        if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+            disableWiFi();
+            troubledWIFI = true;
+            timeTroubledWIFI = millis();
+            Serial.printf(
+                "-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n",
+                WiFiConnectionRetries);
+        }
+        if (troubledWIFI) {
+            return;
+        }
+
+        // while (WiFi.status() != WL_CONNECTED) {
+        //     WiFiConnectionRetries++;
+        //     Serial.print(".");
+        //     delay(1000);
+        //     if ((WiFiConnectionRetries >= maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+        //         disableWiFi();
+        //         troubledWIFI = true;
+        //         timeTroubledWIFI = millis();
+        //         Serial.printf(
+        //             "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
+        //             WiFiConnectionRetries);
+        //     }
+        //     if (troubledWIFI) {
+        //         return;
+        //     }
+        // }
+
         Serial.println("");
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);
