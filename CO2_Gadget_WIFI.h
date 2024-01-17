@@ -422,23 +422,23 @@ void initWifi() {
         WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
         // Wait for connection
-        while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < 31) {
+        while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
             yield();                                   // very important to execute yield to make it work
             if (TimePeriodIsOver(MyTestTimer, 500)) {  // once every 500 miliseconds
                 Serial.print(".");                     // print a dot
                 WiFiConnectionRetries++;
-                if (WiFiConnectionRetries > 30) {  // after 30 dots = 15 seconds restart
+                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after 30 dots = 15 seconds restart
                     Serial.println();
                     Serial.print("not connected ");
                 }
             }
         }
-        if ((WiFiConnectionRetries >= maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+        if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
             disableWiFi();
             troubledWIFI = true;
             timeTroubledWIFI = millis();
             Serial.printf(
-                "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
+                "-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n",
                 WiFiConnectionRetries);
         }
         if (troubledWIFI) {
@@ -461,7 +461,7 @@ void initWifi() {
         //         return;
         //     }
         // }
-        
+
         Serial.println("");
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);
