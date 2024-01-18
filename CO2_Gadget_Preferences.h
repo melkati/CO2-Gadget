@@ -368,7 +368,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         if (DisplayBrightness != JsonDocument["DisplayBright"]) {
             DisplayBrightness = JsonDocument["DisplayBright"];
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-            setDisplayBrightness(DisplayBrightness);
+            // setDisplayBrightness(DisplayBrightness);
 #endif
         }
         neopixelBrightness = JsonDocument["neopixBright"];
