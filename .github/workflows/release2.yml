@@ -159,7 +159,7 @@ jobs:
             files: |
               ./firmware/*.bin
               ./firmware/*.json
-            draft: true
+            draft: false
             # prerelease: true
             generate_release_notes: true
           env:
