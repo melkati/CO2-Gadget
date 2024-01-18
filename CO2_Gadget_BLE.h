@@ -2,8 +2,12 @@
 #define CO2_Gadget_BLE_h
 
 #include "Sensirion_Gadget_BLE.h"
+#include "WifiMultiLibraryWrapper.h"
+
 NimBLELibraryWrapper lib;
-DataProvider provider(lib, DataType::T_RH_CO2_ALT);
+WifiMultiLibraryWrapper wifi;
+DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, false, false, &wifi);
+// DataProvider provider(lib, DataType::T_RH_CO2_ALT);
 
 void initBLE() {
     if (activeBLE) {
