@@ -144,7 +144,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-void setDisplayBrightness(uint32_t newBrightness);
+// void setDisplayBrightness(uint32_t newBrightness);
 #endif
 
 /*****************************************************************************************************/
@@ -365,10 +365,18 @@ void readingsLoop() {
 }
 
 void displayLoop() {
+
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    if (actualDisplayBrightness != DisplayBrightness) {
+        setDisplayBrightness(DisplayBrightness);
+        actualDisplayBrightness = DisplayBrightness;
+    }
+#endif
+
     if (timeToDisplayOff == 0)  // TFT Always ON
         return;
 
-    // If configured not to turn off the display on external power and actual voltage is more than those of a maximum loaded batery + 5%, do nothing and return
+    // If configured not to turn off the display on external power and actual voltage is more than those of a maximum loaded batery + 5% (so asume it's working on external power), do nothing and return
     if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
         if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
         {
@@ -385,7 +393,6 @@ void displayLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         turnOffDisplay();
 #endif
-        actualDisplayBrightness = 0;
     }
 }
 
@@ -408,7 +415,7 @@ void utilityLoop() {
         Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
         Serial.flush();
         Serial.end();
-        setCpuFrequencyMhz(240);  // High CPU frequency when working on USB power
+        setCpuFrequencyMhz(240);  // High CPU frequency when working on external power
         Serial.begin(115200);
         lastCheckedVoltage = battery_voltage;
     } else if (battery_voltage < 4.5 && actualCPUFrequency != 80) {
@@ -420,7 +427,6 @@ void utilityLoop() {
         lastCheckedVoltage = battery_voltage;
     } else if (battery_voltage != lastCheckedVoltage) {
         // The voltage has changed, but the CPU frequency is already at the desired value.
-        // Handle any additional actions needed in this case.
         lastCheckedVoltage = battery_voltage;
     }
 }

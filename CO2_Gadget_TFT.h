@@ -26,8 +26,8 @@
 #define FF90 &ArchivoNarrow_Regular10pt7b
 #define FF95 &FontCO2GadgetDigits50pt7b
 
-// RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
-// Flash: [==========]  95.3% (used 1874104 bytes from 1966080 bytes)
+// RAM:   [===       ]  29.6% (used 97060 bytes from 327680 bytes)
+// Flash: [=======   ]  71.8% (used 1411157 bytes from 1966080 bytes)
 
 uint16_t iconDefaultColor = TFT_CYAN;
 
@@ -35,13 +35,17 @@ TFT_eSPI tft =
     TFT_eSPI(135, 240);  // Invoke library, pins defined in User_Setup.h
 
 void setDisplayBrightness(uint32_t newBrightness) {
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-    ledcWrite(0, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
+    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
                                   // dark;255=totally shiny
+    Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
+    actualDisplayBrightness = DisplayBrightness;
 }
 
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
+    actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {
@@ -55,8 +59,8 @@ void displaySplashScreen() {
 void initDisplay() {
     Serial.printf("-->[TFT ] Initializing display\n");
     pinMode(BACKLIGHT_PIN, OUTPUT);
-    ledcSetup(0, 5000, 8);            // 0-15, 5000, 8
-    ledcAttachPin(BACKLIGHT_PIN, 0);  // TFT_BL, 0 - 15
+    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);            // 0-15, 5000, 8
+    ledcAttachPin(BACKLIGHT_PIN, BACKLIGHT_PWM_CHANNEL);  // TFT_BL, 0 - 15
     setDisplayBrightness(DisplayBrightness);
     tft.init();
     if (displayReverse) {
