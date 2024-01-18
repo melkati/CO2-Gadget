@@ -48,7 +48,7 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, esp32dev_OLED, esp32dev_OLED_OTA,esp32dev, esp32dev]
+            environment: [TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, esp32dev_OLED, esp32dev_OLED_OTA, esp32dev]
             # environment: [TTGO_TDISPLAY_SANDWICH]
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
@@ -94,15 +94,16 @@ jobs:
             # Create manifest
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"flavour\": \"${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_improv_wait_time\": 0," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_improv_wait_time\": 10," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"improv\": false," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"improv\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
