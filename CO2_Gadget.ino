@@ -365,7 +365,6 @@ void readingsLoop() {
 }
 
 void displayLoop() {
-
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     if (actualDisplayBrightness != DisplayBrightness) {
         setDisplayBrightness(DisplayBrightness);
@@ -479,6 +478,12 @@ void setup() {
     buttonsInit();
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     Serial.println("-->[STUP] Ready.");
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("");
+        printLargeASCII(WiFi.localIP().toString().c_str());
+        Serial.println("");
+    }
 }
 
 void loop() {
