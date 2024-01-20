@@ -282,20 +282,15 @@ void processPendingCommands() {
 }
 
 void initGPIO() {
-// T-Display-S3 does not have these pins available
-#if not defined(TDISPLAY_S3dd)
     pinMode(GREEN_PIN, OUTPUT);
     digitalWrite(GREEN_PIN, LOW);
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
     digitalWrite(RED_PIN, LOW);
-#endif
 }
 
-// T-Display-S3 does not have these pins available
 void outputsRelays() {
-#if not defined(TDISPLAY_S3cc)
     if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
     if (co2 >= co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
@@ -315,7 +310,6 @@ void outputsRelays() {
     if (co2 <= co2RedRange - PIN_HYSTERESIS) {
         digitalWrite(RED_PIN, RED_PIN_LOW);
     }
-#endif
 }
 
 void outputsRGBLeds() {
@@ -435,9 +429,6 @@ void utilityLoop() {
 
 // application entry point
 void setup() {
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-#error "The current version is not supported for the time being, please use a version below Arduino ESP32 3.0"
-#endif
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
