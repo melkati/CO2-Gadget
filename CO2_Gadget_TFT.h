@@ -30,10 +30,8 @@
 // Flash: [=======   ]  71.8% (used 1411157 bytes from 1966080 bytes)
 
 uint16_t iconDefaultColor = TFT_CYAN;
-uint16_t displayWidth;
-uint16_t displayHeight;
 
-TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);  // Invoke library, pins defined in platformio.ini
+TFT_eSPI tft = TFT_eSPI(SCREEN_HEIGHT, SCREEN_WIDTH);  // Invoke library, pins defined in platformio.ini
 
 // Define a structure for the locations of elements
 struct ElementLocations {
@@ -64,58 +62,36 @@ ElementLocations elementPosition;
 
 // Function to set element locations based on screen resolution
 void setElementLocations() {
-    if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display
-        elementPosition.co2X = displayWidth - 39;
-        elementPosition.co2Y = 112;
-        elementPosition.co2UnitsX = 4;
-        elementPosition.co2UnitsY = 102;
-        elementPosition.tempX = 22;
-        elementPosition.tempY = displayHeight - 2;
-        elementPosition.humidityX = displayWidth - 6;
-        elementPosition.humidityY = displayHeight - 2;
-        elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
-        elementPosition.batteryVoltageX = displayWidth - 45;
-        elementPosition.batteryVoltageY = 3;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 2;
-    }
-
-    if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3
-        elementPosition.co2X = displayWidth - 69;
-        elementPosition.co2Y = 130;
-        elementPosition.co2UnitsX = 34;
-        elementPosition.co2UnitsY = 120;
-        elementPosition.tempX = 22;
-        elementPosition.tempY = displayHeight - 2;
-        elementPosition.humidityX = displayWidth - 6;
-        elementPosition.humidityY = displayHeight - 2;
-        elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
-        elementPosition.batteryVoltageX = displayWidth - 45;
-        elementPosition.batteryVoltageY = 3;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 2;
-    }
+#if SCREEN_WIDTH == 240 && SCREEN_HEIGHT == 135
+    elementPosition.co2X = SCREEN_WIDTH - 39;
+    elementPosition.co2Y = 112;
+    elementPosition.co2UnitsX = 4;
+    elementPosition.co2UnitsY = 102;
+    elementPosition.tempX = 22;
+    elementPosition.tempY = SCREEN_HEIGHT - 2;
+    elementPosition.humidityX = SCREEN_WIDTH - 6;
+    elementPosition.humidityY = SCREEN_HEIGHT - 2;
+    elementPosition.batteryIconX = SCREEN_WIDTH - 36;
+    elementPosition.batteryIconY = 4;
+    elementPosition.batteryVoltageX = SCREEN_WIDTH - 45;
+    elementPosition.batteryVoltageY = 3;
+    elementPosition.bleIconX = 2;
+    elementPosition.bleIconY = 2;
+    elementPosition.wifiIconX = 26;
+    elementPosition.wifiIconY = 2;
+    elementPosition.mqttIconX = 50;
+    elementPosition.mqttIconY = 2;
+    elementPosition.espNowIconX = 74;
+    elementPosition.espNowIconY = 2;
+#endif
 }
 
 void setDisplayBrightness(uint32_t newBrightness) {
-    // TO-DO: Fix this
     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-    // ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
+                                                      // dark;255=totally shiny
+    Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
     actualDisplayBrightness = DisplayBrightness;
 }
 
@@ -125,47 +101,19 @@ void turnOffDisplay() {
 }
 
 void displaySplashScreen() {
-    uint16_t eMarieteLogoX = 60;
-    uint16_t eMarieteLogoY = 12;
-    uint16_t eMarieteLogoWidth = 118;
-    uint16_t eMarieteLogoHeight = 40;
-    uint16_t CO2LogoX = 10;
-    uint16_t CO2LogoY = 50;
-    uint16_t CO2LogoWidth = 92;
-    uint16_t CO2LogoHeight = 72;
-    uint16_t GadgetLogoX = 112;
-    uint16_t GadgetLogoY = 67;
-    uint16_t GadgetLogoWidth = 122;
-    uint16_t GadgetLogoHeight = 46;
     tft.fillScreen(TFT_WHITE);
     tft.setSwapBytes(true);
-    tft.pushImage(eMarieteLogoX, eMarieteLogoY, eMarieteLogoWidth, eMarieteLogoHeight, eMarieteLogo);
-    tft.pushImage(CO2LogoX, CO2LogoY, CO2LogoWidth, CO2LogoHeight, CO2Logo);
-    tft.pushImage(GadgetLogoX, GadgetLogoY, GadgetLogoWidth, GadgetLogoHeight, GadgetLogo);
-}
-
-void initBacklight() {
-#ifdef TTGO_T_DISPLAY
-    pinMode(TFT_BL, OUTPUT);
-    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
-    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
-    setDisplayBrightness(DisplayBrightness);
-#endif
-#ifdef TDISPLAY_S3
-    pinMode(TFT_BL, OUTPUT);
-    pinMode(TFT_BACKLIGHT_ON, OUTPUT);
-    delay(50);
-    digitalWrite(TFT_BL, HIGH);
-    digitalWrite(TFT_BACKLIGHT_ON, HIGH);
-#endif
+    tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+    tft.pushImage(10, 50, 92, 72, CO2Logo);
+    tft.pushImage(112, 67, 122, 46, GadgetLogo);
 }
 
 void initDisplay() {
     Serial.printf("-->[TFT ] Initializing display\n");
-    initBacklight();
-    // Display is rotated 90 degrees vs phisical orientation
-    displayWidth = TFT_HEIGHT;
-    displayHeight = TFT_WIDTH;
+    pinMode(BACKLIGHT_PIN, OUTPUT);
+    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
+    ledcAttachPin(BACKLIGHT_PIN, BACKLIGHT_PWM_CHANNEL);           // TFT_BL, 0 - 15
+    setDisplayBrightness(DisplayBrightness);
     tft.init();
     if (displayReverse) {
         tft.setRotation(3);
@@ -242,7 +190,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
     tft.drawString(String(battery_voltage, 1) + "V", posX, posY);
 }
 
-void showBatteryIcon(int32_t posX, int32_t posY) {
+void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
     if (!displayShowBattery) return;
     uint8_t batteryLevel = battery.level();
     uint16_t color;
@@ -256,7 +204,7 @@ void showBatteryIcon(int32_t posX, int32_t posY) {
         color = iconDefaultColor;
     }
 
-    tft.drawRoundRect(posX, posY, 32, 14, 2, color);
+    tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
     tft.drawLine(posX + 36, posY + 4, posX + 33, posY + 10, color);
 
     if (batteryLevel > 20) tft.fillRect(posX + 4, posY + 2, 4, 10, color);
