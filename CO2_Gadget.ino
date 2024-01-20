@@ -96,16 +96,15 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 #undef I2C_SCL
 #define I2C_SDA 22
 #define I2C_SCL 21
-#elif defined(CUSTOM_I2C_SDA) && defined(CUSTOM_I2C_SCL)
+#endif
+
+#ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
-#undef I2C_SCL
 #define I2C_SDA CUSTOM_I2C_SDA
-#define I2C_SCL CUSTOM_I2C_SCL
-#else
-#undef I2C_SDA
+#endif
+#ifdef CUSTOM_I2C_SCL
 #undef I2C_SCL
-#define I2C_SDA 21
-#define I2C_SCL 22
+#define I2C_SCL CUSTOM_I2C_SCL
 #endif
 
 #include <WiFi.h>
@@ -204,9 +203,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#ifdef SUPPORT_BLE
 #include "CO2_Gadget_BLE.h"
-#endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -285,15 +282,20 @@ void processPendingCommands() {
 }
 
 void initGPIO() {
+// T-Display-S3 does not have these pins available
+#if not defined(TDISPLAY_S3dd)
     pinMode(GREEN_PIN, OUTPUT);
     digitalWrite(GREEN_PIN, LOW);
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
     digitalWrite(RED_PIN, LOW);
+#endif
 }
 
+// T-Display-S3 does not have these pins available
 void outputsRelays() {
+#if not defined(TDISPLAY_S3cc)
     if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
     if (co2 >= co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
@@ -313,6 +315,7 @@ void outputsRelays() {
     if (co2 <= co2RedRange - PIN_HYSTERESIS) {
         digitalWrite(RED_PIN, RED_PIN_LOW);
     }
+#endif
 }
 
 void outputsRGBLeds() {
@@ -432,6 +435,9 @@ void utilityLoop() {
 
 // application entry point
 void setup() {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#error "The current version is not supported for the time being, please use a version below Arduino ESP32 3.0"
+#endif
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
@@ -492,7 +498,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    // utilityLoop();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
@@ -500,7 +506,5 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
-#ifdef SUPPORT_BLE
     BLELoop();
-#endif
 }
