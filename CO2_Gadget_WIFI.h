@@ -584,9 +584,6 @@ void initWifi() {
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
-        Serial.println("");
-        printLargeASCII(WiFi.localIP().toString().c_str());
-        Serial.println("");
 #ifdef SUPPORT_MDNS
         mDNSName = WiFi.getHostname();
         initMDNS();
