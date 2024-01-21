@@ -86,6 +86,10 @@ uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW tran
 uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
 uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
+// Variables for color and output ranges
+uint16_t co2OrangeRange = 700;
+uint16_t co2RedRange = 1000;
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif  // ifdef BUILD_GIT
@@ -262,18 +266,16 @@ void processPendingCommands() {
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
         } else {
-            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n",
-                   calibrationValue);
+            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
             pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
         if (ambientPressureValue != 0) {
-            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n",
-                   ambientPressureValue);
+            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
             pendingAmbientPressure = false;
-            sensors.scd30.setAmbientPressure(ambientPressureValue);
+            // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
         } else {
             printf(
                 "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
