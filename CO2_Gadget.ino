@@ -100,16 +100,15 @@ uint16_t co2RedRange = 1000;
 #undef I2C_SCL
 #define I2C_SDA 22
 #define I2C_SCL 21
-#elif defined(CUSTOM_I2C_SDA) && defined(CUSTOM_I2C_SCL)
+#endif
+
+#ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
-#undef I2C_SCL
 #define I2C_SDA CUSTOM_I2C_SDA
-#define I2C_SCL CUSTOM_I2C_SCL
-#else
-#undef I2C_SDA
+#endif
+#ifdef CUSTOM_I2C_SCL
 #undef I2C_SCL
-#define I2C_SDA 21
-#define I2C_SCL 22
+#define I2C_SCL CUSTOM_I2C_SCL
 #endif
 
 #include <WiFi.h>
@@ -208,9 +207,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#ifdef SUPPORT_BLE
 #include "CO2_Gadget_BLE.h"
-#endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -494,7 +491,7 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    // utilityLoop();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
@@ -502,7 +499,5 @@ void loop() {
     displayLoop();
     buttonsLoop();
     menuLoop();
-#ifdef SUPPORT_BLE
     BLELoop();
-#endif
 }
