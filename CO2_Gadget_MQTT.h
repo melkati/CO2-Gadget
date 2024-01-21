@@ -196,6 +196,7 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
 }
 
 bool publishMQTTDiscovery(int qos) {
+#ifdef SUPPORT_MQTT
     bool allSendsSuccessed = false;
 
     if (!mqttClient.connected()) {
@@ -227,6 +228,7 @@ bool publishMQTTDiscovery(int qos) {
 
     Serial.println("-->[MQTT] Successfully published all MQTT Discovery topics");
     return allSendsSuccessed;
+#endif
 }
 
 void initMQTT() {
