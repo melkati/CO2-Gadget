@@ -301,7 +301,7 @@ void publishMQTT() {
 #ifdef SUPPORT_MQTT
     if (activeMQTT) {
         if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
-            if (millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) {
+            if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (lastTimeMQTTPublished == 0)) {
                 publishMeasurementsMQTT();
                 publishMQTTAlarms();
                 publishMQTTSystemData();
