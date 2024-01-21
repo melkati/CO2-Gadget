@@ -19,8 +19,8 @@
 #endif
 
 #ifdef SUPPORT_OLED
-#include <menuIO/u8g2Out.h>
 #include <menuIO/chainStream.h>
+#include <menuIO/u8g2Out.h>
 #endif
 
 #include <menuIO/esp8266Out.h>  //must include this even if not doing web output...
@@ -43,23 +43,23 @@ String rightPad(String aString, uint8_t aLenght) {
     return tempString;
 }
 
-//customizing a menu prompt look
+// customizing a menu prompt look
 class confirmReboot : public menu {
    public:
     confirmReboot(constMEM menuNodeShadow &shadow) : menu(shadow) {}
     Used printTo(navRoot &root, bool sel, menuOut &out, idx_t idx, idx_t len, idx_t p) override {
-        return idx < 0 ?  //idx will be -1 when printing a menu title or a valid index when printing as option
+        return idx < 0 ?  // idx will be -1 when printing a menu title or a valid index when printing as option
                    menu::printTo(root, sel, out, idx, len, p)
-                       :                                                    //when printing title
-                   out.printRaw((constText *)F("Reboot w/o saving"), len);  //when printing as regular option
+                       :                                                    // when printing title
+                   out.printRaw((constText *)F("Reboot w/o saving"), len);  // when printing as regular option
     }
 };
 
 result systemReboot() {
     Serial.println();
     Serial.println("-->[MENU] Reboot CO2 Gadget at user request from menu...");
-    //do some termination stuff here
-    if (sensors.getMainDeviceSelected().equals("SCD30")) {
+    // do some termination stuff here
+    if (sensorsGetMainDeviceSelected().equals("SCD30")) {
         Serial.println("-->[MENU] Resetting SCD30 sensor...");
         delay(100);
         sensors.scd30.reset();
@@ -68,8 +68,8 @@ result systemReboot() {
     return quit;
 }
 
-//using the customized menu class
-//note that first parameter is the class name
+// using the customized menu class
+// note that first parameter is the class name
 altMENU(confirmReboot, subMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
 
 char tempIPAddress[16];
@@ -230,12 +230,12 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   // ,OP("Test menu event", showEvent, anyEvent),
 
 int8_t setCO2Sensor;
-const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
+const uint8_t AutoSensor = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
 
 void SetTempCO2Sensor(int8_t sensor) {
   String strSensor="", paddedString="";  
   
-  if (sensor==Auto)            {strSensor = "Auto";}
+  if (sensor==AutoSensor)            {strSensor = "AutoSensor";}
   else if (sensor==MHZ19)      {strSensor = "MHZ19";}
   else if (sensor==CM1106)     {strSensor = "CM1106";}
   else if (sensor==SENSEAIRS8) {strSensor = "SENSEAIRS8";}
@@ -261,7 +261,7 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
 }
 
 CHOOSE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
-  ,VALUE("Auto (I2C)",Auto,doSetCO2Sensor, enterEvent)
+  ,VALUE("AutoSensor (I2C)",AutoSensor,doSetCO2Sensor, enterEvent)
   ,VALUE("MH-Z19 (A/B/C/D)",MHZ19,doSetCO2Sensor, enterEvent)
   ,VALUE("CM1106",CM1106,doSetCO2Sensor, enterEvent)
   ,VALUE("Senseair S8",SENSEAIRS8,doSetCO2Sensor, enterEvent)
@@ -988,10 +988,10 @@ void loadTempArraysWithActualValues() {
     Serial.println("#");
 #endif
 
-    if ((sensors.getMainDeviceSelected() == "SCD30") || (sensors.getMainDeviceSelected() == "SCD4x")) {
-        paddedString = rightPad("Auto (I2C)", 30);
+    if ((sensorsGetMainDeviceSelected() == "SCD30") || (sensorsGetMainDeviceSelected() == "SCD4x")) {
+        paddedString = rightPad("AutoSensor (I2C)", 30);
     } else {
-        paddedString = rightPad(sensors.getMainDeviceSelected(), 30);
+        paddedString = rightPad(sensorsGetMainDeviceSelected(), 30);
     }
     paddedString.toCharArray(tempCO2Sensor, paddedString.length());
 #ifdef DEBUG_ARDUINOMENU
@@ -1000,7 +1000,7 @@ void loadTempArraysWithActualValues() {
     Serial.println("#");
 #endif
 
-snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
 #ifdef DEBUG_ARDUINOMENU
     Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
     Serial.print("-->[MENU] tempESPNowAddress: #");
@@ -1047,7 +1047,7 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    nav.doInput();//Do input, even if no display, as serial menu needs this
+    nav.doInput();  // Do input, even if no display, as serial menu needs this
 #if defined(SUPPORT_TFT)
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
@@ -1060,7 +1060,7 @@ void menuLoop() {
             while (u8g2.nextPage());
         }
     }
-#else //For serial only output
+#else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {
             nav.doOutput();
