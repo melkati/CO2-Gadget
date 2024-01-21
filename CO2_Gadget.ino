@@ -95,13 +95,6 @@ uint16_t co2RedRange = 1000;
 #endif  // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
 
-#ifdef ALTERNATIVE_I2C_PINS
-#undef I2C_SDA
-#undef I2C_SCL
-#define I2C_SDA 22
-#define I2C_SCL 21
-#endif
-
 #ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
 #define I2C_SDA CUSTOM_I2C_SDA
