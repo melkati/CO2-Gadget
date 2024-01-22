@@ -16,9 +16,10 @@ float tempOffset = 0.0f;
 
 volatile uint16_t co2 = 0;
 float temp, tempFahrenheit, hum = 0;
+String mainDeviceSelected = "";
 
 String sensorsGetMainDeviceSelected() {
-    return "SCD30";
+    return mainDeviceSelected;
 }
 
 void printSensorsDetected() {
@@ -30,6 +31,7 @@ void printSensorsDetected() {
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
         Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
+        mainDeviceSelected = sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]);
         Serial.print(",");
     }
     Serial.println();
