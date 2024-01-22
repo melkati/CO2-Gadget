@@ -274,7 +274,7 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
     }
 
     tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
-    tft.drawLine(posX + 36, posY + 4, posX + 33, posY + 10, color);
+    tft.drawLine(posX + 33, posY + 4, posX + 33, posY + 10, color);
 
     if (batteryLevel > 20) tft.fillRect(posX + 4, posY + 2, 4, 10, color);
     if (batteryLevel > 40) tft.fillRect(posX + 11, posY + 2, 4, 10, color);
