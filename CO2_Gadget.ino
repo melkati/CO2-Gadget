@@ -42,7 +42,7 @@ uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
 uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
-uint16_t maxWiFiConnectionRetries = 5;
+uint16_t maxWiFiConnectionRetries = 20;
 bool mqttDiscoverySent = false;
 
 // Display and menu options
@@ -71,7 +71,7 @@ uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
-uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
+uint16_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
@@ -86,26 +86,22 @@ uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW tran
 uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
 uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
+// Variables for color and output ranges
+uint16_t co2OrangeRange = 700;
+uint16_t co2RedRange = 1000;
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif  // ifdef BUILD_GIT
 #define BUILD_GIT __DATE__
 
-#ifdef ALTERNATIVE_I2C_PINS
+#ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
-#undef I2C_SCL
-#define I2C_SDA 22
-#define I2C_SCL 21
-#elif defined(CUSTOM_I2C_SDA) && defined(CUSTOM_I2C_SCL)
-#undef I2C_SDA
-#undef I2C_SCL
 #define I2C_SDA CUSTOM_I2C_SDA
-#define I2C_SCL CUSTOM_I2C_SCL
-#else
-#undef I2C_SDA
+#endif
+#ifdef CUSTOM_I2C_SCL
 #undef I2C_SCL
-#define I2C_SDA 21
-#define I2C_SCL 22
+#define I2C_SCL CUSTOM_I2C_SCL
 #endif
 
 #include <WiFi.h>
@@ -144,7 +140,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-void setDisplayBrightness(uint32_t newBrightness);
+// void setDisplayBrightness(uint32_t newBrightness);
 #endif
 
 /*****************************************************************************************************/
@@ -211,9 +207,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                              SETUP BLE FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#ifdef SUPPORT_BLE
 #include "CO2_Gadget_BLE.h"
-#endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -269,18 +263,16 @@ void processPendingCommands() {
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
         } else {
-            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n",
-                   calibrationValue);
+            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
             pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
         if (ambientPressureValue != 0) {
-            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n",
-                   ambientPressureValue);
+            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
             pendingAmbientPressure = false;
-            sensors.scd30.setAmbientPressure(ambientPressureValue);
+            // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
         } else {
             printf(
                 "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
@@ -371,37 +363,41 @@ void readingsLoop() {
     }
 }
 
-void displayLoop() {
-    if (timeToDisplayOff == 0)  // TFT Always ON
-        return;
-
-    // If configured not to turn off the display on external power and actual voltage is more than those of a maximum loaded batery + 5%, do nothing and return
-    if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
-        if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
-        {
+void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    if (timeToDisplayOff == 0) return;  // TFT Always ON
+
+    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
+    boolean workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+
+    if (actualDisplayBrightness != DisplayBrightness) {
+        setDisplayBrightness(DisplayBrightness);
+    }
+
+    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
+    if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+        if (actualDisplayBrightness == 0)  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
+        {
             setDisplayBrightness(DisplayBrightness);  // Turn on the display
-#endif
-            actualDisplayBrightness = DisplayBrightness;
         }
         return;
     }
 
     if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
-        Serial.println("-->[MAIN] Turning off display to save power");
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+        Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
-#endif
-        actualDisplayBrightness = 0;
     }
+#endif
 }
 
 void batteryLoop() {
     const float lastBatteryVoltage = battery_voltage;
-    readBatteryVoltage();
-    if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
-        battery_level = getBatteryPercentage();
-        Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+    if (!inMenu) {
+        readBatteryVoltage();
+        if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
+            battery_level = getBatteryPercentage();
+            // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+        }
     }
 }
 
@@ -413,7 +409,7 @@ void utilityLoop() {
         Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
         Serial.flush();
         Serial.end();
-        setCpuFrequencyMhz(240);  // High CPU frequency when working on USB power
+        setCpuFrequencyMhz(240);  // High CPU frequency when working on external power
         Serial.begin(115200);
         lastCheckedVoltage = battery_voltage;
     } else if (battery_voltage < 4.5 && actualCPUFrequency != 80) {
@@ -425,7 +421,6 @@ void utilityLoop() {
         lastCheckedVoltage = battery_voltage;
     } else if (battery_voltage != lastCheckedVoltage) {
         // The voltage has changed, but the CPU frequency is already at the desired value.
-        // Handle any additional actions needed in this case.
         lastCheckedVoltage = battery_voltage;
     }
 }
@@ -478,6 +473,12 @@ void setup() {
     buttonsInit();
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     Serial.println("-->[STUP] Ready.");
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("");
+        printLargeASCII(WiFi.localIP().toString().c_str());
+        Serial.println("");
+    }
 }
 
 void loop() {
@@ -487,16 +488,13 @@ void loop() {
     mqttClientLoop();
     sensorsLoop();
     readBatteryVoltage();
-    // utilityLoop();
+    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
     OTALoop();
-    displayLoop();
+    adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
-#ifdef SUPPORT_BLE
     BLELoop();
-#endif
 }
-
