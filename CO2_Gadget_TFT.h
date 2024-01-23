@@ -21,9 +21,9 @@
 // Load fonts for TTGO T-Display and others with 240x135 resolution
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
+#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansRegular15pt_mp.h"
 #include "FontNotoSansRegular20.h"
-#include "FontNotoSansBold90ptDigits.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansRegular15pt_mp
 #define SMALL_FONT FontNotoSansRegular20
@@ -35,8 +35,8 @@
 // Load fonts for T-Display-S3 and others with 320x170 resolution
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 170 && TFT_HEIGHT == 320
-#include "FontNotoSansRegular15pt_mp.h"
 #include "FontNotoSansBold120ptDigits.h"
+#include "FontNotoSansRegular15pt_mp.h"
 #include "FontNotoSansRegular20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansRegular15pt_mp
@@ -48,8 +48,8 @@
 
 // Default fonts
 #ifndef FONTS_LOADED
-#include "FontNotoSansRegular15pt_mp.h"
 #include "FontNotoSansBold90ptDigits.h"
+#include "FontNotoSansRegular15pt_mp.h"
 #include "FontNotoSansRegular20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansRegular15pt_mp
@@ -148,21 +148,22 @@ void setElementLocations() {
 //     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
 //     ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
 //                                                       // dark;255=totally shiny
-//     Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
-//     actualDisplayBrightness = DisplayBrightness;
+//     actualDisplayBrightness = newBrightness;
 // }
 
 void setDisplayBrightness(uint32_t newBrightness) {
     // TO-DO: Fix this
-    // Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
-    // Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-    // ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
-    actualDisplayBrightness = DisplayBrightness;
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
+    Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
+    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+    Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
+    Serial.printf("-->[TFT ] newBrightness value at %d\n", newBrightness);
+    actualDisplayBrightness = newBrightness;
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
 }
 
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
-    actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {
@@ -172,24 +173,23 @@ void displaySplashScreen() {
     uint16_t CO2LogoHeight = 72;
     uint16_t GadgetLogoWidth = 122;
     uint16_t GadgetLogoHeight = 46;
-    #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
+#if TFT_WIDTH == 135 && TFT_HEIGHT == 240
     uint16_t eMarieteLogoX = 60;
     uint16_t eMarieteLogoY = 12;
     uint16_t CO2LogoX = 10;
     uint16_t CO2LogoY = 50;
     uint16_t GadgetLogoX = 112;
     uint16_t GadgetLogoY = 67;
-    #endif
-    #if TFT_WIDTH == 170 && TFT_HEIGHT == 320
+#endif
+#if TFT_WIDTH == 170 && TFT_HEIGHT == 320
     uint16_t eMarieteLogoX = 100;
     uint16_t eMarieteLogoY = 40;
     uint16_t CO2LogoX = 50;
     uint16_t CO2LogoY = 78;
     uint16_t GadgetLogoX = 152;
     uint16_t GadgetLogoY = 95;
-    #endif
+#endif
 
-    
     tft.fillScreen(TFT_WHITE);
     tft.setSwapBytes(true);
     tft.pushImage(eMarieteLogoX, eMarieteLogoY, eMarieteLogoWidth, eMarieteLogoHeight, eMarieteLogo);
@@ -206,7 +206,7 @@ void displaySplashScreen() {
 // }
 
 void initBacklight() {
-#ifdef TTGO_T_DISPLAY
+#ifdef TTGO_TDISPLAY
     pinMode(TFT_BL, OUTPUT);
     ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
     ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
@@ -317,7 +317,7 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 void showBatteryVoltage(int32_t posX, int32_t posY) {
     String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
-    tft.setCursor(posX, posY);    
+    tft.setCursor(posX, posY);
     spr.loadFont(SMALL_FONT);
     spr.setTextColor(getBatteryColor(battery.voltage()), TFT_BLACK);
     spr.printToSprite(batteryVoltageString);  // Space padding helps over-write old numbers
@@ -482,14 +482,14 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     tft.setTextDatum(TL_DATUM);
     spr.setColorDepth(16);
     spr.loadFont(BIG_FONT);
-    uint16_t width = spr.textWidth("8888")+2;
+    uint16_t width = spr.textWidth("8888") + 2;
     uint16_t height = spr.fontHeight();
     spr.createSprite(width, height);
-    spr.setTextColor(getCO2Color(co2), TFT_BLACK);    
+    spr.setTextColor(getCO2Color(co2), TFT_BLACK);
     spr.setTextDatum(BR_DATUM);
     // spr.fillSprite(TFT_BLUE);
     spr.drawNumber(co2, width, height);
-    spr.pushSprite(posX-width, posY-height);
+    spr.pushSprite(posX - width, posY - height);
     spr.unloadFont();
     spr.deleteSprite();
 }

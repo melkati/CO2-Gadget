@@ -71,7 +71,7 @@ uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
-uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
+uint16_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
@@ -356,35 +356,31 @@ void readingsLoop() {
     }
 }
 
-void displayLoop() {
+void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    if (timeToDisplayOff == 0) return;  // TFT Always ON
+
+    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
+    boolean workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+
     if (actualDisplayBrightness != DisplayBrightness) {
         setDisplayBrightness(DisplayBrightness);
-        actualDisplayBrightness = DisplayBrightness;
     }
-#endif
 
-    if (timeToDisplayOff == 0)  // TFT Always ON
-        return;
-
-    // If configured not to turn off the display on external power and actual voltage is more than those of a maximum loaded batery + 5% (so asume it's working on external power), do nothing and return
-    if ((!displayOffOnExternalPower) && (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100))) {
-        if (actualDisplayBrightness == 0)  // When USB connected & TFT is OFF -> Turn Display ON
+    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
+    if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+        if (actualDisplayBrightness == 0)  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
         {
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
             setDisplayBrightness(DisplayBrightness);  // Turn on the display
-#endif
-            actualDisplayBrightness = DisplayBrightness;
         }
         return;
     }
 
     if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
-        Serial.println("-->[MAIN] Turning off display to save power");
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+        Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
-#endif
     }
+#endif
 }
 
 void batteryLoop() {
@@ -489,7 +485,7 @@ void loop() {
     processPendingCommands();
     readingsLoop();
     OTALoop();
-    displayLoop();
+    adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
     BLELoop();
