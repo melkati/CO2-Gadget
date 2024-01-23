@@ -504,9 +504,7 @@ void showCO2units(int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void displayShowValues(uint16_t co2) {
-    // tft.setTextSize(0);
-    // tft.fillScreen(TFT_BLACK);
+void displayShowValues() {
     uint8_t currenttDatum = tft.getTextDatum();
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
