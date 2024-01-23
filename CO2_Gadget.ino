@@ -389,7 +389,7 @@ void batteryLoop() {
         readBatteryVoltage();
         if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
             battery_level = getBatteryPercentage();
-            Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
+            // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
         }
     }
 }
