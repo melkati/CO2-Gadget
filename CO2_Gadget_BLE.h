@@ -1,11 +1,18 @@
 #ifndef CO2_Gadget_BLE_h
 #define CO2_Gadget_BLE_h
 
+#ifdef SUPPORT_BLE
 #include "Sensirion_Gadget_BLE.h"
+#include "WifiMultiLibraryWrapper.h"
+
 NimBLELibraryWrapper lib;
-DataProvider provider(lib, DataType::T_RH_CO2_ALT);
+WifiMultiLibraryWrapper wifi;
+DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, false, false, &wifi);
+// DataProvider provider(lib, DataType::T_RH_CO2_ALT);
+#endif
 
 void initBLE() {
+#ifdef SUPPORT_BLE    
     if (activeBLE) {
         if (bleInitialized) {
             Serial.print(
@@ -24,22 +31,27 @@ void initBLE() {
         //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
         // }
     }
+#endif
 }
 
 void publishBLE() {
+#ifdef SUPPORT_BLE
     if (activeBLE) {
         provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
         provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
         provider.commitSample();
     }
+#endif
 }
 
 void BLELoop() {
+#ifdef SUPPORT_BLE
     if (activeBLE) {
         provider.handleDownload();
         delay(3);
     }
+#endif
 }
 
 #endif  // CO2_Gadget_BLE_h

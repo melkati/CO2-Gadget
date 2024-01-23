@@ -16,28 +16,152 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
-#include "FontArchivoNarrow_Regular10pt7b.h"
-#include "FontCO2Gadget50ptDigits.h"
+// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
+
+// Load fonts for TTGO T-Display and others with 240x135 resolution
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 135 && TFT_HEIGHT == 240
+#include "FontNotoSansBold90ptDigits.h"
+#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansRegular20.h"
+#define GFXFF 1
+#define MINI_FONT FontNotoSansRegular15pt_mp
+#define SMALL_FONT FontNotoSansRegular20
+#define BIG_FONT FontNotoSansBold90ptDigits
+#define FONTS_LOADED
+#endif
+#endif
+
+// Load fonts for T-Display-S3 and others with 320x170 resolution
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 170 && TFT_HEIGHT == 320
+#include "FontNotoSansBold120ptDigits.h"
+#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansRegular20.h"
+#define GFXFF 1
+#define MINI_FONT FontNotoSansRegular15pt_mp
+#define SMALL_FONT FontNotoSansRegular20
+#define BIG_FONT FontNotoSansBold120ptDigits
+#define FONTS_LOADED
+#endif
+#endif
+
+// Default fonts
+#ifndef FONTS_LOADED
+#include "FontNotoSansBold90ptDigits.h"
+#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansRegular20.h"
+#define GFXFF 1
+#define MINI_FONT FontNotoSansRegular15pt_mp
+#define SMALL_FONT FontNotoSansRegular20
+#define BIG_FONT FontNotoSansBold90ptDigits
+#endif
+
 #include "bootlogo.h"
 #include "icons.h"
 
-// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
-#define GFXFF 1
-#define FF90 &ArchivoNarrow_Regular10pt7b
-#define FF95 &FontCO2GadgetDigits50pt7b
-
-// RAM:   [==        ]  21.4% (used 69976 bytes from 327680 bytes)
-// Flash: [==========]  95.3% (used 1874104 bytes from 1966080 bytes)
-
 uint16_t iconDefaultColor = TFT_CYAN;
+uint16_t displayWidth;
+uint16_t displayHeight;
 
-TFT_eSPI tft =
-    TFT_eSPI(135, 240);  // Invoke library, pins defined in User_Setup.h
+TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);  // Invoke library, pins defined in platformio.ini
+TFT_eSprite spr = TFT_eSprite(&tft);             // Sprite object "spr" with pointer to "tft" object
+
+// Define a structure for the locations of elements
+struct ElementLocations {
+    int32_t co2X;
+    int32_t co2Y;
+    int32_t co2UnitsX;
+    int32_t co2UnitsY;
+    int32_t tempX;
+    int32_t tempY;
+    int32_t humidityX;
+    int32_t humidityY;
+    int32_t batteryIconX;
+    int32_t batteryIconY;
+    int32_t batteryVoltageX;
+    int32_t batteryVoltageY;
+    int32_t wifiIconX;
+    int32_t wifiIconY;
+    int32_t mqttIconX;
+    int32_t mqttIconY;
+    int32_t bleIconX;
+    int32_t bleIconY;
+    int32_t espNowIconX;
+    int32_t espNowIconY;
+};
+
+// Define an instance of the structure for the chosen resolution
+ElementLocations elementPosition;
+
+// Function to set element locations based on screen resolution
+void setElementLocations() {
+    if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
+        elementPosition.co2X = displayWidth - 33;
+        elementPosition.co2Y = displayHeight - 15;
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconY = 4;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 1;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 1;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 1;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 1;
+    }
+
+    if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
+        elementPosition.co2X = displayWidth - 33;
+        elementPosition.co2Y = displayHeight - 15;
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconY = 4;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 2;
+    }
+}
+
+// void setDisplayBrightness(uint32_t newBrightness) {
+//     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
+//     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
+//     ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
+//                                                       // dark;255=totally shiny
+//     actualDisplayBrightness = newBrightness;
+// }
 
 void setDisplayBrightness(uint32_t newBrightness) {
+// TO-DO: Fix this
+#ifdef TTGO_TDISPLAY
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-    ledcWrite(0, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
-                                  // dark;255=totally shiny
+    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+    Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
+    Serial.printf("-->[TFT ] newBrightness value at %d\n", newBrightness);
+    actualDisplayBrightness = newBrightness;
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
+#endif
 }
 
 void turnOffDisplay() {
@@ -45,19 +169,66 @@ void turnOffDisplay() {
 }
 
 void displaySplashScreen() {
+    uint16_t eMarieteLogoWidth = 118;
+    uint16_t eMarieteLogoHeight = 40;
+    uint16_t CO2LogoWidth = 92;
+    uint16_t CO2LogoHeight = 72;
+    uint16_t GadgetLogoWidth = 122;
+    uint16_t GadgetLogoHeight = 46;
+#if TFT_WIDTH == 135 && TFT_HEIGHT == 240
+    uint16_t eMarieteLogoX = 60;
+    uint16_t eMarieteLogoY = 12;
+    uint16_t CO2LogoX = 10;
+    uint16_t CO2LogoY = 50;
+    uint16_t GadgetLogoX = 112;
+    uint16_t GadgetLogoY = 67;
+#endif
+#if TFT_WIDTH == 170 && TFT_HEIGHT == 320
+    uint16_t eMarieteLogoX = 100;
+    uint16_t eMarieteLogoY = 40;
+    uint16_t CO2LogoX = 50;
+    uint16_t CO2LogoY = 78;
+    uint16_t GadgetLogoX = 152;
+    uint16_t GadgetLogoY = 95;
+#endif
+
     tft.fillScreen(TFT_WHITE);
     tft.setSwapBytes(true);
-    tft.pushImage(60, 12, 118, 40, eMarieteLogo);
-    tft.pushImage(10, 50, 92, 72, CO2Logo);
-    tft.pushImage(112, 67, 122, 46, GadgetLogo);
+    tft.pushImage(eMarieteLogoX, eMarieteLogoY, eMarieteLogoWidth, eMarieteLogoHeight, eMarieteLogo);
+    tft.pushImage(CO2LogoX, CO2LogoY, CO2LogoWidth, CO2LogoHeight, CO2Logo);
+    tft.pushImage(GadgetLogoX, GadgetLogoY, GadgetLogoWidth, GadgetLogoHeight, GadgetLogo);
+}
+
+// void displaySplashScreen() {
+//     tft.fillScreen(TFT_WHITE);
+//     tft.setSwapBytes(true);
+//     tft.pushImage(60, 12, 118, 40, eMarieteLogo);
+//     tft.pushImage(10, 50, 92, 72, CO2Logo);
+//     tft.pushImage(112, 67, 122, 46, GadgetLogo);
+// }
+
+void initBacklight() {
+#ifdef TTGO_TDISPLAY
+    pinMode(TFT_BL, OUTPUT);
+    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
+    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
+    setDisplayBrightness(DisplayBrightness);
+#endif
+#ifdef TDISPLAY_S3
+    pinMode(TFT_BL, OUTPUT);
+    pinMode(TFT_BACKLIGHT_ON, OUTPUT);
+    delay(50);
+    digitalWrite(TFT_BL, HIGH);
+    digitalWrite(TFT_BACKLIGHT_ON, HIGH);
+#endif
 }
 
 void initDisplay() {
     Serial.printf("-->[TFT ] Initializing display\n");
-    pinMode(BACKLIGHT_PIN, OUTPUT);
-    ledcSetup(0, 5000, 8);            // 0-15, 5000, 8
-    ledcAttachPin(BACKLIGHT_PIN, 0);  // TFT_BL, 0 - 15
-    setDisplayBrightness(DisplayBrightness);
+    initBacklight();
+    // Display is rotated 90 degrees vs phisical orientation
+    displayWidth = TFT_HEIGHT;
+    displayHeight = TFT_WIDTH;
     tft.init();
     if (displayReverse) {
         tft.setRotation(3);
@@ -65,15 +236,13 @@ void initDisplay() {
         tft.setRotation(1);
     }
 
+    setElementLocations();
+
     displaySplashScreen();  // Display init and splash screen
     delay(2000);            // Enjoy the splash screen for 2 seconds
-    tft.setTextSize(2);
 }
 
-/***************************************************************************************
-** Function name:           displayNotification
-** Description:             Display a boxed  notification in the display
-***************************************************************************************/
+// Display a boxed  notification in the display
 // parameters:
 //      notificationText = string to display.
 //      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
@@ -95,15 +264,14 @@ bool displayNotification(String notificationText, notificationTypes notification
 
     tft.setTextDatum(CC_DATUM);
     tft.setTextColor(textColor, backgroundColor);
+    tft.loadFont(SMALL_FONT);
     tft.drawString(notificationText, tft.width() / 2, tft.height() / 2);
+    tft.unloadFont();
     tft.resetViewport();
     return true;
 }
 
-/***************************************************************************************
-** Function name:           displayNotification
-** Description:             Display a boxed two line notification in the display
-***************************************************************************************/
+// Display a boxed two line notification in the display
 // parameters:
 //      notificationText = string to display.
 //      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
@@ -126,13 +294,39 @@ bool displayNotification(String notificationText, String notificationText2, noti
 
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(textColor, backgroundColor);
+    tft.loadFont(SMALL_FONT);
     tft.drawString(notificationText, tft.width() / 2 - textWidth / 2, tft.height() / 5 * 1 + boxMarging);
     tft.drawString(notificationText2, tft.width() / 2 - textWidth2 / 2, tft.height() / 5 * 3 - boxMarging);
+    tft.unloadFont();
     tft.resetViewport();
     return true;
 }
 
-void showBatteryIcon() {
+uint16_t getBatteryColor(uint16_t battery_voltage) {
+    uint16_t color;
+    if (battery_voltage <= 3.6) {
+        color = TFT_RED;
+    } else if (battery_voltage <= 3.8) {
+        color = TFT_ORANGE;
+    } else if (battery_voltage <= 4.5) {
+        color = TFT_GREEN;
+    } else {
+        color = TFT_SKYBLUE;
+    }
+    return color;
+}
+
+void showBatteryVoltage(int32_t posX, int32_t posY) {
+    String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
+    tft.setTextDatum(TL_DATUM);
+    tft.setCursor(posX, posY);
+    spr.loadFont(SMALL_FONT);
+    spr.setTextColor(getBatteryColor(battery.voltage()), TFT_BLACK);
+    spr.printToSprite(batteryVoltageString);  // Space padding helps over-write old numbers
+    spr.unloadFont();
+}
+
+void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
     if (!displayShowBattery) return;
     uint8_t batteryLevel = battery.level();
     uint16_t color;
@@ -146,17 +340,13 @@ void showBatteryIcon() {
         color = iconDefaultColor;
     }
 
-    tft.drawRoundRect(tft.width() - 32, 4, 28, 14, 2, color);  // Battery outter rectangle
-    tft.drawLine(tft.width() - 3, 9, tft.width() - 3, 13, color);
+    tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
+    tft.drawLine(posX + 33, posY + 4, posX + 33, posY + 10, color);
 
-    if (batteryLevel > 20) tft.fillRect(tft.width() - 29, 6, 4, 10, color);
-    if (batteryLevel > 40) tft.fillRect(tft.width() - 23, 6, 4, 10, color);
-    if (batteryLevel > 60) tft.fillRect(tft.width() - 17, 6, 4, 10, color);
-    if (batteryLevel > 80) tft.fillRect(tft.width() - 11, 6, 4, 10, color);
-
-    tft.setTextDatum(TR_DATUM);
-    tft.setTextColor(TFT_SILVER, TFT_BLACK);
-    tft.drawString(String(battery_voltage, 1) + "V", tft.width() - 35, 2);
+    if (batteryLevel > 20) tft.fillRect(posX + 4, posY + 2, 4, 10, color);
+    if (batteryLevel > 40) tft.fillRect(posX + 11, posY + 2, 4, 10, color);
+    if (batteryLevel > 60) tft.fillRect(posX + 18, posY + 2, 4, 10, color);
+    if (batteryLevel > 80) tft.fillRect(posX + 25, posY + 2, 4, 10, color);
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY) {
@@ -205,113 +395,134 @@ void showEspNowIcon(int32_t posX, int32_t posY) {
     }
 }
 
-void showTemperature() {
+void showTemperatureIcon(int32_t posX, int32_t posY) {
+    tft.setSwapBytes(true);
+    tft.pushImage(posX, posY, 16, 16, iconTemperature);
+}
+
+uint16_t getTemperatureColor(float temp) {
+    uint16_t color;
+    if (temp >= 30) {
+        color = TFT_ORANGE;
+    } else if (temp >= 10) {
+        color = TFT_LIGHTGREY;
+    } else {
+        color = TFT_SKYBLUE;
+    }
+    return color;
+}
+
+void showTemperature(float temp, int32_t posX, int32_t posY) {
     if (!displayShowTemperature) return;
-    if (temp >= 30)
-        tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-    else if (temp >= 10)
-        tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
-    else
-        tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
-    tft.setTextDatum(BL_DATUM);
-    tft.setSwapBytes(true);
-    tft.pushImage(2, tft.height() - 22, 16, 16, iconTemperature);
-    if (showFahrenheit) {
-        tft.drawString(String(tempFahrenheit, 1) + "~", 22, tft.height() - 2);  // The "~" symbol has been redefined in custom font as the degree symbol
-    } else {
-        tft.drawString(String(temp, 1) + "~", 22, tft.height() - 2);
-    }
+    showTemperatureIcon(posX, posY);
+    String temperatureString = (showFahrenheit ? String(tempFahrenheit, 1) : String(temp, 1)) + "° ";
+    tft.setCursor(posX + 18, posY);
+    spr.loadFont(SMALL_FONT);
+    spr.setTextColor(getTemperatureColor(temp), TFT_BLACK);
+    spr.printToSprite(temperatureString);  // Space padding helps over-write old numbers
+    spr.unloadFont();
 }
 
-void showHumidity() {
+void showHumidityIcon(int32_t posX, int32_t posY) {
+    tft.setSwapBytes(true);
+    tft.pushImage(posX, posY, 16, 16, iconHumidity);
+}
+
+uint16_t getHumidityColor(float hum) {
+    uint16_t color;
+    if (hum <= 25) {
+        color = TFT_RED;
+    } else if (hum < 40) {
+        color = TFT_ORANGE;
+    } else if (hum <= 60) {
+        color = TFT_LIGHTGREY;
+    } else if (hum < 75) {
+        color = TFT_SKYBLUE;
+    } else {
+        color = TFT_BLUE;
+    }
+    return color;
+}
+
+void showHumidity(float hum, int32_t posX, int32_t posY) {
     if (!displayShowHumidity) return;
-    if (hum <= 25)
-        tft.setTextColor(TFT_WHITE, TFT_RED);
-    else if (hum < 40)
-        tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-    else if (hum <= 60)
-        tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
-    else if (hum < 75)
-        tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
-    else
-        tft.setTextColor(TFT_RED, TFT_SKYBLUE);
+    showHumidityIcon(posX, posY);
+    String humidityString = String(hum, 0) + "% ";
+    tft.setCursor(posX + 18, posY);
+    spr.loadFont(SMALL_FONT);
+    spr.setTextColor(getHumidityColor(hum), TFT_BLACK);
+    spr.printToSprite(humidityString);  // Space padding helps over-write old numbers
+    spr.unloadFont();
+}
+
+void OLDshowHumidity(float hum, int32_t posX, int32_t posY) {
+    if (!displayShowHumidity) return;
+    showHumidityIcon(posX - 20, posY - 2);
+    tft.setTextColor(getHumidityColor(hum), TFT_BLACK);
     tft.setTextDatum(BR_DATUM);
-    tft.setSwapBytes(true);
-    tft.pushImage(tft.width() - 60, tft.height() - 22, 16, 16, iconHumidity);
-    tft.drawString(String(hum, 0) + "%", tft.width() - 6, tft.height() - 2);
+    showHumidityIcon(tft.width() - 60, tft.height() - 22);
+    tft.loadFont(SMALL_FONT);
+    tft.drawString(String(hum, 0) + "%", posX, posY);
+    tft.unloadFont();
 }
 
-void showVoltage(int32_t posX, int32_t posY) {
-    // Draw Voltaje number
-    uint16_t battery_voltage = battery.voltage();
-    if (battery_voltage <= 3.6) {
-        tft.setTextColor(TFT_RED, TFT_BLACK);
-    } else if (battery_voltage <= 3.8) {
-        tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-    } else if (battery_voltage <= 4.5) {
-        tft.setTextColor(TFT_GREEN, TFT_BLACK);
+uint16_t getCO2Color(uint16_t co2) {
+    uint16_t color;
+    if (co2 < 800) {
+        color = TFT_GREEN;
+    } else if (co2 < 1000) {
+        color = TFT_YELLOW;
+    } else if (co2 < 1200) {
+        color = TFT_ORANGE;
     } else {
-        tft.setTextColor(TFT_BLUE, TFT_BLACK);
+        color = TFT_RED;
     }
-    tft.setTextDatum(TR_DATUM);
-    tft.drawString(String(battery_voltage, 1) + "V", posX, posY);
+    return color;
 }
 
-void showBLEDeviceId(int32_t posX, int32_t posY) {
-#ifdef SUPPORT_BLE
-    if (activeBLE) {
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setTextDatum(BR_DATUM);  // bottom right
-        tft.drawString(provider.getDeviceIdString(), posX, posY);
-    }
-#endif
+void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
+    tft.setTextDatum(TL_DATUM);
+    spr.setColorDepth(16);
+    spr.loadFont(BIG_FONT);
+    uint16_t width = spr.textWidth("8888") + 2;
+    uint16_t height = spr.fontHeight();
+    spr.createSprite(width, height);
+    spr.setTextColor(getCO2Color(co2), TFT_BLACK);
+    spr.setTextDatum(BR_DATUM);
+    // spr.fillSprite(TFT_BLUE);
+    spr.drawNumber(co2, width, height);
+    spr.pushSprite(posX - width, posY - height);
+    spr.unloadFont();
+    spr.deleteSprite();
 }
 
-void showCO2(uint16_t co2) {
-    if (co2 > 9999) {
-        co2 = 9999;
-    }
-    if (co2 >= co2RedRange) {
-        tft.setTextColor(TFT_RED, TFT_BLACK);
-    } else if (co2 >= co2OrangeRange) {
-        tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-    } else {
-        tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    }
-
-    tft.setTextSize(1);
-    // Draw CO2 number
-    tft.setTextDatum(BR_DATUM);  // bottom right
-    tft.setFreeFont(FF95);
-    tft.drawString(String(co2), tft.width() - 39, 112);
-
-    // Draw CO2 unit
-    tft.setTextDatum(BR_DATUM);  // bottom right
-    tft.setFreeFont(FF90);
-    tft.drawString("ppm", tft.width() - 4, 102);
+void showCO2units(int32_t posX, int32_t posY) {
+    tft.setTextDatum(BL_DATUM);
+    spr.setColorDepth(16);
+    spr.loadFont(MINI_FONT);
+    spr.setTextColor(TFT_RED, TFT_BLACK);
+    tft.setCursor(posX, posY);
+    spr.printToSprite("ppm");
+    spr.unloadFont();
 }
 
-void displayShowValues(uint16_t co2) {
-    tft.fillScreen(TFT_BLACK);
-    uint8_t defaultDatum = tft.getTextDatum();
-    showCO2(co2);
-    // showBLEDeviceId(230, 135);
-    // showVoltage(0, 135);
-    showTemperature();
-    showHumidity();
-    showBatteryIcon();
-    showWiFiIcon(24, 3);
-    showMQTTIcon(46, 3);
-    showBLEIcon(2, 3);
-    showEspNowIcon(68, 3);
+void displayShowValues() {
+    uint8_t currenttDatum = tft.getTextDatum();
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
+    showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
+    showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
+    showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
+    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY);
+    showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY);
 
-    // Revert datum setting
-    tft.setTextDatum(defaultDatum);
-
-    // set default font for menu
-    tft.setFreeFont(NULL);
+    // Revert the datum setting
+    tft.setTextDatum(currenttDatum);
     tft.setTextSize(2);
 }
 
-#endif  // SUPPORT_WEBCONFIG
+#endif  // SUPPORT_TFT
 #endif  // CO2_Gadget_TFT_h

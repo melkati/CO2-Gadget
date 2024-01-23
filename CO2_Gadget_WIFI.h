@@ -17,6 +17,123 @@
 WiFiClient espClient;
 AsyncWebServer server(80);
 
+void printSmallChar(char c, int row) {
+  switch (c) {
+    case '0':
+      switch (row) {
+        case 0: Serial.print(" 000 "); break;
+        case 1: Serial.print("0   0"); break;
+        case 2: Serial.print("0   0"); break;
+        case 3: Serial.print("0   0"); break;
+        case 4: Serial.print(" 000 "); break;
+      }
+      break;
+    case '1':
+      switch (row) {
+        case 0: Serial.print("  1  "); break;
+        case 1: Serial.print(" 11  "); break;
+        case 2: Serial.print("  1  "); break;
+        case 3: Serial.print("  1  "); break;
+        case 4: Serial.print(" 111 "); break;
+      }
+      break;
+    case '2':
+      switch (row) {
+        case 0: Serial.print(" 222 "); break;
+        case 1: Serial.print("    2"); break;
+        case 2: Serial.print("  22 "); break;
+        case 3: Serial.print(" 2   "); break;
+        case 4: Serial.print(" 2222"); break;
+      }
+      break;
+    case '3':
+      switch (row) {
+        case 0: Serial.print(" 333 "); break;
+        case 1: Serial.print("    3"); break;
+        case 2: Serial.print("  33 "); break;
+        case 3: Serial.print("    3"); break;
+        case 4: Serial.print(" 333 "); break;
+      }
+      break;
+    case '4':
+      switch (row) {
+        case 0: Serial.print("4   4"); break;
+        case 1: Serial.print("4   4"); break;
+        case 2: Serial.print("44444"); break;
+        case 3: Serial.print("    4"); break;
+        case 4: Serial.print("    4"); break;
+      }
+      break;
+    case '5':
+      switch (row) {
+        case 0: Serial.print("55555"); break;
+        case 1: Serial.print("5    "); break;
+        case 2: Serial.print("555  "); break;
+        case 3: Serial.print("    5"); break;
+        case 4: Serial.print("555  "); break;
+      }
+      break;
+    case '6':
+      switch (row) {
+        case 0: Serial.print(" 666 "); break;
+        case 1: Serial.print("6    "); break;
+        case 2: Serial.print("6666 "); break;
+        case 3: Serial.print("6   6"); break;
+        case 4: Serial.print(" 666 "); break;
+      }
+      break;
+    case '7':
+      switch (row) {
+        case 0: Serial.print("77777"); break;
+        case 1: Serial.print("    7"); break;
+        case 2: Serial.print("   7 "); break;
+        case 3: Serial.print("  7  "); break;
+        case 4: Serial.print(" 7   "); break;
+      }
+      break;
+    case '8':
+      switch (row) {
+        case 0: Serial.print(" 888 "); break;
+        case 1: Serial.print("8   8"); break;
+        case 2: Serial.print(" 888 "); break;
+        case 3: Serial.print("8   8"); break;
+        case 4: Serial.print(" 888 "); break;
+      }
+      break;
+    case '9':
+      switch (row) {
+        case 0: Serial.print(" 999 "); break;
+        case 1: Serial.print("9   9"); break;
+        case 2: Serial.print(" 9999"); break;
+        case 3: Serial.print("    9"); break;
+        case 4: Serial.print(" 999 "); break;
+      }
+      break;
+    case '.':
+      switch (row) {
+        case 0: Serial.print("    "); break;
+        case 1: Serial.print("    "); break;
+        case 2: Serial.print("    "); break;
+        case 3: Serial.print("    "); break;
+        case 4: Serial.print("  o "); break;
+      }
+      break;
+    default:
+      Serial.print("    "); // Default character for unhandled
+      break;
+  }
+}
+
+void printLargeASCII(const char* text) {
+  for (int row = 0; row < 5; row++) { // 5 rows for each character
+    for (int i = 0; i < strlen(text); i++) {
+      printSmallChar(text[i], row);
+      Serial.print(" "); // Space between characters
+    }
+    Serial.println(); // New line after each row of characters
+  }
+}
+
 void onWifiSettingsChanged(std::string ssid, std::string password) {
     Serial.print("-->[WiFi] WifiSetup: SSID = ");
     Serial.print(ssid.c_str());
@@ -383,6 +500,19 @@ void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
     }
 }
 
+// easy to use helper-function for non-blocking timing
+boolean TimePeriodIsOver(unsigned long &startOfPeriod, unsigned long TimePeriod) {
+    unsigned long currentMillis = millis();
+    if (currentMillis - startOfPeriod >= TimePeriod) {
+        // more time than TimePeriod has elapsed since last time if-condition was true
+        startOfPeriod = currentMillis;  // a new period starts right here so set new starttime
+        return true;
+    } else
+        return false;  // actual TimePeriod is NOT yet over
+}
+
+unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
+
 void initWifi() {
     if (activeWIFI) {
         troubledWIFI = false;
@@ -407,13 +537,48 @@ void initWifi() {
 
         Serial.print("-->[WiFi] Connecting to WiFi");
         WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-        while (WiFi.status() != WL_CONNECTED) {
-            Serial.print(".");
-            delay(500);
-            if (troubledWIFI) {
-                return;
+
+        // Wait for connection
+        while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+            yield();                                   // very important to execute yield to make it work
+            if (TimePeriodIsOver(MyTestTimer, 500)) {  // once every 500 miliseconds
+                Serial.print(".");                     // print a dot
+                WiFiConnectionRetries++;
+                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after 30 dots = 15 seconds restart
+                    Serial.println();
+                    Serial.print("not connected ");
+                }
             }
         }
+        if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+            disableWiFi();
+            troubledWIFI = true;
+            timeTroubledWIFI = millis();
+            Serial.printf(
+                "-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n",
+                WiFiConnectionRetries);
+        }
+        if (troubledWIFI) {
+            return;
+        }
+
+        // while (WiFi.status() != WL_CONNECTED) {
+        //     WiFiConnectionRetries++;
+        //     Serial.print(".");
+        //     delay(1000);
+        //     if ((WiFiConnectionRetries >= maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+        //         disableWiFi();
+        //         troubledWIFI = true;
+        //         timeTroubledWIFI = millis();
+        //         Serial.printf(
+        //             "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
+        //             WiFiConnectionRetries);
+        //     }
+        //     if (troubledWIFI) {
+        //         return;
+        //     }
+        // }
+
         Serial.println("");
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);

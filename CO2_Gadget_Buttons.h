@@ -13,7 +13,6 @@ void IRAM_ATTR buttonUpISR() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
 #endif
-        actualDisplayBrightness = DisplayBrightness;
         lastTimeButtonPressed = millis();
     }
 }

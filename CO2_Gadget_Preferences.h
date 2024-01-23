@@ -62,6 +62,14 @@ void printPreferences() {
 }
 
 void initPreferences() {
+    // preferences.begin("CO2-Gadget", false);
+    // if (preferences.clear()) {
+    //     Serial.printf("-->[PREF] Preferences cleared\n");
+    // } else {
+    //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
+    // }
+    // preferences.end();
+    // delay(1000);
     preferences.begin("CO2-Gadget", false);
     // preferences.clear(); // Remove all preferences
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
@@ -360,7 +368,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         if (DisplayBrightness != JsonDocument["DisplayBright"]) {
             DisplayBrightness = JsonDocument["DisplayBright"];
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-            setDisplayBrightness(DisplayBrightness);
+            // setDisplayBrightness(DisplayBrightness);
 #endif
         }
         neopixelBrightness = JsonDocument["neopixBright"];

@@ -19,47 +19,45 @@
 #endif
 
 #ifdef SUPPORT_OLED
-#include <menuIO/u8g2Out.h>
 #include <menuIO/chainStream.h>
+#include <menuIO/u8g2Out.h>
 #endif
 
 #include <menuIO/esp8266Out.h>  //must include this even if not doing web output...
 
 using namespace Menu;
 
-String rightPad(String aString, uint8_t aLenght) {
-    String tempString = aString;
-    while (tempString.length() < aLenght) {
-        tempString = tempString + " ";
+String rightPad(const String &aString, uint8_t aLength) {
+    String paddedString = aString;
+    while (paddedString.length() < aLength) {
+        paddedString += ' ';
     }
+
 #ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] Original String: #");
-    Serial.print(aString);
-    Serial.println("#");
-    Serial.print("-->[MENU] Padded String: #");
-    Serial.print(tempString);
-    Serial.println("#");
+    Serial.printf("-->[MENU] Original String: #%s#\n", aString.c_str());
+    Serial.printf("-->[MENU] Padded String: #%s#\n", paddedString.c_str());
 #endif
-    return tempString;
+
+    return paddedString;
 }
 
-//customizing a menu prompt look
+// customizing a menu prompt look
 class confirmReboot : public menu {
    public:
     confirmReboot(constMEM menuNodeShadow &shadow) : menu(shadow) {}
     Used printTo(navRoot &root, bool sel, menuOut &out, idx_t idx, idx_t len, idx_t p) override {
-        return idx < 0 ?  //idx will be -1 when printing a menu title or a valid index when printing as option
+        return idx < 0 ?  // idx will be -1 when printing a menu title or a valid index when printing as option
                    menu::printTo(root, sel, out, idx, len, p)
-                       :                                                    //when printing title
-                   out.printRaw((constText *)F("Reboot w/o saving"), len);  //when printing as regular option
+                       :                                                    // when printing title
+                   out.printRaw((constText *)F("Reboot w/o saving"), len);  // when printing as regular option
     }
 };
 
 result systemReboot() {
     Serial.println();
     Serial.println("-->[MENU] Reboot CO2 Gadget at user request from menu...");
-    //do some termination stuff here
-    if (sensors.getMainDeviceSelected().equals("SCD30")) {
+    // do some termination stuff here
+    if (sensorsGetMainDeviceSelected().equals("SCD30")) {
         Serial.println("-->[MENU] Resetting SCD30 sensor...");
         delay(100);
         sensors.scd30.reset();
@@ -68,8 +66,8 @@ result systemReboot() {
     return quit;
 }
 
-//using the customized menu class
-//note that first parameter is the class name
+// using the customized menu class
+// note that first parameter is the class name
 altMENU(confirmReboot, subMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
 
 char tempIPAddress[16];
@@ -230,12 +228,12 @@ MENU(calibrationMenu, "Calibration", doNothing, noEvent, wrapStyle
   // ,OP("Test menu event", showEvent, anyEvent),
 
 int8_t setCO2Sensor;
-const uint8_t Auto = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
+const uint8_t AutoSensor = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
 
 void SetTempCO2Sensor(int8_t sensor) {
   String strSensor="", paddedString="";  
   
-  if (sensor==Auto)            {strSensor = "Auto";}
+  if (sensor==AutoSensor)            {strSensor = "AutoSensor";}
   else if (sensor==MHZ19)      {strSensor = "MHZ19";}
   else if (sensor==CM1106)     {strSensor = "CM1106";}
   else if (sensor==SENSEAIRS8) {strSensor = "SENSEAIRS8";}
@@ -261,7 +259,7 @@ result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
 }
 
 CHOOSE(setCO2Sensor,CO2SensorChooseMenu,"Sensor ",doNothing,noEvent,wrapStyle
-  ,VALUE("Auto (I2C)",Auto,doSetCO2Sensor, enterEvent)
+  ,VALUE("AutoSensor (I2C)",AutoSensor,doSetCO2Sensor, enterEvent)
   ,VALUE("MH-Z19 (A/B/C/D)",MHZ19,doSetCO2Sensor, enterEvent)
   ,VALUE("CM1106",CM1106,doSetCO2Sensor, enterEvent)
   ,VALUE("Senseair S8",SENSEAIRS8,doSetCO2Sensor, enterEvent)
@@ -892,117 +890,58 @@ outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list c
 // clang-format on
 
 NAVROOT(nav, mainMenu, MAX_DEPTH, serial, out);
+void copyStringToCharArray(const String &source, char *destination, size_t size, const char *label) {
+#ifdef DEBUG_ARDUINOMENU
+    Serial.print("-->[MENU] ");
+    Serial.print(label);
+    Serial.print(": #");
+    Serial.print(source);
+    Serial.println("#");
+#endif
+    source.toCharArray(destination, size);
+}
 
 void loadTempArraysWithActualValues() {
-    String paddedString;
-
-#ifdef DEBUG_ARDUINOMENU
-    Serial.println("-->[MENU] loadTempArraysWithActualValues()");
-#endif
-
-    paddedString = rightPad(rootTopic, 30);
-    paddedString.toCharArray(tempMQTTTopic, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempMQTTTopic: #");
-    Serial.print(tempMQTTTopic);
-    Serial.println("#");
-#endif
-
-    paddedString = rightPad(mqttClientId, 30);
-    paddedString.toCharArray(tempMQTTClientId, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempMQTTClientId: #");
-    Serial.print(tempMQTTClientId);
-    Serial.println("#");
-#endif
-
-    paddedString = rightPad(mqttBroker, 30);
-    paddedString.toCharArray(tempMQTTBrokerIP, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.printf("-->[MENU] mqttBroker: #%s#\n", mqttBroker.c_str());
-    Serial.printf("-->[MENU] mqttBroker.length(): %d\n", paddedString.length());
-    Serial.print("-->[MENU] tempMQTTBrokerIP: #");
-    Serial.print(tempMQTTBrokerIP);
-    Serial.println("#");
-#endif
-
-    paddedString = rightPad(mqttUser, 30);
-    paddedString.toCharArray(tempMQTTUser, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempMQTTUser: #");
-    Serial.print(tempMQTTUser);
-    Serial.println("#");
-#endif
+    copyStringToCharArray(rightPad(rootTopic, 30), tempMQTTTopic, 30, "tempMQTTTopic");
+    copyStringToCharArray(rightPad(mqttClientId, 30), tempMQTTClientId, 30, "tempMQTTClientId");
+    copyStringToCharArray(rightPad(mqttBroker, 30), tempMQTTBrokerIP, 30, "tempMQTTBrokerIP");
+    copyStringToCharArray(rightPad(mqttUser, 30), tempMQTTUser, 30, "tempMQTTUser");
 
 #ifdef WIFI_PRIVACY
-    paddedString = rightPad(" ", 30);
-    paddedString.toCharArray(tempMQTTPass, paddedString.length());
+    copyStringToCharArray(rightPad(" ", 30), tempMQTTPass, 30, "tempMQTTPass");
 #else
-    paddedString = rightPad(mqttPass, 30);
-    paddedString.toCharArray(tempMQTTPass, paddedString.length());
-#endif
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempMQTTPass: #");
-    Serial.print(tempMQTTPass);
-    Serial.println("#");
+    copyStringToCharArray(rightPad(mqttPass, 30), tempMQTTPass, 30, "tempMQTTPass");
 #endif
 
-    paddedString = rightPad(wifiSSID, 30);
-    paddedString.toCharArray(tempWiFiSSID, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempWiFiSSID: #");
-    Serial.print(tempWiFiSSID);
-    Serial.println("#");
-#endif
+    copyStringToCharArray(rightPad(wifiSSID, 30), tempWiFiSSID, 30, "tempWiFiSSID");
 
 #ifdef WIFI_PRIVACY
-    paddedString = rightPad(" ", 30);
-    paddedString.toCharArray(tempWiFiPasswrd, paddedString.length());
+    copyStringToCharArray(rightPad(" ", 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
 #else
-    paddedString = rightPad(wifiPass, 30);
-    paddedString.toCharArray(tempWiFiPasswrd, paddedString.length());
-#endif
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempWiFiPasswrd: #");
-    Serial.print(tempWiFiPasswrd);
-    Serial.println("#");
+    copyStringToCharArray(rightPad(wifiPass, 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
 #endif
 
-    paddedString = rightPad(hostName, 30);
-    paddedString.toCharArray(tempHostName, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempHostName: #");
-    Serial.print(tempHostName);
-    Serial.println("#");
-#endif
+    copyStringToCharArray(rightPad(hostName, 30), tempHostName, 30, "tempHostName");
 
 #ifdef SUPPORT_BLE
-    paddedString = rightPad(provider.getDeviceIdString(), 30);
+    copyStringToCharArray(rightPad(provider.getDeviceIdString(), 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
 #else
-    paddedString = rightPad("Unavailable", 30);
-#endif
-    paddedString.toCharArray(tempBLEDeviceId, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempBLEDeviceId: #");
-    Serial.print(tempBLEDeviceId);
-    Serial.println("#");
+    copyStringToCharArray(rightPad("Unavailable", 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
 #endif
 
-    if ((sensors.getMainDeviceSelected() == "SCD30") || (sensors.getMainDeviceSelected() == "SCD4x")) {
-        paddedString = rightPad("Auto (I2C)", 30);
-    } else {
-        paddedString = rightPad(sensors.getMainDeviceSelected(), 30);
-    }
-    paddedString.toCharArray(tempCO2Sensor, paddedString.length());
-#ifdef DEBUG_ARDUINOMENU
-    Serial.print("-->[MENU] tempCO2Sensor: #");
-    Serial.print(tempCO2Sensor);
-    Serial.println("#");
-#endif
+    String co2SensorString = (sensorsGetMainDeviceSelected() == "SCD30" || sensorsGetMainDeviceSelected() == "SCD4x")
+                                 ? rightPad("AutoSensor (I2C)", 30)
+                                 : rightPad(sensorsGetMainDeviceSelected(), 30);
+    copyStringToCharArray(co2SensorString, tempCO2Sensor, 30, "tempCO2Sensor");
 
-snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
-#ifdef DEBUG_ARDUINOMENU
-    Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X",
+             peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+             peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+
+#if (DEBUG_ARDUINOMENU && SUPPORT_ESPNOW)
+    Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n",
+                  peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+                  peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
     Serial.print("-->[MENU] tempESPNowAddress: #");
     Serial.print(tempESPNowAddress);
     Serial.println("#");
@@ -1023,11 +962,8 @@ result idle(menuOut &o, idleEvent e) {
         Serial.println("-->[MENU] Event iddling");
         Serial.flush();
 #endif
-#if defined SUPPORT_TFT
-        displayShowValues(co2);
-#endif
-#if defined SUPPORT_OLED
-        displayShowValues(co2);
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+        displayShowValues();
 #endif
     } else if (e == idleEnd) {
 #ifdef DEBUG_ARDUINOMENU
@@ -1047,12 +983,12 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    nav.doInput();//Do input, even if no display, as serial menu needs this
+    nav.doInput();  // Do input, even if no display, as serial menu needs this
 #if defined(SUPPORT_TFT)
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
-        displayShowValues(co2);
+        displayShowValues();
     } else {
         if (nav.changed(0)) {
             u8g2.firstPage();
@@ -1060,7 +996,7 @@ void menuLoop() {
             while (u8g2.nextPage());
         }
     }
-#else //For serial only output
+#else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {
             nav.doOutput();
