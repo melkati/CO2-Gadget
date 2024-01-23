@@ -83,7 +83,7 @@ void initDisplay() {
   delay(1000);
 }
 
-void displayShowValues(uint16_t co2) {
+void displayShowValues() {
     u8g2.firstPage();
     do {
         u8g2.setFont(u8g2_font_7Segments_26x42_mn);
