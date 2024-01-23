@@ -133,13 +133,13 @@ void setElementLocations() {
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 1;
+        elementPosition.bleIconY = 2;
         elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 1;
+        elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 1;
+        elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 1;
+        elementPosition.espNowIconY = 2;
     }
 }
 
