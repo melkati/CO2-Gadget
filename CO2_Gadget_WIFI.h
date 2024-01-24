@@ -465,8 +465,9 @@ void initWebServer() {
     server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
         // Trigger a software reset
         Serial.flush();
-        ESP.restart();
         request->send(200, "text/plain", "ESP32 reset initiated");
+        delay(100);
+        ESP.restart();
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
