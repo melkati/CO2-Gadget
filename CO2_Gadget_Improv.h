@@ -27,7 +27,7 @@ void blink_led(int d, int times) {
 }
 
 void onImprovWiFiErrorCb(ImprovTypes::Error err) {
-    //   server.stop();
+    server.end();
     Serial.println("-->[IMPR] Error: " + String(err));
     blink_led(2000, 3);
 }
