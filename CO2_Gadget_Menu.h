@@ -983,7 +983,13 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    nav.doInput();  // Do input, even if no display, as serial menu needs this
+    if (!improvSerial.receivingImprov()) {
+        nav.doInput();  // Do input, even if no display, as serial menu needs this
+    } else {
+#ifdef DEBUG_ARDUINOMENU
+        Serial.println("-->[MENU] Improv is receiving data. Menu disabled.");
+#endif
+    }
 #if defined(SUPPORT_TFT)
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)

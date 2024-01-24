@@ -125,6 +125,8 @@ uint16_t co2RedRange = 1000;
 #include <FS.h>
 #include <SPIFFS.h>
 
+Stream& miSerialPort = Serial;
+
 // Functions and enum definitions
 void reverseButtons(bool reversed);
 void outputsLoop();
@@ -392,8 +394,8 @@ void adjustBrightnessLoop() {
 
 void batteryLoop() {
     const float lastBatteryVoltage = battery_voltage;
+    readBatteryVoltage();
     if (!inMenu) {
-        readBatteryVoltage();
         if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
             battery_level = getBatteryPercentage();
             // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
@@ -461,6 +463,7 @@ void setup() {
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
+    initImprov();
     initWifi();
     initSensors();
 #ifdef SUPPORT_ESPNOW
@@ -482,12 +485,11 @@ void setup() {
 }
 
 void loop() {
-    batteryLoop();
     improvLoop();
+    batteryLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    readBatteryVoltage();
     utilityLoop();
     outputsLoop();
     processPendingCommands();
