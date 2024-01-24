@@ -956,6 +956,9 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
+        if (inMenu) {
+            tft.fillScreen(TFT_BLACK);
+        }
         setInMenu(false);
     } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
