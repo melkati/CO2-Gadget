@@ -50,9 +50,12 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
 // }
 
 void initImprov() {
+    char version[100];  // Ajusta el tamaño según tus necesidades
+    sprintf(version, "CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+
     //   pinMode(LED_BUILTIN, OUTPUT);
     Serial.println("-->[IMPR] Init Improv");
-    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CO2-Gadget-Beta-Desarrollo", "052-feature-improv Flavour: TTGO T-Display Sandwich", "CO2-Gadget-Beta-Desarrollo", "http://{LOCAL_IPV4}/preferences.html");
+    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CO2-Gadget-Beta-Desarrollo", version, "CO2-Gadget", "http://{LOCAL_IPV4}/preferences.html");
     improvSerial.onImprovError(onImprovWiFiErrorCb);
     improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
     //   improvSerial.setCustomConnectWiFi(connectWifi);  // Optional
@@ -60,8 +63,16 @@ void initImprov() {
     blink_led(100, 5);
 }
 
+void improvLoopNew() {
+    if (!inMenu) {
+        if (Serial.peek() != -1 && Serial.peek() != 0x2A) {
+            improvSerial.handleSerial();
+        }
+    }
+}
+
 void improvLoop() {
-    improvSerial.handleSerial();
+    if (!inMenu) improvSerial.handleSerial();
 }
 
 #endif  // CO2_Gadget_Improv_h
