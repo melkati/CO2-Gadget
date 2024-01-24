@@ -4,8 +4,11 @@
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                              SETUP IMPROV FUNCTIONALITY                           *********/
+/*********                          SETUP IMPROV FUNCTIONALITY                               *********/
 /*********                                                                                   *********/
+/*****************************************************************************************************/
+//                        This code is based on jnthas demo example at:                              //
+//   https://github.com/jnthas/improv-wifi-demo/blob/main/src/esp32-wifiimprov/esp32-wifiimprov.ino  //
 /*****************************************************************************************************/
 // clang-format on
 
@@ -153,9 +156,9 @@ bool onCommandCallback(improv::ImprovCommand cmd) {
         case improv::Command::GET_DEVICE_INFO: {
             std::vector<std::string> infos = {
                 // Firmware name
-                "CO2-Gadget-TTGO_TDISPLAY_SANDWICH",
+                "CO2-Gadget-Beta-Desarrollo",
                 // Firmware version
-                "v8.0.000",
+                "051-feature-improv Flavour: TTGO T-Display Sandwich",
                 // Hardware chip/variant
                 "ESP32",
                 // Device name
@@ -182,11 +185,14 @@ bool onCommandCallback(improv::ImprovCommand cmd) {
 void improvLoop() {
     if (Serial.available() > 0) {
         uint8_t b = Serial.read();
+        Serial.printf("--> [IMPR] Received byte: %c\n", b);
 
         if (parse_improv_serial_byte(x_positionImprov, b, x_bufferImprov, onCommandCallback, onErrorCallback)) {
             x_bufferImprov[x_positionImprov++] = b;
+            Serial.printf("--> [IMPR] Buffer: %s\n", x_bufferImprov);
         } else {
             x_positionImprov = 0;
+            Serial.printf("--> [IMPR] Recibidos %d bytes\n", x_positionImprov);
         }
     }
 }
