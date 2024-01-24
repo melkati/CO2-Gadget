@@ -397,23 +397,22 @@ void batteryLoop() {
 void utilityLoop() {
     static float lastCheckedVoltage = 0;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
+    const float highVoltageThreshold = 4.5;
+    const int16_t highCpuFrequency = 240;
+    const int16_t lowCpuFrequency = 80;
 
-    if (battery_voltage > 4.5 && actualCPUFrequency != 240) {
+    if (battery_voltage > highVoltageThreshold && actualCPUFrequency != highCpuFrequency) {
         Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
-        Serial.flush();
-        Serial.end();
-        setCpuFrequencyMhz(240);  // High CPU frequency when working on external power
-        Serial.begin(115200);
-        lastCheckedVoltage = battery_voltage;
-    } else if (battery_voltage < 4.5 && actualCPUFrequency != 80) {
+        setCpuFrequencyMhz(highCpuFrequency);
+    } else if (battery_voltage < highVoltageThreshold && actualCPUFrequency != lowCpuFrequency) {
         Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to 80MHz\n", battery_voltage);
+        setCpuFrequencyMhz(lowCpuFrequency);
+    }
+
+    if (battery_voltage != lastCheckedVoltage) {
         Serial.flush();
         Serial.end();
-        setCpuFrequencyMhz(80);  // Lower CPU frequency to reduce power consumption
         Serial.begin(115200);
-        lastCheckedVoltage = battery_voltage;
-    } else if (battery_voltage != lastCheckedVoltage) {
-        // The voltage has changed, but the CPU frequency is already at the desired value.
         lastCheckedVoltage = battery_voltage;
     }
 }
