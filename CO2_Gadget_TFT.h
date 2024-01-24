@@ -154,8 +154,7 @@ void setElementLocations() {
 void setDisplayBrightness(uint32_t newBrightness) {
 // TO-DO: Fix this
 #ifdef TTGO_TDISPLAY
-    actualDisplayBrightness = ledcRead(BACKLIGHT_PWM_CHANNEL);
-    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
+    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", DisplayBrightness);
     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
     ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
     Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
@@ -166,7 +165,8 @@ void setDisplayBrightness(uint32_t newBrightness) {
 }
 
 void turnOffDisplay() {
-    setDisplayBrightness(0);  // Turn off the display
+     setDisplayBrightness(0);  // Turn off the display
+      actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {
