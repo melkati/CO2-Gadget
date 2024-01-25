@@ -300,15 +300,11 @@ void publishMeasurementsMQTT() {
 void publishMQTT() {
 #ifdef SUPPORT_MQTT
     if (activeMQTT) {
-        if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
-            if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (lastTimeMQTTPublished == 0)) {
-                publishMeasurementsMQTT();
-                publishMQTTAlarms();
-                publishMQTTSystemData();
-                lastTimeMQTTPublished = millis();
-            }
-            // Serial.print("-->[MQTT] Free heap: ");
-            // Serial.println(ESP.getFreeHeap());
+        if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0)) {
+            publishMeasurementsMQTT();
+            publishMQTTAlarms();
+            publishMQTTSystemData();
+            lastTimeMQTTPublished = millis();
         }
     }
 #endif
