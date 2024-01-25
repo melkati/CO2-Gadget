@@ -453,6 +453,7 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
+    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
@@ -463,7 +464,6 @@ void setup() {
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
-    initImprov();
     initWifi();
     initSensors();
 #ifdef SUPPORT_ESPNOW
@@ -486,17 +486,17 @@ void setup() {
 
 void loop() {
     improvLoop();
-    batteryLoop();
-    wifiClientLoop();
-    mqttClientLoop();
+    // batteryLoop();
+    // wifiClientLoop();
+    // mqttClientLoop();
     sensorsLoop();
-    utilityLoop();
-    outputsLoop();
-    processPendingCommands();
-    readingsLoop();
-    OTALoop();
-    adjustBrightnessLoop();
+    // utilityLoop();
+    // outputsLoop();
+    // processPendingCommands();
+    // readingsLoop();
+    // OTALoop();
+    // adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
-    BLELoop();
+    // BLELoop();
 }
