@@ -27,6 +27,8 @@
 
 using namespace Menu;
 
+bool changedToIdle = false;
+
 String rightPad(const String &aString, uint8_t aLength) {
     String paddedString = aString;
     while (paddedString.length() < aLength) {
@@ -140,7 +142,7 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
         case exitEvent:  // leaving navigation level
             Serial.println(" exitEvent");
             break;
-        case returnEvent:  // TO-DO:entering previous level (return)
+        case returnEvent:  // entering previous level (return)
             Serial.println(" returnEvent");
             break;
         case focusEvent:  // element just gained focus
@@ -149,10 +151,10 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
         case blurEvent:  // element about to lose focus
             Serial.println(" blurEvent");
             break;
-        case selFocusEvent:  // TO-DO:child just gained focus
+        case selFocusEvent:  // child just gained focus
             Serial.println(" selFocusEvent");
             break;
-        case selBlurEvent:  // TO-DO:child about to lose focus
+        case selBlurEvent:  // child about to lose focus
             Serial.println(" selBlurEvent");
             break;
         case updateEvent:  // Field value has been updated
@@ -835,6 +837,16 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
 #define fontW 12
 #define fontH 18
 
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 170 && TFT_HEIGHT == 320  // Display is rotated 90 degrees
+#undef tft_WIDTH
+#undef tft_HEIGHT
+#define tft_WIDTH 320
+#define tft_HEIGHT 170
+#endif
+#endif
+
+
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode *nodes[sizeof(panels) /
                sizeof(panel)];      // navNodes to store navigation status
@@ -957,19 +969,19 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
+        changedToIdle = true;
         setInMenu(false);
     } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event iddling");
-        Serial.flush();
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
         displayShowValues();
 #endif
     } else if (e == idleEnd) {
+        changedToIdle = true;
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleEnd");
-        Serial.flush();
 #endif
         setInMenu(true);
         loadTempArraysWithActualValues();
@@ -977,7 +989,6 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.print("-->[MENU] Unhandled event: ");
         Serial.println(e);
-        Serial.flush();
 #endif
     }
     return proceed;
@@ -1021,6 +1032,11 @@ void menuLoop() {
 void OLDmenuLoop() {
     nav.doInput();  // Do input, even if no display, as serial menu needs this
 #if defined(SUPPORT_TFT)
+    if (changedToIdle) {
+        tft.fillScreen(TFT_BLACK);
+        changedToIdle = false;
+        nav.doOutput();
+    }
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
