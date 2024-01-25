@@ -83,7 +83,7 @@ uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
 uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
 uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 // Variables for color and output ranges
