@@ -577,7 +577,7 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,FIELD(boardIdESPNow, "Board ID: ", "", 0, 254, 1, 10, doNothing, noEvent, noStyle)
   ,EDIT("Peer MAC: ", tempESPNowAddress, hexChars, doSetPeerESPNow,  exitEvent, wrapStyle)
   ,EXIT("<Back"));
-#endif
+#endif // SUPPORT_ESPNOW
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   battery.begin(vRef, voltageDividerRatio, &sigmoidal);
@@ -782,6 +782,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
 
 #define MAX_DEPTH 4
 
+// define serial input device
 serialIn serial(Serial);
 
 // define serial output device
@@ -841,7 +842,7 @@ panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
-#endif
+#endif // SUPPORT_TFT
 
 #ifdef SUPPORT_OLED
 // define menu colors --------------------------------------------------------
@@ -879,7 +880,7 @@ u8g2Out oledOut(u8g2,colors,gfx_tops,gfxPanels,fontX,fontY,offsetX,offsetY,fontM
 menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
 
 MENU_INPUTS(in,&serial);
-#endif
+#endif // SUPPORT_OLED
 
 #if (!SUPPORT_OLED && !SUPPORT_TFT)
 menuOut* outputs[]{&outSerial};//No display, only serial output
@@ -983,13 +984,42 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    if (!improvSerial.receivingImprov()) {
-        nav.doInput();  // Do input, even if no display, as serial menu needs this
-    } else {
-#ifdef DEBUG_ARDUINOMENU
-        Serial.println("-->[MENU] Improv is receiving data. Menu disabled.");
-#endif
+    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character
+        inMenu = true;
+        if (inMenu) {
+            nav.doInput();  // Do input, even if no display, as serial menu needs this
+        }
     }
+
+#if defined(SUPPORT_TFT)
+    if (inMenu) {
+        nav.poll();  // this device only draws when needed
+    }
+    nav.doOutput();
+    if (nav.sleepTask) {
+        displayShowValues();
+    }
+#elif defined(SUPPORT_OLED)
+    if (nav.sleepTask) {
+        displayShowValues();
+    } else {
+        if (nav.changed(0)) {
+            u8g2.firstPage();
+            do nav.doOutput();
+            while (u8g2.nextPage());
+        }
+    }
+#else  // For serial only output
+    if (!nav.sleepTask) {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
+#endif
+}
+
+void OLDmenuLoop() {
+    nav.doInput();  // Do input, even if no display, as serial menu needs this
 #if defined(SUPPORT_TFT)
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
