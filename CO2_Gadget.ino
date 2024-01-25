@@ -76,7 +76,7 @@ bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
 
-// Variables for MQTT timming TO-DO
+// Variables for MQTT timming
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
 uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
