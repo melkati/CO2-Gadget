@@ -97,7 +97,7 @@ ElementLocations elementPosition;
 // Function to set element locations based on screen resolution
 void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
-        elementPosition.co2X = displayWidth - 33;
+        elementPosition.co2X = displayWidth - 30;
         elementPosition.co2Y = displayHeight - 15;
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
