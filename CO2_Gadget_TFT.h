@@ -71,6 +71,7 @@ TFT_eSprite spr = TFT_eSprite(&tft);             // Sprite object "spr" with poi
 struct ElementLocations {
     int32_t co2X;
     int32_t co2Y;
+    u_int16_t co2FontDigitsHeight;
     int32_t co2UnitsX;
     int32_t co2UnitsY;
     int32_t tempX;
@@ -97,8 +98,9 @@ ElementLocations elementPosition;
 // Function to set element locations based on screen resolution
 void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
-        elementPosition.co2X = displayWidth - 33;
-        elementPosition.co2Y = displayHeight - 15;
+        elementPosition.co2X = displayWidth - 32;
+        elementPosition.co2Y = displayHeight - 38;
+        elementPosition.co2FontDigitsHeight = 70;  // Digits height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -122,6 +124,7 @@ void setElementLocations() {
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
         elementPosition.co2Y = displayHeight - 15;
+        elementPosition.co2FontDigitsHeight = 100;      // Digits height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -229,6 +232,8 @@ void initDisplay() {
 
     displaySplashScreen();  // Display init and splash screen
     delay(2000);            // Enjoy the splash screen for 2 seconds
+    spr.setColorDepth(16);
+    spr.setTextWrap(false);
 }
 
 // Display a boxed  notification in the display
@@ -470,24 +475,26 @@ uint16_t getCO2Color(uint16_t co2) {
 }
 
 void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
-    tft.setTextDatum(TL_DATUM);
-    spr.setColorDepth(16);
     spr.loadFont(BIG_FONT);
-    uint16_t width = spr.textWidth("8888") + 2;
-    uint16_t height = spr.fontHeight();
+    uint16_t width = spr.textWidth("0000")+2;
+    uint16_t height = elementPosition.co2FontDigitsHeight;
+    uint16_t posSpriteX = posX - width;
+    uint16_t posSpriteY = posY - height;
+    if (posSpriteX < 0) posSpriteX = 0;
+    if (posSpriteY < 0) posSpriteY = 0;
     spr.createSprite(width, height);
+    spr.drawRect(0, 0, width, height, TFT_WHITE);
     spr.setTextColor(getCO2Color(co2), TFT_BLACK);
-    spr.setTextDatum(BR_DATUM);
-    // spr.fillSprite(TFT_BLUE);
-    spr.drawNumber(co2, width, height);
-    spr.pushSprite(posX - width, posY - height);
+    // spr.drawString(String(co2), width, height);
+    // spr.printToSprite( (String) co2);
+    spr.drawNumber(co2, 0, 0);
+    spr.pushSprite(posSpriteX, posSpriteY);
     spr.unloadFont();
     spr.deleteSprite();
 }
 
 void showCO2units(int32_t posX, int32_t posY) {
     tft.setTextDatum(BL_DATUM);
-    spr.setColorDepth(16);
     spr.loadFont(MINI_FONT);
     spr.setTextColor(TFT_RED, TFT_BLACK);
     tft.setCursor(posX, posY);

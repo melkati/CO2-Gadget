@@ -76,14 +76,14 @@ bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
 
-// Variables for MQTT timming TO-DO
+// Variables for MQTT timming
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
 uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour TO-DO: Implement logic
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
 uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 // Variables for color and output ranges
@@ -124,6 +124,8 @@ uint16_t co2RedRange = 1000;
 #endif
 #include <FS.h>
 #include <SPIFFS.h>
+
+Stream& miSerialPort = Serial;
 
 // Functions and enum definitions
 void reverseButtons(bool reversed);
@@ -180,6 +182,13 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include <CO2_Gadget_WIFI.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                         INCLUDE IMPROV FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Improv.h"
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -388,8 +397,8 @@ void adjustBrightnessLoop() {
 
 void batteryLoop() {
     const float lastBatteryVoltage = battery_voltage;
+    readBatteryVoltage();
     if (!inMenu) {
-        readBatteryVoltage();
         if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
             battery_level = getBatteryPercentage();
             // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
@@ -446,6 +455,7 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
+    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
@@ -478,11 +488,13 @@ void setup() {
 }
 
 void loop() {
+    if (Serial.peek() != -1 && Serial.peek() != 0x2A) {  // 0x2A is the '*' character
+        improvLoopNew();
+    }
     batteryLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    readBatteryVoltage();
     utilityLoop();
     outputsLoop();
     processPendingCommands();

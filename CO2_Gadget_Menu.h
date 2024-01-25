@@ -27,6 +27,8 @@
 
 using namespace Menu;
 
+bool changedToIdle = false;
+
 String rightPad(const String &aString, uint8_t aLength) {
     String paddedString = aString;
     while (paddedString.length() < aLength) {
@@ -140,7 +142,7 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
         case exitEvent:  // leaving navigation level
             Serial.println(" exitEvent");
             break;
-        case returnEvent:  // TO-DO:entering previous level (return)
+        case returnEvent:  // entering previous level (return)
             Serial.println(" returnEvent");
             break;
         case focusEvent:  // element just gained focus
@@ -149,10 +151,10 @@ result showEvent(eventMask e, navNode &nav, prompt &item) {
         case blurEvent:  // element about to lose focus
             Serial.println(" blurEvent");
             break;
-        case selFocusEvent:  // TO-DO:child just gained focus
+        case selFocusEvent:  // child just gained focus
             Serial.println(" selFocusEvent");
             break;
-        case selBlurEvent:  // TO-DO:child about to lose focus
+        case selBlurEvent:  // child about to lose focus
             Serial.println(" selBlurEvent");
             break;
         case updateEvent:  // Field value has been updated
@@ -578,7 +580,7 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,FIELD(boardIdESPNow, "Board ID: ", "", 0, 254, 1, 10, doNothing, noEvent, noStyle)
   ,EDIT("Peer MAC: ", tempESPNowAddress, hexChars, doSetPeerESPNow,  exitEvent, wrapStyle)
   ,EXIT("<Back"));
-#endif
+#endif // SUPPORT_ESPNOW
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   battery.begin(vRef, voltageDividerRatio, &sigmoidal);
@@ -783,6 +785,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
 
 #define MAX_DEPTH 4
 
+// define serial input device
 serialIn serial(Serial);
 
 // define serial output device
@@ -835,6 +838,16 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
 #define fontW 12
 #define fontH 18
 
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 170 && TFT_HEIGHT == 320  // Display is rotated 90 degrees
+#undef tft_WIDTH
+#undef tft_HEIGHT
+#define tft_WIDTH 320
+#define tft_HEIGHT 170
+#endif
+#endif
+
+
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode *nodes[sizeof(panels) /
                sizeof(panel)];      // navNodes to store navigation status
@@ -842,7 +855,7 @@ panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
-#endif
+#endif // SUPPORT_TFT
 
 #ifdef SUPPORT_OLED
 // define menu colors --------------------------------------------------------
@@ -880,7 +893,7 @@ u8g2Out oledOut(u8g2,colors,gfx_tops,gfxPanels,fontX,fontY,offsetX,offsetY,fontM
 menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
 
 MENU_INPUTS(in,&serial);
-#endif
+#endif // SUPPORT_OLED
 
 #if (!SUPPORT_OLED && !SUPPORT_TFT)
 menuOut* outputs[]{&outSerial};//No display, only serial output
@@ -957,22 +970,19 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
-        if (inMenu) {
-            tft.fillScreen(TFT_BLACK);
-        }
+        changedToIdle = true;
         setInMenu(false);
     } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event iddling");
-        Serial.flush();
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
         displayShowValues();
 #endif
     } else if (e == idleEnd) {
+        changedToIdle = true;
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleEnd");
-        Serial.flush();
 #endif
         setInMenu(true);
         loadTempArraysWithActualValues();
@@ -980,15 +990,54 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.print("-->[MENU] Unhandled event: ");
         Serial.println(e);
-        Serial.flush();
 #endif
     }
     return proceed;
 }
 
 void menuLoop() {
+    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character
+        inMenu = true;
+        if (inMenu) {
+            nav.doInput();  // Do input, even if no display, as serial menu needs this
+        }
+    }
+
+#if defined(SUPPORT_TFT)
+    if (inMenu) {
+        nav.poll();  // this device only draws when needed
+    }
+    nav.doOutput();
+    if (nav.sleepTask) {
+        displayShowValues();
+    }
+#elif defined(SUPPORT_OLED)
+    if (nav.sleepTask) {
+        displayShowValues();
+    } else {
+        if (nav.changed(0)) {
+            u8g2.firstPage();
+            do nav.doOutput();
+            while (u8g2.nextPage());
+        }
+    }
+#else  // For serial only output
+    if (!nav.sleepTask) {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
+#endif
+}
+
+void OLDmenuLoop() {
     nav.doInput();  // Do input, even if no display, as serial menu needs this
 #if defined(SUPPORT_TFT)
+    if (changedToIdle) {
+        tft.fillScreen(TFT_BLACK);
+        changedToIdle = false;
+        nav.doOutput();
+    }
     nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
