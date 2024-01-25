@@ -143,32 +143,19 @@ void setElementLocations() {
     }
 }
 
-// void setDisplayBrightness(uint32_t newBrightness) {
-//     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
-//     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-//     ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
-//                                                       // dark;255=totally shiny
-//     actualDisplayBrightness = newBrightness;
-// }
-
 void setDisplayBrightness(uint32_t newBrightness) {
-// TO-DO: Fix this
-#ifdef TTGO_TDISPLAY
+#ifdef TTGO_TDISPLAY || TDISPLAY_S3
     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", DisplayBrightness);
-    Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-//    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
     analogWrite(TFT_BL, newBrightness);
+    delay(100);  // Más estético un cambio del brillo gradual
     Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
-//    Serial.printf("-->[TFT ] newBrightness value at %d\n", newBrightness);
     actualDisplayBrightness = newBrightness;
-//    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
 #endif
 }
 
 void turnOffDisplay() {
      setDisplayBrightness(0);  // Turn off the display
-      actualDisplayBrightness = 0;
-    ledcWrite(BACKLIGHT_PWM_CHANNEL, 0);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+     actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {
@@ -211,19 +198,11 @@ void displaySplashScreen() {
 // }
 
 void initBacklight() {
-#ifdef TTGO_TDISPLAY
-//    pinMode(TFT_BL, OUTPUT);
-//    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
-//   ledcSetup(BACKLIGHT_PWM_CHANNEL, 10000, 8);  // 0-15, 5000, 8
-//    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
-    setDisplayBrightness(DisplayBrightness);
-#endif
-#ifdef TDISPLAY_S3
+#ifdef TTGO_TDISPLAY || TDISPLAY_S3
     pinMode(TFT_BL, OUTPUT);
-    pinMode(TFT_BACKLIGHT_ON, OUTPUT);
-    delay(50);
-    digitalWrite(TFT_BL, HIGH);
-    digitalWrite(TFT_BACKLIGHT_ON, HIGH);
+    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
+    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
+    setDisplayBrightness(DisplayBrightness);
 #endif
 }
 
