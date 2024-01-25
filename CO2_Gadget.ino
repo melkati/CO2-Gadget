@@ -485,18 +485,20 @@ void setup() {
 }
 
 void loop() {
-    improvLoop();
-    // batteryLoop();
-    // wifiClientLoop();
-    // mqttClientLoop();
+    if (Serial.peek() != -1 && Serial.peek() != 0x2A) {  // 0x2A is the '*' character
+        improvLoopNew();
+    }
+    batteryLoop();
+    wifiClientLoop();
+    mqttClientLoop();
     sensorsLoop();
-    // utilityLoop();
-    // outputsLoop();
-    // processPendingCommands();
-    // readingsLoop();
-    // OTALoop();
-    // adjustBrightnessLoop();
+    utilityLoop();
+    outputsLoop();
+    processPendingCommands();
+    readingsLoop();
+    OTALoop();
+    adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
-    // BLELoop();
+    BLELoop();
 }
