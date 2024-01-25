@@ -125,6 +125,8 @@ uint16_t co2RedRange = 1000;
 #include <FS.h>
 #include <SPIFFS.h>
 
+Stream& miSerialPort = Serial;
+
 // Functions and enum definitions
 void reverseButtons(bool reversed);
 void outputsLoop();
@@ -180,6 +182,13 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include <CO2_Gadget_WIFI.h>
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                         INCLUDE IMPROV FUNCTIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include "CO2_Gadget_Improv.h"
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -385,8 +394,8 @@ void adjustBrightnessLoop() {
 
 void batteryLoop() {
     const float lastBatteryVoltage = battery_voltage;
+    readBatteryVoltage();
     if (!inMenu) {
-        readBatteryVoltage();
         if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
             battery_level = getBatteryPercentage();
             // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
@@ -443,6 +452,7 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
+    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
@@ -474,11 +484,13 @@ void setup() {
 }
 
 void loop() {
+    if (Serial.peek() != -1 && Serial.peek() != 0x2A) {  // 0x2A is the '*' character
+        improvLoopNew();
+    }
     batteryLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    readBatteryVoltage();
     utilityLoop();
     outputsLoop();
     processPendingCommands();
