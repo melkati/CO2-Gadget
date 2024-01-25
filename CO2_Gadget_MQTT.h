@@ -245,6 +245,7 @@ void initMQTT() {
         mqttClient.setServer(mqttBroker.c_str(), 1883);
         mqttClient.setCallback(callbackMQTT);
         mqttClient.setBufferSize(1024);
+
         mqttReconnect();
     }
 #endif
@@ -299,16 +300,12 @@ void publishMeasurementsMQTT() {
 
 void publishMQTT() {
 #ifdef SUPPORT_MQTT
-    if (activeMQTT) {
-        if ((WiFi.status() == WL_CONNECTED) && (mqttClient.connected())) {
-            if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (lastTimeMQTTPublished == 0)) {
-                publishMeasurementsMQTT();
-                publishMQTTAlarms();
-                publishMQTTSystemData();
-                lastTimeMQTTPublished = millis();
-            }
-            // Serial.print("-->[MQTT] Free heap: ");
-            // Serial.println(ESP.getFreeHeap());
+    if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+        if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0)) {
+            publishMeasurementsMQTT();
+            publishMQTTAlarms();
+            publishMQTTSystemData();
+            lastTimeMQTTPublished = millis();
         }
     }
 #endif
@@ -328,7 +325,7 @@ void mqttClientLoop() {
         }
     }
 
-    if (!mqttDiscoverySent && mqttClient.connected()) {
+    if (activeMQTT && !mqttDiscoverySent && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
         // Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
         publishMQTTDiscovery(0);
         mqttDiscoverySent = true;

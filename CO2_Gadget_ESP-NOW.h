@@ -179,7 +179,7 @@ void initESPNow() {
 
 void publishESPNow() {
     if ((!activeESPNOW) || (!EspNowInititialized)) return;
-    if (millis() - lastTimeESPNowPublished >= timeBetweenESPNowPublish * 1000) {
+    if ((millis() - lastTimeESPNowPublished >= timeBetweenESPNowPublish * 1000) || (millis() - lastTimeESPNowPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeESPNowPublished == 0)) {
         //Set values to send
         outgoingReadings.boardID = boardIdESPNow;
         outgoingReadings.co2 = co2;

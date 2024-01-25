@@ -104,8 +104,7 @@ uint16_t defaultCO2MeasurementInterval = 5;  // TO-DO: Move to preferences
     sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
     sensors.setDebugMode(debugSensors);              // [optional] debug mode
     sensors.setTempOffset(tempOffset);
-    // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO
-    // Sensors Lib
+    // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
