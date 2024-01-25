@@ -156,17 +156,19 @@ void setDisplayBrightness(uint32_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", DisplayBrightness);
     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+//    ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
+    analogWrite(TFT_BL, newBrightness);
     Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", ledcRead(BACKLIGHT_PWM_CHANNEL));
-    Serial.printf("-->[TFT ] newBrightness value at %d\n", newBrightness);
+//    Serial.printf("-->[TFT ] newBrightness value at %d\n", newBrightness);
     actualDisplayBrightness = newBrightness;
-    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
+//    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
 #endif
 }
 
 void turnOffDisplay() {
      setDisplayBrightness(0);  // Turn off the display
       actualDisplayBrightness = 0;
+    ledcWrite(BACKLIGHT_PWM_CHANNEL, 0);  // 0-15, 0-255 (with 8 bit resolution); 0=totally dark;255=max brightness
 }
 
 void displaySplashScreen() {
@@ -210,9 +212,10 @@ void displaySplashScreen() {
 
 void initBacklight() {
 #ifdef TTGO_TDISPLAY
-    pinMode(TFT_BL, OUTPUT);
-    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
-    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
+//    pinMode(TFT_BL, OUTPUT);
+//    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
+//   ledcSetup(BACKLIGHT_PWM_CHANNEL, 10000, 8);  // 0-15, 5000, 8
+//    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef TDISPLAY_S3
