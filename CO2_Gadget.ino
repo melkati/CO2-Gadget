@@ -78,7 +78,7 @@ volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pr
 
 // Variables for MQTT timming
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour TO-DO: Implement logic
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // Variables for ESP-NOW timming
