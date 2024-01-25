@@ -449,6 +449,7 @@ void setup() {
     initNeopixel();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     initDisplay();
+    setDisplayBrightness(actualDisplayBrightness);  // Set default brightness from memory
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
