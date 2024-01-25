@@ -145,17 +145,23 @@ void setElementLocations() {
 
 void setDisplayBrightness(uint32_t newBrightness) {
 #ifdef TTGO_TDISPLAY || TDISPLAY_S3
-    if( newBrightness == analogRead(TFT_BL)) return; // Si no cambia no hace nada
-    Serial.printf("-->[TFT ] Actual display brightness value at %d\n", DisplayBrightness);
-    analogWrite(TFT_BL, newBrightness);
-    Serial.printf("-->[TFT ] Actual display brightness value (ledcRead) at %d\n", analogRead(TFT_BL));
+//    if( newBrightness == analogRead(TFT_BL)) return; // Si no cambia no hace nada
+    Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
+    Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
+    uint32_t i = actualDisplayBrightness;
+    do{
+        if( i < newBrightness ) i++;
+        else if( i > newBrightness ) i--;
+        analogWrite(TFT_BL, i);
+        delay(5);
+    }while( i != newBrightness );
+    Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
     actualDisplayBrightness = newBrightness;
 #endif
 }
 
 void turnOffDisplay() {
      setDisplayBrightness(0);  // Turn off the display
-     actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {

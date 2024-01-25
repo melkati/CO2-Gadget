@@ -208,6 +208,7 @@ result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
     Serial.flush();
 #endif
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    Serial.printf("\n-->[TRAZA] result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) { Activa pantalla %d\n", DisplayBrightness);
     setDisplayBrightness(DisplayBrightness);
 #endif
     return proceed;

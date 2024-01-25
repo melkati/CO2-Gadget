@@ -363,22 +363,25 @@ void adjustBrightnessLoop() {
     // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
     boolean workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
 
-    if (actualDisplayBrightness != DisplayBrightness) {
-        setDisplayBrightness(DisplayBrightness);
-    }
-
     // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
     if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
         if (actualDisplayBrightness == 0)  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
         {
+            Serial.println("-->[LOOP] if (actualDisplayBrightness == 0) setDisplayBrightness(DisplayBrightness): " + String(DisplayBrightness));
             setDisplayBrightness(DisplayBrightness);  // Turn on the display
         }
         return;
     }
 
-    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
+    if (actualDisplayBrightness != DisplayBrightness) {
+        Serial.println("-->[LOOP] if (actualDisplayBrightness != DisplayBrightness) setDisplayBrightness(DisplayBrightness): " + String(DisplayBrightness));
+        setDisplayBrightness(DisplayBrightness);
+    }
+
+    if ((actualDisplayBrightness != 0) && ( ( millis() - lastTimeButtonPressed ) >= (timeToDisplayOff * 1000))) {
         Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
+        actualDisplayBrightness = 0;
     }
 #endif
 }
