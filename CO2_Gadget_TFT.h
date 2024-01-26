@@ -123,7 +123,7 @@ void setElementLocations() {
 
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
-        elementPosition.co2Y = displayHeight - 15;
+        elementPosition.co2Y = displayHeight - 38;
         elementPosition.co2FontDigitsHeight = 100;  // Digits height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
