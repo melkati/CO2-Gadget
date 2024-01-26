@@ -976,6 +976,7 @@ result idle(menuOut &o, idleEvent e) {
         Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+        out.clear();
         displayShowValues();
 #endif
     } else if (e == idleEnd) {
