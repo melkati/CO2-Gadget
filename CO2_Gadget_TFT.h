@@ -521,5 +521,9 @@ void displayShowValues() {
     tft.setTextSize(2);
 }
 
+void fillScreen(uint32_t color){
+    tft.fillScreen(color);
+}
+
 #endif  // SUPPORT_TFT
 #endif  // CO2_Gadget_TFT_h

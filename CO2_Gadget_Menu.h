@@ -28,6 +28,7 @@
 using namespace Menu;
 
 bool changedToIdle = false;
+bool blankScreen = false;
 
 String rightPad(const String &aString, uint8_t aLength) {
     String paddedString = aString;
@@ -210,7 +211,7 @@ result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
     Serial.flush();
 #endif
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    setDisplayBrightness(DisplayBrightness);
+//    setDisplayBrightness(DisplayBrightness);
 #endif
     return proceed;
 }
@@ -965,7 +966,7 @@ void loadTempArraysWithActualValues() {
 
 // when menu is suspended
 result idle(menuOut &o, idleEvent e) {
-    if (e == idleStart) {
+    if (e == idleStart && changedToIdle==false) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
@@ -976,10 +977,19 @@ result idle(menuOut &o, idleEvent e) {
         Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+         if ( changedToIdle ){
+          changedToIdle = false;
+          blankScreen = true;
+          return quit;
+        }     
+        if ( blankScreen ){
+          blankScreen = false;
+          fillScreen(Black);
+        }
         displayShowValues();
 #endif
     } else if (e == idleEnd) {
-        changedToIdle = true;
+        changedToIdle = false;
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleEnd");
 #endif
@@ -1008,7 +1018,7 @@ void menuLoop() {
     }
     nav.doOutput();
     if (nav.sleepTask) {
-        displayShowValues();
+//        displayShowValues();  // No tengo claro qué hace esta linea, creo que sobra
     }
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
