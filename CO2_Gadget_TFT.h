@@ -124,7 +124,7 @@ void setElementLocations() {
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
         elementPosition.co2Y = displayHeight - 15;
-        elementPosition.co2FontDigitsHeight = 100;      // Digits height for the font used (not the same as whole font height)
+        elementPosition.co2FontDigitsHeight = 100;  // Digits height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -146,22 +146,15 @@ void setElementLocations() {
     }
 }
 
-// void setDisplayBrightness(uint32_t newBrightness) {
-//     Serial.printf("-->[TFT ] Actual display brightness value at %d\n", actualDisplayBrightness);
-//     Serial.printf("-->[TFT ] Setting display brightness value at %d\n", newBrightness);
-//     ledcWrite(BACKLIGHT_PWM_CHANNEL, newBrightness);  // 0-15, 0-255 (with 8 bit resolution); 0=totally
-//                                                       // dark;255=totally shiny
-//     actualDisplayBrightness = newBrightness;
-// }
-
-void setDisplayBrightness(uint32_t newBrightness) {
+void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY || TDISPLAY_S3
-//    if( newBrightness == analogRead(TFT_BL)) return; // Si no cambia no hace nada
-    Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
-    Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
-    analogWrite(TFT_BL, newBrightness);
-    Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
-    actualDisplayBrightness = newBrightness;
+    if (actualDisplayBrightness != newBrightness) {
+        Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
+        Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
+        analogWrite(TFT_BL, newBrightness);
+        Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
+        actualDisplayBrightness = newBrightness;
+    }
 #endif
 }
 
@@ -211,9 +204,7 @@ void displaySplashScreen() {
 void initBacklight() {
 #ifdef TTGO_TDISPLAY
     pinMode(TFT_BL, OUTPUT);
-    ledcSetup(BACKLIGHT_PWM_CHANNEL, BACKLIGHT_PWM_FREQUENCY, 8);  // 0-15, 5000, 8
-    ledcAttachPin(TFT_BL, BACKLIGHT_PWM_CHANNEL);                  // TFT_BL, 0 - 15
-//    setDisplayBrightness(DisplayBrightness);
+    setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef TDISPLAY_S3
     pinMode(TFT_BL, OUTPUT);
@@ -226,7 +217,6 @@ void initBacklight() {
 
 void initDisplay() {
     Serial.printf("-->[TFT ] Initializing display\n");
-    initBacklight();
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
@@ -236,9 +226,8 @@ void initDisplay() {
     } else {
         tft.setRotation(1);
     }
-
     setElementLocations();
-
+    initBacklight();
     displaySplashScreen();  // Display init and splash screen
     delay(2000);            // Enjoy the splash screen for 2 seconds
     spr.setColorDepth(16);
@@ -481,7 +470,7 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY) {    
+void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     if (co2 > 9999) co2 = 9999;
 
     spr.loadFont(BIG_FONT);

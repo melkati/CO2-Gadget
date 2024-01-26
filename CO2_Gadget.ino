@@ -46,7 +46,7 @@ uint16_t maxWiFiConnectionRetries = 20;
 bool mqttDiscoverySent = false;
 
 // Display and menu options
-uint32_t DisplayBrightness = 100;
+uint16_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
 bool displayShowTemperature = true;
@@ -71,6 +71,7 @@ uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
+bool workingOnExternalPower = true;      // True if working on external power (USB connected)
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
@@ -367,20 +368,24 @@ void readingsLoop() {
 
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    if (timeToDisplayOff == 0) return;  // TFT Always ON
 
-    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
-    boolean workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+    // Display backlight IS sleeping
+    if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
+        if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+            setDisplayBrightness(DisplayBrightness);
+        }
+        return;
+    }
 
-    if (actualDisplayBrightness != DisplayBrightness) {
+    // Display backlight is NOT sleeping and brightness change detected
+    if ((actualDisplayBrightness > 0) && (actualDisplayBrightness != DisplayBrightness)) {
         setDisplayBrightness(DisplayBrightness);
     }
 
     // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
     if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
-        if (actualDisplayBrightness == 0)  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
-        {
-            setDisplayBrightness(DisplayBrightness);  // Turn on the display
+        if (actualDisplayBrightness == 0) {
+            setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
         }
         return;
     }
@@ -401,6 +406,8 @@ void batteryLoop() {
             // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
         }
     }
+    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
+    workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
 }
 
 void utilityLoop() {
@@ -459,7 +466,6 @@ void setup() {
     initNeopixel();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     initDisplay();
-    setDisplayBrightness(actualDisplayBrightness);  // Set default brightness from memory
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
