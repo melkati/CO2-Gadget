@@ -425,20 +425,15 @@ void utilityLoop() {
         setCpuFrequencyMhz(lowCpuFrequency);
     }
 
-    displayNotification("Changed CPU frequency to " + String(actualCPUFrequency) + "MHz", notifyInfo);
-    delay(500);
-
     if (battery_voltage != lastCheckedVoltage) {
-        #if defined (CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32)
         Serial.flush();
         Serial.end();
         Serial.begin(115200);
-        #endif
-        #if defined (CONFIG_IDF_TARGET_ESP32S3)
-        #endif
+#endif
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#endif
         lastCheckedVoltage = battery_voltage;
-        displayNotification("Battery voltage: " + String(battery_voltage) + "V", notifyInfo);
-        delay(500);
     }
 }
 
