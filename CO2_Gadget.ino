@@ -71,7 +71,7 @@ uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
-uint16_t actualDisplayBrightness = 100;  // To know if it's on or off
+uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
@@ -459,6 +459,7 @@ void setup() {
     initNeopixel();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     initDisplay();
+    setDisplayBrightness(actualDisplayBrightness);  // Set default brightness from memory
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
