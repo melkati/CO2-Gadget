@@ -473,11 +473,9 @@ void OLDshowHumidity(float hum, int32_t posX, int32_t posY) {
 
 uint16_t getCO2Color(uint16_t co2) {
     uint16_t color;
-    if (co2 < 800) {
+    if (co2 < co2OrangeRange) {
         color = TFT_GREEN;
-    } else if (co2 < 1000) {
-        color = TFT_YELLOW;
-    } else if (co2 < 1200) {
+    } else if (co2 < co2RedRange) {
         color = TFT_ORANGE;
     } else {
         color = TFT_RED;
@@ -485,36 +483,36 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
+void showCO2(uint16_t co2, int32_t posX, int32_t posY) {    
+    if (co2 > 9999) co2 = 9999;
+
     spr.loadFont(BIG_FONT);
-    uint16_t width = spr.textWidth("0000")+2;
+    uint16_t width = spr.textWidth("0000");
     uint16_t height = elementPosition.co2FontDigitsHeight;
     uint16_t posSpriteX = posX - width;
     uint16_t posSpriteY = posY - height;
     if (posSpriteX < 0) posSpriteX = 0;
     if (posSpriteY < 0) posSpriteY = 0;
     spr.createSprite(width, height);
-    spr.drawRect(0, 0, width, height, TFT_WHITE);
+    // spr.drawRect(0, 0, width, height, TFT_WHITE);
     spr.setTextColor(getCO2Color(co2), TFT_BLACK);
-    // spr.drawString(String(co2), width, height);
-    // spr.printToSprite( (String) co2);
-    spr.drawNumber(co2, 0, 0);
+    spr.setTextDatum(TR_DATUM);
+    spr.drawNumber(co2, width, 0);
     spr.pushSprite(posSpriteX, posSpriteY);
     spr.unloadFont();
     spr.deleteSprite();
 }
 
 void showCO2units(int32_t posX, int32_t posY) {
-    tft.setTextDatum(BL_DATUM);
     spr.loadFont(MINI_FONT);
-    spr.setTextColor(TFT_RED, TFT_BLACK);
+    spr.setTextColor(getCO2Color(co2), TFT_BLACK);
     tft.setCursor(posX, posY);
     spr.printToSprite("ppm");
     spr.unloadFont();
 }
 
 void displayShowValues() {
-    uint8_t currenttDatum = tft.getTextDatum();
+    uint8_t currentDatum = tft.getTextDatum();
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
@@ -527,7 +525,7 @@ void displayShowValues() {
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY);
 
     // Revert the datum setting
-    tft.setTextDatum(currenttDatum);
+    tft.setTextDatum(currentDatum);
     tft.setTextSize(2);
 }
 
