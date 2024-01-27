@@ -773,8 +773,8 @@ result enterMainMenu(menuOut &o, idleEvent e) {
 //   ,VALUE("ON", true, doNothing, noEvent)
 //   ,VALUE("OFF", false, doNothing, noEvent));
 
+// ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
@@ -1060,7 +1060,7 @@ void OLDmenuLoop() {
 void menu_init() {
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);
-    nav.timeOut = 30;
+    // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
