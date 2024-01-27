@@ -410,30 +410,32 @@ void batteryLoop() {
     workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
 }
 
+void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
+    while (Serial.available()) {
+        Serial.read();
+    }
+    delay(100); // time to write all data to serial
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    Serial.end();
+    setCpuFrequencyMhz(newCpuFrequency);
+    Serial.begin(115200);
+#endif
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    setCpuFrequencyMhz(newCpuFrequency);
+#endif
+}
+
 void utilityLoop() {
-    static float lastCheckedVoltage = 0;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
-    const float highVoltageThreshold = 4.5;
     const int16_t highCpuFrequency = 240;
     const int16_t lowCpuFrequency = 80;
 
-    if (battery_voltage > highVoltageThreshold && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
-        setCpuFrequencyMhz(highCpuFrequency);
-    } else if (battery_voltage < highVoltageThreshold && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to 80MHz\n", battery_voltage);
-        setCpuFrequencyMhz(lowCpuFrequency);
-    }
-
-    if (battery_voltage != lastCheckedVoltage) {
-#if defined(CONFIG_IDF_TARGET_ESP32)
-        Serial.flush();
-        Serial.end();
-        Serial.begin(115200);
-#endif
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-#endif
-        lastCheckedVoltage = battery_voltage;
+    if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", battery_voltage, highCpuFrequency);
+        setCpuFrequencyAndReinitSerial(highCpuFrequency);
+    } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", battery_voltage, lowCpuFrequency);
+        setCpuFrequencyAndReinitSerial(lowCpuFrequency);
     }
 }
 
@@ -484,25 +486,23 @@ void setup() {
 #endif
     menu_init();
     buttonsInit();
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
-    Serial.println("-->[STUP] Ready.");
-
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
     }
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+    Serial.println("-->[STUP] Ready.");
+    delay(100);
 }
 
 void loop() {
-    if (Serial.peek() != -1 && Serial.peek() != 0x2A) {  // 0x2A is the '*' character
-        improvLoopNew();
-    }
     batteryLoop();
+    utilityLoop();
+    improvLoopNew();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
