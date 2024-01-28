@@ -127,6 +127,7 @@ jobs:
             fi
 
             # Create manifest
+            echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"flavour\": \"${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"version\": \"${{ steps.get_version.outputs.VERSION }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
