@@ -55,7 +55,7 @@ jobs:
             # environment: [esp32dev-sandwich]
 
         env:
-          CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32S3' || 'ESP32' }}        
+          CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}        
 
         timeout-minutes: 30 # time out after 30 minutes (default is 360 minutes)
 
