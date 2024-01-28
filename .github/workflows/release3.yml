@@ -55,7 +55,7 @@ jobs:
             # environment: [esp32dev-sandwich]
 
         env:
-          ENVIRONMENT: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32S3' || 'ESP32' }}        
+          CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32S3' || 'ESP32' }}        
 
         timeout-minutes: 30 # time out after 30 minutes (default is 360 minutes)
 
@@ -110,8 +110,8 @@ jobs:
           id: createmanifest
           run: |
 
-            # Define offset values based on env.ENVIRONMENT
-            if [[ "${{ env.ENVIRONMENT }}" == "ESP32S3" ]]; then
+            # Define offset values based on env.CHIP_FAMILY
+            if [[ "${{ env.CHIP_FAMILY }}" == "ESP32S3" ]]; then
               bootloader_offset=0
               partitions_offset=32768
               app0_offset=57344
@@ -136,7 +136,7 @@ jobs:
             echo "  \"new_install_improv_wait_time\": 10," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"chipFamily\": \"${{ env.ENVIRONMENT }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"chipFamily\": \"${{ env.CHIP_FAMILY }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"improv\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": $bootloader_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
