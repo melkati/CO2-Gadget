@@ -1028,7 +1028,9 @@ void menuLoop() {
 }
 
 void menu_init() {
+#ifdef SUPPORT_TFT
     tft.loadFont(SMALL_FONT);
+#endif
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);
     // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
