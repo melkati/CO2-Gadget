@@ -111,7 +111,7 @@ jobs:
           run: |
 
             # Define offset values based on env.CHIP_FAMILY
-            if [[ "${{ env.CHIP_FAMILY }}" == "ESP32S3" ]]; then
+            if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
               bootloader_offset=0
               partitions_offset=32768
               app0_offset=57344
