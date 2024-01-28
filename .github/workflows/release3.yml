@@ -192,7 +192,7 @@ jobs:
             files: |
               ./firmware/*.bin
               ./firmware/*.json
-            draft: false
+            draft: true
             # prerelease: true
             generate_release_notes: true
           env:
