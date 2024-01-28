@@ -32,10 +32,11 @@ void onImprovWiFiErrorCb(ImprovTypes::Error err) {
     blink_led(2000, 3);
 }
 
-void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
-    // Save ssid and password here
-    //   server.begin();
+void onImprovWiFiConnectedCb(const char *ssid, const char *password) {    
     Serial.println("-->[IMPR] Connected to: " + String(ssid));
+    wifiSSID = ssid;
+    wifiPass = password;
+    putPreferences();
     blink_led(100, 3);
 }
 
