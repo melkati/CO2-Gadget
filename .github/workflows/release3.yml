@@ -116,7 +116,7 @@ jobs:
               partitions_offset=32768
               app0_offset=57344
               firmware_offset=65536
-              spiffs_offset=3997696
+              spiffs_offset=13172736
             else
               # Default values for ESP32 or other environments
               bootloader_offset=4096
@@ -134,7 +134,7 @@ jobs:
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_improv_wait_time\": 10," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_improv_wait_time\": 20," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"chipFamily\": \"${{ env.CHIP_FAMILY }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -142,7 +142,6 @@ jobs:
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": $bootloader_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": $partitions_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-app0.bin\", \"offset\": $app0_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin\", \"offset\": $firmware_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin\", \"offset\": $spiffs_offset }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
