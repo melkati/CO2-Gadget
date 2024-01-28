@@ -23,10 +23,10 @@
 #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
 #include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansRegular15pt_mp.h"
-#include "FontNotoSansRegular20.h"
+#include "FontNotoSansBold20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansRegular15pt_mp
-#define SMALL_FONT FontNotoSansRegular20
+#define SMALL_FONT FontNotoSansBold20
 #define BIG_FONT FontNotoSansBold90ptDigits
 #define FONTS_LOADED
 #endif
@@ -37,10 +37,10 @@
 #if TFT_WIDTH == 170 && TFT_HEIGHT == 320
 #include "FontNotoSansBold120ptDigits.h"
 #include "FontNotoSansRegular15pt_mp.h"
-#include "FontNotoSansRegular20.h"
+#include "FontNotoSansBold20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansRegular15pt_mp
-#define SMALL_FONT FontNotoSansRegular20
+#define SMALL_FONT FontNotoSansBold20
 #define BIG_FONT FontNotoSansBold120ptDigits
 #define FONTS_LOADED
 #endif
@@ -100,7 +100,7 @@ void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
         elementPosition.co2X = displayWidth - 32;
         elementPosition.co2Y = displayHeight - 38;
-        elementPosition.co2FontDigitsHeight = 70;  // Digits height for the font used (not the same as whole font height)
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -124,7 +124,7 @@ void setElementLocations() {
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
         elementPosition.co2Y = displayHeight - 38;
-        elementPosition.co2FontDigitsHeight = 100;  // Digits height for the font used (not the same as whole font height)
+        elementPosition.co2FontDigitsHeight = 100;  // Digits (0..9) height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
