@@ -22,10 +22,10 @@
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
 #include "FontNotoSansBold90ptDigits.h"
-#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansBold15pt_mp.h"
 #include "FontNotoSansBold20.h"
 #define GFXFF 1
-#define MINI_FONT FontNotoSansRegular15pt_mp
+#define MINI_FONT FontNotoSansBold15pt_mp
 #define SMALL_FONT FontNotoSansBold20
 #define BIG_FONT FontNotoSansBold90ptDigits
 #define FONTS_LOADED
@@ -36,10 +36,10 @@
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 170 && TFT_HEIGHT == 320
 #include "FontNotoSansBold120ptDigits.h"
-#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansBold15pt_mp.h"
 #include "FontNotoSansBold20.h"
 #define GFXFF 1
-#define MINI_FONT FontNotoSansRegular15pt_mp
+#define MINI_FONT FontNotoSansBold15pt_mp
 #define SMALL_FONT FontNotoSansBold20
 #define BIG_FONT FontNotoSansBold120ptDigits
 #define FONTS_LOADED
@@ -49,10 +49,10 @@
 // Default fonts
 #ifndef FONTS_LOADED
 #include "FontNotoSansBold90ptDigits.h"
-#include "FontNotoSansRegular15pt_mp.h"
+#include "FontNotoSansBold15pt_mp.h"
 #include "FontNotoSansRegular20.h"
 #define GFXFF 1
-#define MINI_FONT FontNotoSansRegular15pt_mp
+#define MINI_FONT FontNotoSansBold15pt_mp
 #define SMALL_FONT FontNotoSansRegular20
 #define BIG_FONT FontNotoSansBold90ptDigits
 #endif
