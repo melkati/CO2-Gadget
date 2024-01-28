@@ -27,8 +27,6 @@
 
 using namespace Menu;
 
-bool changedToIdle = false;
-
 String rightPad(const String &aString, uint8_t aLength) {
     String paddedString = aString;
     while (paddedString.length() < aLength) {
@@ -834,8 +832,8 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
 
 #define tft_WIDTH 240
 #define tft_HEIGHT 135
-#define fontW 12
-#define fontH 18
+#define fontW 10
+#define fontH 20
 
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 170 && TFT_HEIGHT == 320  // Display is rotated 90 degrees
@@ -969,17 +967,15 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
-        changedToIdle = true;
         setInMenu(false);
     } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-        displayShowValues();
+        // displayShowValues();
 #endif
     } else if (e == idleEnd) {
-        changedToIdle = true;
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleEnd");
 #endif
@@ -995,7 +991,7 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character
+    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
         inMenu = true;
         if (inMenu) {
             nav.doInput();  // Do input, even if no display, as serial menu needs this
@@ -1008,36 +1004,10 @@ void menuLoop() {
     }
     nav.doOutput();
     if (nav.sleepTask) {
+        tft.unloadFont();
         displayShowValues();
+        tft.loadFont(SMALL_FONT);
     }
-#elif defined(SUPPORT_OLED)
-    if (nav.sleepTask) {
-        displayShowValues();
-    } else {
-        if (nav.changed(0)) {
-            u8g2.firstPage();
-            do nav.doOutput();
-            while (u8g2.nextPage());
-        }
-    }
-#else  // For serial only output
-    if (!nav.sleepTask) {
-        if (nav.changed(0)) {
-            nav.doOutput();
-        }
-    }
-#endif
-}
-
-void OLDmenuLoop() {
-    nav.doInput();  // Do input, even if no display, as serial menu needs this
-#if defined(SUPPORT_TFT)
-    if (changedToIdle) {
-        tft.fillScreen(TFT_BLACK);
-        changedToIdle = false;
-        nav.doOutput();
-    }
-    nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
         displayShowValues();
@@ -1058,13 +1028,13 @@ void OLDmenuLoop() {
 }
 
 void menu_init() {
+    tft.loadFont(SMALL_FONT);
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);
     // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
-    mainMenu[0].disable();         // Make battery voltage field unselectable
     informationMenu[0].disable();  // Make information field unselectable
     informationMenu[1].disable();
     informationMenu[2].disable();
