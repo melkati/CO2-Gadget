@@ -48,7 +48,8 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3]
+            # environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3]
+            environment: [TDISPLAY_S3]
             # environment: [TTGO_TDISPLAY_SANDWICH]
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]
