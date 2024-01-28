@@ -27,12 +27,11 @@ int displayHeight = 64;
 void setDisplayBrightness(uint32_t newBrightness) {
   Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
   u8g2.setContrast(newBrightness);
-  actualDisplayBrightness = DisplayBrightness;
+  actualDisplayBrightness = newBrightness;
 }
 
 void turnOffDisplay() {
   setDisplayBrightness(0); // Turn off the display  
-    actualDisplayBrightness = 0;
 }
 
 void displaySplashScreen() {
@@ -84,7 +83,7 @@ void initDisplay() {
   delay(1000);
 }
 
-void displayShowValues(uint16_t co2) {
+void displayShowValues() {
     u8g2.firstPage();
     do {
         u8g2.setFont(u8g2_font_7Segments_26x42_mn);

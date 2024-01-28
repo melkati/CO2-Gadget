@@ -465,8 +465,9 @@ void initWebServer() {
     server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
         // Trigger a software reset
         Serial.flush();
-        ESP.restart();
         request->send(200, "text/plain", "ESP32 reset initiated");
+        delay(100);
+        ESP.restart();
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
@@ -584,9 +585,6 @@ void initWifi() {
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
-        Serial.println("");
-        printLargeASCII(WiFi.localIP().toString().c_str());
-        Serial.println("");
 #ifdef SUPPORT_MDNS
         mDNSName = WiFi.getHostname();
         initMDNS();
