@@ -10,7 +10,7 @@
 // clang-format on
 
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
-// If not using enviroment variables, you must fill data on file credentials.h.tpl and rename as credentials.h
+// If not using enviroment variables, you must have a credentials.h file
 #include "credentials.h"
 #endif
 
