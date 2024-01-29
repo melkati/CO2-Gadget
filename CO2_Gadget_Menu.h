@@ -314,6 +314,7 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
     #endif
   } else {
     initWifi();
+    nav.target-> dirty = true;
     activeMQTT = preferences.getBool("activeMQTT", false);
     if ((activeMQTT) && (WiFi.isConnected())) {
       initMQTT();
@@ -999,6 +1000,10 @@ void menuLoop() {
     }
 
 #if defined(SUPPORT_TFT)
+    if (wifiChanged) {
+        wifiChanged = false;
+        tft.fillScreen(TFT_BLACK);
+    }
     if (inMenu) {
         nav.poll();  // this device only draws when needed
     }
@@ -1028,7 +1033,9 @@ void menuLoop() {
 }
 
 void menu_init() {
+#ifdef SUPPORT_TFT
     tft.loadFont(SMALL_FONT);
+#endif
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);
     // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
