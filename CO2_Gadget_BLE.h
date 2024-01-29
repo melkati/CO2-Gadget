@@ -5,6 +5,8 @@
 #include "Sensirion_Gadget_BLE.h"
 #include "WifiMultiLibraryWrapper.h"
 
+// clang-format on
+
 NimBLELibraryWrapper lib;
 WifiMultiLibraryWrapper wifi;
 DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, false, false, &wifi);
@@ -12,7 +14,7 @@ DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, false, false, &wifi);
 #endif
 
 void initBLE() {
-#ifdef SUPPORT_BLE    
+#ifdef SUPPORT_BLE
     if (activeBLE) {
         if (bleInitialized) {
             Serial.print(
@@ -36,7 +38,7 @@ void initBLE() {
 
 void publishBLE() {
 #ifdef SUPPORT_BLE
-    if (activeBLE) {
+    if ((activeBLE) && (co2 > 0)) {
         provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
         provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);

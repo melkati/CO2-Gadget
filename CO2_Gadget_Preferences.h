@@ -152,7 +152,9 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
+    #ifdef DEBUG_PREFERENCES
     printPreferences();
+    #endif
 }
 
 void putPreferences() {

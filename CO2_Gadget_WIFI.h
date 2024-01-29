@@ -10,7 +10,7 @@
 // clang-format on
 
 #if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
-// If not using enviroment variables, you must fill data on file credentials.h.tpl and rename as credentials.h
+// If not using enviroment variables, you must have a credentials.h file
 #include "credentials.h"
 #endif
 
@@ -18,129 +18,239 @@ WiFiClient espClient;
 AsyncWebServer server(80);
 
 void printSmallChar(char c, int row) {
-  switch (c) {
-    case '0':
-      switch (row) {
-        case 0: Serial.print(" 000 "); break;
-        case 1: Serial.print("0   0"); break;
-        case 2: Serial.print("0   0"); break;
-        case 3: Serial.print("0   0"); break;
-        case 4: Serial.print(" 000 "); break;
-      }
-      break;
-    case '1':
-      switch (row) {
-        case 0: Serial.print("  1  "); break;
-        case 1: Serial.print(" 11  "); break;
-        case 2: Serial.print("  1  "); break;
-        case 3: Serial.print("  1  "); break;
-        case 4: Serial.print(" 111 "); break;
-      }
-      break;
-    case '2':
-      switch (row) {
-        case 0: Serial.print(" 222 "); break;
-        case 1: Serial.print("    2"); break;
-        case 2: Serial.print("  22 "); break;
-        case 3: Serial.print(" 2   "); break;
-        case 4: Serial.print(" 2222"); break;
-      }
-      break;
-    case '3':
-      switch (row) {
-        case 0: Serial.print(" 333 "); break;
-        case 1: Serial.print("    3"); break;
-        case 2: Serial.print("  33 "); break;
-        case 3: Serial.print("    3"); break;
-        case 4: Serial.print(" 333 "); break;
-      }
-      break;
-    case '4':
-      switch (row) {
-        case 0: Serial.print("4   4"); break;
-        case 1: Serial.print("4   4"); break;
-        case 2: Serial.print("44444"); break;
-        case 3: Serial.print("    4"); break;
-        case 4: Serial.print("    4"); break;
-      }
-      break;
-    case '5':
-      switch (row) {
-        case 0: Serial.print("55555"); break;
-        case 1: Serial.print("5    "); break;
-        case 2: Serial.print("555  "); break;
-        case 3: Serial.print("    5"); break;
-        case 4: Serial.print("555  "); break;
-      }
-      break;
-    case '6':
-      switch (row) {
-        case 0: Serial.print(" 666 "); break;
-        case 1: Serial.print("6    "); break;
-        case 2: Serial.print("6666 "); break;
-        case 3: Serial.print("6   6"); break;
-        case 4: Serial.print(" 666 "); break;
-      }
-      break;
-    case '7':
-      switch (row) {
-        case 0: Serial.print("77777"); break;
-        case 1: Serial.print("    7"); break;
-        case 2: Serial.print("   7 "); break;
-        case 3: Serial.print("  7  "); break;
-        case 4: Serial.print(" 7   "); break;
-      }
-      break;
-    case '8':
-      switch (row) {
-        case 0: Serial.print(" 888 "); break;
-        case 1: Serial.print("8   8"); break;
-        case 2: Serial.print(" 888 "); break;
-        case 3: Serial.print("8   8"); break;
-        case 4: Serial.print(" 888 "); break;
-      }
-      break;
-    case '9':
-      switch (row) {
-        case 0: Serial.print(" 999 "); break;
-        case 1: Serial.print("9   9"); break;
-        case 2: Serial.print(" 9999"); break;
-        case 3: Serial.print("    9"); break;
-        case 4: Serial.print(" 999 "); break;
-      }
-      break;
-    case '.':
-      switch (row) {
-        case 0: Serial.print("    "); break;
-        case 1: Serial.print("    "); break;
-        case 2: Serial.print("    "); break;
-        case 3: Serial.print("    "); break;
-        case 4: Serial.print("  o "); break;
-      }
-      break;
-    default:
-      Serial.print("    "); // Default character for unhandled
-      break;
-  }
+    switch (c) {
+        case '0':
+            switch (row) {
+                case 0:
+                    Serial.print(" 000 ");
+                    break;
+                case 1:
+                    Serial.print("0   0");
+                    break;
+                case 2:
+                    Serial.print("0   0");
+                    break;
+                case 3:
+                    Serial.print("0   0");
+                    break;
+                case 4:
+                    Serial.print(" 000 ");
+                    break;
+            }
+            break;
+        case '1':
+            switch (row) {
+                case 0:
+                    Serial.print("  1  ");
+                    break;
+                case 1:
+                    Serial.print(" 11  ");
+                    break;
+                case 2:
+                    Serial.print("  1  ");
+                    break;
+                case 3:
+                    Serial.print("  1  ");
+                    break;
+                case 4:
+                    Serial.print(" 111 ");
+                    break;
+            }
+            break;
+        case '2':
+            switch (row) {
+                case 0:
+                    Serial.print(" 222 ");
+                    break;
+                case 1:
+                    Serial.print("    2");
+                    break;
+                case 2:
+                    Serial.print("  22 ");
+                    break;
+                case 3:
+                    Serial.print(" 2   ");
+                    break;
+                case 4:
+                    Serial.print(" 2222");
+                    break;
+            }
+            break;
+        case '3':
+            switch (row) {
+                case 0:
+                    Serial.print(" 333 ");
+                    break;
+                case 1:
+                    Serial.print("    3");
+                    break;
+                case 2:
+                    Serial.print("  33 ");
+                    break;
+                case 3:
+                    Serial.print("    3");
+                    break;
+                case 4:
+                    Serial.print(" 333 ");
+                    break;
+            }
+            break;
+        case '4':
+            switch (row) {
+                case 0:
+                    Serial.print("4   4");
+                    break;
+                case 1:
+                    Serial.print("4   4");
+                    break;
+                case 2:
+                    Serial.print("44444");
+                    break;
+                case 3:
+                    Serial.print("    4");
+                    break;
+                case 4:
+                    Serial.print("    4");
+                    break;
+            }
+            break;
+        case '5':
+            switch (row) {
+                case 0:
+                    Serial.print("55555");
+                    break;
+                case 1:
+                    Serial.print("5    ");
+                    break;
+                case 2:
+                    Serial.print("555  ");
+                    break;
+                case 3:
+                    Serial.print("    5");
+                    break;
+                case 4:
+                    Serial.print("555  ");
+                    break;
+            }
+            break;
+        case '6':
+            switch (row) {
+                case 0:
+                    Serial.print(" 666 ");
+                    break;
+                case 1:
+                    Serial.print("6    ");
+                    break;
+                case 2:
+                    Serial.print("6666 ");
+                    break;
+                case 3:
+                    Serial.print("6   6");
+                    break;
+                case 4:
+                    Serial.print(" 666 ");
+                    break;
+            }
+            break;
+        case '7':
+            switch (row) {
+                case 0:
+                    Serial.print("77777");
+                    break;
+                case 1:
+                    Serial.print("    7");
+                    break;
+                case 2:
+                    Serial.print("   7 ");
+                    break;
+                case 3:
+                    Serial.print("  7  ");
+                    break;
+                case 4:
+                    Serial.print(" 7   ");
+                    break;
+            }
+            break;
+        case '8':
+            switch (row) {
+                case 0:
+                    Serial.print(" 888 ");
+                    break;
+                case 1:
+                    Serial.print("8   8");
+                    break;
+                case 2:
+                    Serial.print(" 888 ");
+                    break;
+                case 3:
+                    Serial.print("8   8");
+                    break;
+                case 4:
+                    Serial.print(" 888 ");
+                    break;
+            }
+            break;
+        case '9':
+            switch (row) {
+                case 0:
+                    Serial.print(" 999 ");
+                    break;
+                case 1:
+                    Serial.print("9   9");
+                    break;
+                case 2:
+                    Serial.print(" 9999");
+                    break;
+                case 3:
+                    Serial.print("    9");
+                    break;
+                case 4:
+                    Serial.print(" 999 ");
+                    break;
+            }
+            break;
+        case '.':
+            switch (row) {
+                case 0:
+                    Serial.print("    ");
+                    break;
+                case 1:
+                    Serial.print("    ");
+                    break;
+                case 2:
+                    Serial.print("    ");
+                    break;
+                case 3:
+                    Serial.print("    ");
+                    break;
+                case 4:
+                    Serial.print("  o ");
+                    break;
+            }
+            break;
+        default:
+            Serial.print("    ");  // Default character for unhandled
+            break;
+    }
 }
 
-void printLargeASCII(const char* text) {
-  for (int row = 0; row < 5; row++) { // 5 rows for each character
-    for (int i = 0; i < strlen(text); i++) {
-      printSmallChar(text[i], row);
-      Serial.print(" "); // Space between characters
+void printLargeASCII(const char *text) {
+    for (int row = 0; row < 5; row++) {  // 5 rows for each character
+        for (int i = 0; i < strlen(text); i++) {
+            printSmallChar(text[i], row);
+            Serial.print(" ");  // Space between characters
+        }
+        Serial.println();  // New line after each row of characters
     }
-    Serial.println(); // New line after each row of characters
-  }
 }
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
     Serial.print("-->[WiFi] WifiSetup: SSID = ");
     Serial.print(ssid.c_str());
-    #ifndef WIFI_PRIVACY
+#ifndef WIFI_PRIVACY
     Serial.print(", Password = ");
     Serial.println(password.c_str());
-    #endif
+#endif
     WiFi.begin(ssid.c_str(), password.c_str());
 }
 
@@ -249,6 +359,8 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 }
 
 void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+// #define DEBUG_WIFI_EVENTS
+#ifdef DEBUG_WIFI_EVENTS
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
     switch (event) {
@@ -331,6 +443,7 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
         default:
             break;
     }
+#endif  // DEBUG_WIFI_EVENTS
 }
 
 #ifdef SUPPORT_MDNS
@@ -394,13 +507,16 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     WiFiConnectionRetries = 0;
     timeTroubledWIFI = 0;
     troubledMQTT = false;
+#ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] WiFi connected");
     Serial.print("-->[WiFi-event] IP address: ");
     Serial.println(WiFi.localIP());
+#endif
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     ++WiFiConnectionRetries;
+#ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
     Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
     Serial.println(info.wifi_sta_disconnected.reason);
@@ -408,14 +524,15 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.print(WiFiConnectionRetries);
     Serial.print(" of ");
     Serial.println(maxWiFiConnectionRetries);
+#endif
 
     if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
         disableWiFi();
         troubledWIFI = true;
         timeTroubledWIFI = millis();
-        Serial.printf(
-            "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
-            WiFiConnectionRetries);
+#ifdef DEBUG_WIFI_EVENTS
+        Serial.printf("-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+#endif
     }
 }
 
@@ -535,11 +652,12 @@ void initWifi() {
         WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
         WiFi.onEvent(customWiFiEventHandler);
 
-        // Possible to optimize battery (further investigation needed)
+        // Possible to optimize battery? (further investigation needed)
         // WiFi.setSleep(true);
         // WiFi.setSleep(WIFI_PS_NONE);
 
-        Serial.print("-->[WiFi] Connecting to WiFi");
+        String connectMessage = "-->[WiFi] Connecting to WiFi (SSID: " + String(wifiSSID) + ")\n";
+        Serial.print(connectMessage);
         WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
         // Wait for connection
@@ -548,7 +666,7 @@ void initWifi() {
             if (TimePeriodIsOver(MyTestTimer, 500)) {  // once every 500 miliseconds
                 Serial.print(".");                     // print a dot
                 WiFiConnectionRetries++;
-                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after 30 dots = 15 seconds restart
+                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after maxWiFiConnectionRetries dots
                     Serial.println();
                     Serial.print("not connected ");
                 }
@@ -597,8 +715,19 @@ void initWifi() {
 
 void wifiClientLoop() {
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
-        initWifi();        
+        initWifi();
     }
+    
+    // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
+    // Only checks for SSID changed (not password)
+    if (WiFi.SSID() != wifiSSID) {
+        Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+        wifiSSID = WiFi.SSID();
+        putPreferences();
+        // initWifi();
+        wifiChanged = true;
+    }
+
     if (wifiChanged) {
         wifiChanged = false;
         initWifi();
