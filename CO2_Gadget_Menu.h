@@ -314,6 +314,7 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
     #endif
   } else {
     initWifi();
+    nav.target-> dirty = true;
     activeMQTT = preferences.getBool("activeMQTT", false);
     if ((activeMQTT) && (WiFi.isConnected())) {
       initMQTT();
@@ -999,6 +1000,10 @@ void menuLoop() {
     }
 
 #if defined(SUPPORT_TFT)
+    if (wifiChanged) {
+        wifiChanged = false;
+        tft.fillScreen(TFT_BLACK);
+    }
     if (inMenu) {
         nav.poll();  // this device only draws when needed
     }
