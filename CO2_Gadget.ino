@@ -27,7 +27,6 @@ String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
 String mDNSName = "Unset";
 String MACAddress = "Unset";
-// String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // Communication options
@@ -44,6 +43,7 @@ uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connec
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 20;
 bool mqttDiscoverySent = false;
+bool wifiChanged = false;
 
 // Display and menu options
 uint16_t DisplayBrightness = 100;
@@ -499,7 +499,7 @@ void setup() {
 void loop() {
     batteryLoop();
     utilityLoop();
-    improvLoopNew();
+    improvLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();

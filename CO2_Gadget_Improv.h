@@ -13,66 +13,40 @@
 #include "ImprovWiFiLibrary.h"
 ImprovWiFi improvSerial(&Serial);
 
-char linebuf[80];
-int charcount = 0;
-
-void blink_led(int d, int times) {
-    //   for (int j = 0; j < times; j++)
-    //   {
-    //     digitalWrite(LED_BUILTIN, HIGH);
-    //     delay(d);
-    //     digitalWrite(LED_BUILTIN, LOW);
-    //     delay(d);
-    //   }
-}
-
 void onImprovWiFiErrorCb(ImprovTypes::Error err) {
-    server.end();
     Serial.println("-->[IMPR] Error: " + String(err));
-    blink_led(2000, 3);
 }
 
-void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
-    // Save ssid and password here
-    //   server.begin();
+void onImprovWiFiConnectedCb(const char *ssid, const char *password) {    
     Serial.println("-->[IMPR] Connected to: " + String(ssid));
-    blink_led(100, 3);
+    wifiChanged = true;
+    activeWIFI = true;
+    wifiSSID = ssid;
+    wifiPass = password;
+    putPreferences();
 }
-
-// bool connectWifi(const char *ssid, const char *password) {
-//     WiFi.begin(ssid, password);
-
-//     while (!improvSerial.isConnected()) {
-//         blink_led(500, 1);
-//     }
-
-//     return true;
-// }
 
 void initImprov() {
     char version[100];  // Ajusta el tamaño según tus necesidades
     sprintf(version, "CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
-
-    //   pinMode(LED_BUILTIN, OUTPUT);
     Serial.println("-->[IMPR] Init Improv");
+    #if defined(CONFIG_IDF_TARGET_ESP32)
     improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CO2-Gadget-Beta-Desarrollo", version, "CO2-Gadget", "http://{LOCAL_IPV4}/preferences.html");
+    #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32_S3, "CO2-Gadget-Beta-Desarrollo", version, "CO2-Gadget", "http://{LOCAL_IPV4}/preferences.html");
+    #endif
+
     improvSerial.onImprovError(onImprovWiFiErrorCb);
     improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
-    //   improvSerial.setCustomConnectWiFi(connectWifi);  // Optional
-
-    blink_led(100, 5);
-}
-
-void improvLoopNew() {
-    if (!inMenu) {
-        if (Serial.peek() != -1 && Serial.peek() != 0x2A) {
-            improvSerial.handleSerial();
-        }
-    }
+    //   improvSerial.setCustomConnectWiFi(initWifi);  // Optional
 }
 
 void improvLoop() {
-    if (!inMenu) improvSerial.handleSerial();
+    if (!inMenu) {
+        if (Serial.available() && Serial.peek() != 0x2A) {
+            improvSerial.handleSerial();
+        }
+    }
 }
 
 #endif  // CO2_Gadget_Improv_h

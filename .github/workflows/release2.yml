@@ -4,8 +4,8 @@ name: Release V2.2
 # To create new release, just push a new tag with the format v* (v1.0, v2.0, v2.1, v2.2, etc)
 #
 # In a terminal in platformIO do, for example:
-# git tag -a v7.0.005 -m "For general release v0.7.005"
-# git push origin v7.0.005
+# git tag -a v0.8.005 -m "For general release v0.8.005"
+# git push origin v0.8.005
 # # # # # # # # # # #
 
 on:
@@ -49,6 +49,7 @@ jobs:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
             environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3]
+            # environment: [TDISPLAY_S3]
             # environment: [TTGO_TDISPLAY_SANDWICH]
             # environment: [esp32dev, esp32dev-sandwich]
             # environment: [esp32dev-sandwich]

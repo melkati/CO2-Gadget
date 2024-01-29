@@ -137,8 +137,10 @@ void printLargeASCII(const char* text) {
 void onWifiSettingsChanged(std::string ssid, std::string password) {
     Serial.print("-->[WiFi] WifiSetup: SSID = ");
     Serial.print(ssid.c_str());
+    #ifndef WIFI_PRIVACY
     Serial.print(", Password = ");
     Serial.println(password.c_str());
+    #endif
     WiFi.begin(ssid.c_str(), password.c_str());
 }
 
@@ -516,6 +518,7 @@ unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
 
 void initWifi() {
     if (activeWIFI) {
+        wifiChanged = true;
         troubledWIFI = false;
         WiFiConnectionRetries = 0;
         displayNotification("Init WiFi", notifyInfo);
@@ -563,23 +566,6 @@ void initWifi() {
             return;
         }
 
-        // while (WiFi.status() != WL_CONNECTED) {
-        //     WiFiConnectionRetries++;
-        //     Serial.print(".");
-        //     delay(1000);
-        //     if ((WiFiConnectionRetries >= maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
-        //         disableWiFi();
-        //         troubledWIFI = true;
-        //         timeTroubledWIFI = millis();
-        //         Serial.printf(
-        //             "-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n",
-        //             WiFiConnectionRetries);
-        //     }
-        //     if (troubledWIFI) {
-        //         return;
-        //     }
-        // }
-
         Serial.println("");
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);
@@ -611,6 +597,10 @@ void initWifi() {
 
 void wifiClientLoop() {
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
+        initWifi();        
+    }
+    if (wifiChanged) {
+        wifiChanged = false;
         initWifi();
     }
 }
