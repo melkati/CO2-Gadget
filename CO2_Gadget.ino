@@ -476,8 +476,9 @@ void setup() {
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
-    initWifi();
     initSensors();
+    initWifi();
+    wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
     initESPNow();
 #endif
