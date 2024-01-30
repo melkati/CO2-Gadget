@@ -739,7 +739,9 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
-    AsyncElegantOTA.loop();
+    if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
+        AsyncElegantOTA.loop();
+    }
 #endif
 }
 
