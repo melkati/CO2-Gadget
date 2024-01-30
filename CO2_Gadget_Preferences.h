@@ -21,7 +21,8 @@ void printPreferences() {
     Serial.printf("-->[PREF] activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
     Serial.printf("-->[PREF] activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
     Serial.printf("-->[PREF] activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
-    Serial.printf("-->[PREF] activeESPNOW is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeESPNOW);
+    Serial.printf("-->[PREF] activeESPNOW is:\t#%s# (%d)\n", ((activeESPNOW) ? "Enabled" : "Disabled"), activeESPNOW);
+    Serial.printf("-->[PREF] activeOTA is:\t#%s# (%d)\n", ((activeOTA) ? "Enabled" : "Disabled"), activeOTA);
     Serial.printf("-->[PREF] rootTopic:\t#%s#\n", rootTopic.c_str());
     Serial.printf("-->[PREF] batDischgd:\t #%d#\n", batteryDischargedMillivolts);
     Serial.printf("-->[PREF] batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
@@ -85,6 +86,7 @@ void initPreferences() {
     activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
+    activeOTA = preferences.getBool("activeOTA", false);
     rootTopic = preferences.getString("rootTopic", rootTopic);
     mqttClientId = preferences.getString("mqttClientId", mqttClientId);
     mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
@@ -183,6 +185,7 @@ void putPreferences() {
     preferences.putBool("activeWIFI", activeWIFI);
     preferences.putBool("activeMQTT", activeMQTT);
     preferences.putBool("activeESPNOW", activeESPNOW);
+    preferences.putBool("activeOTA", activeOTA);
     preferences.putString("rootTopic", rootTopic);
     preferences.putUInt("batDischgd", batteryDischargedMillivolts);
     preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
@@ -237,6 +240,7 @@ String getPreferencesAsJson() {
     doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
     doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
     doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
+    doc["activeOTA"] = preferences.getBool("activeOTA", false);
     doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
     doc["batDischgd"] = preferences.getInt("batDischgd", 3500);
     doc["batChargd"] = preferences.getInt("batChargd", 4200);
@@ -293,6 +297,7 @@ String getActualSettingsAsJson() {
     doc["activeWIFI"] = activeWIFI;
     doc["activeMQTT"] = activeMQTT;
     doc["activeESPNOW"] = activeESPNOW;
+    doc["activeOTA"] = activeOTA;
     doc["rootTopic"] = rootTopic;
     doc["batDischgd"] = batteryDischargedMillivolts;
     doc["batChargd"] = batteryFullyChargedMillivolts;
@@ -379,6 +384,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         activeWIFI = JsonDocument["activeWIFI"];
         activeMQTT = JsonDocument["activeMQTT"];
         activeESPNOW = JsonDocument["activeESPNOW"];
+        activeOTA = JsonDocument["activeOTA"];
         rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
         batteryDischargedMillivolts = JsonDocument["batDischgd"];
         batteryFullyChargedMillivolts = JsonDocument["batChargd"];
