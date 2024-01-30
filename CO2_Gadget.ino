@@ -36,6 +36,7 @@ bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
+bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
 bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
@@ -56,7 +57,6 @@ bool displayShowHumidity = true;
 bool displayShowBattery = true;
 bool displayShowCO2 = true;
 bool displayShowPM25 = true;
-
 bool debugSensors = false;
 bool inMenu = false;
 uint16_t measurementInterval = 10;
@@ -65,6 +65,7 @@ int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
+uint64_t timeInitializationCompleted = 0;
 
 // Variables for Battery reading
 float battery_voltage = 0;
@@ -497,7 +498,7 @@ void setup() {
     }
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     Serial.println("-->[STUP] Ready.");
-    delay(100);
+    timeInitializationCompleted = millis();
 }
 
 void loop() {

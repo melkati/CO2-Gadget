@@ -638,6 +638,9 @@ boolean TimePeriodIsOver(unsigned long &startOfPeriod, unsigned long TimePeriod)
 unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
 
 void initWifi() {
+    if (wifiSSID == "") {
+        activeWIFI = false;
+    }
     if (activeWIFI) {
         wifiChanged = true;
         troubledWIFI = false;
@@ -753,7 +756,7 @@ void wifiClientLoop() {
     
     // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
     // Only checks for SSID changed (not password)
-    if (WiFi.SSID() != wifiSSID) {
+    if ((WiFi.SSID() != wifiSSID) && (!inMenu)) {
         Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
         wifiSSID = WiFi.SSID();
         putPreferences();
@@ -761,7 +764,7 @@ void wifiClientLoop() {
         wifiChanged = true;
     }
 
-    if (wifiChanged) {
+    if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
         initWifi();
     }
@@ -769,7 +772,9 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
-    AsyncElegantOTA.loop();
+    if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
+        AsyncElegantOTA.loop();
+    }
 #endif
 }
 
