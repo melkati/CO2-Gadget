@@ -634,6 +634,9 @@ boolean TimePeriodIsOver(unsigned long &startOfPeriod, unsigned long TimePeriod)
 unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
 
 void initWifi() {
+    if (wifiSSID == "") {
+        activeWIFI = false;
+    }
     if (activeWIFI) {
         wifiChanged = true;
         troubledWIFI = false;
