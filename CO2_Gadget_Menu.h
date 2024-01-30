@@ -331,11 +331,8 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
   Serial.println(e);
   Serial.flush();
 #endif  
-  // Serial.printf("tempWiFiSSID: #%s#\n", tempWiFiSSID);
   wifiSSID = String(tempWiFiSSID);
-  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
   wifiSSID.trim();
-  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
   return proceed;
 }
 
@@ -367,11 +364,24 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
 
+#ifdef SUPPORT_OTA
+result doSetActiveOTA(eventMask e, navNode &nav, prompt &item) {
+  return proceed;
+}
+
+TOGGLE(activeOTA, activeOTAMenu, "OTA Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveOTA, exitEvent)
+  ,VALUE("OFF", false, doSetActiveOTA, exitEvent));
+#endif
+
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
   ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
+#ifdef SUPPORT_OTA
+  ,SUBMENU(activeOTAMenu)
+#endif
   ,EXIT("<Back"));
 
 
@@ -997,6 +1007,10 @@ void menuLoop() {
         if (inMenu) {
             nav.doInput();  // Do input, even if no display, as serial menu needs this
         }
+    }
+
+    if (millis() < timeInitializationCompleted + 5000) {  // Wait 10 seconds before starting the menu to avoid issues with Improv-WiFi
+        return;
     }
 
 #if defined(SUPPORT_TFT)
