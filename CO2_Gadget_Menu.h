@@ -88,6 +88,8 @@ char tempMQTTUser[] = "                              ";
 char tempMQTTPass[] = "                              ";
 char tempWiFiSSID[] = "                              ";
 char tempWiFiPasswrd[] = "                              ";
+char tempWiFiSSID2[] = "                              ";
+char tempWiFiPasswrd2[] = "                              ";
 char tempHostName[] = "                              ";
 char tempBLEDeviceId[] = "                              ";
 char tempCO2Sensor[] = "                              ";
@@ -350,6 +352,32 @@ result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
   wifiPass.trim();
   return proceed;
 }
+result doSetWiFiSSID2(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("-->[MENU] Setting WiFi SSID to #%s#\n", tempWiFiSSID);
+  Serial.print(F("-->[MENU] action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif  
+  // Serial.printf("tempWiFiSSID: #%s#\n", tempWiFiSSID);
+  wifiSSID2 = String(tempWiFiSSID2);
+  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
+  wifiSSID2.trim();
+  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
+  return proceed;
+}
+
+result doSetWiFiPasswrd2(eventMask e, navNode &nav, prompt &item) {
+#ifdef DEBUG_ARDUINOMENU
+  Serial.printf("-->[MENU] Setting WiFi Password to #%s#\n", tempWiFiPasswrd);
+  Serial.print(F("-->[MENU] action1 event:"));
+  Serial.println(e);
+  Serial.flush();
+#endif
+  wifiPass2 = String(tempWiFiPasswrd2);
+  wifiPass2.trim();
+  return proceed;
+}
 
 result doSetHostName(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
@@ -369,8 +397,10 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
 
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
-  ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
-  ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  ,EDIT("SSID1", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
+  ,EDIT("PASS1:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
+  ,EDIT("SSID2", tempWiFiSSID2, ssidChars, doSetWiFiSSID2, exitEvent, wrapStyle)
+  ,EDIT("PASS2:", tempWiFiPasswrd2, allChars, doSetWiFiPasswrd2, exitEvent, wrapStyle)
   ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
   ,EXIT("<Back"));
 
@@ -926,9 +956,11 @@ void loadTempArraysWithActualValues() {
 #endif
 
     copyStringToCharArray(rightPad(wifiSSID, 30), tempWiFiSSID, 30, "tempWiFiSSID");
+    copyStringToCharArray(rightPad(wifiSSID2, 30), tempWiFiSSID2, 30, "tempWiFiSSID2");
 
 #ifdef WIFI_PRIVACY
     copyStringToCharArray(rightPad(" ", 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
+    copyStringToCharArray(rightPad(" ", 30), tempWiFiPasswrd2, 30, "tempWiFiPasswrd2");
 #else
     copyStringToCharArray(rightPad(wifiPass, 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
 #endif

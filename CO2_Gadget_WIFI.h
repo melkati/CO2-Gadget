@@ -15,7 +15,11 @@
 #endif
 
 WiFiClient espClient;
+WiFiMulti wifiMulti;
 AsyncWebServer server(80);
+
+// WiFi connect timeout per AP. Increase when connecting takes longer.
+const uint32_t connectTimeoutMs = 10000;
 
 void printSmallChar(char c, int row) {
     switch (c) {
@@ -639,13 +643,12 @@ void initWifi() {
         troubledWIFI = false;
         WiFiConnectionRetries = 0;
         displayNotification("Init WiFi", notifyInfo);
-        Serial.print("-->[WiFi] Initializing WiFi...\n");
-        WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
-        delay(500);
+        Serial.println("-->[WiFi] Initializing WiFi...");
+//        WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
+//        delay(500);
         WiFi.mode(WIFI_STA);
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
-                      WiFi.setHostname(hostName.c_str()));
+        Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(), WiFi.setHostname(hostName.c_str()));
 
         WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
         WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -656,10 +659,39 @@ void initWifi() {
         // WiFi.setSleep(true);
         // WiFi.setSleep(WIFI_PS_NONE);
 
-        String connectMessage = "-->[WiFi] Connecting to WiFi (SSID: " + String(wifiSSID) + ")\n";
+        String connectMessage = "-->[WiFi] Connecting to WiFi (SSID: " + String(wifiSSID) + " - PASS: " +  String(wifiPass) 
+        +" OR SSID2: " + String(wifiSSID2) + " - PASS2: " +  String(wifiPass2) +")\n";
         Serial.print(connectMessage);
-        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
+//        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
+        if(wifiSSID != "")   wifiMulti.addAP(wifiSSID.c_str(),  wifiPass.c_str());
+        if(wifiSSID2 != "")  wifiMulti.addAP(wifiSSID2.c_str(), wifiPass2.c_str());
+
+        // WiFi.scanNetworks will return the number of networks found
+        /*
+        Serial.println("Scanning WiFi networks...");
+        int n = WiFi.scanNetworks();
+        if (n == 0) {
+            Serial.println("no networks found");
+        } else {
+            Serial.print(n);
+            Serial.println(" networks found");
+            for (int i = 0; i < n; ++i) {
+                // Print SSID and RSSI for each network found
+                Serial.print(i + 1);
+                Serial.print(": ");
+                Serial.print(WiFi.SSID(i));
+                Serial.print(" (");
+                Serial.print(WiFi.RSSI(i));
+                Serial.print(")");
+                Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*");
+                delay(10);
+            }
+        }
+        */
+        // Connect to Wi-Fi using wifiMulti (connects to the SSID with strongest connection)
+        Serial.println("Connecting Wifi...");
+        wifiMulti.run(connectTimeoutMs);
         // Wait for connection
         while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
             yield();                                   // very important to execute yield to make it work
@@ -672,6 +704,7 @@ void initWifi() {
                 }
             }
         }
+
         if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
             disableWiFi();
             troubledWIFI = true;

@@ -25,6 +25,8 @@ String mqttUser = "";
 String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
+String wifiSSID2 = "";
+String wifiPass2 = "";
 String mDNSName = "Unset";
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
@@ -106,6 +108,7 @@ uint16_t co2RedRange = 1000;
 #endif
 
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include <Wire.h>
 
 #include "driver/adc.h"
