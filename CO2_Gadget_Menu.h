@@ -1013,8 +1013,14 @@ void menuLoop() {
         return;
     }
 
+    if (activeWIFI) {
+        activeMQTTMenu[0].enable();
+    } else {
+        activeMQTTMenu[0].disable();
+    }
+
 #if defined(SUPPORT_TFT)
-    if (wifiChanged) {
+    if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
         tft.fillScreen(TFT_BLACK);
     }
