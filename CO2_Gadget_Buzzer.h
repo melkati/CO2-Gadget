@@ -28,6 +28,7 @@ void buzzerLoop(){
 
         if(co2>co2RedRange){
             if(downRedRange || repeatAlarm){
+                buttonUpISR();  // wake up screen
                 tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
                 delay(durationAlarmBeep*1.3);
                 tone(BUZZZER_PIN, toneAlarmBeep+250+co2 , durationAlarmBeep);
@@ -40,6 +41,7 @@ void buzzerLoop(){
 
         if(co2>co2OrangeRange){
             if(downOrangeRange || repeatAlarm){
+                buttonUpISR();  // wake up screen
                 tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
                 delay(durationAlarmBeep*1.3);
                 tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
