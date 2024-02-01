@@ -61,6 +61,13 @@ uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
+bool activeAlarm = true;
+bool repeatAlarm = true;
+uint16_t toneAlarmBeep = 1000;
+uint16_t durationAlarmBeep = 100;
+uint16_t timeBetweenAlarmBeep = 10;
+uint64_t lastTimeAlarmBeep = 0;  // Time of last Buzzer loop
+
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
 uint64_t timeInitializationCompleted = 0;
@@ -245,7 +252,17 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                         INCLUDE MENU FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
+#if defined SUPPORT_BUZZER
+#include "CO2_Gadget_Buzzer.h"
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                         INCLUDE MENU FUNCIONALITY                                 *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
 #include "CO2_Gadget_Menu.h"
+
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -513,4 +530,7 @@ void loop() {
     buttonsLoop();
     menuLoop();
     BLELoop();
+    #if defined SUPPORT_BUZZER
+    buzzerLoop();
+    #endif
 }
