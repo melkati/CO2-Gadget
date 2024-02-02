@@ -222,4 +222,4919 @@ Date:   Mon Jan 29 18:49:57 2024 +0100
 Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
 Date:   Mon Jan 29 18:46:34 2024 +0100
 
-    Don't send data by BLE if measurem
+    Don't send data by BLE if measurements is not available (CO2 > 0)
+
+[33mcommit d81f83dbc673df70d29f75bc8987dcbcbfe654de[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 14:26:31 2024 +0100
+
+    Fix initialization order in setup() function
+
+[33mcommit 27c45a48d9047cf6cca79386ebe8f8a1eb3acd37[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 13:19:40 2024 +0100
+
+    Update CO2_Gadget_WIFI.h to include instructions for credentials.h file
+
+[33mcommit e1bdf213eb4a8efa596125b642017471241c10c9[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 13:19:06 2024 +0100
+
+    Add debug print statement in initPreferences() function
+
+[33mcommit e8392fb0c3a8832b6886e0cdcb05b4911bf6a157[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 13:11:12 2024 +0100
+
+    Print SSID on WiFi connect and include define DEBUG_WIFI_EVENTS for serial clarity
+
+[33mcommit b7cbeb4b168c28ce2edd530925787e703ca13da6[m
+Merge: 2b21522 92f567e
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 29 08:28:52 2024 +0100
+
+    Merge pull request #148 from melkati/master
+    
+    Sync branches master -> development
+
+[33mcommit 92f567ee75020621da3f4d10f2239b50405971c0[m[33m ([m[1;33mtag: [m[1;33mv0.8.088[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 07:31:30 2024 +0100
+
+    Better improv-WiFi support.
+
+[33mcommit 59e18324f0fc26c1c3f1fc31b9e3b972332c5e8d[m[33m ([m[1;33mtag: [m[1;33mv0.8.087[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 19:44:11 2024 +0100
+
+    Add Improv-WiFi save credentials to NVR
+
+[33mcommit 3ebd3e23674f5dcb40a6068172d97ce1513cbdcc[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 19:35:35 2024 +0100
+
+    Fix ESP32 S3 spiffs_offset value in release3.yml
+
+[33mcommit 4c796fe9aa326ade7b2008335080b2dd4c7d39a5[m[33m ([m[1;33mtag: [m[1;33mv0.8.086[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 15:05:37 2024 +0100
+
+    Fix typo in manifest creation step
+
+[33mcommit 59a65144cc018a03340022dfa1fd062bfd44d68b[m[33m ([m[1;33mtag: [m[1;33mv0.8.085[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 14:44:26 2024 +0100
+
+    Update environment matrix in release3.yml
+
+[33mcommit 3233bc028760fe2aa3e999d28d3f527eb25712ec[m[33m ([m[1;33mtag: [m[1;33mv0.8.084[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 14:24:48 2024 +0100
+
+    Fix CHIP_FAMILY value in release3.yml
+
+[33mcommit a40322a9d16880fbff095319936aae84b10b7aad[m[33m ([m[1;33mtag: [m[1;33mv0.8.083[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 14:18:28 2024 +0100
+
+    Fix CHIP_FAMILY value for ESP32-S3 in release3.yml
+
+[33mcommit 84445d425ef30f5d8de9985f2ce100c32ee779ef[m[33m ([m[1;33mtag: [m[1;33mv0.8.082[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 13:53:43 2024 +0100
+
+    Update CO2_GADGET_REV to "082"
+
+[33mcommit 3157020b5b17635ee4b741ed11d4c495b3ec44e3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 13:52:54 2024 +0100
+
+    Update release3.yml to build only T-Display S3 (temp change)
+
+[33mcommit 231ffa416556bd6b40b54a4d7460b47fe86809f1[m[33m ([m[1;33mtag: [m[1;33mv0.8.081[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 13:43:08 2024 +0100
+
+    Update CO2_GADGET_REV to "081" in platformio.ini
+
+[33mcommit ed03ceb34514721d2491c42e45b37c42504fe801[m[33m ([m[1;33mtag: [m[1;33mv0.8.080[m[33m)[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 13:18:27 2024 +0100
+
+    Update release2.yml to build only T-Display S3 (temp change)
+
+[33mcommit 09a21d6fdbe82fa8cd170428a20f2dca79454285[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 13:08:14 2024 +0100
+
+    Update release3.yml to build only TTGO T-Display Sandwich (temp change)
+
+[33mcommit eba9bdd3f8d27a3dd182c17b3bb5cba344e11754[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:57:51 2024 +0100
+
+    Update CHIP_FAMILY environment variable in release3.yml
+
+[33mcommit dd7daf78ceaad301296f25a75e3940affd472eb9[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:57:29 2024 +0100
+
+    Fix with fonts in MENU for esp32dev and esp32dev_OLED
+
+[33mcommit c76a72b46517227d60f5a870556a9aeeafec71a4[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:53:59 2024 +0100
+
+    Update release3.yml to build only T-Display S3 (temp change)
+
+[33mcommit 911c332239032df30148ecd9500556b6b06f123d[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:31:29 2024 +0100
+
+    Update release3.yml to Draft true
+
+[33mcommit fcf78daaf293c15ba6126739ec0acb7e2bffa1b6[m
+Merge: 2b2cccf 2b21522
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:30:11 2024 +0100
+
+    Merge pull request #147 from melkati/development
+    
+    Development
+
+[33mcommit 2b21522cb60b839112e18c3abf0015973b2d87b4[m
+Merge: 4d73101 2b2cccf
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:30:00 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit 4d731017df070165c33de66d74345a94dabe32db[m
+Merge: c3fc76c 0c2830e
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:27:59 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit c3fc76c17d03e2689aad6751913d06c430b7b60c[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:21:48 2024 +0100
+
+    Add ESP32 S3 support to workflows
+
+[33mcommit 0c2830e36b33bf554aeafecf354819036e82550d[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 12:20:21 2024 +0100
+
+    Add ESP32 S3 support to workflows
+
+[33mcommit 2b2cccf0e488de003348eda05ab1eede4b13ba9f[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 09:57:50 2024 +0100
+
+    Version bump
+
+[33mcommit d81557c3d054700ff9757ec0b830e7caf7f60da5[m
+Merge: 33039a8 5e2b9b0
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 09:56:01 2024 +0100
+
+    Merge pull request #146 from melkati/development
+    
+    Replace font 15pt regular with bold for clarity
+
+[33mcommit 5e2b9b0b0b055754a8a7bc5b6a7427e22e4717f7[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 09:54:53 2024 +0100
+
+    Replace font 15pt regular with bold for clarity
+
+[33mcommit 33039a80e32c1dac7f1eb5778619328723b25cc1[m
+Merge: 7280c39 c6b521f
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 28 08:58:05 2024 +0100
+
+    Merge pull request #144 from melkati/development
+    
+    Development
+
+[33mcommit c6b521fb6c10d9882d05d6143c83645d88ab11af[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 28 08:24:01 2024 +0100
+
+    Add use Anti-Aliased fonts in menu.
+    Change font to bold.
+
+[33mcommit 215cdaedf411cd4414ddaa4b83767ce780bcf819[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 27 11:16:31 2024 +0100
+
+    Refactor utilityLoop and setCpuFrequencyAndReinitSerial functions
+
+[33mcommit f29c7a40e2bc586d12ce3d115aef336dc15d8bb9[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 27 10:45:25 2024 +0100
+
+    Remove battery voltage field from main screen in menu and disable timeout as temporary workaround to fix #134
+
+[33mcommit 7b3ffa1ad045fbdd73c32b76388b65485a450a91[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 20:07:54 2024 +0100
+
+    Remove some debug code left by mistake
+
+[33mcommit 8d0e05fd96ed5ec1a1b7b41f4f14a09e4276518e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 19:36:56 2024 +0100
+
+    Try to solve #96. Update utilityLoop() to not use Serial.flush on S3
+
+[33mcommit 04fc43cc4a1dc2fcc6dcda175f4c0dc6ac01015e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 15:42:54 2024 +0100
+
+    Update TFT_POWER_ON_BATTERY pin value in platformio.ini
+
+[33mcommit 3a5fa8ed8dbb3291a92adffe553a8ad296c0dece[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 11:09:41 2024 +0100
+
+    T-Display S3 display on when running on battery. Closes #96
+
+[33mcommit 7a80b15c206575a67a3e06f3e96170f15a3ed473[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 10:41:45 2024 +0100
+
+    Adjust CO2 Y position for T-Display S3
+
+[33mcommit d7459f889196582b2f2d398a992303b1b5c670bd[m
+Merge: 6517c70 9c2441c
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 10:31:15 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 6517c70fa75297e4e9d77dc8c0034a4441741718[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 10:27:05 2024 +0100
+
+    T-Display S3 won't turn display off by time. Fixes TFT #125
+
+[33mcommit 9c2441c9b906814640f9c3e8fabf6059ff94ce22[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 10:24:35 2024 +0100
+
+    TTGO T-Display won't turn display off by time. Fixes TFT #125
+
+[33mcommit faeb7bebf075309c628784aecf310499b920cf23[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 10:05:03 2024 +0100
+
+    Repair bug: Brightness adjustment doesn't work for TFT #125 (just for TTGO T-Display)
+
+[33mcommit 54baa14c0fb094df8e59f75b4fa65db24948557d[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 08:05:43 2024 +0100
+
+    Remove out.clear() in CO2_Gadget_Menu.h as it was causing flickering at each display update. Reverts b320c3b
+
+[33mcommit 725a7bbeebee05ae08362f37e4ae42ae00befaba[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 26 07:47:36 2024 +0100
+
+    Delete compile_commands.json
+
+[33mcommit 78a66bebf5586c906d10dff6817615d9a20e9f59[m
+Merge: 5923cf1 b320c3b
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 26 07:45:29 2024 +0100
+
+    Merge pull request #140 from Coscolin/develop
+    
+    Repair brightness bug #125 and clean screen after menu idle #134
+
+[33mcommit 5923cf19e9c5d910b07afab039a3a245550a58cc[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 26 07:44:28 2024 +0100
+
+    Refactor CO2 display and color logic
+
+[33mcommit b320c3b368e42b80a9a92450c2819cca773f227c[m
+Author: Coscolin <coscolin.sergio@gmail.com>
+Date:   Fri Jan 26 03:21:49 2024 +0100
+
+    Repair bug: clean screen after menu idle.
+
+[33mcommit db0b2444d4cccc032b385c4d8d49b88f532febc5[m
+Author: Coscolin <coscolin.sergio@gmail.com>
+Date:   Fri Jan 26 02:23:47 2024 +0100
+
+    Repair brightness bug
+
+[33mcommit 45b25c90637d3c2677d8b51610d823d08d3505e9[m
+Merge: 264dae6 714ae45
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 25 19:57:51 2024 +0100
+
+    Merge pull request #139 from melkati/feature-improv
+    
+    Feature improv
+
+[33mcommit 714ae458c8dc92fa8ce4d8ae2f0e7e9b83bd6db1[m[33m ([m[1;31morigin/feature-improv[m[33m, [m[1;32mfeature-improv[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 19:53:38 2024 +0100
+
+    Update CO2 element position and font height
+
+[33mcommit f90f5f8c73adfc2a502d97517bcd9a12038ffd49[m
+Merge: 33ae3eb 264dae6
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 25 11:52:55 2024 +0100
+
+    Merge pull request #137 from melkati/development
+    
+    Sync with Development branch
+
+[33mcommit 264dae62d199763d74f58e531badb238bb1b0694[m
+Merge: 8a40c5c 33ae3eb
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 25 11:52:32 2024 +0100
+
+    Merge branch 'feature-improv' into development
+
+[33mcommit 8a40c5c4e2f03c247c33db4eb9a77408a51b8bf8[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 11:33:54 2024 +0100
+
+    Attemp to fix #134
+
+[33mcommit 08f824f6dc0ebb53c22ccff2d8aac22521a90831[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 10:23:27 2024 +0100
+
+    Fix MQTT connection, discovery and publishing conditions
+
+[33mcommit ecace015fe11344580f72fb3b8c1e65d73a6a7fb[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 10:22:35 2024 +0100
+
+    Implement timeToKeepAliveMQTT
+
+[33mcommit e1d6453c84c72201c824f7f80855cd26c38b0786[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 09:58:16 2024 +0100
+
+    Implement timeToKeepAliveMQTT
+
+[33mcommit 3360253940a3871b6a75d7424654dc14d9f670ed[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 09:32:34 2024 +0100
+
+    Update CO2_Gadget_TFT.h: Adjust CO2 element position
+
+[33mcommit 33ae3ebcc88601de1205c2337beb9b78b977f141[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 08:42:28 2024 +0100
+
+    Refactor to include Improv-WiFi
+
+[33mcommit b37684aa05301b6af2d18dde62de6b6431f15524[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 08:40:51 2024 +0100
+
+    Refactor MenuLoop for Improv-Wifi
+
+[33mcommit a015c05d9f0c29b4e9ac6d26d5df7fceecea22f8[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 25 08:39:43 2024 +0100
+
+    Refactor setup and loop functions for Improv
+
+[33mcommit 4f3c4f8a2f5ca2f9c8989e3401a06a8c41c659ae[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 22:25:33 2024 +0100
+
+    Add version information to initImprov() function
+
+[33mcommit 2693cb9f826f236c139d0b2cc1d2e76688680cba[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 15:31:22 2024 +0100
+
+    Fix onImprovWiFiErrorCb error handling
+
+[33mcommit 0d4936b85a055583c432e1fda9ca193e40ef332e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 14:50:24 2024 +0100
+
+    Migrate to https://github.com/jnthas/Improv-WiFi-Library
+    Add conditional check for serial menu input
+    Initialize Improv library in setup function
+    Reorder loop functions for better performance
+    Update platformio.ini with new dependencies and build flags
+
+[33mcommit 9d261d6b11038e1108b610cc1958f3ee6f5420ec[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 06:59:24 2024 +0100
+
+    Refactor utilityLoop() for clarity
+
+[33mcommit 197f06bed204490ec7b852c664caba2fca7f04a6[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 06:55:49 2024 +0100
+
+    Clear screen at menu exit. Fixes #134
+
+[33mcommit 54f8dbcf55683f71cbafd3d9c64e849d10512450[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 06:51:57 2024 +0100
+
+    Update CO2_GADGET_REV to 052-feature-improv
+
+[33mcommit 066561c91356fc9575ef2d4c87d023089df85078[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 06:49:09 2024 +0100
+
+    Fix ESP32 reset delay in web server handler
+
+[33mcommit 5b1693150181895d5f47ae3e134647236064e81b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 24 06:48:28 2024 +0100
+
+    Refactor CO2_Gadget_Improv.h for improved functionality and debugging
+
+[33mcommit 43b6045418b1d0d31da4b1b7d16f1b03cf8e5805[m
+Merge: 200b5f6 87573ef
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 19:54:45 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into feature-improv
+
+[33mcommit 87573ef278cff9d088e72cb659cfdd7c6648510c[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 15:42:09 2024 +0100
+
+    Remove ENABLE_PIN configuration for T-Display S3 (not supported)
+
+[33mcommit c0be874c7b562445bb6d1c5d79fb17d65790af27[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 15:34:28 2024 +0100
+
+    Add GPIO configuration for TDISPLAY_S3 to README.md
+
+[33mcommit b78db83b30333deb9cd379a2d2bbffec0bbcae3b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 15:16:52 2024 +0100
+
+    Add TDISPLAY_S3 board configuration to README.md
+
+[33mcommit c30223286d59d6c33834c6b4c127ee79298a8950[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 15:07:30 2024 +0100
+
+    Commented out battery level print statement
+
+[33mcommit 02e6974a0faee800299a34047077a8258e0899ca[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 14:29:43 2024 +0100
+
+    Fix display setDisplayBrightness() issue at compile time with boards other than TTGO T-Display
+
+[33mcommit 1bc0fddee3e747797bceda211875103e0b57872f[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 14:23:01 2024 +0100
+
+    Refactored displayShowValues function
+
+[33mcommit a445645900168d0634624086056a167be5894638[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 14:22:31 2024 +0100
+
+    Refactor rightPad function and loadTempArraysWithActualValues function
+
+[33mcommit 682b73231bcc0cdf38dcde90e38713cbac38942e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 12:45:00 2024 +0100
+
+    Disable ESP-NOW support per default to free up some memory
+
+[33mcommit 94baf480cd102e27de91faf1c2aba90d3305d04f[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 12:26:28 2024 +0100
+
+    Update display brightness handling and version number
+
+[33mcommit cb05b24da0018ba43ee002e69c1e4b16dd832151[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 11:05:44 2024 +0100
+
+    Update element positions in CO2_Gadget_TFT.h
+
+[33mcommit 905792bf1f5d805bc0acc2bea29733c51a5db1bc[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 09:30:09 2024 +0100
+
+    Edit release2.yml build list to include: esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH and TDISPLAY_S3
+
+[33mcommit 6699be175ebd3dea373a05076083ade97f8558cd[m[33m ([m[1;32mfeature-smooth[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 09:07:21 2024 +0100
+
+    Remove need to define I2C_SDA and I2C_SCL (calls generic Wire.begin() if not defined)
+
+[33mcommit 69ca59f158ad90e44cf478e3ebdade9b36c91e68[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 23 09:05:38 2024 +0100
+
+    Anti-aliased fonts
+    Use sprites for flicker-free updates
+    Better support for different resolutions
+    Improvements in display layouts
+    Code refactoring for clarity and modularity
+
+[33mcommit 5fdce44bf8144b72c60f6992e3894d45b22ed923[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 22 07:50:05 2024 +0100
+
+    Fix battery icon line position
+
+[33mcommit 431ce4e1df7d076c5bb947c849baa2329c63410b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 15:18:54 2024 +0100
+
+    Fix sensorsGetMainDeviceSelected()
+
+[33mcommit 03648cef4ec7f649836db7a965cbe8788daab12d[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 15:18:03 2024 +0100
+
+    Update I2C pin configuration
+
+[33mcommit baca52e298aadc9b9afa5e325e6103ebc52b7753[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 13:55:30 2024 +0100
+
+    First MQTT publish without waiting for timeBetweenMQTTPublish
+
+[33mcommit 977dce481bebd1a18593dd31b7108f7e7d557fa4[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 13:26:22 2024 +0100
+
+    Fix issue with DFRobot_MultiGasSensor and SoftwareSerial on S3
+
+[33mcommit a3a931de1a75f4bb653a412afbdab485d9fa4eca[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 12:56:15 2024 +0100
+
+    Fix merge issues
+
+[33mcommit 566e5c3a2ac407250f178f9b8e36325fb1eba67b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 10:23:19 2024 +0100
+
+    Update default_envs in platformio.ini
+
+[33mcommit aa4e6af99e8fdb868ba2a6113c640326b080be9b[m
+Merge: e11e7ae 61f3dbe
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 09:59:39 2024 +0100
+
+    Merge branch 'refactor-CO2_Gadget_TFT' into development
+
+[33mcommit e11e7ae7d2faf1559a0479da4fd4f4536eb7a59d[m
+Merge: 95a6027 bdfc508
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 21 09:40:51 2024 +0100
+
+    Merge pull request #131 from melkati/update-canairio_sensorlib
+    
+    Update CanAirIO Air Quality Sensors Library version
+
+[33mcommit bdfc508ca6fa970d5ff8ecda0acf2f5bb587af58[m[33m ([m[1;31morigin/update-canairio_sensorlib[m[33m)[m
+Merge: 436726d 95a6027
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 21 09:40:35 2024 +0100
+
+    Merge branch 'development' into update-canairio_sensorlib
+
+[33mcommit 436726de9cb9ec4695222409edac3ca92661aea2[m[33m ([m[1;32mupdate-canairio_sensorlib[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 21 09:35:53 2024 +0100
+
+    Update CanAirIO Air Quality Sensors Library version
+
+[33mcommit 61f3dbe80f6c7fb70f797e887733c277b51e8d88[m[33m ([m[1;32mrefactor-CO2_Gadget_TFT[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:29:57 2024 +0100
+
+    Revert "Add support for T-Display S3. Refactor for layout flexibility to support more resolutions. Add support for 320x170 px displays"
+    
+    This reverts commit 09f153cdb508732c5d674cf90d470cf19f220381.
+
+[33mcommit 77be64d9366e1da93cd5301502bd516e792af0fb[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:28:38 2024 +0100
+
+    Add support for T-Display S3. Refactor function to improve performance
+
+[33mcommit a373b40b69838a16e6609ac0a1fd54f71d3c6f6a[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:27:18 2024 +0100
+
+    Refactor GPIO initialization and pin handling
+    Remove unsupported code for T-Display-S3
+    Update CPU frequency for power consumption reduction
+
+[33mcommit 96280db89dddead9fde3a0b32f4ef8618104332c[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:26:33 2024 +0100
+
+    Add support for ESP32 S3. Refactor I2C pin configuration.
+
+[33mcommit 09f153cdb508732c5d674cf90d470cf19f220381[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:22:17 2024 +0100
+
+    Add support for ESP32 S3. Refactor for layout flexibility to support more resolutions. Add support for 320x170 px displays
+
+[33mcommit dc0bc8a37d62db238545d68c37e45bb64ffeab21[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:20:05 2024 +0100
+
+    Changes to CO2_Gadget_Sensors.h for readability
+
+[33mcommit 7b956d2bf747c0e885b2f4c9af76e402b50feb86[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 23:18:46 2024 +0100
+
+    Add conditional compilation for SUPPORT_BLE
+
+[33mcommit 0a552f305449177094237469937aea6e66f8cecb[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 20 12:04:26 2024 +0100
+
+    Add conditional compilation for MQTT support. Disable Discovery if MQTT is not supported
+
+[33mcommit 5a30096b49c1cde55f51dc7e2e65498400087f60[m
+Merge: 7a9e75c 95a6027
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 18:07:02 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into refactor-CO2_Gadget_TFT
+
+[33mcommit 95a60270b0b74389c9d6133d1e9662edb628863f[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 13:22:20 2024 +0100
+
+    Refactor env:esp32dev_OLED environment configuration in platformio.ini
+
+[33mcommit bab85381087e78b779266db805776a3bf97ab278[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 13:18:01 2024 +0100
+
+    Add TTGO_TDISPLAY_S3 environment to release2.yml
+
+[33mcommit 565cfbd781138fe5a520aa4fb60a4f0301e1e53e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 13:17:22 2024 +0100
+
+    Add TTGO T-Display S3 environment configuration to platformio.ini
+
+[33mcommit c71b52408d8079caa340b1f7cc98cca6518ddcad[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 12:49:19 2024 +0100
+
+    Refactor platformio.ini build configurations
+
+[33mcommit 7a9e75cf7af1c3d23d2ea34510e8d9add48ea4d5[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 10:44:29 2024 +0100
+
+    Refactor CO2_Gadget_TFT and update CO2_GADGET_REV
+
+[33mcommit a234fcbc97aa05397621ef34a072a761664e836c[m
+Merge: b8ac74f 1644431
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 10:39:05 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into refactor-CO2_Gadget_TFT
+
+[33mcommit 1644431c58aeaafa46e452591af939ebea590685[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 10:33:01 2024 +0100
+
+    Show big ASCII IP adress in serial port after initilization (if it's connected to a WiFi network)
+
+[33mcommit b8ac74f4c1f032ab0923afe0acdb39c08a53626f[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 19 10:03:07 2024 +0100
+
+    Refactor CO2_Gadget_TFT for flexibility to modify add more display resolutions (new TFT displays)
+
+[33mcommit b0d9fbd22a41ed023b049d8f06aa58aae082c4fb[m
+Merge: d217d5d 5359bb9
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 21:42:06 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 5359bb98cd74d11e983c5486ca69d90dc395934d[m
+Merge: 1d7d556 7280c39
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 21:39:56 2024 +0100
+
+    Merge pull request #129 from melkati/master
+    
+    Sync developer branch with master
+
+[33mcommit 7280c39090e3197ad8ab35e09afd63caa8efb276[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 21:13:18 2024 +0100
+
+    Update release2.yml. Remove esp32dev_OLED_OTA from default builds (not needed anymore)
+
+[33mcommit 91fd1b28192ef0f595b4e61e1fb0b869b8691b89[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 21:11:34 2024 +0100
+
+    Update release2.yml set draft to false (make release)
+
+[33mcommit d217d5df179defcffbf93c1a8f1d7a25ddcf5bb8[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 19:58:06 2024 +0100
+
+    Update CO2_GADGET_REV to "018-development"
+
+[33mcommit 79caf329520d596ae06b1d57e4157169bdcf9677[m[33m ([m[1;33mtag: [m[1;33mv8.0.017[m[33m)[m
+Merge: 11c3eff 1d7d556
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 19:56:37 2024 +0100
+
+    Merge pull request #128 from melkati/development
+    
+    Merge Development branch into Master
+
+[33mcommit 1d7d556a36b9b3439afca999fbcceec32bbd8a6f[m
+Merge: 4cbf170 11c3eff
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 19:56:07 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit 4cbf1708a6b45ad202a3a01ba8cf9e07ce1b4943[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 19:53:34 2024 +0100
+
+    Update CO2_GADGET_REV to "016-development"
+
+[33mcommit ed2fc8f8581823ca109f636ea92734209d9a5568[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 19:52:44 2024 +0100
+
+    Update release2.yml with environment and manifest changes
+
+[33mcommit 11c3eff8970cf8e28b8be4e41df40549a63ac84e[m[33m ([m[1;33mtag: [m[1;33mv8.0.015[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 15:22:08 2024 +0100
+
+    Update CO2_GADGET_REV to "015"
+
+[33mcommit 8b2c71175911cd8c6f097ecbad44ddc5487e787a[m
+Merge: e0e2173 7ef0076
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 18 15:20:08 2024 +0100
+
+    Merge pull request #127 from melkati/development
+    
+    Merge Development branch with new feature and fixes
+
+[33mcommit 7ef0076c042492ad30d616d06010040da0c2a817[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 15:14:18 2024 +0100
+
+    Add function to print large ASCII characters for IP address
+
+[33mcommit 6fd9717189d7115d437a0f41f6b62c5ae76fb1e7[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 09:45:14 2024 +0100
+
+    Update CO2_GADGET_REV to "013-development"
+
+[33mcommit ce7dd6e04902ecebc1c4630e9d7f8d7057b3df78[m
+Merge: a28fa7c a15e028
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 09:43:59 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit a28fa7c3cdddc886abcc32bb87434ad199927e9c[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 09:36:00 2024 +0100
+
+    Update display brightness handling and configuration
+
+[33mcommit 974918fd66382552a49b2c37fdda32a099000382[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Thu Jan 18 09:32:28 2024 +0100
+
+    Add support for setting WiFi SSID and password over BLE
+
+[33mcommit 68d114ec125dc1e0a8f58368364d325e579be9f6[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 17 13:30:15 2024 +0100
+
+    Fix OLED display brightness issue and update actual display brightness value
+
+[33mcommit 92fc3f6b959e4c9b654fd920edc9c35b4fadf753[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 17 13:29:41 2024 +0100
+
+    Update display brightness and add more debug logging
+
+[33mcommit e0e217380954e935d44d93dc8718bc75fcb57984[m
+Merge: a3a680d a15e028
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 17 11:48:25 2024 +0100
+
+    Merge pull request #124 from melkati/development
+    
+    Merge Development branch
+
+[33mcommit a15e028526192894e0487926d2dd51120d2d2887[m
+Merge: 7d5502d a3a680d
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 17 11:47:52 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit 7d5502daff033cb8613852342dadb84a42f28fae[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 17 09:58:30 2024 +0100
+
+    Fix WiFi connection retries bug
+
+[33mcommit 943e3d797599027105c2d6e68bd3cffe30f2d6df[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 17 09:29:05 2024 +0100
+
+    Refactor InitWifi(). Add non-blocking timing helper function. Update CO2_Gadget_REV to 009-development
+
+[33mcommit f10ffbcfa70a233dc603b45a7b76af564f3863ec[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 22:47:38 2024 +0100
+
+    Update WiFi credentials and CO2 gadget version
+
+[33mcommit 4820999a87497269f5dadac9ecfe4fa35fdb6c10[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 22:46:58 2024 +0100
+
+    Increase WiFi connection delay and add retry mechanism
+
+[33mcommit d042894f819cf99b1f92c11f3d3f9c81c0313d5a[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 22:46:33 2024 +0100
+
+    Disable clear preferences in initPreferences function
+
+[33mcommit 2e1ca44470c863f74c5c3ad70fe53e9cae1004ab[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 22:43:26 2024 +0100
+
+    Update maxWiFiConnectionRetries value to 10
+
+[33mcommit 7fc3a1bd0f0a55625ff0a6664f1688a567afc217[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 19:20:13 2024 +0100
+
+    Update CO2_GADGET_REV to "006-development"
+
+[33mcommit a3a680df0dc1926c71038989867ab9dca9b7efa0[m[33m ([m[1;33mtag: [m[1;33mv8.0.003[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 14:40:36 2024 +0100
+
+    Update CO2_GADGET_REV to "003"
+
+[33mcommit 6d45100d833cb4cfc89a4a67828e0287d35ab3eb[m
+Merge: 346b29b 94ce924
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Jan 16 14:36:28 2024 +0100
+
+    Merge pull request #123 from melkati/development
+    
+    Merge Development branch
+
+[33mcommit 94ce9245d9c8dddc89b8b5340548be7b2b9b4d39[m
+Merge: e8065c5 346b29b
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Jan 16 14:35:57 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit e8065c5eee3ac08f3343b2283f234324eb7d863e[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 13:14:59 2024 +0100
+
+    Temporary remove utilityLoop
+
+[33mcommit 346b29b18b815b05aa26799b5df7f5b8fea2c15a[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Jan 16 12:52:54 2024 +0100
+
+    Update bug_report.md
+
+[33mcommit 4112670ce38a4237a1e4bbe61001028ba022583e[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Jan 16 12:46:33 2024 +0100
+
+    Update bug_report.md
+
+[33mcommit 200b5f6a2624aa143985259bacbe93a386c1addd[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 16 09:17:30 2024 +0100
+
+    Add Improv functionality (WIP)
+
+[33mcommit fe86fdcc14220c5432719ba10af8c9e6622b4bfb[m[33m ([m[1;33mtag: [m[1;33mv8.0.000[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 21:02:57 2024 +0100
+
+    Update CO2 Gadget version and revision
+
+[33mcommit 9d937017dd7050be24bd93566eba559fce008e3b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 21:00:55 2024 +0100
+
+    Update release2.yml with new environment and increased timeout
+
+[33mcommit c0a4bb77ede09a03f1a87f26657db44088b01e4f[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 20:45:52 2024 +0100
+
+    Development (#122)
+    
+    * Fix esp32dev environent (#93) (#120)
+    
+    Co-authored-by: errolt <6266552+errolt@users.noreply.github.com>
+    Co-authored-by: errol t <errolt@cashconnect.co.za>
+    
+    * Update README
+    
+    * Add ESP32 board configurations to README
+    
+    * Fix display brightness issue and add debug message #121
+    
+    * Update CO2_Gadget_Preferences.h and platformio.ini
+    
+    Change activeWIFI be true by default
+    
+    * Fixes #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT) closes #121
+    
+    ---------
+    
+    Co-authored-by: errolt <6266552+errolt@users.noreply.github.com>
+    Co-authored-by: errol t <errolt@cashconnect.co.za>
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit e0b533c24b03e0706d2021ce26b904e4f0df5172[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 20:34:40 2024 +0100
+
+    Fixes #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT) closes #121
+
+[33mcommit c38d885a3704a451eba6a5d4da190301f1f98b73[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 15:44:56 2024 +0100
+
+    Update CO2_Gadget_Preferences.h and platformio.ini
+    
+    Change activeWIFI to true in CO2_Gadget_Preferences.h and update CO2_GADGET_REV to 036 in platformio.ini.
+
+[33mcommit 4d0666a6bcf6cd3a5f7d4917e9447ccc7bb67e51[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 15:00:26 2024 +0100
+
+    Fix display brightness issue and add debug message #121
+
+[33mcommit f0ca950d2b71618b2b8a185493d0b40ae6302ca7[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 13:57:40 2024 +0100
+
+    Fix typos and add ESP32 board configurations to README
+
+[33mcommit dbaac6033a44698d0f84cf4c580d6ca61a6f0499[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 13:40:09 2024 +0100
+
+    Fix typo in README
+
+[33mcommit 3cc70b4a027bd01d667b207b1850d5fe6c0e861d[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 14 13:38:35 2024 +0100
+
+    Update README
+
+[33mcommit 9cac59ab37b2078350df52a4da806de34b9479b0[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 13:17:27 2024 +0100
+
+    Fix esp32dev environent (#93) (#120)
+    
+    Co-authored-by: errolt <6266552+errolt@users.noreply.github.com>
+    Co-authored-by: errol t <errolt@cashconnect.co.za>
+
+[33mcommit cd482e8ddde03d97681e488308a6419ebe5774f8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 12:36:29 2024 +0100
+
+    Update release2.yml
+
+[33mcommit 9761e4483a7bf060baf301b07ee3cad63930b7e4[m[33m ([m[1;32mmelkati/issue121[m[33m)[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 12:09:20 2024 +0100
+
+    Version bump
+
+[33mcommit b222c9dd4092211b717c8b3f67f3fb548c97b814[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 11:35:53 2024 +0100
+
+    Add web based configuration at http://ip/preferences.html (WIP) (#117) (#118) (#119)
+    
+    * Update CO2_GADGET_REV to "014-web-config-new" in platformio.ini
+    
+    * Add preferences page and handler for saving preferences
+    
+    * Add onload function to fetch CO2, temperature, and humidity data
+    
+    * Display Git HEAD in setup (Add .py and platformio_extra_configs.ini to .gitignore)
+    
+    * Modify preferences.html
+    
+    * Load preferences form (first version, non functional)
+    
+    * Add ArduinoJson library and implement API endpoint to get preferences as JSON
+    
+    * Preferences received on Save Preferences from configuration web page
+    
+    * Update CO2_GADGET_REV to "020-web-config-new" in platformio.ini
+    
+    * Update CO2_GADGET_REV to "024-web-config-new"
+    
+    * Enable mDNS support for WiFi
+    
+    * Increase size of DynamicJsonDocument in getPreferencesAsJson() function
+    
+    * First rude web-config working (WIP no tested. no error checking)
+    
+    * Enable utilityLoop() function in main loop
+    
+    * Update publish functions to use int64_t and fix MQTT publish calls
+    
+    * Add Restart ESP32 button to settings form. CSS styles
+    
+    * Fix altitude misspelling
+    
+    * Fix tempOffset assignment and update sensors
+    
+    * Update vRef and battery voltage calculation on change from web settings page
+    
+    * Add flash memory information to setup() function
+    
+    * Fix utilityLoop()
+    
+    ---------
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit ffddf1e765f1a12b16cd852ff84604fda036a0bb[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 14 11:27:15 2024 +0100
+
+    Add web based configuration at http://ip/preferences.html (WIP) (#117)
+    
+    * Update CO2_GADGET_REV to "014-web-config-new" in platformio.ini
+    
+    * Add preferences page and handler for saving preferences
+    
+    * Add onload function to fetch CO2, temperature, and humidity data
+    
+    * Display Git HEAD in setup (Add .py and platformio_extra_configs.ini to .gitignore)
+    
+    * Modify preferences.html
+    
+    * Load preferences form (first version, non functional)
+    
+    * Add ArduinoJson library and implement API endpoint to get preferences as JSON
+    
+    * Preferences received on Save Preferences from configuration web page
+    
+    * Update CO2_GADGET_REV to "020-web-config-new" in platformio.ini
+    
+    * Update CO2_GADGET_REV to "024-web-config-new"
+    
+    * Enable mDNS support for WiFi
+    
+    * Increase size of DynamicJsonDocument in getPreferencesAsJson() function
+    
+    * First rude web-config working (WIP no tested. no error checking)
+    
+    * Enable utilityLoop() function in main loop
+    
+    * Update publish functions to use int64_t and fix MQTT publish calls
+    
+    * Add Restart ESP32 button to settings form. CSS styles
+    
+    * Fix altitude misspelling
+    
+    * Fix tempOffset assignment and update sensors
+    
+    * Update vRef and battery voltage calculation on change from web settings page
+    
+    * Add flash memory information to setup() function
+    
+    * Fix utilityLoop()
+    
+    ---------
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit d836e3a9d693de29a023275938a0af40360a96f8[m
+Merge: fd84fdd 30cd603
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 12 08:15:07 2024 +0100
+
+    Merge pull request #114 from melkati/development
+    
+    Development
+
+[33mcommit 30cd603b6b0dc1e9ef81bd02d90cd39d90a3e7ed[m
+Merge: dfdf8f5 fd84fdd
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 12 08:14:02 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit dfdf8f5a23dbde859e28f461ddbe48930e76c53b[m
+Merge: bcf47d1 881e666
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 12 08:10:21 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit bcf47d13a4c9e8326b3e827c63aef8869d30c54a[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 12 08:10:08 2024 +0100
+
+    Update MQTT publishing. Some clean up.
+
+[33mcommit fd84fdd2499596a95b3e781f41b20606d8852072[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 12 06:51:30 2024 +0100
+
+    Fix serial console input (#113)
+    
+    * Fix serial console input
+
+[33mcommit 881e666eaa30d99f03f40680dd1ca1ec2876b5d3[m
+Merge: e3d6221 531adae
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Jan 12 06:50:22 2024 +0100
+
+    Merge branch 'master' into development
+
+[33mcommit e3d62219074afbe22f94800474d8adbec7059d82[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 12 06:48:36 2024 +0100
+
+    Update CO2_GADGET_REV to "019"
+
+[33mcommit 3a7b40808038720c795c0a12ee61f739f1fdafb1[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Jan 12 06:45:23 2024 +0100
+
+    Fix serial console input
+
+[33mcommit 531adae99ff0df44303aa6c50819b478a576f1aa[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 21:50:12 2024 +0100
+
+    Update CO2_Gadget_REV to 013 and remove unused code (#110)
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit 076688c288d012f2fa4cf425d88616263e4c2059[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 10 20:58:11 2024 +0100
+
+    Update CO2_Gadget_REV to 013 and remove unused code
+
+[33mcommit 10ebc44f5b3df25ee190ccd0ab03f6f1aafb4121[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 10 20:36:22 2024 +0100
+
+    Update CO2_GADGET_REV to "012"
+
+[33mcommit 3b29774f41939e8bd12cfe87d606d9bfa20f75b8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 20:21:19 2024 +0100
+
+    Fix serial communication when changing CPU frequency (#109)
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit ebe1d5176105efc83abb99724bfb03e5d7638211[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 20:07:15 2024 +0100
+
+    Update Sensirion Gadget BLE library and refactor code (#108)
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit 25de3029a1b3fec252bdfa1e535660e01b7f21bf[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 13:49:03 2024 +0100
+
+    Fix serial communication when changing CPU frequency (#106)
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit 565f1ad9487e560d6a4e2d445abef78d69bbcb6c[m
+Merge: cf4a49a ae05ae8
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 10 13:28:42 2024 +0100
+
+    Update CO2_Gadget_Battery.h, README.md, platformio.ini, CO2_Gadget_WIFI.h, and CO2_Gadget.ino
+
+[33mcommit ae05ae83e19068db0627494ad529b1ba53888077[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 12:46:37 2024 +0100
+
+    Add Home Assistant (and others) MQTT Discovery (#103)
+    
+    * Add MQTT Discovery support
+    
+    * Add header guards to all header files
+    
+    * Update setup() function to print system information
+    
+    * Send system data by MQTT
+    
+    * Add battery level and voltage reporting to MQTT
+    
+    * Add QoS parameter to publishStrDiscoveryMQTT function
+    
+    * Temporary remove MAC Address, Hostname, IP and Status from discovery
+    
+    * Update README.md (#105)
+    
+    ---------
+    
+    Co-authored-by: Mario Mariete <11509521+melkati@users.noreply.github.com>
+
+[33mcommit fcb1f4d5cf5c098b192416b603ba142b3bca6dc5[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 10 10:34:49 2024 +0100
+
+    Update README.md
+
+[33mcommit cf4a49a07297bb0ec782f221e2f9b89fcb17d156[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 10 09:10:21 2024 +0100
+
+    Update CO2_GADGET_REV to "008"
+
+[33mcommit f2cbcc5e6643745a0d44b8755d6b31d4c0c31d26[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Wed Jan 10 09:05:44 2024 +0100
+
+    Adjust CPU to 240Mhz if on USB power (voltage > 4.5V)
+
+[33mcommit c7d1a456397d53fe6c5f71883988fe1542c9cbba[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 9 10:47:02 2024 +0100
+
+    Update CO2_GADGET_REV to "007" in platformio.ini
+
+[33mcommit 5b88e2b73c1b5f507a9bfd032a9ec5eb44fe70e3[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 9 09:59:41 2024 +0100
+
+    Update setup() function to print system information
+
+[33mcommit 03793beebe93eb4d844cd6308e9db4c659bac23f[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 9 08:28:08 2024 +0100
+
+    Add header guards to all header files
+
+[33mcommit 70aaaa06ea40db3ad947cf2d6dc135d09808b091[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 8 15:06:06 2024 +0100
+
+    Update README.md
+
+[33mcommit 5228c774bfcfaa906712d478e839b4479c60b0fb[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 8 15:05:26 2024 +0100
+
+    Update README.md
+
+[33mcommit 536ecd026cca88a4bed68e1d52e7e5411f973193[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 8 10:00:05 2024 +0100
+
+    Add ESPNOW icon (#98)
+    
+    * Add icon EspNow (thanks @Kartoffel)
+    * Add showEspNowIcon function to display icons on TFT screen
+
+[33mcommit be5f8d96d8785450323aa954d9bb4bf8e85f6706[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 22:26:33 2024 +0100
+
+    Update environments in release2.yml
+
+[33mcommit d63e627087d6fcae7b12d6fbd9fd4c254e3a9b54[m[33m ([m[1;33mtag: [m[1;33mv7.0.005[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 22:24:54 2024 +0100
+
+    Update CO2_GADGET_REV to "005"
+
+[33mcommit 4ec9b5045109e1a7832c6088d5351be43f02e90b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 22:24:24 2024 +0100
+
+    Update firmware file paths in release workflow
+
+[33mcommit 990e758410d74cf8ff18734b3cc93132e39f9851[m
+Merge: 25570fd 5532497
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 22:08:23 2024 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 25570fd11a5081d65f9a40c807219e7e20e5051b[m[33m ([m[1;33mtag: [m[1;33mv7.0.004[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 22:07:53 2024 +0100
+
+    Update release.yml for multicore
+
+[33mcommit b4352969efbfdccd9e526a2390b1431eeff981d2[m[33m ([m[1;33mtag: [m[1;33mv7.0.003[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 21:43:49 2024 +0100
+
+    Bump version
+
+[33mcommit e2a1b8431b8ac6e118a2de64b3f250062c77bf3c[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 21:36:44 2024 +0100
+
+    Bump version
+
+[33mcommit 553249720d978c38abd1e42abc25ba06ff6c2bda[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 21:14:08 2024 +0100
+
+    Update platformio.yml
+
+[33mcommit edc8ea8f8b806c11fa7cc622517c7fd1693ccfca[m
+Merge: da834aa 8b26a01
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 21:11:51 2024 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit da834aa1df604ff6ffdd298c983fffdb76310d08[m[33m ([m[1;33mtag: [m[1;33mv0.7.001[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 21:09:22 2024 +0100
+
+    Bump version
+
+[33mcommit 8b26a018872173d6977ee1bbfbe87091fe654539[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 15:55:12 2024 +0100
+
+    Update release2.yml
+
+[33mcommit 74a6e10f6648e2dbe80c8226ce9989de49111505[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 15:44:46 2024 +0100
+
+    Update release2.yml
+
+[33mcommit ceff10df7087d5bc94ba76dba76f207455bd7de4[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 15:05:11 2024 +0100
+
+    Update release2.yml
+
+[33mcommit 4d857fa2b9bd49daf9dd2252eb69a88481f427f7[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 14:35:53 2024 +0100
+
+    Update release2.yml
+
+[33mcommit 8fe84e3cbfda838817f60ddf4b479b86ed492015[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 7 14:26:46 2024 +0100
+
+    Update release2.yml
+
+[33mcommit 891789d250fc14267973b10fec8f7055b323d6e6[m[33m ([m[1;33mtag: [m[1;33mv0.7.000[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 13:21:43 2024 +0100
+
+    Update WiFi Troubleshooting Variable and Version/Revision Numbers
+
+[33mcommit e8d1a60afd8e506d8973ae291b11d1101ad61eba[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 13:10:42 2024 +0100
+
+    Refactory WiFi and MQTT connection strategy
+
+[33mcommit 41e644bd6c15d00949490109ca2eaf759f8f91cd[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 08:56:03 2024 +0100
+
+    Add credentials.h to .gitignore
+
+[33mcommit 7dc4085a97ae3911c8ec3a9c6fa6282bdbf9de6b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sun Jan 7 08:54:54 2024 +0100
+
+    Comment doubleclick test code
+
+[33mcommit 3562b483d470dabc06048528c9b3e37c14ef733a[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Sat Jan 6 21:08:54 2024 +0100
+
+    Update dependencies in platformio.ini
+
+[33mcommit 19f2a26bbc60e3e4f1c88b345e6938d392f4d87d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Feb 26 13:55:10 2022 +0100
+
+    ESP-NOW peer address defaults to broadcast (FFFFFF)
+
+[33mcommit cc28eddaf453fa15933585934c362a6c1f7737aa[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Feb 26 13:16:28 2022 +0100
+
+    Add ESP-NOW PEER to menu and preferences
+
+[33mcommit 6bb36774b421d7c9c6dead3b5bfb19eeb855e131[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Feb 24 14:14:27 2022 +0100
+
+    Add ESP-NOW unicast
+
+[33mcommit 60f20ee248aa65de747835aadd127a82211f45de[m[33m ([m[1;33mtag: [m[1;33mv0.6.000[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Feb 23 14:54:44 2022 +0100
+
+    Version Bump
+
+[33mcommit 2f85f7ef03d02da3375d855360f94e56a90a15a4[m[33m ([m[1;33mtag: [m[1;33mv0.5.088[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Feb 23 14:45:09 2022 +0100
+
+    Version Bump
+
+[33mcommit 95c95abe0b15c6551d9bf9a1471fd97a9082f173[m
+Merge: 70ac213 dd81858
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Feb 23 14:17:41 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 70ac213fbe2a1ba961224c4d8b33e8fde4a92e8d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Feb 23 14:17:31 2022 +0100
+
+    Improvements to ESP-Now
+
+[33mcommit dd81858b6d04e7f8e656f79ead756dc352913c51[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Feb 17 13:59:32 2022 +0100
+
+    Update README.md
+
+[33mcommit 6452b00b3ce57c4dd8876671bd0a4696b83eada0[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Feb 13 22:59:03 2022 +0100
+
+    Update README.md
+
+[33mcommit 9c763c784896cc315cacea831c0406e1feeebeae[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Feb 8 21:22:17 2022 +0100
+
+    Avoid call to BLELoop() if SUPPORT_BLE no defined
+
+[33mcommit edb9acf3a17bb242b1eb6d7f8e7268973499be8b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Feb 8 21:18:35 2022 +0100
+
+    Rename define  CO2_Gadget_ESP-NOW as CO2_Gadget_ESP_NOW
+
+[33mcommit c392f70560cd95deff081d7887866bc391610245[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Feb 1 08:57:30 2022 +0100
+
+    Version bump
+
+[33mcommit 68ade22add96799103059b8cb24eb6a68b977fa3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Feb 1 07:04:22 2022 +0100
+
+    Fix issue with BLE fetch from MyAmbiance App not downloading historical data (#87)
+
+[33mcommit d64560de025ee36eaa9414471f388b1ef52ba8fc[m
+Merge: 909c7be 7bac0ad
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 31 19:42:25 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 7bac0addc1fe9b53a94170ad8e38053dc79858eb[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 31 19:40:48 2022 +0100
+
+    Create .gitattributes
+
+[33mcommit 909c7be7981e6af1f032fe75f63bff4ebf922848[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Jan 22 10:03:32 2022 +0100
+
+    Remove "Test menu event" from calibration menu
+
+[33mcommit b0c25aaa3a70762af0fd9c795289f4356bdef2fe[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Jan 22 01:32:11 2022 +0100
+
+    Add options to menu to Hide/Show specific measurements on the display (#85)
+    
+    * Add variables and preferences for display show/hide options
+    * Add options to menu
+    * Add logic to show/hide options on display
+
+[33mcommit e76762c0c5d53d2edb81452afcf88cc134ecdbb3[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Jan 21 20:52:49 2022 +0100
+
+    Update README.md
+
+[33mcommit 07971ae150664f9e5b323431347a3885cdcddc08[m
+Merge: b1a4df6 4cc4b50
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Jan 21 20:17:45 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit b1a4df61b904992e0a2669bae8aa0d94b3478d9a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Jan 21 20:17:36 2022 +0100
+
+    Add support for OLED brightness control (contrast)
+
+[33mcommit 4cc4b50b53e1516267b9d991e29f6fdb35423cea[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 23:58:56 2022 +0100
+
+    Update README.md
+
+[33mcommit 3a996f84c2d53bf0fd04aefd0f891140999a0b1b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 20:23:25 2022 +0100
+
+    Update README.md
+
+[33mcommit 9dee1ff9367b99c12002c3ac2a4380537afc3126[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 19:38:56 2022 +0100
+
+    Makes variables modified in ISR and callbacks volatile
+
+[33mcommit 4669b67d3188821a34559d559eeb09543c7a6a79[m
+Merge: e5e4ffc d56f9e1
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 08:45:41 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit e5e4ffc2c135caf2852bf1d29a61c14ee95bb6e4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 08:44:04 2022 +0100
+
+    Merge upstream
+
+[33mcommit d56f9e175a2b87a4e906bd89453bd6b73be00650[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 08:31:46 2022 +0100
+
+    Update platformio.yml
+
+[33mcommit a083bae8809db08cc266787bb6a7686d2a99d486[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Jan 20 08:16:36 2022 +0100
+
+    Fix #50 millis() overflow (#84)
+
+[33mcommit fa8f681a1dc25b9ddd9bf9b93d9cb9958bfa42e2[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Jan 19 23:27:19 2022 +0100
+
+    Version bump
+
+[33mcommit 031ee28e002003357f0bff81f6609b2ac5412e05[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 19 23:26:18 2022 +0100
+
+    Update README.md
+
+[33mcommit 7044841d7e3f2a26529bfec69c085d39932a06c2[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 19 23:21:20 2022 +0100
+
+    Add ESP-NOW communications protocol from Espressif (#83)
+    
+    * Add basic ESP-NOW functionality
+    * Fix make ESP-NOW work without WiFi enabled
+    * Add ESP-NOW enable/disable to configuration menu and preferences
+
+[33mcommit e58bd9595d5623f37d6ee71dcae1cc383eb588b1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Jan 18 12:59:34 2022 +0100
+
+    Add .clang-format Google Style 4 spaces indent
+
+[33mcommit a751bc6b26ed7f0981af3e764a08ba011f3288fd[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 20:51:41 2022 +0100
+
+    Update README.md
+
+[33mcommit a3251907e910603b1daf08d108144604b4947bd3[m[33m ([m[1;33mtag: [m[1;33mv0.5.069[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:53:04 2022 +0100
+
+    For general release v0.5.069
+
+[33mcommit 56fd93e799d27cd0db4d207c71bc9999d291ea63[m
+Merge: 58c72bb 24eee98
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:51:58 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 58c72bb8815bb8181a7a4f65b8243e6bc9240e34[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:51:30 2022 +0100
+
+    For general release v0.5.067
+
+[33mcommit 24eee9892946bfb93250311bb40419da25f350ef[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:48:44 2022 +0100
+
+    Update platformio.yml
+
+[33mcommit 7722f3cd86c487aac374472e20f269f8a7b0a84f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:44:18 2022 +0100
+
+    For general release v0.5.0667
+
+[33mcommit 4d7c26c12dc3c2e064c43cc5d8f92dffc6090c84[m
+Merge: f7a6589 c2bc215
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:37:46 2022 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit f7a6589c22473d5b5c141687e92186dc71a0e9a6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:37:31 2022 +0100
+
+    For general release v0.5.066
+
+[33mcommit c2bc215ed9f786b948830af26cfc4391e2ee598d[m[33m ([m[1;33mtag: [m[1;33mv0.5.066[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 10:01:59 2022 +0100
+
+    For general release v0.5.066
+
+[33mcommit c716f6fbd2e22c6681f51f9ca4c4c22df382f904[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 17 09:22:49 2022 +0100
+
+    Update release2.yml
+
+[33mcommit e88f848abd847f529bca52e248d7bda3f52e460e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Jan 16 21:25:44 2022 +0100
+
+    For general release v0.5.065
+
+[33mcommit 3c57b44f12b683629cba056399863bc25ccd1e2d[m[33m ([m[1;33mtag: [m[1;33mv0.5.065[m[33m)[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Jan 16 16:01:43 2022 +0100
+
+    Add selection to MENU for Relay or RGB LED  (#79)
+    
+    * Rename Neopixel Config Menu as Outputs Config Menu
+    * Add bool outputsModeRelay in preferences
+    * Add GPIO Outputs Mode to MENU
+    * Refactor outputsLoop()
+    * Fix cosmetic typo in menu
+    * Version bump
+
+[33mcommit 6b00dc2d8cda33fdd2d1c764c8d9ba87c573f53b[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Jan 15 22:25:00 2022 +0100
+
+    Add ambient measurements (temperature and humidity) to OLED display (#78)
+    
+    * Add ambient measurements to OLED display
+    * Refactored display functions names
+
+[33mcommit 95b196ca4bd7817c6f1f16f31e3dbeaf7b4cb261[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Jan 15 12:54:15 2022 +0100
+
+    Version bump
+
+[33mcommit f27163f05fa5179873cddab870412dbe45a6f08f[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Jan 15 12:30:45 2022 +0100
+
+    Added support for Neoxixel LED (WS2812B and others) (#75)
+    
+    * Add feature neopixel
+    * Changed WS2812B color from orange to yellow
+    * Add Neopixel flavor selection to config menu
+    * Improve Neopixel menu selection
+    * Improve Neopixel colors
+    * Set neopixelBrightness default value to 50
+    * Fix apply neopixelBrightness on init
+    * Fix I2C_SDA and I2C_SCL duplicate definition warning
+    * Update GPIO used in README.md
+
+[33mcommit 141c8b45eb26c9a36da34a99dc1682f1de8df64d[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Jan 11 21:55:55 2022 +0100
+
+    Update README.md
+
+[33mcommit cb39d87e7e25f07cec82b1340af0a6deaaa35173[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 10 20:03:26 2022 +0100
+
+    Update README.md
+
+[33mcommit 41092bbcd042643ca8fb481c7554d67d2f62e7d6[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Jan 5 13:25:53 2022 +0100
+
+    Update README.md
+
+[33mcommit ffce188f80cc9537e0b44b0ab0f7b2f5c36334b7[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 3 15:06:21 2022 +0100
+
+    Update README.md
+
+[33mcommit d69294294bdaa790c71a2eee84285cf9e1bac1d1[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 3 14:48:21 2022 +0100
+
+    Update README.md
+
+[33mcommit b32737e1f9371f5884fa9b354be0c2af0ec100ea[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 3 09:06:11 2022 +0100
+
+    Update README.md
+
+[33mcommit b72443915f137481ee5ae27afb3eb97429e128f1[m[33m ([m[1;33mtag: [m[1;33mv0.5.041[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 28 22:05:10 2021 +0100
+
+    Version bump for release v0.5.041
+
+[33mcommit a78454436604762c2bbda9869ce6bdd9741562c4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 28 21:52:39 2021 +0100
+
+    Prepare for release v0.5.040
+
+[33mcommit 1226579d1826616dbed0e6c8b2b8bcc73d48e5a9[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Dec 28 21:50:28 2021 +0100
+
+    Add functionality for MQTT Alarms (#71)
+    
+    The concentrations at which these messages are sent are customizable and coincide with those you have configured as orange level and red level.
+    
+    Messages are sent with ON payload when reaching the level of that color and do not send OFF payload ultil the CO2 level drops at least 100 ppm below that level (hysteresis = 100ppm).
+    
+    Hysteresis prevents to continually sending on and off messages if the concentration keeps fluctuating around that concentration.
+    
+    Message for green is sent with payload ON when CO2 concentration is bellow the orange level and with payload OFF as soon as the concentration reaches the orange level.
+    
+    Publishing topics:
+    
+    - topic/green
+    - topic/orange
+    - topic/red
+
+[33mcommit 0ca8267b126344ac09bf6fd6ef0fd301a8dbf1d0[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Dec 28 20:31:34 2021 +0100
+
+    Feature GPIO outputs for relays, LEDs, etc. (#68)
+    
+    * Add functionality for relay outputs (GPIO)
+    
+    * Updated README for relay outputs (GPIO)
+    
+    * Active relay outputs (GPIO) when CO2 value equal to threshold (not only greater)
+    
+    * Add GPIO GREEN_PIN to functionality relay outputs (for LEDs)
+    
+    * Update README.md
+
+[33mcommit 1732548ca5fa7799321169915aee0aa95bab80e1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 28 19:37:27 2021 +0100
+
+    Make BTN_DWN board dependant (platformio.ini)
+
+[33mcommit c1a1f9cf2fe26431d80a85d6f440ccbb09dd0c31[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Dec 27 05:36:51 2021 +0100
+
+    Move button pins to platformio.ini
+
+[33mcommit 313f1db407a161f84c80d59277b5ac2bdc0ebb59[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 13:13:27 2021 +0100
+
+    For general release v0.5.026
+
+[33mcommit e185cd4158f15ae8b79ea263028ea242e24b2789[m[33m ([m[1;33mtag: [m[1;33mv0.5.026[m[33m)[m
+Merge: 843ac59 002cf04
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 13:10:04 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 843ac59226d660e54c24c30472d4cef3b052c819[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 13:09:53 2021 +0100
+
+    Prepare for release
+
+[33mcommit e12ce00da2c36893e8247c332e3b6da691ff19b0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 13:09:16 2021 +0100
+
+    Prepare for release
+
+[33mcommit 002cf046cfb5519967fd0e92d4b05beba6625209[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 13:02:00 2021 +0100
+
+    Add notifications (pop-ups) on display
+    
+    Added displayNotification() and overload for display of two lines (#66)
+
+[33mcommit f2b889bbc51b0e9d466f49b529a2e7e893e3ce37[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 25 08:23:11 2021 +0100
+
+    Fix OTALoop
+
+[33mcommit fce8ee7e609175ad3954ee716bf678db46b49280[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Dec 24 22:07:51 2021 +0100
+
+    Add env:esp32dev_OLED_OTA
+
+[33mcommit db9618c8dcf4818142c50c8c7e398542945d4020[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Dec 24 19:11:09 2021 +0100
+
+    Add Feature OTA (Over The Air Update) (#64)
+
+[33mcommit 2cc30ba09e18cf689308d224868b4f227ea17fa3[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 22 08:58:45 2021 +0100
+
+    Version bump
+
+[33mcommit 0a026bb148e9e451fadaabf4bb1c2e171598f234[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 22 07:16:17 2021 +0100
+
+    SUPPORT_BLE by default
+
+[33mcommit b8c13b1022ad0ceb17f4faf077d0299a20f034ab[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 22 07:11:33 2021 +0100
+
+    Add define SUPPORT_BLE
+
+[33mcommit 26f9555ef266230bad2242d6aea20cdbd6981b62[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 22:42:09 2021 +0100
+
+    Rename FAKE sensor type as DEMO (for future use)
+
+[33mcommit 152d8c3dd5bd8892b8b8238abf0d13d2ccdb5cbc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 21:30:49 2021 +0100
+
+    Clean up reverseButtons
+
+[33mcommit 5aa854c8e5ba257776551caf76641331e9fd1e2f[m
+Merge: 77f938e 7b35e1a
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 20:59:49 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 7b35e1add63052d21484e1b2911ea99e606afb1c[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 20:51:13 2021 +0100
+
+    Test
+
+[33mcommit 77f938e71e9f687c7610ff828f4559464c6ce29e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 20:47:42 2021 +0100
+
+    Version bump
+
+[33mcommit e258e2c278afaad0e3898ae97f9a6261747b7f35[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 17:38:37 2021 +0100
+
+    Feature reverse display (#57)
+    
+    * Add feature display reverse the display (rotate 180º) and swap buttons on display reverse
+
+[33mcommit 4f138c8d5440991a2292f6388ad3f905a509bb1a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 12:53:35 2021 +0100
+
+    Update Arduino IDE notes
+
+[33mcommit 89840707930bdf089b014c9966d895e7a58022cc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 21 12:46:34 2021 +0100
+
+    Update Arduino IDE notes
+
+[33mcommit 668b66c5f9f5a2ec6979fb84d6de42c99a7447e1[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 23:22:24 2021 +0100
+
+    Add feature to change measurement interval (#60)
+
+[33mcommit 78fab981314a947766c8e71b5faf88c3b3534503[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 19:12:19 2021 +0100
+
+    Update README.md
+
+[33mcommit 2892f97338d7410d1ae3f6b04809a2892e459f5b[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 15:29:51 2021 +0100
+
+    Add option to show Fahrenheit units on display for temperature (#58)
+    
+    * Add feature displaying temp in Farenheit
+
+[33mcommit 8b55114596b1c5b811b091d794e3dccd75928657[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 08:32:16 2021 +0100
+
+    Show CO2 Gadget Flavour on menu and on console at startup (#56)
+
+[33mcommit ede1d5ba89f0fe8bce68449633d8d0d0e6fe102c[m
+Merge: c5f45ec 140b6f7
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 07:25:37 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit c5f45ec387b0fd7e7e02761a5a046da9eec043f7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Dec 20 07:25:28 2021 +0100
+
+    Fixed issue with TFT_eSPI library
+
+[33mcommit 140b6f74b5d38cb59a646aae13d3c92c720c0e34[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Dec 19 11:06:12 2021 +0100
+
+    Update platformio.yml
+
+[33mcommit 29641b8aaf76ab9c4a26842db48fcd4c67f5d037[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Dec 19 11:04:38 2021 +0100
+
+    Try to fix compilation time errors with TFT_eSPI
+
+[33mcommit fddfaccd6d77c207bdf422d864c03c2d21aa91e5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Dec 19 01:35:22 2021 +0100
+
+    Fix setDisplayBrightness() compile error if defined SUPPORT_OLED
+
+[33mcommit 54485a1a8bfd770160bc72dceae0b25179ebe1b6[m
+Merge: 6dddf73 e9740cf
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:55:56 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 6dddf732ee3e0e86fc0ee945d9d1fac3ee72f48d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:55:48 2021 +0100
+
+    Rename setTFTBrightness() as setDisplayBrightness()
+
+[33mcommit 958f95072663c8549e81cf7c096700caa483329a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:55:17 2021 +0100
+
+    Rename setTFTBrightness() as setDisplayBrightness()
+
+[33mcommit e9740cf1697b4edd190cdae8a1480929fe9aa9ff[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:46:40 2021 +0100
+
+    Update platformio.yml
+    
+    Try to avoid running on release (release has his own workflow)
+
+[33mcommit 6a98b947501dd58075311a43ff2fe811541ce1ff[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:37:48 2021 +0100
+
+    No define DEBUG_ARDUINOMENU by default
+
+[33mcommit 2b4aeab4de05e1318441d6ab52fda4c880a7593f[m
+Merge: 964f262 451b3bf
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:13:18 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 964f262ef818db88b789b86fd6845a8d9d5d507b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:12:51 2021 +0100
+
+    Print MAC Address to Serial at initWiFi
+
+[33mcommit 1e00844a824c5b5620e3e157457e764a23c35be4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 22:11:39 2021 +0100
+
+    Fix last merge conflict
+
+[33mcommit 451b3bfbb29a9e2955c8550a4dc17f69a18ca599[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 10:25:48 2021 +0100
+
+    Update README.md
+
+[33mcommit 457de56b75ea62b2899f27775568149dd7e2a6b3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 10:21:52 2021 +0100
+
+    Update README.md
+
+[33mcommit 25752c8172bd066380cbd310f54110dfa85b2bfa[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 18 09:29:12 2021 +0100
+
+    Update README.md
+
+[33mcommit 00b6bb854b554cd651ff274f1251277e5e3d0d55[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Sat Dec 18 09:17:46 2021 +0100
+
+    Turn ON TFT when USB is connected (#47)
+
+[33mcommit d12b63d5aef91381f3cb2ce1efe3e52c76cb3889[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Sat Dec 18 09:16:57 2021 +0100
+
+    When click button turn on the display only if it's OFF (#49)
+
+[33mcommit 5d769c00ef0ac2afa3e4269263381bed0fc9091d[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Sat Dec 18 09:15:33 2021 +0100
+
+    Missing new line in Terminal debug (#48)
+    
+    01:56:29.509 > -->[SENS] Using CanAirIO Sensorlib v0.4.2 Rev:341-->[SENS] Turning on sensor..
+    01:56:29.555 > -->[SENS] Detecting sensors..
+
+[33mcommit 68055c63a49d161c289225fd99772a81cd96436b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Dec 17 22:03:42 2021 +0100
+
+    Some code clean up
+
+[33mcommit 673d22264a285615d5b31e3d04f0eb2c597bcaba[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Dec 17 21:57:59 2021 +0100
+
+    Add support for I2C OLED Displays (#52)
+    
+    * First refactory to support OLED (tested TFT still working)
+    
+    * First OLED working version with menu
+    
+    * Some code clean up
+
+[33mcommit f099be98a89f51c57e2daf4c55fca693cb7cb236[m[33m ([m[1;33mtag: [m[1;33mv0.5.001[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 14 23:54:00 2021 +0100
+
+    Fix to platformio.ini for general release
+
+[33mcommit f85b8f07eb586c7b083d477c0a0dae15857d59e4[m[33m ([m[1;33mtag: [m[1;33mv0.5.000[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Dec 14 23:13:19 2021 +0100
+
+    Version bump
+
+[33mcommit cec677da886569b37e837ab84b4a2a6f7702fbf3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Dec 14 23:11:18 2021 +0100
+
+    Feature select co2 sensor (#46)
+    
+    * Add sensor selection to menu
+    
+    * Add selected sensor initialization
+    
+    * Add enable debug sensors functionality to menu
+    
+    * Sensor selection menu functional
+    
+    * Sensor selection menu functional
+    
+    * Version bump
+    
+    * Fix external Temp and Humidity issue  (#45)
+    
+    * added GPIO pin enable for CanAirIO CO2 version
+    
+    * I2C enable and USB ports for Linux
+    
+    * fixed merge
+    
+    * disable some messages for testing
+    
+    * enable S8 sensor for testing
+    
+    * fix merge issues
+    
+    * fixed issue with temperature and humidity with external sensor
+    
+    * restored windows monitor ports
+    
+    * Add compilation date & time to serial start log
+    
+    * Improvements in CO2 Sensor selection
+    
+    * Manages breaking change in Sensors::setSampleTime()
+    
+    * Minor code cleaning
+    
+    Co-authored-by: Antonio Vanegas <hpsaturn@gmail.com>
+
+[33mcommit 2a1c57f0fe033f70e32f116f195b7d083af56cf9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Dec 12 19:00:43 2021 +0100
+
+    WIFI_PRIVACY defined by default
+
+[33mcommit a58d83d2a52f6fcd4cb5ba56bc7d7fd29f6d6ad7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Dec 12 18:59:23 2021 +0100
+
+    Don't show passwords in menu if WIFI_PRIVACY is defined
+
+[33mcommit d1137648f129d1155e1a47bb7cd153372761f9d5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 11 15:24:47 2021 +0100
+
+    Version bump
+
+[33mcommit 13031c347fab02b84a9a042908679b755f0aaff8[m[33m ([m[1;33mtag: [m[1;33mv0.4.035[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 9 12:55:23 2021 +0100
+
+    Version bump
+
+[33mcommit 2742c750c6726367c06ad41792a3a0794999f321[m[33m ([m[1;33mtag: [m[1;33mv0.4.034[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 9 12:49:17 2021 +0100
+
+    Improvements in release2.yml
+
+[33mcommit 77aff082f9c65a5938496ba18770e221ec43cb62[m[33m ([m[1;33mtag: [m[1;33mv0.4.032[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 19:48:17 2021 +0100
+
+    Improvements in release2.yml
+
+[33mcommit c5194e35e10dfa5a8664c72718b0f8bbc977b8e9[m[33m ([m[1;33mtag: [m[1;33mv0.4.031[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 19:00:21 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 91b8c94b04237c239ba515f7af59ca3ec38dca18[m[33m ([m[1;33mtag: [m[1;33mv0.4.30[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:47:26 2021 +0100
+
+    Version bump
+
+[33mcommit b458423014aa42c09cc36787abedda31b5d91f80[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:47:12 2021 +0100
+
+    Version bump
+
+[33mcommit 5c73610b4a74b964a899e7d166a4d47e2c9f3c43[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:44:19 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 840c677d6a15f0a6d74e195d5c391b9df7e7db98[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:38:59 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 5b204293767b4c65b263c4838b64b9cbc7affbeb[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:24:30 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 5828c46f53447bd2ed74cb8e44887ff6d05a09da[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 18:17:04 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 06cfc34bdb8baf9bdf010fecf8008f1bbc3b85d6[m[33m ([m[1;33mtag: [m[1;33mv0.4.028[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:55:11 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 9eb11dfed79f7f3121305e7ef4fb0b618d9c5d0e[m[33m ([m[1;33mtag: [m[1;33mv0.4.027[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:38:31 2021 +0100
+
+    Version bump
+
+[33mcommit 8999fa7c78e1acaebdbe28541da31bd471178091[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:37:55 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 2e622a8fd40895255fbf772114997ff5015bd506[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:31:30 2021 +0100
+
+    Update release2.yml
+
+[33mcommit 811a74848ba1beda05596725c2b500b9fbb05b40[m[33m ([m[1;33mtag: [m[1;33mv0.4.026[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:24:04 2021 +0100
+
+    Version bump
+
+[33mcommit ec20d48dde891fe92ef91826dab7549276da9494[m
+Merge: 8ba1ba3 1173c13
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 17:00:06 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 1173c13b81a55da8a5753a60d82d672af6e2ffca[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:59:12 2021 +0100
+
+    Update release2.yml
+
+[33mcommit 8ba1ba329c818a46ebecf577cfbf8519d9f8ee58[m[33m ([m[1;33mtag: [m[1;33mv0.4.025[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:55:43 2021 +0100
+
+    Version bump
+
+[33mcommit 3a2f6aacbf58947d097e1ff372110a04e7c0bac8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:50:24 2021 +0100
+
+    Update release2.yml
+
+[33mcommit b0ff81a65551b5c55db84b348b5e4bf6a57fe1c8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:43:14 2021 +0100
+
+    Update release2.yml
+
+[33mcommit 048ae96a5714d3f63e76cfd3c1380abc2b5c8bb1[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:38:53 2021 +0100
+
+    Update release2.yml
+
+[33mcommit 7d1cd2b2b5dbeeb8cdffa6fe7036fee8467516da[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:32:29 2021 +0100
+
+    Update release2.yml
+
+[33mcommit be93a6c9248d8d304fde5e3f351c77fb2c8c9cb7[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 16:24:25 2021 +0100
+
+    Update release2.yml
+
+[33mcommit a496b12c3a85e0683d6a305464b26398ef1462a9[m[33m ([m[1;33mtag: [m[1;33mv0.4.024[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:26:44 2021 +0100
+
+    Version bump
+
+[33mcommit b39ddbfdb7714da6e841ea1bf6e8adec1eafbc47[m[33m ([m[1;33mtag: [m[1;33mv0.4.023[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:19:22 2021 +0100
+
+    Version bump
+
+[33mcommit 5320d0b4781216fd472164a5f012aca3bc1bfb3a[m[33m ([m[1;33mtag: [m[1;33mv0.4.022[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:13:47 2021 +0100
+
+    Version bump
+
+[33mcommit 2d6e357bbd1eeffbf2c049514b0bd73566a1f5eb[m[33m ([m[1;33mtag: [m[1;33mv0.4.021[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:08:28 2021 +0100
+
+    Version bump
+
+[33mcommit 93e5754d3ae95e9a83748f69fe4fd76f7d70cf86[m[33m ([m[1;33mtag: [m[1;33mv0.4.020[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:06:26 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit e886c4d3ea0f61e4a527a897f35adddead48a993[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:05:24 2021 +0100
+
+    v0.4.019
+
+[33mcommit 7a7616723e949130496e578a9e810e3859b13dd5[m[33m ([m[1;33mtag: [m[1;33mv0.4.019[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:04:46 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit 846c6af0958042e40743efd4120b0789e91efe1d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 15:04:04 2021 +0100
+
+    New release2.yml V2 version
+
+[33mcommit abfabf7588a309b763d66b35e911f96a9bd7eb8d[m[33m ([m[1;33mtag: [m[1;33mv0.4.018[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 13:51:10 2021 +0100
+
+    Version bump
+
+[33mcommit 9cec65b05a65f35f8cd91603bb4425c642bf7da4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 13:49:20 2021 +0100
+
+    Version bump
+
+[33mcommit 88e7331a566e679fc67e2da6438abf316f53d809[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 13:21:17 2021 +0100
+
+    Fix release.yml
+
+[33mcommit 312b7e94d296300b5940061154fd80e8011b8f8a[m[33m ([m[1;33mtag: [m[1;33mv0.4.15[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 13:14:18 2021 +0100
+
+    Move web to SPIFFS file system
+
+[33mcommit 51b92d4b1aa05bb119cf22603e671d0a0c36dfca[m
+Merge: 40604ab 3504bd3
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 12:22:03 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 40604ab4ce34d345e320ed1d21aa3c89c87a95a7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 12:21:49 2021 +0100
+
+    Add CO2_Gadget_Partitions.csv
+
+[33mcommit 3504bd3c99f954e6167b44c0c9e70d27ab17fe95[m
+Author: A. Carlos Marrero <39680078+acmatl@users.noreply.github.com>
+Date:   Wed Dec 8 11:04:54 2021 +0000
+
+    Include dark or light theme switch with separate web files (#33)
+    
+    * smartphone styles
+    
+    * Update smartphone styles
+    
+    adjusts the graphics column to the full width of the screen
+    
+    * Review of view proportionality and labels
+    
+    * Improve label styling
+    
+    * Add forgotten files
+    
+    Co-authored-by: Mariete <melkati@users.noreply.github.com>
+
+[33mcommit 00a990982dea329b68bb02b03c606e623fea8794[m
+Author: Antonio Vanegas <hpsaturn@gmail.com>
+Date:   Wed Dec 8 11:49:36 2021 +0100
+
+    Fix sensorlib 0 4 1 implementation (#32)
+    
+    * added GPIO pin enable for CanAirIO CO2 version
+    
+    * I2C enable and USB ports for Linux
+    
+    * fixed merge
+    
+    * disable some messages for testing
+    
+    * enable S8 sensor for testing
+    
+    * fixed and restore the default values from upstream
+
+[33mcommit fc16ea95e35fdebbc438d7d7f2986dfbf7bd82a6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Dec 8 11:45:33 2021 +0100
+
+    Minor changes
+
+[33mcommit 7d7d3278eae5fbd4a52e01ef763f5c987c3fb0cb[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Dec 5 00:08:55 2021 +0100
+
+    Change logo to save memory
+
+[33mcommit 3ebb9331a3d2fbe429b885f22714888de4778cab[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 22:35:48 2021 +0100
+
+    Renamed LONGCLICK_MS to LONGCLICK_TIME_MS to avoid redefinition warning
+
+[33mcommit 439a97ca7476cb178bdbc0419872c84e8e3b90c5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 22:32:07 2021 +0100
+
+    Remove web page SIMPLE_page
+
+[33mcommit faf9455258dd497ec361e480895c9f819a06e447[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 20:30:14 2021 +0100
+
+    Improve BLE messages to console (tag)
+
+[33mcommit 91a622c1a1e829129ec3bf50f4006f1935ea62eb[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 11:14:33 2021 +0100
+
+    Fix typo in release.yml
+
+[33mcommit e9b0f2115a5480de0be1a54744e8166ad0f55e62[m[33m ([m[1;33mtag: [m[1;33mv0.4.011[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 10:03:15 2021 +0100
+
+    Adjust enviroments for release CI build
+
+[33mcommit 00bde1a312d07d01215e8dfe15d563b9b240c434[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 10:02:38 2021 +0100
+
+    Rename fonts
+
+[33mcommit 431f5f698a1648f69ba40ef3720de599ad29b1f0[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Dec 4 09:51:42 2021 +0100
+
+    Feature icons (#31)
+    
+    * Add icons (first version). Improvements in display values
+    
+    * Set sensors debug mode to false
+    
+    * Add icons and display improvements
+    
+    * Fonts memory optimizations and custom fonts
+    
+    * Bump version. New enviroments for TTGO T-Display
+    
+    * Display improvements (thanks @SergioCoscolin)
+
+[33mcommit 61c594e4297555a9f33a05d047b74987b5973f5c[m[33m ([m[1;33mtag: [m[1;33mv0.4.002[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 20:10:42 2021 +0100
+
+    Turn off debug options
+
+[33mcommit acf04b617b88b2f6e538787cfc1afc69e3a12d12[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 20:08:47 2021 +0100
+
+    Fix manifest bin path for erase version
+
+[33mcommit b5d24579998442152da3af44a9a177be472dd48a[m[33m ([m[1;33mtag: [m[1;33mv0.4.000[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 07:22:38 2021 +0100
+
+    Edit readme no need to use development branch anymore
+
+[33mcommit 1e396cb3e4b7fbb1239440d104c0eac2a5b927b5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 07:20:37 2021 +0100
+
+    Version bump
+
+[33mcommit 1bb3e7ba411a93bd58da84493bd44cb978f67b96[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 07:20:11 2021 +0100
+
+    Set back cpu frequency at 80Mhz
+
+[33mcommit 9e64da8883eea35ca97cc1c279d1cfb2e02b60ba[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 06:55:59 2021 +0100
+
+    Removed setTempOffset workaround
+
+[33mcommit 5c31b57ad62904bebdc304096dee7afbc7625e17[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Dec 2 06:55:25 2021 +0100
+
+    Removed setTempOffset workaround
+
+[33mcommit b9391c9523dc1aab4db35d508c9627b13ff74379[m
+Merge: 43f49fa f94610a
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 29 21:23:25 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 43f49fa636e3904631ce0d5208da02cfdedf1647[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 29 21:23:18 2021 +0100
+
+    Fix issue at merge inMenu duplicate
+
+[33mcommit f94610a474cc5e3cb20f4f620690d3f5f8e86809[m
+Author: A. Carlos Marrero <39680078+acmatl@users.noreply.github.com>
+Date:   Mon Nov 29 20:02:46 2021 +0000
+
+    Review of view proportionality and labels (#29)
+    
+    * smartphone styles
+    
+    * Update smartphone styles
+    
+    adjusts the graphics column to the full width of the screen
+    
+    * Review of view proportionality and labels
+    
+    * Improve label styling
+
+[33mcommit 04a0965501031c3ecbcd67bc9f01f609c973376b[m
+Merge: e028f89 510e05f
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 29 20:34:36 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 510e05f9f46becf66e9dad0a745ac2206349d3c2[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 29 20:25:35 2021 +0100
+
+    Temporary fix to memory problems.  Fixes and improvements. (#30)
+    
+    * Remove internal /main web page
+    
+    * Improve MQTT console messages
+    
+    * Improve console messages
+    
+    * Add inMenu status. Improve console messages
+    
+    * Fix typo in [WiFi] console messages
+    
+    * Improve console messages
+    
+    * Avoid printing to serial MQTT activity if in menu
+    
+    * Avoid printing to serial SENS activity if in menu
+    
+    * Add doSetHostName to menu
+    
+    * Add navigation instructions to menu_init
+    
+    * Data logger default interval 60 seconds
+    
+    * Convert logo array to static
+    
+    * Use setSampleIntervalMs melkati/arduino-ble-gadget branch of arduino-ble-gadget modified to avoid memory issues
+    
+    * Add tempOffset
+    
+    * Show battery voltaje on display
+    
+    * Fix temperature offset workaraound https://t.me/canairio/18464
+    
+    * Add getBatteryPercentage
+    
+    * Add BLE info to menu
+    
+    * Add battery. temp and humidity to display
+
+[33mcommit e732d539a13ff05e12b34b2a883973eca051e0f1[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:41:07 2021 +0100
+
+    Update README.md
+
+[33mcommit a1608c32bbebb71032d81d6ab716dc861a52c5b9[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:40:00 2021 +0100
+
+    Update README.md
+
+[33mcommit 96650d6abd5b42bd639ea5d46a7863722aafc47a[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:38:23 2021 +0100
+
+    Update README.md
+
+[33mcommit 1c025f816c935f341fa4a51708c80e6036be3a7b[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:37:25 2021 +0100
+
+    Notice: please, use development branch
+    
+    👉 Please, due to a issue with memory use development branch while problem gets sorted out. It uses a modified version of the Sensirion Gadget BLE Arduino Lib
+
+[33mcommit e028f89d9bb2b5292087826eec36894131c84750[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:27:59 2021 +0100
+
+    Use setSampleIntervalMs melkati/arduino-ble-gadget branch of arduino-ble-gadget modified to avoid memory issues
+
+[33mcommit db18ca10e040e3ec4740839483766a4e4e5e6512[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:24:25 2021 +0100
+
+    Convert logo array to static
+
+[33mcommit be408a73793c080ab061e9bcff2036227ea3e6a6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 14:23:58 2021 +0100
+
+    Data logger default interval 60 seconds
+
+[33mcommit df42b3fcfb3248bcb79ff9152283d8e794a8165c[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 13:56:13 2021 +0100
+
+    Add navigation instructions to menu_init
+
+[33mcommit cbadef9b4d4b851ad462041be640dd3bf50915b4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 13:55:24 2021 +0100
+
+    Add doSetHostName to menu
+
+[33mcommit 38937e3aad91f7a88d9b854261226061025700b5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 11:59:17 2021 +0100
+
+    Avoid printing to serial SENS activity if in menu
+
+[33mcommit 90dd8dc7f13b6d8c787846de7cef5681f4eef234[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 09:56:27 2021 +0100
+
+    Avoid printing to serial MQTT activity if in menu
+
+[33mcommit a0a462960f8ab7bf426992e888e17869158a1ecd[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 26 09:44:14 2021 +0100
+
+    Improve console messages
+
+[33mcommit c017911f8778fb247b793627dac3b91d008b109d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 24 12:20:36 2021 +0100
+
+    Fix typo in [WiFi] console messages
+
+[33mcommit 360e1abc88f032f535f31097aece28e5a9e1feb1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 24 12:18:06 2021 +0100
+
+    Add inMenu status. Improve console messages
+
+[33mcommit fb710f683d81c2a973bd3fa97802d05a59a6c114[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 24 11:44:49 2021 +0100
+
+    Improve console messages
+
+[33mcommit 5465e5f59bb1fdfd009c59cfb654dafee18b9e32[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 24 08:43:38 2021 +0100
+
+    Improve MQTT console messages
+
+[33mcommit 53e47313da3f55a5ca9658db7034d5a556b0a832[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 23:28:40 2021 +0100
+
+    Remove internal /main web page
+
+[33mcommit 5d5474f1e0172b78a8ab88d73d78132437253897[m
+Author: A. Carlos Marrero <39680078+acmatl@users.noreply.github.com>
+Date:   Tue Nov 23 22:20:02 2021 +0000
+
+    smartphone styles (#27)
+    
+    * smartphone styles
+    adjusts the graphics column to the full width of the screen
+
+[33mcommit 15fc2a86cf84f3f436246cc849490d6ef71a7cfc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 23:12:34 2021 +0100
+
+    Permits WiFi SSID and passwords containing spaces
+
+[33mcommit 6b5cb6876638f2f3fa515ecbbe49ff31b3e64059[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 20:52:54 2021 +0100
+
+    Extended character set for SSID
+
+[33mcommit 07ab77c93230ae9df41fbdf3f7a4ab1395b7e188[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 16:32:21 2021 +0100
+
+    Refactor initBLE()
+
+[33mcommit 7331d8542580ca51ccf50e7ea9b20b59ed1a50c1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 16:31:49 2021 +0100
+
+    Remove display of battery_voltage
+
+[33mcommit bc68b439c0e9b2d74dda5bb43d4dc0b1540c3613[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 23 13:24:49 2021 +0100
+
+    Fix problems with web server (hopefully)
+
+[33mcommit 6d5a8fd47187c130ef15827987cc2f1f33c67f95[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 22 08:39:57 2021 +0100
+
+    Add define SUPPORT_MQTT
+
+[33mcommit 0afcf5c2c7027c5ab0151231328530a5ec32bfed[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 21 23:11:54 2021 +0100
+
+    Add SUPPORT_MDNS and better status messages for WiFi
+
+[33mcommit cfed8e43fdd1e6e3108042a58a6ee4a313c90c97[m[33m ([m[1;33mtag: [m[1;33mv0.3.079[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 21 10:23:45 2021 +0100
+
+    Fix temp arrays space padding.
+
+[33mcommit 9874b9a7266861087505748bd5c31de3ab137c5c[m[33m ([m[1;33mtag: [m[1;33mv0.3.078[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 21 08:51:30 2021 +0100
+
+    Version bump
+
+[33mcommit 33584b33eb896ffb1c3bfe10076a22a413cc0122[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 21 08:39:12 2021 +0100
+
+    Fix rootTopic space padding
+
+[33mcommit 31c0b02d444b26b71274d3ec0179cf6bf44108d7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 21 08:38:09 2021 +0100
+
+    Add MQTT authentication
+
+[33mcommit 3c6f707c4626ad333686db9ca566e576be95039b[m[33m ([m[1;33mtag: [m[1;33mv0.3.076[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 23:00:23 2021 +0100
+
+    Add authentication (user/pass) to MQTT broker
+
+[33mcommit fdd5312cab05e2069272340985958658946891d5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 22:21:06 2021 +0100
+
+    Menu on enter Load Temp Arrays With Actual Values
+
+[33mcommit cc65f447a526545fa1f242f47331f0cc05b1a275[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 21:49:47 2021 +0100
+
+    Version bump
+
+[33mcommit 7fe6ec6b62ca9718df191a934bf47a91cbf80bf2[m[33m ([m[1;33mtag: [m[1;33mv0.3.074[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 21:18:54 2021 +0100
+
+    Version bump
+
+[33mcommit 07aace017fc426015d429c9b7ed15255570af5b7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 21:18:17 2021 +0100
+
+    Version bump
+
+[33mcommit c95c298e8de6ed35698133597225aeb84103ac29[m[33m ([m[1;33mtag: [m[1;33mv0.3.073[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 21:17:01 2021 +0100
+
+    Permit more chars for WiFi password
+
+[33mcommit f8b69e55acdda315773af3610e85f79c5010a073[m[33m ([m[1;33mtag: [m[1;33mv0.3.072[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 16:39:17 2021 +0100
+
+    Update release.yml
+
+[33mcommit f244650d47f2a5a0abc8839a09bf636b7945e9df[m[33m ([m[1;33mtag: [m[1;33mv0.3.071[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 16:11:02 2021 +0100
+
+    Update release.yml
+
+[33mcommit 90873d805247cad2ee077d374e68ece803015240[m[33m ([m[1;33mtag: [m[1;33mv0.3.070[m[33m)[m
+Merge: 74dfdaa 53b9087
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 15:58:14 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 74dfdaaaccac3e383370ccedf7c7c8942b0d9784[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 15:58:05 2021 +0100
+
+    Fix short temp arrays in menu
+
+[33mcommit 53b9087634aacd1ff1b60253413054eea03695dd[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 15:05:41 2021 +0100
+
+    Update release.yml
+
+[33mcommit 4cbb60b151288b98cb1188bcd626ccf6ed1cef7c[m
+Merge: c6536a6 fb59747
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 14:21:23 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit c6536a6f7a5c3ba70a78adc3fe5a2810c77cf750[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 14:20:54 2021 +0100
+
+    Increase batterySecondsBetweenReads to 60
+
+[33mcommit b637a3788edcbcee60fba95ca1674d988620f078[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 14:19:11 2021 +0100
+
+    Version bump
+
+[33mcommit fb597474080305a844454967724adcebeee2fd49[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 14:17:16 2021 +0100
+
+    Update release.yml
+
+[33mcommit 7d2cc9e72bf323ba625981eedf698e92749e6bb1[m[33m ([m[1;33mtag: [m[1;33mv0.3.068[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 14:09:46 2021 +0100
+
+    Version bump
+
+[33mcommit 580c436f89da2aa69df96283e2c673f312958d64[m
+Merge: ff5399f f86fd11
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 13:48:39 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit ff5399f2e5b6de0b8c5dcc243c243de96a3f22eb[m[33m ([m[1;33mtag: [m[1;33mv0.3.067[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 13:47:30 2021 +0100
+
+    Version bump
+
+[33mcommit f86fd11b572056c69dc97989b59b87e22c2cbd64[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 13:46:31 2021 +0100
+
+    Update release.yml
+
+[33mcommit 35e64756029bbb1ff49bfc8db31b818f8b6f88ca[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 13:36:22 2021 +0100
+
+    Adjust vRef to 930 (due to a bug, probably)
+
+[33mcommit ac9d80108623da090d8075a6b419d983f0a50150[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 12:47:32 2021 +0100
+
+    Update release.yml
+
+[33mcommit 1c290789e47c7a5d507cfc914cf7ac0f44ca47cb[m[33m ([m[1;33mtag: [m[1;33mv0.3.066[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 12:10:41 2021 +0100
+
+    Version bump
+
+[33mcommit 2831e58576d198f2466fb6b790931fb37b7d70f3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 12:08:44 2021 +0100
+
+    Update release.yml
+
+[33mcommit c20ff38a417422cd3b8e774852ea6bd72112d90c[m[33m ([m[1;33mtag: [m[1;33mv0.3.065[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 10:53:16 2021 +0100
+
+    Menu color changes to improve readability
+
+[33mcommit de5793984de647345f09f2aa453e47cc01dd0e22[m[33m ([m[1;33mtag: [m[1;33mv0.3.064[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 20 09:53:10 2021 +0100
+
+    Add menu option to reboot CO2 Gadget
+
+[33mcommit a5dda2c2135412f6e21e533b028bc81d3d1d1c30[m[33m ([m[1;33mtag: [m[1;33mv0.3.063[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:52:19 2021 +0100
+
+    Version bump
+
+[33mcommit d5302bded5fad7a07a6fd775d9b75225b43f89ae[m[33m ([m[1;33mtag: [m[1;33mv0.3.062[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:29:51 2021 +0100
+
+    Version bump
+
+[33mcommit e9565101686c6484728f43d32df033fce8dda136[m
+Merge: fe0258c 2cce0e5
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:25:46 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit fe0258c144cf39bfab54087530e47e009cc92488[m[33m ([m[1;33mtag: [m[1;33mv0.3.061[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:25:14 2021 +0100
+
+    Version bump
+
+[33mcommit 2cce0e5e8b90bab904224c53121585cdab8dc6da[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:21:14 2021 +0100
+
+    Fix release.yml
+
+[33mcommit 0be3c4b15921c59353d252932343c54bfb4bfb1c[m[33m ([m[1;33mtag: [m[1;33mv0.3.060[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:18:40 2021 +0100
+
+    Version bump
+
+[33mcommit 06694091397143df11d618bad35bb6d1e5816169[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 11:18:12 2021 +0100
+
+    Add clean WP Rocket cache to CI Release
+
+[33mcommit b448f39084acc0fb87640850599501890d0aa111[m[33m ([m[1;33mtag: [m[1;33mv0.3.059[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 10:51:02 2021 +0100
+
+    Version bump
+
+[33mcommit c656a3977116c30d7411853805727b934456e4f0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 10:50:39 2021 +0100
+
+    Fix ENABLE_PIN
+
+[33mcommit 020d59060351cd08aeb41c30620b76b8421e8174[m[33m ([m[1;33mtag: [m[1;33mv0.3.058[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 10:03:31 2021 +0100
+
+    Fixes in WiFi and MQTT menu config
+
+[33mcommit 0738d96e85e03969c224fa1ad1dea0e186e6039c[m[33m ([m[1;33mtag: [m[1;33mv0.3.057[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 08:33:03 2021 +0100
+
+    Version bump
+
+[33mcommit 36e513121c21c234048c0d0fb7e2a50c92cb8bba[m[33m ([m[1;33mtag: [m[1;33mv0.3.056[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 07:06:15 2021 +0100
+
+    Version bump
+
+[33mcommit 093f338081771722797fd552c62566347b62c99e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 07:05:51 2021 +0100
+
+    Removed setCpuFrequencyMhz(80);
+
+[33mcommit ef09564f42b50a0c629362810b684978a56c6642[m[33m ([m[1;33mtag: [m[1;33mv0.3.055[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 19 06:30:07 2021 +0100
+
+    Change board_build.partitions = min_spiffs.csv
+
+[33mcommit 3285a1f540abf85c2130f78bc8652891ecaefc14[m[33m ([m[1;33mtag: [m[1;33mv0.3.054[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 22:22:11 2021 +0100
+
+    Fix binaries path
+
+[33mcommit 5b5afec5a0333f12466b927bd56ebff6cba4c74a[m[33m ([m[1;33mtag: [m[1;33mv0.3.053[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:49:01 2021 +0100
+
+    Version bump
+
+[33mcommit 339dbf3b351a17dbab13f1d6625d9cff440c760f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:48:43 2021 +0100
+
+    Fix memory erase manifest in release.yml
+
+[33mcommit ee0fab7727bbc7aaf3ddb1796a1688466c001503[m[33m ([m[1;33mtag: [m[1;33mv0.3.052[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:39:57 2021 +0100
+
+    Version bump
+
+[33mcommit dde137aed28f8392338d0ea2d6169c48ce415bf7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:39:22 2021 +0100
+
+    Fix typo in release.yml
+
+[33mcommit bba1e9c8412d0127af47261f20a20a672efaafac[m[33m ([m[1;33mtag: [m[1;33mv0.3.051[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:31:26 2021 +0100
+
+    Version bump
+
+[33mcommit c4cb694f282034d1c7c562326f93da0ca357eb95[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:31:04 2021 +0100
+
+    Disable turning OFF BLE to avoid restart of device
+
+[33mcommit df53720ace783352837035543cac306e5b8bc9f7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 14:30:25 2021 +0100
+
+    Update release.yml to create erase-manifest
+
+[33mcommit a99307b2243c3b3e906b08d9ba7c703f788963bc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 13:28:57 2021 +0100
+
+    Fix typo in create release name
+
+[33mcommit e50d63ee147eae4c2dda2b6129e4637073bcf533[m[33m ([m[1;33mtag: [m[1;33mv0.3.050[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 13:15:59 2021 +0100
+
+    Version bump
+
+[33mcommit 0f71176dced5ba144762ff206e0bd2e78d7f90a9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 13:15:30 2021 +0100
+
+    Modify: new_install_skip_erase: true
+
+[33mcommit 3d13ad7ea6f2c55a0562bb1f4e62365be7c10c2b[m[33m ([m[1;33mtag: [m[1;33mv0.3.049[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 12:52:17 2021 +0100
+
+    Update release.yml
+
+[33mcommit 457718ab000aaf6bae122c018087f220272990ec[m[33m ([m[1;33mtag: [m[1;33mv0.3.048[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 12:48:48 2021 +0100
+
+    Update release.yml
+
+[33mcommit e976abf7b3af592cb0c7248a84b5c3cd66175ba4[m[33m ([m[1;33mtag: [m[1;33mv0.3.047[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 11:41:45 2021 +0100
+
+    Version bump
+
+[33mcommit b9050b1d0b55213ae2d238718d13c2b21fd82337[m[33m ([m[1;33mtag: [m[1;33mv0.3.046[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 11:40:41 2021 +0100
+
+    Update release.yml
+
+[33mcommit 839c5566712e31bd33efe7269cd472a09642a455[m[33m ([m[1;33mtag: [m[1;33mv0.3.045[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:55:28 2021 +0100
+
+    Update release.yml
+
+[33mcommit f4a8697c2b8c0a203a39e2fbec329a262b1960db[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:52:33 2021 +0100
+
+    Update release.yml
+
+[33mcommit 6c053b9082730c2045be8817e3b63c0fbba42bc5[m[33m ([m[1;33mtag: [m[1;33mv0.3.044[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:45:37 2021 +0100
+
+    Update release.yml
+
+[33mcommit edcfa5c73cc9fd6fc6daa4f001dc98f7800782be[m[33m ([m[1;33mtag: [m[1;33mv0.3.043[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:39:55 2021 +0100
+
+    Update release.yml
+
+[33mcommit 0b60f0461f6aee439f7a80e0eae6730220a29deb[m[33m ([m[1;33mtag: [m[1;33mv0.3.042[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:28:46 2021 +0100
+
+    Update release.yml
+
+[33mcommit baedab0ae5ab2ead086515b59e1bf89dfd93453a[m[33m ([m[1;33mtag: [m[1;33mv0.3.041[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:18:39 2021 +0100
+
+    Update release.yml
+
+[33mcommit ded9f5c5fd3191e7526333bbe59da0dcc48aba60[m[33m ([m[1;33mtag: [m[1;33mv0.3.040[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 10:13:34 2021 +0100
+
+    Update release.yml
+
+[33mcommit 735acbd8df2aa666dfd57e0cc49fd51f173a34c5[m[33m ([m[1;33mtag: [m[1;33mv0.3.39[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 09:53:41 2021 +0100
+
+    Update release.yml
+
+[33mcommit 04ac94462ea8ffc980e0211b9a0483741ea2cbe6[m[33m ([m[1;33mtag: [m[1;33mv0.3.38[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 09:48:48 2021 +0100
+
+    Update release.yml
+
+[33mcommit a567b3509ae1eb66c17499a39030a25b5f888489[m[33m ([m[1;33mtag: [m[1;33mv0.3.37[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 09:43:00 2021 +0100
+
+    Version Bump
+
+[33mcommit 87dd6bc9ada5b0ce16d008e155440c613706b4a0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 09:42:29 2021 +0100
+
+    Update release.yml
+
+[33mcommit 4b70fa79e1a1a9a88177af56169c3d5f32ea2747[m[33m ([m[1;33mtag: [m[1;33mv0.3.036[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 09:13:05 2021 +0100
+
+    Bump version
+
+[33mcommit 94dfd544fd03ce97ca466786eef56932c1609385[m
+Merge: 5f80035 20da3f6
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:59:12 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 5f800354ba3a163a5809164eb848ece33db9538f[m[33m ([m[1;33mtag: [m[1;33mv0.3.35[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:58:48 2021 +0100
+
+    Version bump
+
+[33mcommit 20da3f6901c55ba76b3b12c7ea7ce95ec8740924[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:53:26 2021 +0100
+
+    Update release.yml
+
+[33mcommit 0d1bd2f6f7238ccecb45e9d37d943ec3578d9adf[m
+Merge: c6ebd80 32140b5
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:44:42 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit c6ebd80e0c8a0f162e747eee60ae2acc921c9120[m[33m ([m[1;33mtag: [m[1;33mv0.3.34[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:44:15 2021 +0100
+
+    Version bump
+
+[33mcommit 32140b5701f62eb481e3a5b1eef7a621a2e53c61[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:39:04 2021 +0100
+
+    Update release.yml
+
+[33mcommit 007d6e34e492ec1fffc45163209514168bb7a1b6[m[33m ([m[1;33mtag: [m[1;33mv0.3.033[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:31:01 2021 +0100
+
+    v0.3.032
+
+[33mcommit cb9662d70c61ca4875e63344514d9360e27848bb[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 18 08:26:01 2021 +0100
+
+    Update release.yml
+
+[33mcommit 67f1f1c5497c49b7a230c39c1bd035537578663c[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 22:08:11 2021 +0100
+
+    Update release.yml
+
+[33mcommit 8613d0df03d5f24bddd6e1127a9eb711e891663a[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 21:38:45 2021 +0100
+
+    Update release.yml
+
+[33mcommit d3c211f5c7a598db5fce9af39ab3dbd89ccc9f8f[m[33m ([m[1;33mtag: [m[1;33mv0.3.032[m[33m, [m[1;33mtag: [m[1;33mv0.3.031[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 21:23:51 2021 +0100
+
+    Version bump
+
+[33mcommit d3d37f5889fe561ae9189087836899d14001f7f3[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 21:19:52 2021 +0100
+
+    Version bump
+
+[33mcommit 0d9b6e27200f5625dbdc2c2b2810c70733fd29d2[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 21:18:38 2021 +0100
+
+    Update release.yml
+
+[33mcommit e776511723cce2d7547c812739e096f0f789f82e[m[33m ([m[1;33mtag: [m[1;33mv0.3.030[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 09:18:35 2021 +0100
+
+    Update release.yml
+
+[33mcommit e1912d7bb2c5b53c6eb7f0295fc2714f4ae7fd1b[m[33m ([m[1;33mtag: [m[1;33mv0.3.029[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:46:49 2021 +0100
+
+    Update release.yml
+
+[33mcommit aa6b53f1396cb2e387a339f12316d639f5a6fdd1[m[33m ([m[1;33mtag: [m[1;33mv0.3.028[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:27:14 2021 +0100
+
+    Add [default_envs] to platformio.ini
+
+[33mcommit 38205d0e1d379d3d77fc0b5b5f1ab4ffb282135c[m[33m ([m[1;33mtag: [m[1;33mv0.3.027[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:08:09 2021 +0100
+
+    Update release.yml
+
+[33mcommit c3cc4a61c84c029d4479111cc36c7983b8654a3f[m[33m ([m[1;33mtag: [m[1;33mv0.3.026[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:05:53 2021 +0100
+
+    Update release.yml
+
+[33mcommit 078e755538b2e812ddbbb0f69b0f94a13bc1f9a1[m
+Merge: 3917afb dc19129
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:03:50 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 3917afb6e48fd1aa98bae46795739f9755af9a89[m[33m ([m[1;33mtag: [m[1;33mv0.3.025[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 08:03:21 2021 +0100
+
+    Update release.yml
+
+[33mcommit dc19129a75502ead84ff5b40c37b7000f66399a8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 07:58:57 2021 +0100
+
+    Update release.yml
+
+[33mcommit ae165c0c5dce3a132dfaea073e8ee4adfe5114bd[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 17 07:57:17 2021 +0100
+
+    Update release.yml
+
+[33mcommit ee006197e6b5bb720009f9da00169f5101cc82e8[m[33m ([m[1;33mtag: [m[1;33mv0.3.024[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 22:56:38 2021 +0100
+
+    Version bump to v0.3.024
+
+[33mcommit 5978d269ba08e4ab8fdd701513af3cd596bc5bd6[m
+Merge: 8d2fe95 93c2112
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 22:54:42 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 8d2fe951f6b7c43ddc051063b82ef0563fdff38e[m[33m ([m[1;33mtag: [m[1;33mv0.3.023[m[33m)[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 22:54:08 2021 +0100
+
+    Version bump to v0.3.023
+
+[33mcommit 93c21124ec344561a0c1302f90d9de9854ef3493[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 22:53:18 2021 +0100
+
+    Create release.yml
+
+[33mcommit e1d7991c22f154c2a3241826f62243b7d6bd33f3[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 21:33:39 2021 +0100
+
+    Update issue templates
+
+[33mcommit 9c079142255f1d17dc6886f4bd34f0ebc418574c[m
+Merge: 0ace7cc a6868b5
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 21:01:25 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 0ace7cc6e4ea058d9dadc57696eb35bfc13cfc6b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 20:57:38 2021 +0100
+
+    Modify platformio.ini
+
+[33mcommit e4dd0625d039fde60712df91548ea81f4c9d3406[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 20:28:40 2021 +0100
+
+    Fix typo
+
+[33mcommit 4be4f35a1bb8a27ca35a9eec79f1cefaf74bbe2a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 20:28:19 2021 +0100
+
+    Add ENABLE_PIN for sensor
+
+[33mcommit 3869551921757b088c3ddcfc9b6bb20b97769e17[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 15 20:27:34 2021 +0100
+
+    Increase long button press to 300ms (from 200ms)
+
+[33mcommit a6868b5a2641f9cd12c151c65d83c0a9da9e5519[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Nov 14 15:34:27 2021 +0100
+
+    Update platformio.yml
+
+[33mcommit 37567bc74076bd5893a75e3a5b71a4f345d5573d[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Nov 14 14:00:27 2021 +0100
+
+    Version bump
+
+[33mcommit 0bd60a8b7603fffe8877a310f7f20c830e100fe1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 14 13:20:27 2021 +0100
+
+    Add ENABLE_PIN Reserv. for future to enable sensor
+
+[33mcommit 466e101ff0e6a8853db95fee7fbcad8e385c5c3d[m
+Merge: 216ed00 a53c9c3
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 21:46:23 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 216ed004fbe329f5a9beb3bff058b4a6ed3aecd7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 21:46:16 2021 +0100
+
+    Refactor e improvements hostName
+
+[33mcommit a6f5cdaff220f4f113c30d0cfe73838a781b2218[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 21:14:38 2021 +0100
+
+    Fix BLE Enable menu
+
+[33mcommit a53c9c3614b162d838e6ada95458ee91762f63ad[m
+Merge: 02048aa ae970b6
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 16:36:15 2021 +0100
+
+    Merge pull request #23 from melkati/Feature-Webpage
+    
+    Feature webpage
+
+[33mcommit ae970b6904e756c1cf6a590e08001a3a98507bbf[m
+Merge: ab95b12 1fa8c9b
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 15:49:54 2021 +0100
+
+    Merge branch 'master' into Feature-Webpage
+
+[33mcommit 1fa8c9b40b1b6e1355b7a05e9c96691432962acf[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 15:34:43 2021 +0100
+
+    Version bump
+
+[33mcommit 02048aa233d3f2dac07f7d07841f1909497706b3[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 14:33:36 2021 +0100
+
+    Version bump
+
+[33mcommit 82d0c7923723fd2de0453554816cbf8de6c9a4a7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 14:32:50 2021 +0100
+
+    Add some power consumption optimizations
+
+[33mcommit f2aceaeb682adb5ad1eaa7f5ecd40115c0275f98[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 13:05:15 2021 +0100
+
+    Minor BLE fix
+
+[33mcommit aa4021bb7e3295f75a24a34f1bae7905a0f26b0d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 11:23:36 2021 +0100
+
+    Set sensors library debug mode to false
+
+[33mcommit e74e853fe6d514dabbc0ad7e82a445e7cf85a632[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Nov 13 11:22:57 2021 +0100
+
+    Fix reboot on BLE init
+
+[33mcommit c00c149660deb410552aa7bf2b4ff8e3a837361e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 11:55:23 2021 +0100
+
+    Fix typo in menu
+
+[33mcommit 6352b8389f2d48d0705d849f9613af75a6880310[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 08:25:18 2021 +0100
+
+    Version bump to v0.3.12
+
+[33mcommit bb35bc5723d235a95b6845afa6d44ce02684dc5e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 08:24:22 2021 +0100
+
+    Minor mod in Display Config Menu
+
+[33mcommit e12fbfec536fd62f0e50e4fb2fe8592f202b9c5b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 08:19:19 2021 +0100
+
+    Add functionality displayOffOnExternalPower
+
+[33mcommit 1df15d44cdb64b014582247e95ebee978556b704[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 07:35:40 2021 +0100
+
+    Add funcionality automatic display off
+
+[33mcommit 5fae5c80ebadfcaa82b6f91e28db0422afeb1d1a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 05:59:40 2021 +0100
+
+    Fix merge
+
+[33mcommit 6dfb64e0a20b57b2191f6a9668a7606b816beaf4[m
+Merge: 2b2c636 b303de7
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Nov 12 05:38:30 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 2b2c6360b7aa0f858fb008e5aa0e605a302d028a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 23:44:40 2021 +0100
+
+    Add timeToDisplayOff menu prefs (no functionality)
+
+[33mcommit b303de7cd059ddd1c2df224783ea97ef3e657973[m
+Merge: 898dc9c 1c39f91
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 23:30:05 2021 +0100
+
+    Merge pull request #22 from melkati/WiFiCredentials-Menu
+    
+    Add WiFi credentials config to menu/preferences
+
+[33mcommit 1c39f91f1c89a45dcef1d2accdc6fd7e5f368682[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 23:25:47 2021 +0100
+
+    Add WiFi credentials config to menu/preferences
+
+[33mcommit 898dc9cf05028e582da8c852206fc1812e31a0de[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 20:07:21 2021 +0100
+
+    Update README.md
+
+[33mcommit b3c6ae69f36bd078d8c067741859c6d804954e27[m
+Merge: af2e0aa 5876636
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 19:57:21 2021 +0100
+
+    Merge branch 'master'
+
+[33mcommit 5876636e8b81fa662f2b81c61e72f48dfb568a67[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 19:11:56 2021 +0100
+
+    Update README.md
+
+[33mcommit af2e0aa93baf42a36c1330efc0a5954612bc75f8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 18:49:00 2021 +0100
+
+    Adjust platformio.ini for local
+
+[33mcommit d05e3268e369027ffb3265dca8565ae6389acb98[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 09:07:59 2021 +0100
+
+    Fix for BatterySense
+    
+    Add library  https://github.com/rlogiacco/BatterySense.git to platformio.ini
+
+[33mcommit 2843561c435ffeb4aee590c54cc093610e9a64d0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Nov 11 08:57:12 2021 +0100
+
+    Fix menu typos
+
+[33mcommit d1a2ffe28aaf886324fe330eca87d77bc50deb2b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 21:59:41 2021 +0100
+
+    Clean up CO2_Gadget_Preferences.h
+
+[33mcommit 60ec7301072168818c1ddcc208c825014d2c36fb[m
+Merge: 7935de7 13a77db
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 21:54:10 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 7935de7f6b93f8ac75fdb3d38790990ce36f86a7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 21:53:55 2021 +0100
+
+    Fixes to Batterysense and Menu
+
+[33mcommit 13a77db1fff14428093b4e01de8a0eb36df72e73[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 21:27:23 2021 +0100
+
+    Update .gitignore
+
+[33mcommit 53dafe34feeb0f3a2d2062321c3008009cfadab9[m
+Merge: a4b553e 792f0a3
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 20:48:43 2021 +0100
+
+    Merge pull request #21 from melkati/BatterySense
+    
+    Improve battery measurements (Battery sense)
+
+[33mcommit 792f0a3f777ac373abb4f56135aa19452d0b53b4[m
+Merge: e5781ff a4b553e
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 20:38:15 2021 +0100
+
+    Merge branch 'master' into BatterySense
+
+[33mcommit a4b553ee4060afdef36477b49501c6a91af026aa[m
+Merge: f6f26dd 7ca6918
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 20:25:38 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit f6f26dd4810ea626046244eee92ac0af7c5b1060[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Nov 10 20:25:27 2021 +0100
+
+    Add MQTT Credentials
+
+[33mcommit 7ca69187fe6aa2d1ddc47609d7b057dbbaedb1ef[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 21:00:41 2021 +0100
+
+    Bump version
+
+[33mcommit bb5124f1948018044f889841df6b239859d71997[m
+Merge: 8ea5788 ada1510
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 20:58:42 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 8ea5788e32044a235093da9beca49941829edcb7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 20:53:00 2021 +0100
+
+    MQTT menu config, fixes and improvements to MQTT
+
+[33mcommit ada1510db8d5fbba2a2c3dba8e7f3afccefc211d[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 10:20:12 2021 +0100
+
+    Update platformio.ini
+
+[33mcommit f7640ea7d18803ab8f047863ad1f8b9ca343da5c[m
+Merge: 3f228f6 219cfbb
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 10:17:18 2021 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 3f228f6d16f4d7a1b5bb65081586dc0f13c1a012[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 10:11:22 2021 +0100
+
+    Fix .gitignore
+
+[33mcommit 219cfbb69ac7aeebda2d4a19e57f255ad1945967[m
+Merge: 4299df1 6f2025c
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:56:20 2021 +0100
+
+    Merge pull request #20 from melkati/mqttReconnect
+    
+    Mqtt reconnect and update README.md
+
+[33mcommit 6f2025c503b738680c2c801e9e754d8ce9ae2aa8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:50:06 2021 +0100
+
+    Update README.md
+
+[33mcommit 694439c17abfa4817cc691ef318d9c360dcf3d11[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:48:54 2021 +0100
+
+    Fix names in initWifi()
+
+[33mcommit 4299df164a59f7005e2e96c4a4ec9c88a8edc290[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:38:24 2021 +0100
+
+    Update platformio.ini
+
+[33mcommit 9064ee8f3f2c1a15abee16313432f5d8d1ff54ce[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:35:54 2021 +0100
+
+    Update .gitignore
+
+[33mcommit d118f0a7f367bee30523f302814f7c478f5aab76[m
+Merge: 67df8cd 42bb02e
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:34:33 2021 +0100
+
+    Merge pull request #19 from melkati/mqttReconnect
+    
+    Improvements to mqttReconnect()
+    Closes #18
+
+[33mcommit 42bb02eb7bbd4c318b616948d8180321976e19d4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 09:22:43 2021 +0100
+
+    Improvements to mqttReconnect()
+
+[33mcommit 67df8cda24075cd34c46c9e1320709b964427cd6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Nov 8 07:47:38 2021 +0100
+
+    Connection to MQTT broker: Max one try each 5 secs
+
+[33mcommit 0372650fd87bff7f3d9fe92febe14f9eba832e55[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 19:28:14 2021 +0100
+
+    Add platformio.ini to .gitignore
+
+[33mcommit 501683f6019a9e802e53a0be0b9b2eba9ff9401a[m
+Merge: d4e3f37 58e77c9
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 14:16:39 2021 +0100
+
+    Merge pull request #17 from hpsaturn/master
+    
+    Some minors project config improvements
+
+[33mcommit d4e3f373dccb4e739f02e2c1fd34bf2b9e8655ef[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 14:10:56 2021 +0100
+
+    Add .vscode to .gitignore
+
+[33mcommit 58e77c973eab11e93fad8169c74bc235f6521a97[m
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:43:36 2021 +0100
+
+    removed custom upload and monitor (better auto for other OS)
+
+[33mcommit f0bf9489bb991a20e12f3b5d68ba78411c8d2bd9[m
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:37:35 2021 +0100
+
+    removed unnecesary and conflictive directory, .vscode
+
+[33mcommit 3bf271340b5aac0c6a865f8ab34f412bcba976aa[m
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:32:56 2021 +0100
+
+    resync with upstream
+
+[33mcommit ea3c2ace398c98b4ed69bf53402bfbde0cc85ba2[m
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:30:44 2021 +0100
+
+    removed file that on original repo dont exist (?)
+
+[33mcommit bc3186ce58bf9f98856d23d6644771016eb5e72f[m
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:28:16 2021 +0100
+
+    unsaved file from merge
+
+[33mcommit e5781ff2c019b4d73e423ad399dc890eda8695d1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 13:27:09 2021 +0100
+
+    User can set battery full and empty values o menu
+
+[33mcommit 449a8a30fe61c0febce7e9145f16a3317065b0b8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 13:25:55 2021 +0100
+
+    Battery options save to NVR
+
+[33mcommit 1abb671baa0165d2aed965e336040c3f434579db[m
+Merge: 14e95f3 130d1c8
+Author: Hpsaturn <hpsaturn@gmail.com>
+Date:   Sun Nov 7 13:25:40 2021 +0100
+
+    Merge remote-tracking branch 'upstream/master'
+
+[33mcommit 0951f676eba87606387cf32c81c0dce295b63c18[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 12:41:02 2021 +0100
+
+    Add adjust vRef from menu calibrate battery
+
+[33mcommit 94ee498f920eebe2ebf626b9e8487c8b1efb7e0f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 12:40:21 2021 +0100
+
+    Add library BatterySense
+
+[33mcommit ab95b12be784bed2fdcc73af4b50a6ffa1a33d66[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Nov 7 10:18:22 2021 +0100
+
+    Add new webpage (concept draft) with CSS gauges
+
+[33mcommit aec3393692c051d9998d0df680e621a214e5f535[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Nov 2 21:19:31 2021 +0100
+
+    First basic no reloading page
+
+[33mcommit 130d1c815c48a8ad2fcb1366e5fdcb74d08a435d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 31 09:17:09 2021 +0100
+
+    Enable/disable BLE from menu
+
+[33mcommit 1512e4c4146a96d37be7d9b355812c4bd8daa600[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 21:46:47 2021 +0200
+
+    Rev update
+
+[33mcommit 278b535799a8a8c8a834bcffbca546af3bac1714[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 21:44:24 2021 +0200
+
+    Better IP info screen if disconnected/disabled
+
+[33mcommit 467e5ae7510cb4ac5438e38d5e32bf9558050626[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 21:24:49 2021 +0200
+
+    Ability to enable and disable WiFi from menu
+
+[33mcommit c1b14c80f44cb8b3d4f571da14db09930a7e8f4c[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 21:08:40 2021 +0200
+
+    Ability to enable and disable MQTT from menu
+
+[33mcommit 32ca6c43f75161e1e60e5229dde110b58c36ccb7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 20:13:29 2021 +0200
+
+    Show IP address in information screen
+
+[33mcommit 8941609b1135611f9dfb2e617c84d03c3d1e7946[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 20:07:19 2021 +0200
+
+    Save activeBLE activeWIFI activeMQTT in preferencs
+
+[33mcommit 930916c55a3f2eee45b13a6553dd714e4d582d5a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 14:10:59 2021 +0200
+
+    Separate buttons funct. into CO2_Gadget_Buttons.h
+
+[33mcommit 8ecf93a0dd2be29850f51b746acee44e914510db[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 13:39:20 2021 +0200
+
+    Some code cleaning
+
+[33mcommit 197c44f5daf31a939da6107732f0bc674d9c7769[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 09:50:07 2021 +0200
+
+    Move global variables to main file
+
+[33mcommit ee20c81f5226b9fd7746985aec03108f8b606dc0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 09:17:48 2021 +0200
+
+    Fixed hostName
+
+[33mcommit 35872bac29a68c0e99a489cdb6d766cce83bfb0b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 30 09:14:48 2021 +0200
+
+    Renamed button_init() as buttonsInit()
+
+[33mcommit 6d9bd260009d4c22aae048dd3579ac150f216a32[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 20:55:38 2021 +0200
+
+    Fix issue environment variables and credentials.h
+
+[33mcommit 6899494744c4c6262efa16ab83008145ed546052[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 20:05:30 2021 +0200
+
+    Fix dupl. definition of const char *mqtt_server
+
+[33mcommit 5bdcbd99197793c5797710c5362600f6d7ddcc37[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 16:54:36 2021 +0200
+
+    Version update to 0.2.001
+
+[33mcommit 1fe5b8eeadb3e5dc005ab2ca69c20b5577fdc35b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 16:45:10 2021 +0200
+
+    Revision update
+
+[33mcommit 012e9121debb13a5358b2ada8d4f15abe2fc24da[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 16:42:20 2021 +0200
+
+    Limit WiFi connection tries before disabling WiFi
+
+[33mcommit c8648f7514331fdc88a28b5e4cd307d3cfcd057f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 16:26:25 2021 +0200
+
+    Refactoring sensors to => CO2_Gadget_Sensors.h
+
+[33mcommit 4db6ca6eb20857cc7f3ad4fe96430452572a42f5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 16:09:18 2021 +0200
+
+    Get rid of credentials.tpl.h
+
+[33mcommit c447828bce33e4546817eac892de30261c3495eb[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 15:29:22 2021 +0200
+
+    Refactor BLE
+
+[33mcommit 220d2d089170c265bcdfb75b15803f63a852a509[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 15:15:50 2021 +0200
+
+    Get rid of SUPPORT_BLE, SUPPORT_WIFI, SUPPORT_MQTT
+
+[33mcommit c79b23b89bd13366cf4736a0c100e3713d5321dd[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 15:14:07 2021 +0200
+
+    Refactoring to enable BLE, WiFi and MQTT from menu
+
+[33mcommit 8b0417dd82cbac8437f54edd11ac957c731b0f89[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 29 08:19:41 2021 +0200
+
+    WiFi credentials in system enviroment variables
+
+[33mcommit 96ce1ea47981046b482f999cbb63144a1287cb66[m
+Merge: bc3dfa5 a228e29
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 21:11:12 2021 +0200
+
+    Merge master https://github.com/melkati/CO2-Gadget
+
+[33mcommit bc3dfa5e3db60e7125918342f6168d998821a4e1[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 21:09:06 2021 +0200
+
+    Show IP adress at startup
+
+[33mcommit d67148883d02989a09d019c715e33493e15c612f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 21:08:39 2021 +0200
+
+    Fix credentials file after last merge
+
+[33mcommit a228e2961d284d0e398c58eaca6d6df079a6badf[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 21:00:03 2021 +0200
+
+    Update README.md
+
+[33mcommit b86ee1914d49f04ba41b58bbce6bf8cb322123c9[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 20:46:29 2021 +0200
+
+    Update README.md
+
+[33mcommit 19b8b71d734d72222f5ace5112a2547074f67604[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 19:43:38 2021 +0200
+
+    Update credentials.tpl.h
+
+[33mcommit 8be979452a1ebd20044e1292f7e9483fc3bc76a9[m
+Merge: 3a899cc 7458631
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 19:09:20 2021 +0200
+
+    Merge pull request #15 from melkati/Feature-wifi
+    
+    Feature wifi
+
+[33mcommit 74586313d06c82a140cf2e1f034cea876cb423ff[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 16:43:55 2021 +0200
+
+    Update README.md
+
+[33mcommit 3aa8effaa820cd36b63dc9fe0be006ec984165ff[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 11:11:39 2021 +0200
+
+    Improvements and fixes to MQTT
+
+[33mcommit 010f28524e8310ffcaa9968c3024a70396761890[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 28 11:09:28 2021 +0200
+
+    Improvements and fixes to MQTT
+
+[33mcommit cf4e736c51650f12afe6101884482b28b4b380d9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 27 22:31:47 2021 +0200
+
+    Refactoring. WiFi & BLE fixes and improvements
+
+[33mcommit 12a99a31417477a4d5612f4b7ed37023da565523[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 27 15:16:58 2021 +0200
+
+    Fix: BLE and WiFi working at same time (testing)
+
+[33mcommit babb72fe296be136cd506111ef8b3209f36a3095[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 27 11:53:41 2021 +0200
+
+    Define SUPPORT_WIFI & SUPPORT_MQTT
+
+[33mcommit ab84895b5fa3a4beaf074a5129730da4b9dfc61d[m
+Merge: 77c32cf 757f75f
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 27 11:52:03 2021 +0200
+
+    Merge branch 'Feature-wifi' of https://github.com/melkati/CO2-Gadget into Feature-wifi
+
+[33mcommit 77c32cfe77d144e547037536696e25514e776142[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 27 11:51:12 2021 +0200
+
+    Fixes and improvements to WiFi and MQTT
+
+[33mcommit 757f75f83875abca86a42368672a1afb41f341f1[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 26 15:06:11 2021 +0200
+
+    Update README.md
+
+[33mcommit 247c2bba26694d6cfd208efaaffb99279068c9ea[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 26 15:03:57 2021 +0200
+
+    Update readme BLE/WIFI
+
+[33mcommit 08efddb71769d0815aa0844c160e48eec200e243[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 26 14:24:26 2021 +0200
+
+    WiFi & MQTT working alone (without BLE) choose one
+
+[33mcommit 29f376da5ed12a6f5e391a52b3ff7ccbea41e1c0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 26 07:53:49 2021 +0200
+
+    Remove MultiWifi
+
+[33mcommit 654ca3fab431eb97fc78dd18241de698384ee9e8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 26 07:52:51 2021 +0200
+
+    Remove MultiWifi
+
+[33mcommit 3a899cc0b2b14b9722b6b6181676173d091e4b8c[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 21:49:08 2021 +0200
+
+    Update README.md
+
+[33mcommit e7dc61fbd8282426ce5edb1844f2a539d7a4a47c[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 21:21:13 2021 +0200
+
+    Update README.md
+
+[33mcommit a664cd60d441d4b4f9dbd414f734f748ea5f2480[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 21:17:29 2021 +0200
+
+    Update README.md
+
+[33mcommit 29906f6846770cbb6edbc71156050e17291aecad[m
+Merge: 3b826de 3567517
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 20:57:19 2021 +0200
+
+    Merge pull request #14 from melkati/Feature-wifi
+    
+    Clang-format protect comments (temporary fix)
+
+[33mcommit 3567517f4e3ee213a1c6108adb539b4d8cfec05b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 20:39:31 2021 +0200
+
+    Clang-format protect comments
+
+[33mcommit 59f630b40c6b2b1daa4f6f43ab4bdf497a3a7860[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 20:37:34 2021 +0200
+
+    Clang-format protect comments (temporary solution)
+
+[33mcommit 1d25055ed7e68a794852907f881ab82d8b7a2ab4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 25 20:16:55 2021 +0200
+
+    Fix CO2_Gadget_WIFI.h
+
+[33mcommit 3b826de327fbc3411570129463f7669bae88e2c8[m
+Merge: ee860dd 3de2ffe
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 19:38:09 2021 +0200
+
+    Merge pull request #13 from melkati/development
+    
+    Removed #define SUPPORT_ARDUINOMENU
+
+[33mcommit 3de2ffec2dad4af52c5af516c1b649d5d924cbb6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 19:28:29 2021 +0200
+
+    Removed #define SUPPORT_ARDUINOMENU
+
+[33mcommit 3ce42ef2b73739a90216940401924974b4fb1151[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 16:37:29 2021 +0200
+
+    Add version + revision variables
+
+[33mcommit 6eb63a0cb983077819f0676069db588f64d56407[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 13:23:48 2021 +0200
+
+    Update README.md
+
+[33mcommit ee860dd6c0c78ad17a72b88a3bfbfe6b9cf8cd6d[m
+Merge: 8cbec59 4e606a5
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 09:55:36 2021 +0200
+
+    Merge pull request #12 from melkati/development
+    
+    Fixed main screen overwrite menu
+
+[33mcommit 4e606a52ae6aaa54850f2f77b43f8feaf8b966d4[m
+Merge: 22e8c7e b895ac0
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 09:52:11 2021 +0200
+
+    Merge branch development github.com  development
+
+[33mcommit 22e8c7e88a8957838272a435dfaf72372e666dc4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 09:48:38 2021 +0200
+
+    Fixed platformio.ini
+
+[33mcommit b895ac010b983a4efd9509ab788d1f7ea40ebbc2[m
+Merge: 2f10dd0 8cbec59
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 09:46:01 2021 +0200
+
+    Merge branch 'master' into development
+
+[33mcommit 2f10dd0a03d39ec14539b8e5e60485e6740e1c1c[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 23 09:04:31 2021 +0200
+
+    Fixed main screen overwrite menu
+
+[33mcommit a439501c85134a77c70d8306f60c901d289fc0b2[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 22 22:25:48 2021 +0200
+
+    Organize defines for PlatformIO and Arduino
+
+[33mcommit 8cbec59d81329c3f27a0bfa15d4038a24e175c7c[m
+Merge: da2a005 0ab6db6
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Oct 22 20:47:31 2021 +0200
+
+    Merge pull request #11 from melkati/development
+    
+    Menu improvements
+
+[33mcommit 3e364a793a85387313bd325760f5c14351988066[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 22 20:45:34 2021 +0200
+
+    Battery field not selectable
+
+[33mcommit 0ab6db6d6f226d2fdcfb20cc6f3b3dcea8f5211d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 22 20:37:51 2021 +0200
+
+    Menu improvements
+
+[33mcommit da2a005ef184b8a2c377e20f542bf48df41f524b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 22:19:33 2021 +0200
+
+    Fixed #define ST7789_DRIVER in User_Setup.h
+
+[33mcommit a6ca50f0f4f4d4c5a168a17c7f17571b8d63f9d8[m
+Merge: 8cbfeab ee3804c
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 21:07:24 2021 +0200
+
+    Merge pull request #10 from melkati/Use-CanAirIO-Air-Quality-Sensors-sensorslib
+    
+    Use CanAirIO Air Quality Sensors Library (sensorslib)
+
+[33mcommit ee3804c071e4de826fa65d25e4bc9125884d08fb[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 20:57:00 2021 +0200
+
+    Set CORE_DEBUG_LEVEL=0
+
+[33mcommit 743ca4554c37c4aae77d7afba154e24bb1e2684a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 16:49:59 2021 +0200
+
+    Add TFT configuration in platformio
+
+[33mcommit 24ee5513b5bdb5d22cc18d394933c33aaf1f48c9[m
+Merge: 5968d25 345c1d9
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 16:20:21 2021 +0200
+
+    Add TFTBrightness
+
+[33mcommit 5968d25659c536f910f0088180f12c2fe252ad05[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 21 14:55:25 2021 +0200
+
+    Fixes for SCD4x
+
+[33mcommit 345c1d9f4ca7702778999ac29ae5136cbf8e9919[m
+Merge: d181604 8cbfeab
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 21:55:51 2021 +0200
+
+    Merge branch 'master' into Use-CanAirIO-Air-Quality-Sensors-sensorslib
+
+[33mcommit d181604e2d1875d314e07c4eadfd27cae1c3e02f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 21:50:39 2021 +0200
+
+    Use https://github.com/melkati/TFT_eSPI.gig
+
+[33mcommit 8cbfeab2544d60e630ef7384d16eb550081d4d70[m
+Merge: 0fb8c5f f3010e5
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 21:00:27 2021 +0200
+
+    Merge pull request #8 from hpsaturn/ci_badge_platformio
+    
+    build badge for CI with PlatformIO
+
+[33mcommit f3010e50e3a8d727bee207be456dc8b455d74b08[m
+Author: Antonio Vanegas <hpsaturn@gmail.com>
+Date:   Wed Oct 20 19:18:39 2021 +0200
+
+    added build badge for CI with PlatformIO
+
+[33mcommit 14e95f316fef89fbfde98843eeae16eae22a1cef[m
+Merge: 3134357 c26633f
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 16:06:02 2021 +0200
+
+    Merge pull request #7 from hpsaturn/ci_workflow_build_upload
+    
+    CI workflow for firmware test and upload
+
+[33mcommit 0fb8c5f35c0c67a8e6835cbb72a5a792f3a62668[m
+Merge: aef4efa 00dd2d9
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 16:06:02 2021 +0200
+
+    Merge pull request #7 from hpsaturn/ci_workflow_build_upload
+    
+    CI workflow for firmware test and upload
+
+[33mcommit c26633f0d05196382d534179edf789a1c86371f3[m
+Author: Antonio Vanegas <hpsaturn@gmail.com>
+Date:   Wed Oct 20 13:39:37 2021 +0200
+
+    testing new CI workflow for firmware test and upload
+
+[33mcommit 00dd2d98105b32eb0941bd227a6ab6cf93d7b960[m
+Author: Antonio Vanegas <hpsaturn@gmail.com>
+Date:   Wed Oct 20 13:39:37 2021 +0200
+
+    testing new CI workflow for firmware test and upload
+
+[33mcommit 3134357f372c470fb2215913ee1ef2d1b607348a[m
+Merge: 1d05020 f56d59c
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 11:06:53 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit aef4efa4ec3cc232d45f58b648c6f7dd8726d11c[m
+Merge: 0e85668 60e8b3f
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 11:06:53 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 1d05020893fe9ca9e0c8e29001515d6050be8e8a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 11:06:38 2021 +0200
+
+    Mod #include "CO2_Gadget_Menu.h" Arduino IDE comp.
+
+[33mcommit 0e856686e1bb47e6023157b58f90b9c4eeb95ef9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 20 11:06:38 2021 +0200
+
+    Mod #include "CO2_Gadget_Menu.h" Arduino IDE comp.
+
+[33mcommit f56d59cf783b94d2d12281d8e9f923ce935ab943[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:46:11 2021 +0200
+
+    Delete Bootlogo directory
+
+[33mcommit 60e8b3f50b9e7b90818877aafcc1a1d69eea7703[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:46:11 2021 +0200
+
+    Delete Bootlogo directory
+
+[33mcommit a8c11ad905b178701378cb97565a2d5971521bdc[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:37:22 2021 +0200
+
+    Update README.md
+
+[33mcommit 148696f9779d781375a438da1b12e0c730c7ba50[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:37:22 2021 +0200
+
+    Update README.md
+
+[33mcommit 3e8ed2283126cc66d94763614ff1d8910f30f5c8[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:35:18 2021 +0200
+
+    Update README.md
+
+[33mcommit fa834980dd7388053781c52830cce363ade1c50b[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:35:18 2021 +0200
+
+    Update README.md
+
+[33mcommit f5a13b7958913f60e0d7bf3322dbb49cc3d20be0[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:34:40 2021 +0200
+
+    Update README.md
+
+[33mcommit fe4fc34725fb56e8a58cfa95de614b38596c9b02[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:34:40 2021 +0200
+
+    Update README.md
+
+[33mcommit 7f3a57c11dffc3f492dbb0cafdb2ddf74552670e[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:19:11 2021 +0200
+
+    Update README.md
+
+[33mcommit ccc0343c7ab26cf37f4c7a91498f6ec0b294d6ef[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 22:19:11 2021 +0200
+
+    Update README.md
+
+[33mcommit 69526522ec5ed613a852f04e02c7abe1ce11b2cc[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 21:37:39 2021 +0200
+
+    Create first README version
+    
+    Heavily based on CanAirIO sensorlib
+
+[33mcommit 5dff63b3baf44fa3a1b7f7d285c112e4c0d01a5f[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 21:37:39 2021 +0200
+
+    Create first README version
+    
+    Heavily based on CanAirIO sensorlib
+
+[33mcommit 5700d83db1e2ca45747a4504c5a9221803c9460b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:29:56 2021 +0200
+
+    Implement #ifdef DEBUG_ARDUINOMENU
+
+[33mcommit 0d8750bff9901a26ddc8611ae1dbcaa3f5964351[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:29:56 2021 +0200
+
+    Implement #ifdef DEBUG_ARDUINOMENU
+
+[33mcommit c28ad13fd6b88f4859c526042863989be03f5f9a[m
+Merge: 84c8cbc 415c5b4
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:11:36 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 9ca618e067d65fbf36ebd4f843cbe31fb11b3cc6[m
+Merge: 31362cd ea9db65
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:11:36 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 84c8cbc343f185a62dadddd840082e39c2c63d3a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:11:26 2021 +0200
+
+    Use https://github.com/melkati/TFT_eSPI.git
+
+[33mcommit 31362cd5e253ad360e653f91ba1682b7ca30d054[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 19:11:26 2021 +0200
+
+    Use https://github.com/melkati/TFT_eSPI.git
+
+[33mcommit 415c5b470510297d63c6be2b16555751b4f7600f[m
+Merge: 1fdcb1a 5a0105e
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 18:24:37 2021 +0200
+
+    Merge pull request #6 from melkati/TFT-Brightness
+    
+    TFT-Brightness
+
+[33mcommit ea9db65b4ad59dfb3377874144e86a6060dd7359[m
+Merge: aeb985e dd47116
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 18:24:37 2021 +0200
+
+    Merge pull request #6 from melkati/TFT-Brightness
+    
+    TFT-Brightness
+
+[33mcommit 5a0105e664c329d3aa16b211c95c95eaf228eef4[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 18:18:29 2021 +0200
+
+    TFT-Brightness
+
+[33mcommit dd47116b3e6650e33f1d89ffd42a3db049ae19d9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 18:18:29 2021 +0200
+
+    TFT-Brightness
+
+[33mcommit 1fdcb1adf647b07606cb9eb4ba8a509e2df19614[m
+Merge: 72c9d9c 1597267
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:46:33 2021 +0200
+
+    Merge pull request #5 from melkati/TFT-Brightness
+    
+    Implemented TFTBrightness
+
+[33mcommit aeb985e4df575314a2f896a1ee496f4400faae21[m
+Merge: 2e6adb5 064800b
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:46:33 2021 +0200
+
+    Merge pull request #5 from melkati/TFT-Brightness
+    
+    Implemented TFTBrightness
+
+[33mcommit 1597267844bfc2d9aae357567bf899ca8ae7e7d2[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:44:52 2021 +0200
+
+    Implemented TFTBrightness
+
+[33mcommit 064800b2af0b6961a03b529ce3855690143d05b9[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:44:52 2021 +0200
+
+    Implemented TFTBrightness
+
+[33mcommit 72c9d9cbba488d7d65e61f75a951bf5556894d7b[m
+Merge: 562b686 eb3f115
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:15:48 2021 +0200
+
+    Merge pull request #4 from melkati/add-license-1
+    
+    Add license
+
+[33mcommit 2e6adb522a6fa57068266b81468cbeab177090f3[m
+Merge: 4d0915a 90fea66
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:15:48 2021 +0200
+
+    Merge pull request #4 from melkati/add-license-1
+    
+    Add license
+
+[33mcommit eb3f115541f72bbcc3eb1fe5e8f9b3bcc40de511[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:15:31 2021 +0200
+
+    Add license
+
+[33mcommit 90fea66f24eb9fa6b97c9d59f09e6aef3b7d13f7[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 15:15:31 2021 +0200
+
+    Add license
+
+[33mcommit 65073162889f10ad211b3a59ba19de1e3c1804a8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 13:50:37 2021 +0200
+
+    Fix conflicts. Merge master.
+
+[33mcommit 309efe34604da6066a77999152c8e44bdcb29aa5[m
+Merge: 0641833 4d0915a
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 12:07:49 2021 +0200
+
+    Merge branch 'development' into Use-CanAirIO-Air-Quality-Sensors-sensorslib
+
+[33mcommit 064183307e80779339a7ba6e26a42c2e8583f73a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 11:19:05 2021 +0200
+
+    Modified .gitignore exclude Bootlogo folder
+
+[33mcommit 562b686b13e3ec85b11bf0010cc2f0d1499d0736[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 11:09:32 2021 +0200
+
+    Implemented preferences
+
+[33mcommit 4d0915af013d1a872e4efd7a905f3392fe660adc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 11:09:32 2021 +0200
+
+    Implemented preferences
+
+[33mcommit 176be691d37a7a43fad8a7ffb8734442d18295a3[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 10:57:09 2021 +0200
+
+    Impemented save preferences to NVM
+
+[33mcommit 3c3f60a7e0d92a478dcc808b1a23672dc4b088d5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Tue Oct 19 10:57:09 2021 +0200
+
+    Impemented save preferences to NVM
+
+[33mcommit c3b806d32c22d3eb0bbc2e546d8af4ede1e51fa0[m
+Merge: 68310c0 3f19749
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 20:44:48 2021 +0200
+
+    Merge pull request #3 from melkati/ArduinoMenu
+    
+    Calibration working. Battery display fixed.
+
+[33mcommit 667768db42e5fe2de3e169337c2ae869a37c43d1[m
+Merge: 93d7844 fa5bef1
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 20:44:48 2021 +0200
+
+    Merge pull request #3 from melkati/ArduinoMenu
+    
+    Calibration working. Battery display fixed.
+
+[33mcommit 3f1974984dc79b1a4d86420402a7aaa3b97e433e[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 20:19:11 2021 +0200
+
+    Custom calibration functionality
+
+[33mcommit fa5bef16245b111f9a15d1f28a9d01cd8e81b13b[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 20:19:11 2021 +0200
+
+    Custom calibration functionality
+
+[33mcommit d042600e4eb3ac30097991334b8d3563caa04ba5[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 19:16:12 2021 +0200
+
+    doCalibration400ppm working Fix readBatteryVoltage
+
+[33mcommit 26ff887a3c626d08d43d1a262916b0056c6baa25[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 19:16:12 2021 +0200
+
+    doCalibration400ppm working Fix readBatteryVoltage
+
+[33mcommit ac956cf84c20e341d23914064b447978c2fe9603[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 18:50:15 2021 +0200
+
+    Fix readBatteryVoltage()
+
+[33mcommit b2a3f9bdf13a0a316df492d3395103fa0fe04201[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 18:50:15 2021 +0200
+
+    Fix readBatteryVoltage()
+
+[33mcommit 78be8c43bcfba50a2380004411ddebedddd5897a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 11:24:44 2021 +0200
+
+    Fixed buttons changing num value reversed-Genfixes
+
+[33mcommit 8806faa480237ee75d7b744f98a5f40268bf64a2[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Mon Oct 18 11:24:44 2021 +0200
+
+    Fixed buttons changing num value reversed-Genfixes
+
+[33mcommit 68310c010e28c7bb7c3b8874116948964bae3b21[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 17 15:41:14 2021 +0200
+
+    Empty
+
+[33mcommit 93d78445d75f023ad1ad4e68389ebf309cc35abc[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 17 15:40:42 2021 +0200
+
+    Menu skeleton working
+
+[33mcommit d04d2ae2557b63855d793eb7f270c68c6d2b46a0[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 17 15:40:42 2021 +0200
+
+    Menu skeleton working
+
+[33mcommit ba1ff430d41edef65c750af9ae3c845a18a3648d[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 17 12:17:49 2021 +0200
+
+    ArduinoMenu First Time Working
+
+[33mcommit 5b2ea79e0465c2ebfefe12f7c3db512fb42db54f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sun Oct 17 12:17:49 2021 +0200
+
+    ArduinoMenu First Time Working
+
+[33mcommit 7c261177724cc73de49dfef549ceb346d8d068b6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 23:19:11 2021 +0200
+
+    ArdinoMenu First Working
+
+[33mcommit 358e7a1db4b3a88257b64750f319a5979def2251[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 23:19:11 2021 +0200
+
+    ArdinoMenu First Working
+
+[33mcommit d9bd76a57dfdf68909f71add10b7ae55adff2c63[m
+Merge: ab159b0 b1fbdec
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 23:18:46 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into ArduinoMenu
+
+[33mcommit a40f5a25b9eb2b0d05e7514041decb14d07bfdd2[m
+Merge: d5cbb6d e9cf17c
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 23:18:46 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into ArduinoMenu
+
+[33mcommit b1fbdec4c40925e5097c4bf73b45fae6285f48a9[m
+Merge: 209a650 f41f744
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 12:04:57 2021 +0200
+
+    Merge pull request #2 from melkati/Battery-refactory
+    
+    Battery refactory
+
+[33mcommit e9cf17c364328fb57f25ccf3fe3119255e4616d0[m
+Merge: 081b45a 2719ba2
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 12:04:57 2021 +0200
+
+    Merge pull request #2 from melkati/Battery-refactory
+    
+    Battery refactory
+
+[33mcommit f41f744c563df82c28a3d7f3d132372e828f538a[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 12:04:00 2021 +0200
+
+    Battery refactory
+
+[33mcommit 2719ba2c40a3c954e160d7ac3172cb1e88ad41c7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 12:04:00 2021 +0200
+
+    Battery refactory
+
+[33mcommit 209a650bf8e7a269fcfa8c786e12eb0361bada45[m
+Merge: 1086d8a 73c356c
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 11:23:22 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit 081b45a9afdc595fb257976215700c467d466d26[m
+Merge: 1086d8a 1e9d0c2
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 11:23:22 2021 +0200
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget into development
+
+[33mcommit ab159b04a95f6f7bdea1ba5e42e09a49dcce40f6[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 11:22:44 2021 +0200
+
+    Halfway
+
+[33mcommit d5cbb6d99d03d04fccbd78715d00aa861ec97d19[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 11:22:44 2021 +0200
+
+    Halfway
+
+[33mcommit 1086d8a9335a05c7e41826f55588d767644c2966[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 09:58:51 2021 +0200
+
+    Recovering
+
+[33mcommit 26f2f2640ab98e876ed8ba3011679d31b730dc04[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 09:53:27 2021 +0200
+
+    Renamed CO2 Gadget.ino to CO2_Gadget.ino (Arduino IDE doesn't like space in name)
+
+[33mcommit ed365ed1498b65e07001d9e88aabaff76ef6293f[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 09:26:34 2021 +0200
+
+    Halfway
+
+[33mcommit 3f20a18ec10ffcae96777266f73746c897b424f7[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Sat Oct 16 09:26:34 2021 +0200
+
+    Halfway
+
+[33mcommit 1c34f56f61da74bb569ef796973c70cd59f8d755[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 15 21:11:50 2021 +0200
+
+    a medias
+
+[33mcommit fc7713b8d4f09414427681a80fd705380741d2d8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 15 21:11:50 2021 +0200
+
+    a medias
+
+[33mcommit 73c356c52ce1077737fced6f2c34d49736e1ebc3[m
+Merge: 29c7d38 6ded558
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Oct 15 13:12:12 2021 +0200
+
+    Merge pull request #1 from melkati/logomenu
+    
+    added eMariete Logo
+
+[33mcommit 1e9d0c27089874b44a6907edf943d245814006d7[m
+Merge: 29c7d38 6ded558
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Oct 15 13:12:12 2021 +0200
+
+    Merge pull request #1 from melkati/logomenu
+    
+    added eMariete Logo
+
+[33mcommit 6ded55812cc69e7f6bcceb2aab85691a717d3bf8[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Fri Oct 15 13:08:41 2021 +0200
+
+    added eMariete Logo
+
+[33mcommit 6a31300b6cd2635cc50ce8c461b9ddb25eec73c2[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 14 15:19:07 2021 +0200
+
+    Set TTGO_TDISPLAY=1 Use melkati/canairio_sensorlib
+
+[33mcommit 7e3c747520712bb38cb560b9fcbc200a1e54ee75[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 14 11:33:34 2021 +0200
+
+    sensorslib first implemented
+
+[33mcommit 24b97c98aba83058f7eb7987e35849cce8852a16[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 14 10:08:14 2021 +0200
+
+    Remote OLED skeleton
+
+[33mcommit 29c7d380cc4183269a0456b3878b2acb1b5932bf[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 14 09:31:55 2021 +0200
+
+    create development branch
+
+[33mcommit fb79666ab2f4fffbf395ebfde96dbaa13e78c8dd[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Thu Oct 14 08:59:32 2021 +0200
+
+    Renamed CO2 Gadget.ino to CO2_Gadget.ino (Arduino IDE doesn't like space in name)
+
+[33mcommit 2d46aa31c10e1dc8ff1d00d40d0bddd0a15273ca[m
+Author: eMariete.com <melkati@users.noreply.github.com>
+Date:   Wed Oct 13 20:15:53 2021 +0200
+
+    first commit
