@@ -12,8 +12,8 @@ Ticker buzz;
 
 uint64_t lastTimeBuzzerBeep = 0;  // Time of last Buzzer loop
 
-bool downOrangeRange = true;
-bool downRedRange = true;
+bool belowOrangeRange = true;
+bool belowRedRange = true;
 
 void wakeUpDisplay(){
  if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
@@ -56,22 +56,22 @@ void buzzerLoop(){
         lastTimeBuzzerBeep = millis();
 
         if(co2>co2RedRange){
-            if(downRedRange || repeatBuzzer){
+            if(belowRedRange || repeatBuzzer){
                 wakeUpDisplay();
                 buzz.once(0, buzzerRedRange);
-                downRedRange = false;
+                belowRedRange = false;
             }
             return;
-        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) downRedRange = true;
+        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) belowRedRange = true;
 
         if(co2>co2OrangeRange){
-            if(downOrangeRange || repeatBuzzer){
+            if(belowOrangeRange || repeatBuzzer){
                 wakeUpDisplay();
                 buzz.once(0, buzzerOrangeRange);
-                downOrangeRange = false;
+                belowOrangeRange = false;
             }
             return;
-        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) downOrangeRange = true;
+        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) belowOrangeRange = true;
         return;
     }
 }
