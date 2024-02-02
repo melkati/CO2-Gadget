@@ -744,6 +744,43 @@ MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(outputsModeMenu)
   ,EXIT("<Back"));
 
+  #ifdef SUPPORT_BUZZER
+TOGGLE(activeBuzzer, activeBuzzerOffMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
+  ,VALUE("OFF", false,  doNothing, noEvent)
+  ,VALUE("ON", true,  doNothing, noEvent));
+  
+TOGGLE(repeatBuzzer, repeatBuzzerMenu, "Repeat: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ONCE", false,  doNothing, noEvent)
+  ,VALUE("EVERY", true,  doNothing, noEvent));
+
+TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Each: ", doNothing, noEvent, wrapStyle
+  ,VALUE("5 sec.", 5,  doNothing, noEvent)
+  ,VALUE("10 sec.", 10,  doNothing, noEvent)
+  ,VALUE("15 sec.", 15,  doNothing, noEvent)
+  ,VALUE("30 sec.", 30,  doNothing, noEvent)
+  ,VALUE("1 min.", 60,  doNothing, noEvent)
+  ,VALUE("2 min.", 120,  doNothing, noEvent)
+  ,VALUE("5 min.", 300,  doNothing, noEvent));
+
+TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
+  ,VALUE("HIGH", 1500,  doNothing, noEvent)
+  ,VALUE("MED.", 1000,  doNothing, noEvent)
+  ,VALUE("LOW", 300,  doNothing, noEvent));
+
+TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
+  ,VALUE("SHORT", 50,  doNothing, noEvent)
+  ,VALUE("MED.", 100,  doNothing, noEvent)
+  ,VALUE("LONG", 200,  doNothing, noEvent));
+
+MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeBuzzerOffMenu)
+  ,SUBMENU(repeatBuzzerMenu)
+  ,SUBMENU(timeBetweenBuzzerBeepMenu)
+  ,SUBMENU(toneBuzzerBeepMenu)
+  ,SUBMENU(durationBuzzerBeepMenu)
+  ,EXIT("<Back"));
+#endif
+
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorConfigMenu)
   #ifdef SUPPORT_BLE
@@ -757,6 +794,9 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
+  #ifdef SUPPORT_BUZZER
+  ,SUBMENU(buzzerConfigMenu)
+  #endif  
   ,SUBMENU(outputsConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
