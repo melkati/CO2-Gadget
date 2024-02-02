@@ -1,0 +1,225 @@
+[33mcommit c6fac5662750b5b472173f3e76abc82e29076287[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-buzzer[m[33m, [m[1;31morigin/feature-buzzer[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Feb 2 16:08:01 2024 +0100
+
+    Add buzzer-related settings to Preferences to save in NVR
+
+[33mcommit 1010bbd70fdf3a0282343def79c953aae7aa8673[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Fri Feb 2 15:07:43 2024 +0100
+
+    Change debug messages to be of module "BUZZ"
+
+[33mcommit 320e66c11e6e5382b8677e99c23b9e2336d0e203[m
+Merge: 06a38df 8a04b42
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Feb 2 14:31:20 2024 +0100
+
+    Merge pull request #156 from Coscolin/buzzer-menu
+    
+    Menu options to configure buzzer alarm
+
+[33mcommit 06a38df9e56a0c00aa8df93a7e3d4ca4dc1f075a[m
+Merge: bfe3e8e 01573a5
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Fri Feb 2 14:16:14 2024 +0100
+
+    Merge pull request #157 from Coscolin/buzzer
+    
+    Buzzer implementation to drive the buzzer
+
+[33mcommit 01573a5390ea5872f0932e5e2458211253d0849c[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 14:02:34 2024 +0100
+
+    Move buzzerLoop() into outputsLoop() and remove #ifdef
+
+[33mcommit 090cf9187c4b146e30d9c46892e749022e29332c[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 14:00:15 2024 +0100
+
+    Add ifndef CO2_Gadget_Buzzer_h
+
+[33mcommit 62bb9eca0bb27bebb45b1e1997933c25d9d0c66a[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 13:52:48 2024 +0100
+
+    Change MENU -> BUZZER in comment header
+
+[33mcommit 7b4014378049e555099606e282b5bcdc1356d831[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 11:16:45 2024 +0100
+
+    Update CO2_Gadget_Menu.h to merge with feature-buzzer branch of melkati
+
+[33mcommit 73b2c49b5134c163e7fe76149b9aca0182701094[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 11:10:21 2024 +0100
+
+    Add two lines to merge without changes
+
+[33mcommit 834b12f892be192cca9acc92e63c6442657187b1[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 11:08:15 2024 +0100
+
+    Remove last line to merge without changes
+
+[33mcommit 0a902b153f699ec97056258cba00d834c219520d[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 10:59:09 2024 +0100
+
+    Revert CO2_Gadget_Menu.h to create a PR without menu changes
+
+[33mcommit 8a04b420106bbba31c683e1edc589f73bab3123a[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 10:55:44 2024 +0100
+
+    Menu options to buzzer alarm
+    
+    Added buzzer configuration in menu:
+    
+    - Alarm: ON / OFF
+    
+    - Repeat: ONCE / EVERY
+    · REPEAT ONCE: Only buzzer one time orange or red CO2 range is raised. Don't buzzer again until CO2 values downs "HYSTERIC" value down orange/red range and raise again.
+    · REPEAT EVERY: Buzzer all time while CO2 values are upper orange or red range.
+    
+    - Each: 5s / 10s / 15s / 30s / 1m / 2m / 5m
+    · Time between buzzers if repeat is "EVERY"
+    
+    - Tone: HIGH / MED. / LOW
+    · Frecuency of buzzer tone.
+    
+    - Span: SHORT / MED / LONG
+    · Duration of buzzer tones.
+
+[33mcommit d4628db0e54661862fff649d5e255f8edcf0ea45[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 09:38:17 2024 +0100
+
+    Change alarmConfigMenu to buzzerConfigMenu
+
+[33mcommit 972e073a4fa6b3e58523a6fe4d16fd68bc506e85[m
+Merge: 4b85c5f 9fdaae6
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 02:05:31 2024 +0100
+
+    Merge branch 'melkati:master' into buzzer
+
+[33mcommit 4b85c5f35a02d7d78ce83f1d75b93843634aaf06[m
+Author: Coscolin <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 02:03:52 2024 +0100
+
+    Buzzer menu
+
+[33mcommit 4c8a669f9f8ca854375512f609da46d4c4b53f05[m
+Author: Coscolin <coscolin.sergio@gmail.com>
+Date:   Fri Feb 2 02:02:56 2024 +0100
+
+    Buzzer async implementation
+
+[33mcommit 9fdaae61e3cb85a6d0be287816676a28bd3a6554[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Thu Feb 1 20:11:29 2024 +0100
+
+    Update README.md Fix sensors table
+
+[33mcommit 7ccbd2086f3e809800db412c1ed64e25864bc8a0[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Thu Feb 1 12:21:21 2024 +0100
+
+    Wake up screen when CO2 rise limits
+    
+    If displaybrightness is OFF when co2 values rise limits wake up screen using function that wake up screen when any button is clicked.
+    
+    If activeAlarm is OFF this functionality doesn't work.
+    Maybe we can redefine logical buzzerLoog() workflow to allow wakeup display althought alarm is off.
+
+[33mcommit 444730e6b95b13ea82d220d2778115bb02f2bf45[m
+Author: Sergio Coscolín <coscolin.sergio@gmail.com>
+Date:   Thu Feb 1 11:52:00 2024 +0100
+
+    Delete WiFiMenu.h
+    
+    This file is for another develop branch.
+
+[33mcommit c5c92f48d71318f0f9abad851da05ef37d4ac6f2[m
+Author: Coscolin <coscolin.sergio@gmail.com>
+Date:   Thu Feb 1 03:32:45 2024 +0100
+
+    Buzzer implementation
+
+[33mcommit bfe3e8e4ba3a0f2f8186abb90ee8ed9c9d669553[m[33m ([m[1;33mtag: [m[1;33mv0.9.001[m[33m, [m[1;32mmaster[m[33m)[m
+Merge: 853d4ce 152baf7
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 30 11:56:22 2024 +0100
+
+    Merge branch 'development' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit 152baf708ef9c9bbdf1a62a7207886fad256efd8[m[33m ([m[1;32mdevelopment[m[33m)[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 30 11:47:36 2024 +0100
+
+    Enable/disable MQTT menu based on activeWIFI status and prevent unnecessary screen fill when wifiChanged and not inMenu
+    Fix WiFi initialitation issues with display and menu when WiFi activated from menu
+
+[33mcommit d6ab6a340ed5272ada6745d84bf657c3e8a7c95b[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 30 10:32:19 2024 +0100
+
+    Update README.md
+
+[33mcommit 64e13a2cb17ef2c6520595ca0a1a796658db76d1[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 30 10:31:56 2024 +0100
+
+    Modify partition table and Disable OTA for ESP32 to free up a lot of memory.
+    Add activeOTA flag for ESP32 S3 and include in menu. False by default for security.
+    Add a 5 secs delay until menu is active for better Improv-WiFi response
+    Looks like freeing memory fixes #145
+
+[33mcommit 6953c97efd4d0f7d0f43032d90039f042edbf033[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Tue Jan 30 08:40:47 2024 +0100
+
+    Fix WiFi initialization issue (disable WiFi if SSID not set)
+
+[33mcommit 853d4ce38b8f6bcfb5f8c317f68cd866424dd00b[m[33m ([m[1;33mtag: [m[1;33mv0.9.000[m[33m)[m
+Merge: e4f48a5 7c19c13
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 19:52:36 2024 +0100
+
+    Merge branch 'master' of https://github.com/melkati/CO2-Gadget
+
+[33mcommit e4f48a536e334a861043720c7f81378d1c83cf9a[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 19:52:27 2024 +0100
+
+    Version bump. Prepare for release 0.9.000
+
+[33mcommit 7c19c13f3fad487ef46d9e3c0cdb8a95bdafd3d2[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 19:50:31 2024 +0100
+
+    Version bump. Prepare for release 0.9.000
+
+[33mcommit 12324ef40b82ca8698c875cc931d8a1e38c921ba[m
+Merge: 92f567e 670f511
+Author: Mariete <melkati@users.noreply.github.com>
+Date:   Mon Jan 29 19:46:45 2024 +0100
+
+    Merge pull request #149 from melkati/development
+    
+    Development
+
+[33mcommit 670f51141556eb65014e6003d95e5a338bd08244[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 18:49:57 2024 +0100
+
+     Workaround to determine whether the Wi-Fi data has been changed via BLE
+
+[33mcommit e74b6e1c2256a4fc4ae7b6036505e42582b72495[m
+Author: Mario Mariete <11509521+melkati@users.noreply.github.com>
+Date:   Mon Jan 29 18:46:34 2024 +0100
+
+    Don't send data by BLE if measurem
