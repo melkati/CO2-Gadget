@@ -47,7 +47,7 @@ void printPreferences() {
     Serial.printf("-->[PREF] selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
     Serial.printf("-->[PREF] debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
     Serial.printf("-->[PREF] displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);
-    Serial.printf("-->[PREF] showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Farenheit" : "Celsius"));
+    Serial.printf("-->[PREF] showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Fahrenheit" : "Celsius"));
     Serial.printf("-->[PREF] measInterval:\t #%d#\n", measurementInterval);
     Serial.printf("-->[PREF] outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));
     Serial.printf("-->[PREF] channelESPNow:\t #%d#\n", channelESPNow);
@@ -59,6 +59,14 @@ void printPreferences() {
     Serial.printf("-->[PREF] showBattery:\t #%s#\n", ((displayShowBattery) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showCO2:\t #%s#\n", ((displayShowCO2) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showPM25:\t #%s#\n", ((displayShowPM25) ? "Show" : "Hide"));
+
+    // Buzzer preferences
+    Serial.printf("-->[PREF] activeBuzzer is:\t#%s# (%d)\n", ((activeBuzzer) ? "Enabled" : "Disabled"), activeBuzzer);
+    Serial.printf("-->[PREF] repeatBuzzer is:\t#%s# (%d)\n", ((repeatBuzzer) ? "Enabled" : "Disabled"), repeatBuzzer);
+    Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
+    Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
+    Serial.printf("-->[PREF] timeBetweenBuzzerBeep is:\t#%d#\n", timeBetweenBuzzerBeep);
+
     Serial.printf("-->[PREF] \n");
 }
 
@@ -145,6 +153,13 @@ void initPreferences() {
     displayShowCO2 = preferences.getBool("showCO2", true);
     displayShowPM25 = preferences.getBool("showPM25", true);
 
+    // Retrieve buzzer preferences
+    activeBuzzer = preferences.getBool("actvBuzzer", false);         // Set to true if buzzer is active
+    repeatBuzzer = preferences.getBool("rptBuzzer", true);           // Set to true if the buzzer beep should be repeated
+    toneBuzzerBeep = preferences.getUInt("toneBzrBeep", 1000);       // Frequency of the buzzer beep
+    durationBuzzerBeep = preferences.getUInt("durBzrBeep", 100);     // Duration of the buzzer beep
+    timeBetweenBuzzerBeep = preferences.getUInt("timeBtwnBzr", 10);  // Time between consecutive beeps
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -154,9 +169,9 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-    #ifdef DEBUG_PREFERENCES
+#ifdef DEBUG_PREFERENCES
     printPreferences();
-    #endif
+#endif
 }
 
 void putPreferences() {
@@ -219,6 +234,13 @@ void putPreferences() {
     preferences.putBool("showCO2", displayShowCO2);
     preferences.putBool("showPM25", displayShowPM25);
 
+    // Buzzer preferences
+    preferences.putBool("actvBuzzer", activeBuzzer);            // Buzzer active
+    preferences.putBool("rptBuzzer", repeatBuzzer);             // Repeat buzzer beep
+    preferences.putUInt("toneBzrBeep", toneBuzzerBeep);         // Buzzer frequency
+    preferences.putUInt("durBzrBeep", durationBuzzerBeep);      // Buzzer duration
+    preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeep);  // Time between beeps
+
     preferences.end();
 }
 
@@ -273,6 +295,14 @@ String getPreferencesAsJson() {
     doc["showCO2"] = preferences.getBool("showCO2", true);
     doc["showPM25"] = preferences.getBool("showPM25", true);
     doc["measInterval"] = preferences.getInt("measInterval", 10);
+
+    // Buzzer preferences
+    doc["actvBuzzer"] = preferences.getBool("actvBuzzer", false);   // Buzzer active
+    doc["rptBuzzer"] = preferences.getBool("rptBuzzer", true);      // Repeat buzzer beep
+    doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);  // Buzzer frequency
+    doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);     // Buzzer duration
+    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 10);    // Time between beeps
+
     preferences.end();
 
     String preferencesJson;
@@ -339,6 +369,13 @@ String getActualSettingsAsJson() {
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
     doc["measInterval"] = measurementInterval;
+
+    // Buzzer preferences
+    doc["actvBuzzer"] = activeBuzzer;            // Buzzer active
+    doc["rptBuzzer"] = repeatBuzzer;             // Repeat buzzer beep
+    doc["toneBzrBeep"] = toneBuzzerBeep;         // Buzzer frequency
+    doc["durBzrBeep"] = durationBuzzerBeep;      // Buzzer duration
+    doc["timeBtwnBzr"] = timeBetweenBuzzerBeep;  // Time between beeps
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
@@ -428,6 +465,13 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayShowBattery = JsonDocument["showBattery"];
         displayShowCO2 = JsonDocument["showCO2"];
         displayShowPM25 = JsonDocument["showPM25"];
+
+        // Buzzer preferences
+        activeBuzzer = JsonDocument["actvBuzzer"];            // Buzzer active
+        repeatBuzzer = JsonDocument["rptBuzzer"];             // Repeat buzzer beep
+        toneBuzzerBeep = JsonDocument["toneBzrBeep"];         // Buzzer frequency
+        durationBuzzerBeep = JsonDocument["durBzrBeep"];      // Buzzer duration
+        timeBetweenBuzzerBeep = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
         // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();

@@ -10,6 +10,8 @@
 #include <Ticker.h>  // library to async functions
 Ticker buzz;
 
+uint64_t lastTimeBuzzerBeep = 0;  // Time of last Buzzer loop
+
 bool downOrangeRange = true;
 bool downRedRange = true;
 
