@@ -3,52 +3,70 @@
 /*********                                   SETUP BUZZER                                    *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-
-#define BUZZZER_PIN  13 // ESP32 pin GPIO13 connected to piezo buzzer
-
-int lowestco2=10000;
-int highestco2=0;
+	
+#include <Ticker.h>  // library to async functions
+Ticker buzz;
 
 bool downOrangeRange = true;
 bool downRedRange = true;
 
+void wakeUpDisplay(){
+ if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
+    {
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+        setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
+#endif
+        lastTimeButtonPressed = millis();
+    }
+    return;
+}   
+
+void buzzerRedRange(){
+    Serial.println("[ASYNC] Buzzer RED range");
+    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+    delay(durationBuzzerBeep*1.3);
+    tone(BUZZER_PIN, toneBuzzerBeep+250+co2 , durationBuzzerBeep);
+    delay(durationBuzzerBeep*1.3);
+    tone(BUZZER_PIN, toneBuzzerBeep+500+co2 , durationBuzzerBeep);
+}
+
+void buzzerOrangeRange(){
+    Serial.println("[ASYNC] Buzzer ORANGE range");
+    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+    delay(durationBuzzerBeep*1.3);
+    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+}
 
 void buzzerLoop(){
 
-    if(!activeAlarm)        
+    if(!activeBuzzer)        
         return;
 
     if(inMenu){  // Inside Menu stop BEEPING
-        noTone(BUZZZER_PIN);
+        noTone(BUZZER_PIN);
         return;
     }
 
-    if ((millis() - lastTimeAlarmBeep >= timeBetweenAlarmBeep * 1000) || (lastTimeAlarmBeep == 0)) {
-        lastTimeAlarmBeep = millis();
+    if ((millis() - lastTimeBuzzerBeep >= timeBetweenBuzzerBeep * 1000) || (lastTimeBuzzerBeep == 0)) {
+        lastTimeBuzzerBeep = millis();
 
         if(co2>co2RedRange){
-            if(downRedRange || repeatAlarm){
-                buttonUpISR();  // wake up screen
-                tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
-                delay(durationAlarmBeep*1.3);
-                tone(BUZZZER_PIN, toneAlarmBeep+250+co2 , durationAlarmBeep);
-                delay(durationAlarmBeep*1.3);
-                tone(BUZZZER_PIN, toneAlarmBeep+500+co2 , durationAlarmBeep);
+            if(downRedRange || repeatBuzzer){
+                wakeUpDisplay();
+                buzz.once(0, buzzerRedRange);
                 downRedRange = false;
             }
             return;
-        } else downRedRange = true;
+        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) downRedRange = true;
 
         if(co2>co2OrangeRange){
-            if(downOrangeRange || repeatAlarm){
-                buttonUpISR();  // wake up screen
-                tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
-                delay(durationAlarmBeep*1.3);
-                tone(BUZZZER_PIN, toneAlarmBeep+co2 , durationAlarmBeep);
+            if(downOrangeRange || repeatBuzzer){
+                wakeUpDisplay();
+                buzz.once(0, buzzerOrangeRange);
                 downOrangeRange = false;
             }
             return;
-        } else downOrangeRange = true;
+        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) downOrangeRange = true;
         return;
     }
 }
