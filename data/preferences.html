@@ -20,7 +20,7 @@
         <legend>Networking</legend>
 
         <div>
-          <label for="activeWIFI">Active WIFI:</label>
+          <label for="activeWIFI">WIFI Active:</label>
           <input type="checkbox" id="activeWIFI" name="activeWIFI">
         </div>
 
@@ -127,54 +127,52 @@
             <input type="number" id="selNeopxType" name="selNeopxType" value="">
           </div>
         </fieldset>
-              <!-- Buzzer Group -->
-      <fieldset>
-        <legend>Buzzer</legend>
 
-        <div>
-          <label for="actvBuzzer">Active Buzzer:</label>
-          <input type="checkbox" id="actvBuzzer" name="actvBuzzer">
-        </div>
+        <!-- Buzzer Group -->
+        <fieldset id="buzzerFieldset">
+          <legend>Buzzer</legend>
 
-        <div>
-          <label for="rptBuzzer">Repeat Buzzer:</label>
-          <select id="rptBuzzer" name="rptBuzzer">
-            <option value="ONCE">Once</option>
-            <option value="EVERY">Every</option>
-          </select>
-        </div>
+          <div>
+            <label for="actvBuzzer">Buzzer Active:</label>
+            <input type="checkbox" id="actvBuzzer" name="actvBuzzer" onchange="toggleBuzzerFields()">
+          </div>
 
-        <div>
-          <label for="toneBzrBeep">Buzzer Beep Tone:</label>
-          <select id="toneBzrBeep" name="toneBzrBeep">
-            <option value="HIGH">High</option>
-            <option value="MED">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
-        </div>
+          <div id="buzzerFields" style="display:none;">
+            <label for="rptBuzzer">Repeat Buzzer:</label>
+            <select id="rptBuzzer" name="rptBuzzer">
+              <option value="false">Once</option>
+              <option value="true">Every</option>
+            </select>
 
-        <div>
-          <label for="durBzrBeep">Buzzer Beep Duration:</label>
-          <select id="durBzrBeep" name="durBzrBeep">
-            <option value="SHORT">Short</option>
-            <option value="MED">Medium</option>
-            <option value="LONG">Long</option>
-          </select>
-        </div>
+            <label for="toneBzrBeep">Tone of Buzzer Beep:</label>
+            <select id="toneBzrBeep" name="toneBzrBeep">
+              <option value="1500">High</option>
+              <option value="1000">Med</option>
+              <option value="300">Low</option>
+            </select>
 
-        <div>
-          <label for="timeBetweenBuzzerBeep">Time Between Buzzer Beeps:</label>
-          <select id="timeBetweenBuzzerBeep" name="timeBetweenBuzzerBeep">
-            <option value="5">5 sec</option>
-            <option value="10">10 sec</option>
-            <option value="15">15 sec</option>
-            <option value="30">30 sec</option>
-            <option value="60">1 min</option>
-            <option value="120">2 min</option>
-            <option value="300">5 min</option>
-          </select>
-        </div>
-      </fieldset>
+            <label for="durBzrBeep">Buzzer Beep Duration:</label>
+            <select id="durBzrBeep" name="durBzrBeep">
+              <option value="50">Short</option>
+              <option value="100">Medium</option>
+              <option value="200">Long</option>
+            </select>
+
+            <label for="timeBtwnBzr">Time Between Buzzer Beeps:</label>
+            <select id="timeBtwnBzr" name="timeBtwnBzr">
+              <option value="5">5 sec</option>
+              <option value="10">10 sec</option>
+              <option value="15">15 sec</option>
+              <option value="30">30 sec</option>
+              <option value="60">1 min</option>
+              <option value="120">2 min</option>
+              <option value="300">5 min</option>
+            </select>
+          </div>
+        </fieldset>
+
+
+
         <div>
           <label for="outModeRelay">GPIO Outputs Mode Relay:</label>
           <input type="checkbox" id="outModeRelay" name="outModeRelay">
@@ -513,8 +511,24 @@
 
           if (getPreferencesDebug) console.log('Setting debugSensors to:', preferences.debugSensors);
           document.getElementById("debugSensors").checked = preferences.debugSensors;
+
+          if (getPreferencesDebug) console.log('Setting actvBuzzer to:', preferences.actvBuzzer);
+          document.getElementById("actvBuzzer").checked = preferences.actvBuzzer;
+
+          if (getPreferencesDebug) console.log('Setting rptBuzzer to:', preferences.rptBuzzer);
+          document.getElementById("rptBuzzer").value = preferences.rptBuzzer;
+
+          if (getPreferencesDebug) console.log('Setting toneBzrBeep to:', preferences.toneBzrBeep);
+          document.getElementById("toneBzrBeep").value = preferences.toneBzrBeep;
+
+          if (getPreferencesDebug) console.log('Setting durBzrBeep to:', preferences.durBzrBeep);
+          document.getElementById("durBzrBeep").value = preferences.durBzrBeep;
+
+          if (getPreferencesDebug) console.log('Setting timeBtwnBzr to:', preferences.timeBtwnBzr);
+          document.getElementById("timeBtwnBzr").value = preferences.timeBtwnBzr;
+
         })
-        .catch(error => console.error('Error al obtener preferencias:', error));
+        .catch(error => console.error('Error retrieving preferences:', error));
     }
 
     function collectPreferencesData() {
@@ -562,10 +576,14 @@
         // showPM25: document.getElementById("showPM25").checked,
         mqttClientId: document.getElementById("mqttClientId").value,
         mqttBroker: document.getElementById("mqttBroker").value,
-        mqttUser: document.getElementById("mqttUser").value
+        mqttUser: document.getElementById("mqttUser").value,
         // mqttPass: document.getElementById("mqttPass").value
+        actvBuzzer: document.getElementById("actvBuzzer").checked,
+        rptBuzzer: document.getElementById("rptBuzzer").selectedOptions[0].getAttribute("value") === "true",
+        toneBzrBeep: document.getElementById("toneBzrBeep").value,
+        durBzrBeep: document.getElementById("durBzrBeep").value,
+        timeBtwnBzr: document.getElementById("timeBtwnBzr").value
       };
-
       return preferencesData;
     }
 
@@ -591,11 +609,7 @@
       };
     }
 
-    // Set initial values when the page loads
-    document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
-  </script>
 
-  <script>
     function restartESP32() {
       // Show a confirmation dialog
       var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
@@ -625,6 +639,16 @@
         // User chose not to restart, you can add additional logic or leave it empty
       }
     }
+
+    function toggleBuzzerFields() {
+      var buzzerFields = document.getElementById("buzzerFields");
+      var actvBuzzerCheckbox = document.getElementById("actvBuzzer");
+
+      // Oculta o muestra los campos de buzzer según el estado de la casilla de verificación
+      buzzerFields.style.display = actvBuzzerCheckbox.checked ? "block" : "none";
+    };
+    // Set initial values when the page loads
+    document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
   </script>
 
 
