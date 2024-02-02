@@ -745,15 +745,15 @@ MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
   #ifdef SUPPORT_BUZZER
-TOGGLE(activeAlarm, activeAlarmOffMenu, "Alarm: ", doNothing, noEvent, wrapStyle
+TOGGLE(activeBuzzer, activeBuzzerOffMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
   ,VALUE("OFF", false,  doNothing, noEvent)
   ,VALUE("ON", true,  doNothing, noEvent));
   
-TOGGLE(repeatAlarm, repeatAlarmMenu, "Repeat: ", doNothing, noEvent, wrapStyle
+TOGGLE(repeatBuzzer, repeatBuzzerMenu, "Repeat: ", doNothing, noEvent, wrapStyle
   ,VALUE("ONCE", false,  doNothing, noEvent)
   ,VALUE("EVERY", true,  doNothing, noEvent));
 
-TOGGLE(timeBetweenAlarmBeep, timeBetweenAlarmBeepMenu, "Each: ", doNothing, noEvent, wrapStyle
+TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Each: ", doNothing, noEvent, wrapStyle
   ,VALUE("5 sec.", 5,  doNothing, noEvent)
   ,VALUE("10 sec.", 10,  doNothing, noEvent)
   ,VALUE("15 sec.", 15,  doNothing, noEvent)
@@ -762,22 +762,22 @@ TOGGLE(timeBetweenAlarmBeep, timeBetweenAlarmBeepMenu, "Each: ", doNothing, noEv
   ,VALUE("2 min.", 120,  doNothing, noEvent)
   ,VALUE("5 min.", 300,  doNothing, noEvent));
 
-TOGGLE(toneAlarmBeep, toneAlarmBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
+TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
   ,VALUE("HIGH", 1500,  doNothing, noEvent)
   ,VALUE("MED.", 1000,  doNothing, noEvent)
   ,VALUE("LOW", 300,  doNothing, noEvent));
 
-TOGGLE(durationAlarmBeep, durationAlarmBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
+TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
   ,VALUE("SHORT", 50,  doNothing, noEvent)
   ,VALUE("MED.", 100,  doNothing, noEvent)
   ,VALUE("LONG", 200,  doNothing, noEvent));
 
-MENU(alarmConfigMenu, "Alarm Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeAlarmOffMenu)
-  ,SUBMENU(repeatAlarmMenu)
-  ,SUBMENU(timeBetweenAlarmBeepMenu)
-  ,SUBMENU(toneAlarmBeepMenu)
-  ,SUBMENU(durationAlarmBeepMenu)
+MENU(alarmConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeBuzzerOffMenu)
+  ,SUBMENU(repeatBuzzerMenu)
+  ,SUBMENU(timeBetweenBuzzerBeepMenu)
+  ,SUBMENU(toneBuzzerBeepMenu)
+  ,SUBMENU(durationBuzzerBeepMenu)
   ,EXIT("<Back"));
 #endif
 
