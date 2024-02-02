@@ -358,6 +358,7 @@ void outputsLoop() {
     outputsRelays();
     outputsRGBLeds();
     neopixelLoop();
+    buzzerLoop();
 }
 
 void readingsLoop() {
@@ -530,7 +531,4 @@ void loop() {
     buttonsLoop();
     menuLoop();
     BLELoop();
-    #if defined SUPPORT_BUZZER
-    buzzerLoop();
-    #endif
 }
