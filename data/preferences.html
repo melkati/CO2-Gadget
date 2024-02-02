@@ -127,11 +127,61 @@
             <input type="number" id="selNeopxType" name="selNeopxType" value="">
           </div>
         </fieldset>
+              <!-- Buzzer Group -->
+      <fieldset>
+        <legend>Buzzer</legend>
+
         <div>
-          <label for="outModeRelay">Outputs Mode Relay:</label>
+          <label for="actvBuzzer">Active Buzzer:</label>
+          <input type="checkbox" id="actvBuzzer" name="actvBuzzer">
+        </div>
+
+        <div>
+          <label for="rptBuzzer">Repeat Buzzer:</label>
+          <select id="rptBuzzer" name="rptBuzzer">
+            <option value="ONCE">Once</option>
+            <option value="EVERY">Every</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="toneBzrBeep">Buzzer Beep Tone:</label>
+          <select id="toneBzrBeep" name="toneBzrBeep">
+            <option value="HIGH">High</option>
+            <option value="MED">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="durBzrBeep">Buzzer Beep Duration:</label>
+          <select id="durBzrBeep" name="durBzrBeep">
+            <option value="SHORT">Short</option>
+            <option value="MED">Medium</option>
+            <option value="LONG">Long</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="timeBetweenBuzzerBeep">Time Between Buzzer Beeps:</label>
+          <select id="timeBetweenBuzzerBeep" name="timeBetweenBuzzerBeep">
+            <option value="5">5 sec</option>
+            <option value="10">10 sec</option>
+            <option value="15">15 sec</option>
+            <option value="30">30 sec</option>
+            <option value="60">1 min</option>
+            <option value="120">2 min</option>
+            <option value="300">5 min</option>
+          </select>
+        </div>
+      </fieldset>
+        <div>
+          <label for="outModeRelay">GPIO Outputs Mode Relay:</label>
           <input type="checkbox" id="outModeRelay" name="outModeRelay">
         </div>
       </fieldset>
+
+
 
       <!-- Connectivity Group -->
       <fieldset>
