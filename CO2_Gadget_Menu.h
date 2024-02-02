@@ -1086,5 +1086,3 @@ void menu_init() {
     Serial.println("-->[MENU] to control the menu navigation");
     Serial.println("");
 }
-
-#endif  // CO2_Gadget_Menu_h
