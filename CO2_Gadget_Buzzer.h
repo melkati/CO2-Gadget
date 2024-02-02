@@ -25,7 +25,7 @@ void wakeUpDisplay(){
 }   
 
 void buzzerRedRange(){
-    Serial.println("[ASYNC] Buzzer RED range");
+    Serial.println("[BUZZ] Buzzer RED range");
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
     delay(durationBuzzerBeep*1.3);
     tone(BUZZER_PIN, toneBuzzerBeep+250+co2 , durationBuzzerBeep);
@@ -34,7 +34,7 @@ void buzzerRedRange(){
 }
 
 void buzzerOrangeRange(){
-    Serial.println("[ASYNC] Buzzer ORANGE range");
+    Serial.println("[BUZZ] Buzzer ORANGE range");
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
     delay(durationBuzzerBeep*1.3);
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
