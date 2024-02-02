@@ -772,7 +772,7 @@ TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent,
   ,VALUE("MED.", 100,  doNothing, noEvent)
   ,VALUE("LONG", 200,  doNothing, noEvent));
 
-MENU(alarmConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
+MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBuzzerOffMenu)
   ,SUBMENU(repeatBuzzerMenu)
   ,SUBMENU(timeBetweenBuzzerBeepMenu)
@@ -795,7 +795,7 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   #ifdef SUPPORT_BUZZER
-  ,SUBMENU(alarmConfigMenu)
+  ,SUBMENU(buzzerConfigMenu)
   #endif  
   ,SUBMENU(outputsConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
