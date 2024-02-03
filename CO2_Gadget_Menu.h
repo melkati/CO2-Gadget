@@ -764,13 +764,13 @@ TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Each: ", doNothing, no
 
 TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
   ,VALUE("HIGH", 1500,  doNothing, noEvent)
-  ,VALUE("MED.", 1000,  doNothing, noEvent)
-  ,VALUE("LOW", 300,  doNothing, noEvent));
+  ,VALUE("MED.", 600,  doNothing, noEvent)
+  ,VALUE("LOW", 0,  doNothing, noEvent));
 
 TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
   ,VALUE("SHORT", 50,  doNothing, noEvent)
-  ,VALUE("MED.", 100,  doNothing, noEvent)
-  ,VALUE("LONG", 200,  doNothing, noEvent));
+  ,VALUE("MED.", 150,  doNothing, noEvent)
+  ,VALUE("LONG", 300,  doNothing, noEvent));
 
 MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBuzzerOffMenu)
