@@ -77,7 +77,7 @@ These are the GPIOs used by each predefined board:
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement.
 - Neopixel GPIO: Pin to which you must connect the data line of the Neopixel (WS2812B) LEDs.
-- Buzzer: Pin to connect an acgti e buzzer for CO2 level sound alarms.
+- Buzzer: Pin to connect a passive buzzer for CO2 level sound alarms (built in transistor needed).
 
 # Supported sensors
 
