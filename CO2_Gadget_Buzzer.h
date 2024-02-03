@@ -10,8 +10,10 @@
 #include <Ticker.h>  // library to async functions
 Ticker buzz;
 
-bool downOrangeRange = true;
-bool downRedRange = true;
+uint64_t lastTimeBuzzerBeep = 0;  // Time of last Buzzer loop
+
+bool belowOrangeRange = true;
+bool belowRedRange = true;
 
 void wakeUpDisplay(){
  if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
@@ -25,7 +27,7 @@ void wakeUpDisplay(){
 }   
 
 void buzzerRedRange(){
-    Serial.println("[ASYNC] Buzzer RED range");
+    Serial.println("[BUZZ] Buzzer RED range");
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
     delay(durationBuzzerBeep*1.3);
     tone(BUZZER_PIN, toneBuzzerBeep+250+co2 , durationBuzzerBeep);
@@ -34,7 +36,7 @@ void buzzerRedRange(){
 }
 
 void buzzerOrangeRange(){
-    Serial.println("[ASYNC] Buzzer ORANGE range");
+    Serial.println("[BUZZ] Buzzer ORANGE range");
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
     delay(durationBuzzerBeep*1.3);
     tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
@@ -54,22 +56,22 @@ void buzzerLoop(){
         lastTimeBuzzerBeep = millis();
 
         if(co2>co2RedRange){
-            if(downRedRange || repeatBuzzer){
+            if(belowRedRange || repeatBuzzer){
                 wakeUpDisplay();
                 buzz.once(0, buzzerRedRange);
-                downRedRange = false;
+                belowRedRange = false;
             }
             return;
-        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) downRedRange = true;
+        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) belowRedRange = true;
 
         if(co2>co2OrangeRange){
-            if(downOrangeRange || repeatBuzzer){
+            if(belowOrangeRange || repeatBuzzer){
                 wakeUpDisplay();
                 buzz.once(0, buzzerOrangeRange);
-                downOrangeRange = false;
+                belowOrangeRange = false;
             }
             return;
-        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) downOrangeRange = true;
+        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) belowOrangeRange = true;
         return;
     }
 }

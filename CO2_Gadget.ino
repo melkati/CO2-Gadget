@@ -61,12 +61,13 @@ uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
+
+// Variables for buzzer functionality
 bool activeBuzzer = true;
 bool repeatBuzzer = true;
 uint16_t toneBuzzerBeep = 1000;
 uint16_t durationBuzzerBeep = 100;
 uint16_t timeBetweenBuzzerBeep = 10;
-uint64_t lastTimeBuzzerBeep = 0;  // Time of last Buzzer loop
 
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
