@@ -311,7 +311,7 @@ void initGPIO() {
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
-    digitalWrite(RED_PIN, LOW);
+    digitalWrite(RED_PIN, LOW);    
 }
 
 void outputsRelays() {
@@ -490,6 +490,7 @@ void setup() {
     initBattery();
     initGPIO();
     initNeopixel();
+    initBuzzer();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
     initDisplay();
 #endif
