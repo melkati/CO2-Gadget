@@ -8,10 +8,8 @@
 /*****************************************************************************************************/
 
 #include <Ticker.h>  // library to async functions
-Ticker buzz_red;
-Ticker buzz_orange;
+Ticker buzzer;
 
-bool belowOrangeRange = true;
 bool belowRedRange = true;
 
 void wakeUpDisplay() {
@@ -36,54 +34,29 @@ void buzzerRedRange() {
     }
 }
 
-void buzzerOrangeRange() {
-    if (co2 > co2OrangeRange) {
-        Serial.println("[BUZZ] Buzzer ORANGE range");
-        tone(BUZZER_PIN, toneBuzzerBeep + co2, durationBuzzerBeep);
-        delay(durationBuzzerBeep * 1.3);
-        tone(BUZZER_PIN, toneBuzzerBeep + co2, durationBuzzerBeep);
-    }
-}
-
 void buzzerLoop() {
     if (!activeBuzzer || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
-        if (buzz_red.active() || buzz_orange.active()) {
+        if (buzzer.active()) {
             noTone(BUZZER_PIN);
-            buzz_red.detach();
-            buzz_orange.detach();
+            buzzer.detach();
         }
         belowRedRange = true;
-        belowOrangeRange = true;
         return;
     }
 
     if (co2 > co2RedRange && belowRedRange) {
         wakeUpDisplay();
-        buzz_orange.detach();
-        belowOrangeRange = true;
         if (repeatBuzzer)
-            buzz_red.attach(timeBetweenBuzzerBeep, buzzerRedRange);
+            buzzer.attach(timeBetweenBuzzerBeep, buzzerRedRange);
         else
-            buzz_red.once(0, buzzerRedRange);
+            buzzer.once(0, buzzerRedRange);
         belowRedRange = false;
         return;
     } else if (co2 < (co2RedRange - BUZZER_HYSTERESIS)) {
-        buzz_red.detach();
+        buzzer.detach();
         belowRedRange = true;
     }
 
-    if (co2 < co2RedRange && co2 > co2OrangeRange && belowOrangeRange) {
-        wakeUpDisplay();
-        if (repeatBuzzer)
-            buzz_orange.attach(timeBetweenBuzzerBeep, buzzerOrangeRange);
-        else
-            buzz_orange.once(0, buzzerOrangeRange);
-        belowOrangeRange = false;
-        return;
-    } else if (co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) {
-        buzz_orange.detach();
-        belowOrangeRange = true;
-    }
     return;
 }
 
