@@ -1002,6 +1002,7 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
+    uint16_t timeToWaitForImprov = 10;                  // Time to wait for Improv-WiFi to connect on startup
     if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
         inMenu = true;
         if (inMenu) {
@@ -1009,7 +1010,10 @@ void menuLoop() {
         }
     }
 
-    if (millis() < timeInitializationCompleted + 5000) {  // Wait 10 seconds before starting the menu to avoid issues with Improv-WiFi
+    if (millis() < timeInitializationCompleted + timeToWaitForImprov * 1000) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+        displayShowValues();
+#endif
         return;
     }
 
