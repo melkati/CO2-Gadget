@@ -6,7 +6,7 @@
 /*********                                   SETUP BUZZER                                    *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-	
+
 #include <Ticker.h>  // library to async functions
 Ticker buzz_red;
 Ticker buzz_orange;
@@ -14,8 +14,8 @@ Ticker buzz_orange;
 bool belowOrangeRange = true;
 bool belowRedRange = true;
 
-void wakeUpDisplay(){
- if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
+void wakeUpDisplay() {
+    if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
     {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
@@ -23,7 +23,7 @@ void wakeUpDisplay(){
         lastTimeButtonPressed = millis();
     }
     return;
-}   
+}
 
 void buzzerRedRange(){
     if(co2>co2RedRange){
@@ -83,4 +83,16 @@ void buzzerLoop(){
     } 
     return;
 }
+
+void initBuzzer() {
+#ifdef SUPPORT_BUZZER
+    Serial.println("-->[BUZZ] Initializing Buzzer..");
+    pinMode(BUZZER_PIN, OUTPUT);
+
+    // LEDC initialization
+    ledcSetup(0, 5000, 8);         // LEDC channel 0, 5000 Hz, 8-bit resolution
+    ledcAttachPin(BUZZER_PIN, 0);  // Attach BUZZER_PIN to channel 0
+#endif
+}
+
 #endif
