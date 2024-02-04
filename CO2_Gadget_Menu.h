@@ -1002,7 +1002,7 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    uint16_t timeToWaitForImprov = 10;                  // Time to wait for Improv-WiFi to connect on startup
+    uint16_t timeToWaitForImprov = 5;                   // Time to wait for Improv-WiFi to connect on startup
     if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
         inMenu = true;
         if (inMenu) {
