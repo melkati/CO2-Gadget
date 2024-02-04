@@ -6,17 +6,16 @@
 /*********                                   SETUP BUZZER                                    *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-	
-#include <Ticker.h>  // library to async functions
-Ticker buzz;
 
-uint64_t lastTimeBuzzerBeep = 0;  // Time of last Buzzer loop
+#include <Ticker.h>  // library to async functions
+Ticker buzz_red;
+Ticker buzz_orange;
 
 bool belowOrangeRange = true;
 bool belowRedRange = true;
 
-void wakeUpDisplay(){
- if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
+void wakeUpDisplay() {
+    if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
     {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
@@ -24,55 +23,76 @@ void wakeUpDisplay(){
         lastTimeButtonPressed = millis();
     }
     return;
-}   
+}
 
 void buzzerRedRange(){
-    Serial.println("[BUZZ] Buzzer RED range");
-    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
-    delay(durationBuzzerBeep*1.3);
-    tone(BUZZER_PIN, toneBuzzerBeep+250+co2 , durationBuzzerBeep);
-    delay(durationBuzzerBeep*1.3);
-    tone(BUZZER_PIN, toneBuzzerBeep+500+co2 , durationBuzzerBeep);
+    if(co2>co2RedRange){
+        Serial.println("[BUZZ] Buzzer RED range");
+        tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+        delay(durationBuzzerBeep*1.3);
+        tone(BUZZER_PIN, toneBuzzerBeep+250+co2 , durationBuzzerBeep);
+        delay(durationBuzzerBeep*1.3);
+        tone(BUZZER_PIN, toneBuzzerBeep+500+co2 , durationBuzzerBeep);
+    }
 }
 
 void buzzerOrangeRange(){
-    Serial.println("[BUZZ] Buzzer ORANGE range");
-    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
-    delay(durationBuzzerBeep*1.3);
-    tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+    if(co2>co2OrangeRange){
+        Serial.println("[BUZZ] Buzzer ORANGE range");
+        tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+        delay(durationBuzzerBeep*1.3);
+        tone(BUZZER_PIN, toneBuzzerBeep+co2 , durationBuzzerBeep);
+    }
 }
 
 void buzzerLoop(){
 
-    if(!activeBuzzer)        
-        return;
-
-    if(inMenu){  // Inside Menu stop BEEPING
-        noTone(BUZZER_PIN);
-        return;
-    }
-
-    if ((millis() - lastTimeBuzzerBeep >= timeBetweenBuzzerBeep * 1000) || (lastTimeBuzzerBeep == 0)) {
-        lastTimeBuzzerBeep = millis();
-
-        if(co2>co2RedRange){
-            if(belowRedRange || repeatBuzzer){
-                wakeUpDisplay();
-                buzz.once(0, buzzerRedRange);
-                belowRedRange = false;
-            }
-            return;
-        } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)) belowRedRange = true;
-
-        if(co2>co2OrangeRange){
-            if(belowOrangeRange || repeatBuzzer){
-                wakeUpDisplay();
-                buzz.once(0, buzzerOrangeRange);
-                belowOrangeRange = false;
-            }
-            return;
-        } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)) belowOrangeRange = true;
+    if(!activeBuzzer || inMenu){ // Inside Menu OR activeBuzzer=OFF stop BEEPING
+        if(buzz_red.active() || buzz_orange.active()){
+            noTone(BUZZER_PIN);
+            buzz_red.detach();
+            buzz_orange.detach();
+        }
+        belowRedRange = true;
+        belowOrangeRange = true;
         return;
     }
+
+    if(co2>co2RedRange && belowRedRange){
+        wakeUpDisplay();
+        buzz_orange.detach();
+        belowOrangeRange = true;
+        if(repeatBuzzer)  buzz_red.attach(timeBetweenBuzzerBeep, buzzerRedRange);
+        else buzz_red.once(0, buzzerRedRange);
+        belowRedRange = false;
+        return;
+    } else if(co2 < (co2RedRange - BUZZER_HYSTERESIS)){
+        buzz_red.detach();
+        belowRedRange = true;
+    } 
+
+    if(co2<co2RedRange && co2>co2OrangeRange && belowOrangeRange){
+        wakeUpDisplay();
+        if(repeatBuzzer)  buzz_orange.attach(timeBetweenBuzzerBeep, buzzerOrangeRange);
+        else buzz_orange.once(0, buzzerOrangeRange);
+        belowOrangeRange = false;
+        return;
+    } else if(co2 < (co2OrangeRange - BUZZER_HYSTERESIS)){
+        buzz_orange.detach();
+        belowOrangeRange = true;
+    } 
+    return;
 }
+
+void initBuzzer() {
+#ifdef SUPPORT_BUZZER
+    Serial.println("-->[BUZZ] Initializing Buzzer..");
+    pinMode(BUZZER_PIN, OUTPUT);
+
+    // LEDC initialization
+    ledcSetup(0, 5000, 8);         // LEDC channel 0, 5000 Hz, 8-bit resolution
+    ledcAttachPin(BUZZER_PIN, 0);  // Attach BUZZER_PIN to channel 0
+#endif
+}
+
 #endif
