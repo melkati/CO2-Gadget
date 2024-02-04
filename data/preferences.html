@@ -314,6 +314,10 @@
         <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
       </div>
     </form>
+      <!-- Popup to display a message -->
+      <div id="popup">
+        <p>Saving preferences...</p>
+      </div>
   </div>
 
   <script>
@@ -519,8 +523,23 @@
       return preferencesData;
     }
 
+    function showSavingPopup() {
+      // Show the popup
+      document.getElementById("popup").style.display = "block";
+      console.log("Show popup");
+
+      // After 2 seconds, hide the popup
+      setTimeout(function () {
+        // Oculta el popup
+        document.getElementById("popup").style.display = "none";
+        console.log("Hide popup");
+      }, 2000);
+    }
+
     // Function to save preferences
     function savePreferences() {
+      // Show a popup to indicate that the preferences are being saved
+      showSavingPopup();
       // Collect preferences data from the form
       var preferencesData = collectPreferencesData();
       console.log("Sending preferences to server:", preferencesData);
