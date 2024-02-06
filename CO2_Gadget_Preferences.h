@@ -156,8 +156,8 @@ void initPreferences() {
     // Retrieve buzzer preferences
     activeBuzzer = preferences.getBool("actvBuzzer", false);         // Set to true if buzzer is active
     repeatBuzzer = preferences.getBool("rptBuzzer", true);           // Set to true if the buzzer beep should be repeated
-    toneBuzzerBeep = preferences.getUInt("toneBzrBeep", 1000);       // Frequency of the buzzer beep
-    durationBuzzerBeep = preferences.getUInt("durBzrBeep", 100);     // Duration of the buzzer beep
+    toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
+    durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeep = preferences.getUInt("timeBtwnBzr", 10);  // Time between consecutive beeps
 
     rootTopic.trim();
@@ -169,7 +169,7 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-// #define DEBUG_PREFERENCES
+#define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif

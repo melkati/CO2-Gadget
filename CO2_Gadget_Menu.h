@@ -744,7 +744,7 @@ MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
   #ifdef SUPPORT_BUZZER
-TOGGLE(activeBuzzer, activeBuzzerOffMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
+TOGGLE(activeBuzzer, activeBuzzerMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
   ,VALUE("OFF", false,  doNothing, noEvent)
   ,VALUE("ON", true,  doNothing, noEvent));
   
@@ -753,26 +753,26 @@ TOGGLE(repeatBuzzer, repeatBuzzerMenu, "Repeat: ", doNothing, noEvent, wrapStyle
   ,VALUE("EVERY", true,  doNothing, noEvent));
 
 TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Each: ", doNothing, noEvent, wrapStyle
-  ,VALUE("5 sec.", 5,  doNothing, noEvent)
-  ,VALUE("10 sec.", 10,  doNothing, noEvent)
-  ,VALUE("15 sec.", 15,  doNothing, noEvent)
-  ,VALUE("30 sec.", 30,  doNothing, noEvent)
-  ,VALUE("1 min.", 60,  doNothing, noEvent)
-  ,VALUE("2 min.", 120,  doNothing, noEvent)
-  ,VALUE("5 min.", 300,  doNothing, noEvent));
+  ,VALUE("5 sec", 5,  doNothing, noEvent)
+  ,VALUE("10 sec", 10,  doNothing, noEvent)
+  ,VALUE("15 sec", 15,  doNothing, noEvent)
+  ,VALUE("30 sec", 30,  doNothing, noEvent)
+  ,VALUE("1 min", 60,  doNothing, noEvent)
+  ,VALUE("2 min", 120,  doNothing, noEvent)
+  ,VALUE("5 min", 300,  doNothing, noEvent));
 
 TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
-  ,VALUE("HIGH", 1500,  doNothing, noEvent)
-  ,VALUE("MED.", 600,  doNothing, noEvent)
-  ,VALUE("LOW", 0,  doNothing, noEvent));
+  ,VALUE("HIGH", BUZZER_TONE_HIGH,  doNothing, noEvent)
+  ,VALUE("MED", BUZZER_TONE_MED,  doNothing, noEvent)
+  ,VALUE("LOW", BUZZER_TONE_LOW,  doNothing, noEvent));
 
 TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
-  ,VALUE("SHORT", 50,  doNothing, noEvent)
-  ,VALUE("MED.", 150,  doNothing, noEvent)
-  ,VALUE("LONG", 300,  doNothing, noEvent));
+  ,VALUE("SHORT", DURATION_BEEP_SHORT,  doNothing, noEvent)
+  ,VALUE("MED", DURATION_BEEP_MEDIUM,  doNothing, noEvent)
+  ,VALUE("LONG", DURATION_BEEP_LONG,  doNothing, noEvent));
 
 MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeBuzzerOffMenu)
+  ,SUBMENU(activeBuzzerMenu)
   ,SUBMENU(repeatBuzzerMenu)
   ,SUBMENU(timeBetweenBuzzerBeepMenu)
   ,SUBMENU(toneBuzzerBeepMenu)
@@ -1143,8 +1143,8 @@ void menu_init() {
     temperatureConfigMenu[0].disable();
     setCO2Sensor = selectedCO2Sensor;
 #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (setCO2Sensor): %d", setCO2Sensor);
-    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (selectedCO2Sensor): %d", selectedCO2Sensor);
+    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (setCO2Sensor): %d\n", setCO2Sensor);
+    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (selectedCO2Sensor): %d\n", selectedCO2Sensor);
 #endif
 
     loadTempArraysWithActualValues();

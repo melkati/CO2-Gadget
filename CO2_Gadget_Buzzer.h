@@ -7,16 +7,15 @@
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 
-#include <Ticker.h>  // library to async functions
-Ticker buzzer;
+#include <Ticker.h>
 
+Ticker buzzer;
 bool belowRedRange = true;
 
 void wakeUpDisplay() {
-    if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
-    {
+    if (actualDisplayBrightness == 0) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-        setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
+        setDisplayBrightness(DisplayBrightness);
 #endif
         lastTimeButtonPressed = millis();
     }
@@ -26,15 +25,16 @@ void wakeUpDisplay() {
 void buzzerRedRange() {
     if (co2 > co2RedRange) {
         Serial.println("[BUZZ] Buzzer RED range");
-        tone(BUZZER_PIN, toneBuzzerBeep + co2, durationBuzzerBeep);
+        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
         delay(durationBuzzerBeep * 1.3);
-        tone(BUZZER_PIN, toneBuzzerBeep + 250 + co2, durationBuzzerBeep);
+        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
         delay(durationBuzzerBeep * 1.3);
-        tone(BUZZER_PIN, toneBuzzerBeep + 500 + co2, durationBuzzerBeep);
+        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
     }
 }
 
 void buzzerLoop() {
+#ifdef SUPPORT_BUZZER
     if (!activeBuzzer || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
         if (buzzer.active()) {
             noTone(BUZZER_PIN);
@@ -58,6 +58,7 @@ void buzzerLoop() {
     }
 
     return;
+#endif
 }
 
 void initBuzzer() {
@@ -66,8 +67,8 @@ void initBuzzer() {
     pinMode(BUZZER_PIN, OUTPUT);
 
     // LEDC initialization
-    ledcSetup(0, 5000, 8);         // LEDC channel 0, 5000 Hz, 8-bit resolution
-    ledcAttachPin(BUZZER_PIN, 0);  // Attach BUZZER_PIN to channel 0
+    ledcSetup(0, 5000, 8);
+    ledcAttachPin(BUZZER_PIN, 0);
 #endif
 }
 
