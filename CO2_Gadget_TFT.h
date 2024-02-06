@@ -21,9 +21,9 @@
 // Load fonts for TTGO T-Display and others with 240x135 resolution
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
-#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansBold15pt_mp.h"
 #include "FontNotoSansBold20.h"
+#include "FontNotoSansBold90ptDigits.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansBold15pt_mp
 #define SMALL_FONT FontNotoSansBold20
@@ -46,10 +46,24 @@
 #endif
 #endif
 
+// Load fonts for ST7789_240x320 and others with 320x240 resolution
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 240 && TFT_HEIGHT == 320
+#include "FontNotoSansBold120ptDigits.h"
+#include "FontNotoSansBold15pt_mp.h"
+#include "FontNotoSansBold20.h"
+#define GFXFF 1
+#define MINI_FONT FontNotoSansBold15pt_mp
+#define SMALL_FONT FontNotoSansBold20
+#define BIG_FONT FontNotoSansBold120ptDigits
+#define FONTS_LOADED
+#endif
+#endif
+
 // Default fonts
 #ifndef FONTS_LOADED
-#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansBold15pt_mp.h"
+#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansRegular20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansBold15pt_mp
@@ -144,6 +158,30 @@ void setElementLocations() {
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 2;
     }
+
+    if (displayWidth == 320 && displayHeight == 240) {  // ST7789_240x320 and similar
+        elementPosition.co2X = displayWidth - 33;
+        elementPosition.co2Y = displayHeight - 108;
+        elementPosition.co2FontDigitsHeight = 100;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 120;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconY = 4;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 2;
+    }
 }
 
 void setDisplayBrightness(uint16_t newBrightness) {
@@ -166,6 +204,12 @@ void setDisplayBrightness(uint16_t newBrightness) {
         } else {
             digitalWrite(TFT_BL, HIGH);
         }
+        actualDisplayBrightness = newBrightness;
+    }
+#endif
+#ifdef ST7789_240x320
+    if (actualDisplayBrightness != newBrightness) {
+        analogWrite(TFT_BL, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
@@ -198,6 +242,14 @@ void displaySplashScreen() {
     uint16_t GadgetLogoX = 152;
     uint16_t GadgetLogoY = 95;
 #endif
+#if TFT_WIDTH == 240 && TFT_HEIGHT == 320
+    uint16_t eMarieteLogoX = 100;
+    uint16_t eMarieteLogoY = 150;
+    uint16_t CO2LogoX = 50;
+    uint16_t CO2LogoY = 78;
+    uint16_t GadgetLogoX = 152;
+    uint16_t GadgetLogoY = 95;
+#endif
 
     tft.fillScreen(TFT_WHITE);
     tft.setSwapBytes(true);
@@ -207,7 +259,7 @@ void displaySplashScreen() {
 }
 
 void initBacklight() {
-#ifdef TTGO_TDISPLAY
+#if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BL, OUTPUT);
     setDisplayBrightness(DisplayBrightness);
 #endif
@@ -315,6 +367,7 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
+    if (!displayShowBattery) return;
     String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
