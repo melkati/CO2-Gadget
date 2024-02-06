@@ -266,9 +266,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*********                       INCLUDE BUZZER FUNCIONALITY                                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-#if defined SUPPORT_BUZZER
 #include "CO2_Gadget_Buzzer.h"
-#endif
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/

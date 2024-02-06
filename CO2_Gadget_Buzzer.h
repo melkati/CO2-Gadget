@@ -9,6 +9,8 @@
 
 #include <Ticker.h>
 
+#define BUFFER_DEBUG
+
 Ticker buzzer;
 bool belowRedRange = true;
 
@@ -22,9 +24,11 @@ void wakeUpDisplay() {
     return;
 }
 
-void buzzerRedRange() {
+void beepBuzzer() {
     if (co2 > co2RedRange) {
-        Serial.println("[BUZZ] Buzzer RED range");
+#ifdef BUFFER_DEBUG
+        Serial.println("[BUZZ] Buzzer beeping...");
+#endif
         tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
         delay(durationBuzzerBeep * 1.3);
         tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
@@ -47,9 +51,9 @@ void buzzerLoop() {
     if (co2 > co2RedRange && belowRedRange) {
         wakeUpDisplay();
         if (repeatBuzzer)
-            buzzer.attach(timeBetweenBuzzerBeep, buzzerRedRange);
+            buzzer.attach(timeBetweenBuzzerBeep, beepBuzzer);
         else
-            buzzer.once(0, buzzerRedRange);
+            buzzer.once(0, beepBuzzer);
         belowRedRange = false;
         return;
     } else if (co2 < (co2RedRange - BUZZER_HYSTERESIS)) {
@@ -63,7 +67,10 @@ void buzzerLoop() {
 
 void initBuzzer() {
 #ifdef SUPPORT_BUZZER
+#ifdef BUFFER_DEBUG
+    activeBuzzer = true;
     Serial.println("-->[BUZZ] Initializing Buzzer..");
+#endif
     pinMode(BUZZER_PIN, OUTPUT);
 
     // LEDC initialization
