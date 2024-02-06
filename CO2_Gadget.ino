@@ -15,6 +15,24 @@
 #endif
 /*****************************************************************************************************/
 
+// Functions and enum definitions
+void reverseButtons(bool reversed);
+void outputsLoop();
+
+// Define enum for toneBuzzerBeep
+enum ToneBuzzerBeep {
+    BUZZER_TONE_LOW = 0,
+    BUZZER_TONE_MED = 600,
+    BUZZER_TONE_HIGH = 1500
+};
+
+// Define enum for durationBuzzerBeep
+enum DurationBuzzerBeep {
+    DURATION_BEEP_SHORT = 50,
+    DURATION_BEEP_MEDIUM = 150,
+    DURATION_BEEP_LONG = 300
+};
+
 // Next data always defined to be able to configure in menu
 String hostName = UNITHOSTNAME;
 String rootTopic = UNITHOSTNAME;
@@ -64,8 +82,8 @@ bool outputsModeRelay = false;
 // Variables for buzzer functionality
 bool activeBuzzer = true;
 bool repeatBuzzer = true;
-uint16_t toneBuzzerBeep = 1000;
-uint16_t durationBuzzerBeep = 100;
+uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
+uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
 uint16_t timeBetweenBuzzerBeep = 10;
 
 uint8_t channelESPNow = 1;
@@ -135,10 +153,6 @@ uint16_t co2RedRange = 1000;
 #include <SPIFFS.h>
 
 Stream& miSerialPort = Serial;
-
-// Functions and enum definitions
-void reverseButtons(bool reversed);
-void outputsLoop();
 
 enum notificationTypes { notifyNothing,
                          notifyInfo,
