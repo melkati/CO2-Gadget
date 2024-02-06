@@ -25,7 +25,6 @@ String mqttUser = "";
 String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
-String mDNSName = "Unset";
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
@@ -389,6 +388,16 @@ void readingsLoop() {
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
 
+    // If battery pin not connected, assume it's working on external power
+    if (battery_voltage < 1) {
+        workingOnExternalPower = true;
+    }
+
+    if (inMenu) {
+        setDisplayBrightness(DisplayBrightness);
+        return;
+    }
+
     // Display backlight IS sleeping
     if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
@@ -410,7 +419,7 @@ void adjustBrightnessLoop() {
         return;
     }
 
-    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
+    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
         Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
     }
