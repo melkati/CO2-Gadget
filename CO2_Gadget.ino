@@ -369,6 +369,16 @@ void readingsLoop() {
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
 
+    // If battery pin not connected, assume it's working on external power
+    if (battery_voltage < 1) {
+        workingOnExternalPower = true;
+    }
+
+    if (inMenu) {
+        setDisplayBrightness(DisplayBrightness);
+        return;
+    }
+
     // Display backlight IS sleeping
     if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
@@ -390,7 +400,7 @@ void adjustBrightnessLoop() {
         return;
     }
 
-    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000)) {
+    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
         Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
     }

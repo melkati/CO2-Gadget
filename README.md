@@ -56,21 +56,22 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16
-| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| Flavour | Display | RX/TX | I2C (SDA/SCL) | UP/DWN Buttons | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
+|:------------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT       | TFT 240×135    | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| TTGO_TDISPLAY_SANDWICH  | TFT 240×135    | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| TDISPLAY_S3             | TFT 320x170    | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16
+| esp32dev_OLED	SSH1106   | SSH1106 128×64 | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev                | No display     | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev-sandwich       | No display     | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26
 
-- Flavor: Name of the firmware variant.
-- Display: Display supported by each flavor.
+- Flavour: Name of the firmware variant.
+- Display: Display supported by each flavour.
 - RX / TX: Pins (GPIO) used for sensors connected by serial port.
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
-- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off.
+- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
 - Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
@@ -157,7 +158,7 @@ I recommend PlatformIO because it is more easy than Arduino IDE. For this, pleas
 ```python
 pio run pio run -e TTGO_TDISPLAY_SANDWICH --target upload
 ```
-You must replace "TTGO_TDISPLAY_SANDWICH" with the flavor of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
+You must replace "TTGO_TDISPLAY_SANDWICH" with the flavour of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
 
 If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the "Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
 
