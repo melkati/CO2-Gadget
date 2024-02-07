@@ -10,9 +10,7 @@ Button2 btnDwn(BTN_DWN);       // Initialize the down button
 void IRAM_ATTR buttonUpISR() {
     if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
     {
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-        setDisplayBrightness(DisplayBrightness);  // Turn on the display at DisplayBrightness brightness
-#endif
+        shouldWakeUpDisplay = true;
         lastTimeButtonPressed = millis();
     }
 }
