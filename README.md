@@ -25,11 +25,14 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Sending of data via MQTT
 - Receiving remote commands via MQTT
 - MQTT Discovery protocol for Home Assistant (and others supporting it as HomeSeer with mcsMQTT)
+- Easy installing via web browser
+- Easy WiFi setup via web browser on install and anytime (supports Improv-WiFi)
+- Easy WiFi setup via bluetooth with the MyAmbiance App in iOS and Android
 - ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
 - Support for RGB LEDs
-- GPIO outputs to, for example, activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+- GPIO outputs for alarms and activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
 - ~~-LoRa/LoRaWAN in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).~~
 
 # Supported hardware and build
@@ -53,21 +56,22 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16
-| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| Flavour | Display | RX/TX | I2C (SDA/SCL) | UP/DWN Buttons | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
+|:------------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT       | TFT 240×135    | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| TTGO_TDISPLAY_SANDWICH  | TFT 240×135    | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
+| TDISPLAY_S3             | TFT 320x170    | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16
+| esp32dev_OLED	SSH1106   | SSH1106 128×64 | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev                | No display     | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev-sandwich       | No display     | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
+| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26
 
-- Flavor: Name of the firmware variant.
-- Display: Display supported by each flavor.
+- Flavour: Name of the firmware variant.
+- Display: Display supported by each flavour.
 - RX / TX: Pins (GPIO) used for sensors connected by serial port.
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
-- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off.
+- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
 - Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
@@ -88,6 +92,7 @@ CanAirIO sensorlib right now supports:
 | Panasonic SN-GCJA5L | Yes | Yes | Auto | STABLE |
 | Plantower models    | Yes | --- | Auto | STABLE |
 | Nova SDS011         | Yes | --- | Auto | STABLE |
+| IKEA Vindriktning   | Yes | --- | Select | STABLE
 | Sensirion SPS30     | Yes | Yes | Select / Auto | STABLE |
 
 NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
@@ -110,7 +115,11 @@ NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
 | SHT31       | i2c |  Auto | STABLE |
 | AHT10       | i2c |  Auto | STABLE |
 | BME280      | i2c |  Auto | STABLE |
+| BMP280      | i2c |  Auto | STABLE |
 | BME680      | i2c |  Auto | STABLE |
+| DfRobot SEN0469 NH3 | i2c |  Auto   | TESTING |
+| DFRobot SEN0466 CO  | i2c |  Auto   | TESTING |
+| Geiger CAJOE        | i2c |  Select | TESTING |
 | DHTxx       | TwoWire |  Auto | DEPRECATED |
 
 NOTE: DHT22 is supported but is not recommended
@@ -122,7 +131,7 @@ Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canai
 
 ## With PlatformIO (recommended)
 
-**Note:** If all you want is to flash CO2 Gadget into your board go [here:](https://emariete.com/en/meter-co2-gadget/). You don't need to compile the firmware.
+**Note:** If all you want is to install CO2 Gadget into your board go [here:](https://emariete.com/en/meter-co2-gadget/). You can install it from your web browser and don't need to compile the firmware.
 
 ### Install PlatformIO
 
@@ -149,53 +158,16 @@ I recommend PlatformIO because it is more easy than Arduino IDE. For this, pleas
 ```python
 pio run pio run -e TTGO_TDISPLAY_SANDWICH --target upload
 ```
-You must replace "TTGO_TDISPLAY_SANDWICH" with the flavor of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
+You must replace "TTGO_TDISPLAY_SANDWICH" with the flavour of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
 
 If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the "Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
 
 ## With Arduino
 
 **NOTE:**
-Currently neither the code is ready to compile with the Arduino IDE nor these instructions are up to date. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
-
-When the code is more stable and changes less often, I will update the code the instructions to compile with the Arduino IDE. Right now it is modified very often with bugfixes and new functionalities and it takes me a lot of time to be aware of maintaining compatibility with the Arduino IDE.
+Currently Arduino IDE is not supported. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
 
 I recommend that you use VS Code with PlatformIO. You have many tutorials on the internet, and it is not as difficult at all as it seems.
-
-#### Prerequisites
-
-To **compile this project with Arduino IDE** (the integrated development enviroment), you have to **install Arduino IDE**, and **add the libraries** referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), as **Arduino won't install it automatically** like PlatformIO does.
-
-Also, you need to add support for ESP32 boards:
-
-For Arduino IDE: Adding the line **https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json** in: File > Preferences > Additional Boards Manager URLs.
-
-In Arduino IDE select your board, COM port, etc. in the Tools menu and to upload to your board select Program -> Upload or click on the "upload" icon.
-
-To **compile this project with Arduino CLI** (the command line version of Arduino), you first need to install **arduino-cli** or the **Arduino IDE** with the libraries referenced in **lib_deps** in the file [platformio.ini](https://github.com/melkati/CO2-Gadget/blob/master/platformio.ini), because **Arduino won't install it automatically** like PlatformIO does.
-
-You must first add support for ESP32 boards in Arduino CLI: Follow the next steps:
-
-```bash
-arduino-cli config init
-```
-
-in the `.arduino15/arduino-cli.yaml` file add:
-
-```yml
-board_manager:
-  additional_urls:
-    - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-``` 
-
-From `arduino-cli` you can load CO2 Gadget in an ESP32 board following these steps:
-
-```javascript
-arduino-cli core update-index
-arduino-cli core install esp32:esp32:esp32
-arduino-cli compile --fqbn esp32:esp32:esp32 CO2_Gadget.ino
-arduino-cli upload --fqbn esp32:esp32:esp32:UploadSpeed=115200 -p /dev/ttyUSB0 basic
-```
 
 # Supporting the project
 
@@ -209,13 +181,12 @@ When creating a pull request, we recommend that you do the following:
 - Clone the repository
 - Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
 - Run to any clang formatter if it is a code, for example using the `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
-- Document the PR description or code will be great
-- Target your pull request to be merged with `development` branch
+- Document the PR description and code is a must
+- Target your pull request to be merged with the `development` branch
 
 # TODO
 
 - [ ] Implement full support for PM 2.5
-- [ ] Full configuration vía web page
 
 # Useful information
 
@@ -224,10 +195,11 @@ When creating a pull request, we recommend that you do the following:
 - [Everything about the Winsen MH-Z19 NDIR CO2 sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
 - [Everything about the Winsen Low Consumption CO2 Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
 - [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparison-co2-sensors-mh-z19b-vs-senseair-s8/)
+- [Tutorial to build a CO2 Monitor with a TTGO T-Display board](https://emariete.com/en/co2-meter-co2-display-tft-colour-ttgo-t-display-sensirion-scd30/)
 
 # Credits
 
-Thanks to all collaborators, contributors and [eMariete](https://emariete.com) community for testing and reports.
+Thanks to all collaborators, contributors and to the [eMariete](https://emariete.com) community for testing and reports.
 
 ---
 ## License

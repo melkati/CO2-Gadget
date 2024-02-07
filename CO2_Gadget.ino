@@ -25,9 +25,7 @@ String mqttUser = "";
 String mqttPass = "";
 String wifiSSID = WIFI_SSID_CREDENTIALS;
 String wifiPass = WIFI_PW_CREDENTIALS;
-String mDNSName = "Unset";
 String MACAddress = "Unset";
-// String peerESPNow = ESPNOW_PEER_MAC_ADDRESS;
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // Communication options
@@ -35,6 +33,7 @@ bool activeBLE = true;
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
+bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
 bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
@@ -44,9 +43,10 @@ uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connec
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 20;
 bool mqttDiscoverySent = false;
+bool wifiChanged = false;
 
 // Display and menu options
-uint32_t DisplayBrightness = 100;
+uint16_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
 bool displayShowTemperature = true;
@@ -54,7 +54,6 @@ bool displayShowHumidity = true;
 bool displayShowBattery = true;
 bool displayShowCO2 = true;
 bool displayShowPM25 = true;
-
 bool debugSensors = false;
 bool inMenu = false;
 uint16_t measurementInterval = 10;
@@ -63,6 +62,7 @@ int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
+uint64_t timeInitializationCompleted = 0;
 
 // Variables for Battery reading
 float battery_voltage = 0;
@@ -71,6 +71,7 @@ uint16_t timeBetweenBatteryRead = 15;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 
 // Variables to control automatic display off to save power
+bool workingOnExternalPower = true;      // True if working on external power (USB connected)
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
@@ -367,30 +368,41 @@ void readingsLoop() {
 
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    if (timeToDisplayOff == 0) return;  // TFT Always ON
 
-    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
-    boolean workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+    // If battery pin not connected, assume it's working on external power
+    if (battery_voltage < 1) {
+        workingOnExternalPower = true;
+    }
 
-    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
-    if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
-        if (actualDisplayBrightness == 0)  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
-        {
-            Serial.println("-->[LOOP] if (actualDisplayBrightness == 0) setDisplayBrightness(DisplayBrightness): " + String(DisplayBrightness));
-            setDisplayBrightness(DisplayBrightness);  // Turn on the display
+    if (inMenu) {
+        setDisplayBrightness(DisplayBrightness);
+        return;
+    }
+
+    // Display backlight IS sleeping
+    if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
+        if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+            setDisplayBrightness(DisplayBrightness);
         }
         return;
     }
 
-    if (actualDisplayBrightness != DisplayBrightness) {
-        Serial.println("-->[LOOP] if (actualDisplayBrightness != DisplayBrightness) setDisplayBrightness(DisplayBrightness): " + String(DisplayBrightness));
+    // Display backlight is NOT sleeping and brightness change detected
+    if ((actualDisplayBrightness > 0) && (actualDisplayBrightness != DisplayBrightness)) {
         setDisplayBrightness(DisplayBrightness);
     }
 
-    if ((actualDisplayBrightness != 0) && ( ( millis() - lastTimeButtonPressed ) >= (timeToDisplayOff * 1000))) {
+    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
+    if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+        if (actualDisplayBrightness == 0) {
+            setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
+        }
+        return;
+    }
+
+    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
         Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
         turnOffDisplay();
-        actualDisplayBrightness = 0;
     }
 #endif
 }
@@ -404,28 +416,36 @@ void batteryLoop() {
             // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
         }
     }
+    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
+    workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+}
+
+void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
+    while (Serial.available()) {
+        Serial.read();
+    }
+    delay(100);  // time to write all data to serial
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    Serial.end();
+    setCpuFrequencyMhz(newCpuFrequency);
+    Serial.begin(115200);
+#endif
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    setCpuFrequencyMhz(newCpuFrequency);
+#endif
 }
 
 void utilityLoop() {
-    static float lastCheckedVoltage = 0;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
-    const float highVoltageThreshold = 4.5;
     const int16_t highCpuFrequency = 240;
     const int16_t lowCpuFrequency = 80;
 
-    if (battery_voltage > highVoltageThreshold && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to 240MHz\n", battery_voltage);
-        setCpuFrequencyMhz(highCpuFrequency);
-    } else if (battery_voltage < highVoltageThreshold && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to 80MHz\n", battery_voltage);
-        setCpuFrequencyMhz(lowCpuFrequency);
-    }
-
-    if (battery_voltage != lastCheckedVoltage) {
-        Serial.flush();
-        Serial.end();
-        Serial.begin(115200);
-        lastCheckedVoltage = battery_voltage;
+    if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", battery_voltage, highCpuFrequency);
+        setCpuFrequencyAndReinitSerial(highCpuFrequency);
+    } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", battery_voltage, lowCpuFrequency);
+        setCpuFrequencyAndReinitSerial(lowCpuFrequency);
     }
 }
 
@@ -467,8 +487,9 @@ void setup() {
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
-    initWifi();
     initSensors();
+    initWifi();
+    wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
     initESPNow();
 #endif
@@ -477,25 +498,23 @@ void setup() {
 #endif
     menu_init();
     buttonsInit();
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
-    Serial.println("-->[STUP] Ready.");
-
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
     }
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+    Serial.println("-->[STUP] Ready.");
+    timeInitializationCompleted = millis();
 }
 
 void loop() {
-    if (Serial.peek() != -1 && Serial.peek() != 0x2A) {  // 0x2A is the '*' character
-        improvLoopNew();
-    }
     batteryLoop();
+    utilityLoop();
+    improvLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
-    utilityLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();

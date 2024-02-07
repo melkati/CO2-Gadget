@@ -27,8 +27,6 @@
 
 using namespace Menu;
 
-bool changedToIdle = false;
-
 String rightPad(const String &aString, uint8_t aLength) {
     String paddedString = aString;
     while (paddedString.length() < aLength) {
@@ -79,7 +77,6 @@ const char *const hexChars[] MEMMODE = {"0123456789ABCDEF"};
 const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
 const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}?¿"};
 const char *const ssidChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@%&/()=-*^~:.{}¿"};
-
 const char *const reducedSet[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
 // field will initialize its size by this string length
@@ -202,7 +199,7 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
     return quit;
 }
 
-result dosetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
+result doSetDisplayBrightness(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
     Serial.printf("-->[MENU] Setting TFT brightness at %d", DisplayBrightness);
     Serial.print(F("-->[MENU] action1 event:"));
@@ -317,7 +314,8 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
     #endif
   } else {
     initWifi();
-    activeMQTT = preferences.getBool("activeMQTT", false);
+    nav.target-> dirty = true;
+    activeMQTT = preferences.getBool("activeMQTT", false); // TO-DO: Check if this is needed. It do not looks fine.
     if ((activeMQTT) && (WiFi.isConnected())) {
       initMQTT();
     }
@@ -333,11 +331,8 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
   Serial.println(e);
   Serial.flush();
 #endif  
-  // Serial.printf("tempWiFiSSID: #%s#\n", tempWiFiSSID);
   wifiSSID = String(tempWiFiSSID);
-  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
   wifiSSID.trim();
-  // Serial.printf("wifiSSID: #%s#\n", wifiSSID.c_str());
   return proceed;
 }
 
@@ -369,11 +364,24 @@ TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
 
+#ifdef SUPPORT_OTA
+result doSetActiveOTA(eventMask e, navNode &nav, prompt &item) {
+  return proceed;
+}
+
+TOGGLE(activeOTA, activeOTAMenu, "OTA Enable: ", doNothing,noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveOTA, exitEvent)
+  ,VALUE("OFF", false, doSetActiveOTA, exitEvent));
+#endif
+
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
   ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
   ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
   ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
+#ifdef SUPPORT_OTA
+  ,SUBMENU(activeOTAMenu)
+#endif
   ,EXIT("<Back"));
 
 
@@ -615,7 +623,7 @@ TOGGLE(showFahrenheit, showFahrenheitMenu, "Units: ", doNothing,noEvent, wrapSty
 
 MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
   ,FIELD(temp, "Temp", " deg C", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset"," deg C",-50,50,1,0.1,doSetTempOffset,(eventMask)(enterEvent | exitEvent | updateEvent),wrapStyle)
+  ,altFIELD(decPlaces<1>::menuField,tempOffset,"Offset"," deg C",0,30,1,0.1,doSetTempOffset,(eventMask)(enterEvent | exitEvent | updateEvent),wrapStyle)
   ,SUBMENU(showFahrenheitMenu)
   ,EXIT("<Back"));
 
@@ -673,7 +681,7 @@ TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wr
   ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
-  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, dosetDisplayBrightness, anyEvent, wrapStyle)
+  ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetDisplayBrightness, anyEvent, wrapStyle)
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,SUBMENU(activeDisplayReverse)
@@ -715,7 +723,7 @@ result doSetNeopixelBrightness(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
-result doSetoutOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
+result doSetOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] Setting outputsModeRelay to %d", outputsModeRelay);
   Serial.print(F("-->[MENU] action1 event:"));
@@ -727,8 +735,8 @@ result doSetoutOuputsRelayMode(eventMask e, navNode &nav, prompt &item) {
 }
 
 TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outs: ", doNothing,noEvent, wrapStyle
-  ,VALUE("RGB LED", false, doSetoutOuputsRelayMode, anyEvent)
-  ,VALUE("Relays", true, doSetoutOuputsRelayMode, anyEvent));
+  ,VALUE("RGB LED", false, doSetOuputsRelayMode, anyEvent)
+  ,VALUE("Relays", true, doSetOuputsRelayMode, anyEvent));
 
 MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
@@ -753,11 +761,35 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
+std::string getUptime() {
+  unsigned long uptime = millis() / 1000; // Get the uptime in seconds
+
+  unsigned long days = uptime / (24 * 60 * 60);
+  unsigned long hours = (uptime % (24 * 60 * 60)) / (60 * 60);
+  unsigned long minutes = (uptime % (60 * 60)) / 60;
+  unsigned long seconds = uptime % 60;
+
+  return "Uptime: " + std::to_string(days) + "D, " + std::to_string(hours) + "H, " +
+         std::to_string(minutes) + "M, " + std::to_string(seconds) + "S";
+}
+
+
+// Customizing a prompt look by extending the prompt class
+class altPromptUptime:public prompt {
+public:
+  altPromptUptime(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    return out.printRaw(getUptime().c_str(),len);
+  }
+};
+
+
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,OP("Comp " BUILD_GIT, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,OP("" FLAVOUR, doNothing, noEvent)
+  ,altOP(altPromptUptime, "", doNothing, noEvent)
   ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
   ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
   ,EXIT("<Back"));
@@ -774,8 +806,8 @@ result enterMainMenu(menuOut &o, idleEvent e) {
 //   ,VALUE("ON", true, doNothing, noEvent)
 //   ,VALUE("OFF", false, doNothing, noEvent));
 
+// ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,SUBMENU(informationMenu)
   ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
@@ -835,8 +867,8 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
 
 #define tft_WIDTH 240
 #define tft_HEIGHT 135
-#define fontW 12
-#define fontH 18
+#define fontW 10
+#define fontH 20
 
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 170 && TFT_HEIGHT == 320  // Display is rotated 90 degrees
@@ -970,17 +1002,15 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleStart");
 #endif
-        changedToIdle = true;
         setInMenu(false);
     } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-        displayShowValues();
+        // displayShowValues();
 #endif
     } else if (e == idleEnd) {
-        changedToIdle = true;
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Event idleEnd");
 #endif
@@ -996,49 +1026,41 @@ result idle(menuOut &o, idleEvent e) {
 }
 
 void menuLoop() {
-    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character
+    uint16_t timeToWaitForImprov = 5;                   // Time to wait for Improv-WiFi to connect on startup
+    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
         inMenu = true;
         if (inMenu) {
             nav.doInput();  // Do input, even if no display, as serial menu needs this
         }
     }
 
+    if (millis() < timeInitializationCompleted + timeToWaitForImprov * 1000) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+        displayShowValues();
+#endif
+        return;
+    }
+
+    if (activeWIFI) {
+        activeMQTTMenu[0].enable();
+    } else {
+        activeMQTTMenu[0].disable();
+    }
+
 #if defined(SUPPORT_TFT)
+    if ((wifiChanged) && (!inMenu)) {
+        wifiChanged = false;
+        tft.fillScreen(TFT_BLACK);
+    }
     if (inMenu) {
         nav.poll();  // this device only draws when needed
     }
     nav.doOutput();
     if (nav.sleepTask) {
+        tft.unloadFont();
         displayShowValues();
+        tft.loadFont(SMALL_FONT);
     }
-#elif defined(SUPPORT_OLED)
-    if (nav.sleepTask) {
-        displayShowValues();
-    } else {
-        if (nav.changed(0)) {
-            u8g2.firstPage();
-            do nav.doOutput();
-            while (u8g2.nextPage());
-        }
-    }
-#else  // For serial only output
-    if (!nav.sleepTask) {
-        if (nav.changed(0)) {
-            nav.doOutput();
-        }
-    }
-#endif
-}
-
-void OLDmenuLoop() {
-    nav.doInput();  // Do input, even if no display, as serial menu needs this
-#if defined(SUPPORT_TFT)
-    if (changedToIdle) {
-        tft.fillScreen(TFT_BLACK);
-        changedToIdle = false;
-        nav.doOutput();
-    }
-    nav.poll();  // this device only draws when needed
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
         displayShowValues();
@@ -1059,13 +1081,15 @@ void OLDmenuLoop() {
 }
 
 void menu_init() {
+#ifdef SUPPORT_TFT
+    tft.loadFont(SMALL_FONT);
+#endif
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);
-    nav.timeOut = 30;
+    // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
-    mainMenu[0].disable();         // Make battery voltage field unselectable
     informationMenu[0].disable();  // Make information field unselectable
     informationMenu[1].disable();
     informationMenu[2].disable();

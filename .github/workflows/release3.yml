@@ -1,4 +1,4 @@
-name: Release V2.2
+name: Release V2.4
 
 # # # # # # # # # # #
 # To create new release, just push a new tag with the format v* (v1.0, v2.0, v2.1, v2.2, etc)
@@ -48,11 +48,10 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3]
-            # environment: [TDISPLAY_S3]
-            # environment: [TTGO_TDISPLAY_SANDWICH]
-            # environment: [esp32dev, esp32dev-sandwich]
-            # environment: [esp32dev-sandwich]
+            environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3, esp32dev_ST7789_240x320]
+
+        env:
+          CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}        
 
         timeout-minutes: 30 # time out after 30 minutes (default is 360 minutes)
 
@@ -64,6 +63,20 @@ jobs:
         - name: Show enviroments
           run: |
             echo 
+
+        - name: Determine chipFamily
+          id: determine_chip_family
+          run: |
+            case "${{ matrix.environment }}" in
+            "esp32dev")
+              CHIP_FAMILY="ESP32";;
+            "TDISPLAY_S3")
+              CHIP_FAMILY="ESP32-S3";;
+            # Add more cases for other environments as needed
+            *)
+              CHIP_FAMILY="UNKNOWN";;
+            esac
+            echo "::set-output name=chipFamily::${CHIP_FAMILY}"
 
         - name: Set up Python ${{ matrix.python-version }}
           uses: actions/setup-python@v1
@@ -92,6 +105,23 @@ jobs:
         - name: Create manifest file
           id: createmanifest
           run: |
+
+            # Define offset values based on env.CHIP_FAMILY
+            if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
+              bootloader_offset=0
+              partitions_offset=32768
+              app0_offset=57344
+              firmware_offset=65536
+              spiffs_offset=13172736
+            else
+              # Default values for ESP32 or other environments
+              bootloader_offset=4096
+              partitions_offset=32768
+              app0_offset=57344
+              firmware_offset=65536
+              spiffs_offset=3997696
+            fi
+
             # Create manifest
             echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -100,17 +130,16 @@ jobs:
             echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "  \"new_install_improv_wait_time\": 10," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "  \"new_install_improv_wait_time\": 20," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "        \"chipFamily\": \"ESP32\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "        \"chipFamily\": \"${{ env.CHIP_FAMILY }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"improv\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": 4096  }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": 32768 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"boot_app0.bin\", \"offset\": 57344 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin\", \"offset\": 65536 }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
-            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin\", \"offset\": 3997696 }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin\", \"offset\": $bootloader_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin\", \"offset\": $partitions_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin\", \"offset\": $firmware_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
+            echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin\", \"offset\": $spiffs_offset }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
             echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.manifest.json
@@ -176,5 +205,5 @@ jobs:
             METHOD: ftp
             PORT: 21
             ARGS: --verbose
-        - name: Clean WP Rocket Cache
+        - name: Clean eMariete.com Cache
           run: curl https://emariete.com/clean_cache.php
