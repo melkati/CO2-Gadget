@@ -85,9 +85,9 @@ void initSensors() {
     Wire.begin();
 #endif
 
-Serial.println("-->[SENS] Detecting sensors..");
+    Serial.println("-->[SENS] Detecting sensors..");
 
-uint16_t defaultCO2MeasurementInterval = 5;  // TO-DO: Move to preferences
+    uint16_t defaultCO2MeasurementInterval = 5;  // TO-DO: Move to preferences
 // Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
 // CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
 #ifdef CSL_REVISION  // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
@@ -134,7 +134,9 @@ uint16_t defaultCO2MeasurementInterval = 5;  // TO-DO: Move to preferences
 }
 
 void sensorsLoop() {
-    sensors.loop();
+    if (!buzzerBeeping) {
+        sensors.loop();
+    }
 }
 
 #endif  // CO2_Gadget_Sensors_h

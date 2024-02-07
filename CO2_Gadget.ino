@@ -74,12 +74,14 @@ bool displayShowCO2 = true;
 bool displayShowPM25 = true;
 bool debugSensors = false;
 bool inMenu = false;
+bool shouldWakeUpDisplay = false;
 uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
 
 // Variables for buzzer functionality
+bool buzzerBeeping = false;
 bool activeBuzzer = true;
 bool repeatBuzzer = true;
 uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
@@ -163,9 +165,6 @@ bool displayNotification(String notificationText, String notificationText2, noti
 #if (!SUPPORT_OLED && !SUPPORT_TFT)
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
-#endif
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-// void setDisplayBrightness(uint32_t newBrightness);
 #endif
 
 /*****************************************************************************************************/
@@ -275,7 +274,6 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 /*****************************************************************************************************/
 #include "CO2_Gadget_Menu.h"
 
-
 /*****************************************************************************************************/
 /*********                                                                                   *********/
 /*********                      SETUP PUSH BUTTONS FUNCTIONALITY                             *********/
@@ -288,6 +286,16 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 
 static int64_t lastReadingsCommunicationTime = 0;
 static int startCheckingAfterUs = 1900000;
+
+void wakeUpDisplay() {
+    if (actualDisplayBrightness == 0) {
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+        setDisplayBrightness(DisplayBrightness);
+#endif
+        lastTimeButtonPressed = millis();
+    }
+    return;
+}
 
 void processPendingCommands() {
     if (pendingCalibration == true) {
@@ -322,7 +330,7 @@ void initGPIO() {
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
-    digitalWrite(RED_PIN, LOW);    
+    digitalWrite(RED_PIN, LOW);
 }
 
 void outputsRelays() {
@@ -400,6 +408,11 @@ void readingsLoop() {
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
 
+    if (shouldWakeUpDisplay) {
+        wakeUpDisplay();
+        shouldWakeUpDisplay = false;
+    }
+
     // If battery pin not connected, assume it's working on external power
     if (battery_voltage < 1) {
         workingOnExternalPower = true;
@@ -455,7 +468,7 @@ void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
     while (Serial.available()) {
         Serial.read();
     }
-    delay(100); // time to write all data to serial
+    delay(100);  // time to write all data to serial
 #if defined(CONFIG_IDF_TARGET_ESP32)
     Serial.end();
     setCpuFrequencyMhz(newCpuFrequency);
