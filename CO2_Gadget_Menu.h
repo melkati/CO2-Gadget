@@ -876,8 +876,13 @@ const colorDef<uint16_t> colors[6] MEMMODE = {
 #define tft_WIDTH 320
 #define tft_HEIGHT 170
 #endif
+#if TFT_WIDTH == 240 && TFT_HEIGHT == 320  // Display is rotated 90 degrees
+#undef tft_WIDTH
+#undef tft_HEIGHT
+#define tft_WIDTH 320
+#define tft_HEIGHT 240
 #endif
-
+#endif
 
 const panel panels[] MEMMODE = {{0, 0, tft_WIDTH / fontW, tft_HEIGHT / fontH}};
 navNode *nodes[sizeof(panels) /
