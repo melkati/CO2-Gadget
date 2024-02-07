@@ -7,12 +7,7 @@
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 
-#include <Ticker.h>
-
-#define BUFFER_DEBUG
-
-Ticker buzzer;
-bool belowRedRange = true;
+// #define BUZZER_DEBUG
 
 void wakeUpDisplay() {
     if (actualDisplayBrightness == 0) {
@@ -25,40 +20,37 @@ void wakeUpDisplay() {
 }
 
 void beepBuzzer() {
+    static uint16_t numberOfBeepsLeft = 3;
+    static uint64_t timeNextBeep = 0;
     if (co2 > co2RedRange) {
-#ifdef BUFFER_DEBUG
+#ifdef BUZZER_DEBUG
         Serial.println("[BUZZ] Buzzer beeping...");
 #endif
-        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
-        delay(durationBuzzerBeep * 1.3);
-        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
-        delay(durationBuzzerBeep * 1.3);
-        tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
+
+        if (millis() > timeNextBeep) {
+            Serial.printf("[BUZZ] Beep %d\n", numberOfBeepsLeft);
+            if (numberOfBeepsLeft == 0) {
+                timeNextBeep = millis() + timeBetweenBuzzerBeep;
+                numberOfBeepsLeft = 3;
+            } else {
+                tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
+                timeNextBeep = millis() + durationBuzzerBeep + (durationBuzzerBeep * 1.3);
+                --numberOfBeepsLeft;
+            }
+        }
     }
 }
 
 void buzzerLoop() {
 #ifdef SUPPORT_BUZZER
     if (!activeBuzzer || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
-        if (buzzer.active()) {
-            noTone(BUZZER_PIN);
-            buzzer.detach();
-        }
-        belowRedRange = true;
+        noTone(BUZZER_PIN);
         return;
     }
 
-    if (co2 > co2RedRange && belowRedRange) {
+    if (co2 > co2RedRange) {
         wakeUpDisplay();
-        if (repeatBuzzer)
-            buzzer.attach(timeBetweenBuzzerBeep, beepBuzzer);
-        else
-            buzzer.once(0, beepBuzzer);
-        belowRedRange = false;
-        return;
-    } else if (co2 < (co2RedRange - BUZZER_HYSTERESIS)) {
-        buzzer.detach();
-        belowRedRange = true;
+        beepBuzzer();
     }
 
     return;
@@ -67,7 +59,7 @@ void buzzerLoop() {
 
 void initBuzzer() {
 #ifdef SUPPORT_BUZZER
-#ifdef BUFFER_DEBUG
+#ifdef BUZZER_DEBUG
     activeBuzzer = true;
     Serial.println("-->[BUZZ] Initializing Buzzer..");
 #endif
