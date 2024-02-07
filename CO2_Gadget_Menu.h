@@ -1060,7 +1060,8 @@ void menuLoop() {
         tft.unloadFont();
         displayShowValues();
         tft.loadFont(SMALL_FONT);
-    }
+    } else
+        co2_displayed = 0;
 #elif defined(SUPPORT_OLED)
     if (nav.sleepTask) {
         displayShowValues();

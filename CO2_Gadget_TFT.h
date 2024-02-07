@@ -77,6 +77,7 @@
 uint16_t iconDefaultColor = TFT_CYAN;
 uint16_t displayWidth;
 uint16_t displayHeight;
+volatile uint16_t co2_displayed = 0;
 
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);  // Invoke library, pins defined in platformio.ini
 TFT_eSprite spr = TFT_eSprite(&tft);             // Sprite object "spr" with pointer to "tft" object
@@ -531,7 +532,7 @@ uint16_t getCO2Color(uint16_t co2) {
 
 void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     if (co2 > 9999) co2 = 9999;
-
+    co2_displayed = co2;
     spr.loadFont(BIG_FONT);
     uint16_t width = spr.textWidth("0000");
     uint16_t height = elementPosition.co2FontDigitsHeight;
@@ -559,8 +560,10 @@ void showCO2units(int32_t posX, int32_t posY) {
 
 void displayShowValues() {
     uint8_t currentDatum = tft.getTextDatum();
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
-    showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
+    if (co2_displayed != co2) {
+        showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
+        showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
+    }
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY);
