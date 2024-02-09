@@ -63,7 +63,7 @@ void printPreferences() {
     // Buzzer preferences
     Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
     Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
-    Serial.printf("-->[PREF] timeBetweenBuzzerBeep is:\t#%d#\n", timeBetweenBuzzerBeep);
+    Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
 
     Serial.printf("-->[PREF] \n");
 }
@@ -154,7 +154,7 @@ void initPreferences() {
     // Retrieve buzzer preferences
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
-    timeBetweenBuzzerBeep = preferences.getInt("timeBtwnBzr", 10);                 // Time between consecutive beeps
+    timeBetweenBuzzerBeeps = preferences.getInt("timeBtwnBzr", 10);                 // Time between consecutive beeps
 
     rootTopic.trim();
     mqttClientId.trim();
@@ -234,7 +234,7 @@ void putPreferences() {
     // Buzzer preferences
     preferences.putUInt("toneBzrBeep", toneBuzzerBeep);        // Buzzer frequency
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);     // Buzzer duration
-    preferences.putInt("timeBtwnBzr", timeBetweenBuzzerBeep);  // Time between beeps
+    preferences.putInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
     preferences.end();
 }
@@ -366,7 +366,7 @@ String getActualSettingsAsJson() {
     // Buzzer preferences
     doc["toneBzrBeep"] = toneBuzzerBeep;         // Buzzer frequency
     doc["durBzrBeep"] = durationBuzzerBeep;      // Buzzer duration
-    doc["timeBtwnBzr"] = timeBetweenBuzzerBeep;  // Time between beeps
+    doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
@@ -460,7 +460,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         // Buzzer preferences
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];         // Buzzer frequency
         durationBuzzerBeep = JsonDocument["durBzrBeep"];      // Buzzer duration
-        timeBetweenBuzzerBeep = JsonDocument["timeBtwnBzr"];  // Time between beeps
+        timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
         // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
