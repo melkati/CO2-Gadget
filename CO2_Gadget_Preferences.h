@@ -64,6 +64,7 @@ void printPreferences() {
     Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
     Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
     Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
+    Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
 
     Serial.printf("-->[PREF] \n");
 }
