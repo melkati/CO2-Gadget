@@ -8,9 +8,10 @@
 /*****************************************************************************************************/
 
 // #define BUZZER_DEBUG
+bool belowRedRange = true;
 
 void beepBuzzer() {
-    static uint16_t numberOfBeepsLeft = 3;
+    static uint16_t numberOfBeepsLeft = 2;
     static uint64_t timeNextBeep = 0;
     if (co2 > co2RedRange) {
 #ifdef BUZZER_DEBUG
@@ -19,8 +20,11 @@ void beepBuzzer() {
         if (millis() > timeNextBeep) {
             Serial.printf("[BUZZ] Beep %d\n", numberOfBeepsLeft);
             if (numberOfBeepsLeft == 0) {
-                timeNextBeep = millis() + timeBetweenBuzzerBeep;
-                numberOfBeepsLeft = 3;
+                if (repeatBuzzer)
+                    timeNextBeep = millis() + timeBetweenBuzzerBeep * 1000;
+                else
+                    belowRedRange = false;
+                numberOfBeepsLeft = 2;
                 buzzerBeeping = false;
             } else {
                 tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
@@ -35,17 +39,16 @@ void beepBuzzer() {
 void buzzerLoop() {
 #ifdef SUPPORT_BUZZER
     if (!activeBuzzer || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
-        noTone(BUZZER_PIN);
         buzzerBeeping = false;
+        belowRedRange = true;
         return;
     }
 
-    if (co2 > co2RedRange) {
+    if (co2 > co2RedRange && belowRedRange) {
         shouldWakeUpDisplay = true;
         beepBuzzer();
-    }
-
-    return;
+    } else if (co2 < (co2RedRange - BUZZER_HYSTERESIS))
+        belowRedRange = true;
 #endif
 }
 
