@@ -132,43 +132,33 @@
         <fieldset id="buzzerFieldset">
           <legend>Buzzer</legend>
 
-          <div>
-            <label for="actvBuzzer">Buzzer Active:</label>
-            <input type="checkbox" id="actvBuzzer" name="actvBuzzer" onchange="toggleBuzzerFields()">
-          </div>
+          <label for="timeBtwnBzr">Buzzer Beeps:</label>
+          <select id="timeBtwnBzr" name="timeBtwnBzr">
+            <option value="-1">OFF</option>
+            <option value="0">One time</option>
+            <option value="5">Each 5 sec</option>
+            <option value="10">Each 10 sec</option>
+            <option value="15">Each 15 sec</option>
+            <option value="30">Each 30 sec</option>
+            <option value="60">Each 1 min</option>
+            <option value="120">Each 2 min</option>
+            <option value="300">Each 5 min</option>
+          </select>
 
-          <div id="buzzerFields" style="display:none;">
-            <label for="rptBuzzer">Repeat Buzzer:</label>
-            <select id="rptBuzzer" name="rptBuzzer">
-              <option value="false">Once</option>
-              <option value="true">Every</option>
-            </select>
+          <label for="toneBzrBeep">Tone of Buzzer Beep:</label>
+          <select id="toneBzrBeep" name="toneBzrBeep">
+            <option value="1500">High</option>
+            <option value="1000">Med</option>
+            <option value="300">Low</option>
+          </select>
 
-            <label for="toneBzrBeep">Tone of Buzzer Beep:</label>
-            <select id="toneBzrBeep" name="toneBzrBeep">
-              <option value="1500">High</option>
-              <option value="1000">Med</option>
-              <option value="300">Low</option>
-            </select>
+          <label for="durBzrBeep">Buzzer Beep Duration:</label>
+          <select id="durBzrBeep" name="durBzrBeep">
+            <option value="50">Short</option>
+            <option value="100">Medium</option>
+            <option value="200">Long</option>
+          </select>
 
-            <label for="durBzrBeep">Buzzer Beep Duration:</label>
-            <select id="durBzrBeep" name="durBzrBeep">
-              <option value="50">Short</option>
-              <option value="100">Medium</option>
-              <option value="200">Long</option>
-            </select>
-
-            <label for="timeBtwnBzr">Time Between Buzzer Beeps:</label>
-            <select id="timeBtwnBzr" name="timeBtwnBzr">
-              <option value="5">5 sec</option>
-              <option value="10">10 sec</option>
-              <option value="15">15 sec</option>
-              <option value="30">30 sec</option>
-              <option value="60">1 min</option>
-              <option value="120">2 min</option>
-              <option value="300">5 min</option>
-            </select>
-          </div>
         </fieldset>
 
 
@@ -362,10 +352,10 @@
         <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
       </div>
     </form>
-      <!-- Popup to display a message -->
-      <div id="popup">
-        <p>Saving preferences...</p>
-      </div>
+    <!-- Popup to display a message -->
+    <div id="popup">
+      <p>Saving preferences...</p>
+    </div>
   </div>
 
   <script>
@@ -516,12 +506,6 @@
           if (getPreferencesDebug) console.log('Setting debugSensors to:', preferences.debugSensors);
           document.getElementById("debugSensors").checked = preferences.debugSensors;
 
-          if (getPreferencesDebug) console.log('Setting actvBuzzer to:', preferences.actvBuzzer);
-          document.getElementById("actvBuzzer").checked = preferences.actvBuzzer;
-
-          if (getPreferencesDebug) console.log('Setting rptBuzzer to:', preferences.rptBuzzer);
-          document.getElementById("rptBuzzer").value = preferences.rptBuzzer;
-
           if (getPreferencesDebug) console.log('Setting toneBzrBeep to:', preferences.toneBzrBeep);
           document.getElementById("toneBzrBeep").value = preferences.toneBzrBeep;
 
@@ -582,8 +566,6 @@
         mqttBroker: document.getElementById("mqttBroker").value,
         mqttUser: document.getElementById("mqttUser").value,
         // mqttPass: document.getElementById("mqttPass").value
-        actvBuzzer: document.getElementById("actvBuzzer").checked,
-        rptBuzzer: document.getElementById("rptBuzzer").selectedOptions[0].getAttribute("value") === "true",
         toneBzrBeep: document.getElementById("toneBzrBeep").value,
         durBzrBeep: document.getElementById("durBzrBeep").value,
         timeBtwnBzr: document.getElementById("timeBtwnBzr").value
@@ -659,13 +641,6 @@
       }
     }
 
-    function toggleBuzzerFields() {
-      var buzzerFields = document.getElementById("buzzerFields");
-      var actvBuzzerCheckbox = document.getElementById("actvBuzzer");
-
-      // Oculta o muestra los campos de buzzer según el estado de la casilla de verificación
-      buzzerFields.style.display = actvBuzzerCheckbox.checked ? "block" : "none";
-    };
     // Set initial values when the page loads
     document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
   </script>
