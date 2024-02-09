@@ -13,19 +13,19 @@ bool belowRedRange = true;
 void beepBuzzer() {
     static uint16_t numberOfBeepsLeft = 2;
     static uint64_t timeNextBeep = 0;
-#ifdef BUZZER_DEBUG
-    Serial.println("[BUZZ] Buzzer beeping...");
-#endif
     if (millis() > timeNextBeep) {
-        Serial.printf("[BUZZ] Beep %d\n", numberOfBeepsLeft);
         if (numberOfBeepsLeft == 0) {
-            if (timeBetweenBuzzerBeep > 0)
-                timeNextBeep = millis() + timeBetweenBuzzerBeep * 1000;
-            else
+            if (timeBetweenBuzzerBeeps > 0) {
+                timeNextBeep = millis() + timeBetweenBuzzerBeeps * 1000;
+            } else {
                 belowRedRange = false;
+            }
             numberOfBeepsLeft = 2;
             buzzerBeeping = false;
         } else {
+#ifdef BUZZER_DEBUG
+            Serial.printf("[BUZZ] Beeps left: %d. Next beep in: %d sec. Beep duration: %d ms\n", numberOfBeepsLeft, timeBetweenBuzzerBeeps, durationBuzzerBeep);
+#endif
             tone(BUZZER_PIN, toneBuzzerBeep, durationBuzzerBeep);
             timeNextBeep = millis() + durationBuzzerBeep + (durationBuzzerBeep * 1.3);
             --numberOfBeepsLeft;
@@ -36,7 +36,7 @@ void beepBuzzer() {
 
 void buzzerLoop() {
 #ifdef SUPPORT_BUZZER
-    if (timeBetweenBuzzerBeep == -1 || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
+    if (timeBetweenBuzzerBeeps == -1 || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
         buzzerBeeping = false;
         belowRedRange = true;
         return;
