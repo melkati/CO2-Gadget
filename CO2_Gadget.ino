@@ -21,9 +21,9 @@ void outputsLoop();
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
-    BUZZER_TONE_LOW = 0,
-    BUZZER_TONE_MED = 600,
-    BUZZER_TONE_HIGH = 1500
+    BUZZER_TONE_LOW = 300,
+    BUZZER_TONE_MED = 1000,
+    BUZZER_TONE_HIGH = 2000
 };
 
 // Define enum for durationBuzzerBeep
