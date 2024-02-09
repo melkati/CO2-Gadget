@@ -61,8 +61,6 @@ void printPreferences() {
     Serial.printf("-->[PREF] showPM25:\t #%s#\n", ((displayShowPM25) ? "Show" : "Hide"));
 
     // Buzzer preferences
-    Serial.printf("-->[PREF] activeBuzzer is:\t#%s# (%d)\n", ((activeBuzzer) ? "Enabled" : "Disabled"), activeBuzzer);
-    Serial.printf("-->[PREF] repeatBuzzer is:\t#%s# (%d)\n", ((repeatBuzzer) ? "Enabled" : "Disabled"), repeatBuzzer);
     Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
     Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
     Serial.printf("-->[PREF] timeBetweenBuzzerBeep is:\t#%d#\n", timeBetweenBuzzerBeep);
@@ -154,11 +152,9 @@ void initPreferences() {
     displayShowPM25 = preferences.getBool("showPM25", true);
 
     // Retrieve buzzer preferences
-    activeBuzzer = preferences.getBool("actvBuzzer", false);         // Set to true if buzzer is active
-    repeatBuzzer = preferences.getBool("rptBuzzer", true);           // Set to true if the buzzer beep should be repeated
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
-    timeBetweenBuzzerBeep = preferences.getUInt("timeBtwnBzr", 10);  // Time between consecutive beeps
+    timeBetweenBuzzerBeep = preferences.getInt("timeBtwnBzr", 10);                 // Time between consecutive beeps
 
     rootTopic.trim();
     mqttClientId.trim();
@@ -236,11 +232,9 @@ void putPreferences() {
     preferences.putBool("showPM25", displayShowPM25);
 
     // Buzzer preferences
-    preferences.putBool("actvBuzzer", activeBuzzer);            // Buzzer active
-    preferences.putBool("rptBuzzer", repeatBuzzer);             // Repeat buzzer beep
-    preferences.putUInt("toneBzrBeep", toneBuzzerBeep);         // Buzzer frequency
-    preferences.putUInt("durBzrBeep", durationBuzzerBeep);      // Buzzer duration
-    preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeep);  // Time between beeps
+    preferences.putUInt("toneBzrBeep", toneBuzzerBeep);        // Buzzer frequency
+    preferences.putUInt("durBzrBeep", durationBuzzerBeep);     // Buzzer duration
+    preferences.putInt("timeBtwnBzr", timeBetweenBuzzerBeep);  // Time between beeps
 
     preferences.end();
 }
@@ -298,11 +292,9 @@ String getPreferencesAsJson() {
     doc["measInterval"] = preferences.getInt("measInterval", 10);
 
     // Buzzer preferences
-    doc["actvBuzzer"] = preferences.getBool("actvBuzzer", false);   // Buzzer active
-    doc["rptBuzzer"] = preferences.getBool("rptBuzzer", true);      // Repeat buzzer beep
     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);  // Buzzer frequency
     doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);     // Buzzer duration
-    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 10);    // Time between beeps
+    doc["timeBtwnBzr"] = preferences.getInt("timeBtwnBzr", 10);     // Time between beeps
 
     preferences.end();
 
@@ -372,8 +364,6 @@ String getActualSettingsAsJson() {
     doc["measInterval"] = measurementInterval;
 
     // Buzzer preferences
-    doc["actvBuzzer"] = activeBuzzer;            // Buzzer active
-    doc["rptBuzzer"] = repeatBuzzer;             // Repeat buzzer beep
     doc["toneBzrBeep"] = toneBuzzerBeep;         // Buzzer frequency
     doc["durBzrBeep"] = durationBuzzerBeep;      // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeep;  // Time between beeps
@@ -468,8 +458,6 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayShowPM25 = JsonDocument["showPM25"];
 
         // Buzzer preferences
-        activeBuzzer = JsonDocument["actvBuzzer"];            // Buzzer active
-        repeatBuzzer = JsonDocument["rptBuzzer"];             // Repeat buzzer beep
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];         // Buzzer frequency
         durationBuzzerBeep = JsonDocument["durBzrBeep"];      // Buzzer duration
         timeBetweenBuzzerBeep = JsonDocument["timeBtwnBzr"];  // Time between beeps
