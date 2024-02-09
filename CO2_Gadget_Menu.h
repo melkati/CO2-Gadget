@@ -68,7 +68,7 @@ result systemReboot() {
 
 // using the customized menu class
 // note that first parameter is the class name
-altMENU(confirmReboot, subMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
+altMENU(confirmReboot, rebootMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
 
 char tempIPAddress[16];
 
@@ -737,11 +737,6 @@ TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outs: ", doNothing,noEvent, wrap
   ,VALUE("RGB LED", false, doSetOuputsRelayMode, anyEvent)
   ,VALUE("Relays", true, doSetOuputsRelayMode, anyEvent));
 
-MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
-  ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
-  ,SUBMENU(activeNeopixelTypeMenu)
-  ,SUBMENU(outputsModeMenu)
-  ,EXIT("<Back"));
 
   #ifdef SUPPORT_BUZZER
 TOGGLE(timeBetweenBuzzerBeeps, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
@@ -772,6 +767,15 @@ MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 #endif
 
+MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
+  #ifdef SUPPORT_BUZZER
+  ,SUBMENU(buzzerConfigMenu)
+  #endif  
+  ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
+  ,SUBMENU(activeNeopixelTypeMenu)
+  ,SUBMENU(outputsModeMenu)
+  ,EXIT("<Back"));
+
 MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(CO2SensorConfigMenu)
   #ifdef SUPPORT_BLE
@@ -785,9 +789,6 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
-  #ifdef SUPPORT_BUZZER
-  ,SUBMENU(buzzerConfigMenu)
-  #endif  
   ,SUBMENU(outputsConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
@@ -833,17 +834,12 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-// TOGGLE(rebootMenu, rebootMenu, "Off on USB: ", doNothing,noEvent, wrapStyle
-//   ,VALUE("ON", true, doNothing, noEvent)
-//   ,VALUE("OFF", false, doNothing, noEvent));
-
 // ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(informationMenu)
-  ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
-  // ,SUBMENU(rebootMenu)
-  ,SUBMENU(subMenu)
+  ,SUBMENU(calibrationMenu)
+  ,SUBMENU(rebootMenu)
   ,EXIT("<Exit"));
 
 #define MAX_DEPTH 4
