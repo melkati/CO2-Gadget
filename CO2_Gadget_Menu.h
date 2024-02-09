@@ -744,16 +744,16 @@ MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
   #ifdef SUPPORT_BUZZER
-TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
+TOGGLE(timeBetweenBuzzerBeeps, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
   ,VALUE("OFF", -1,  doNothing, noEvent)
   ,VALUE("One time", 0,  doNothing, noEvent)
-  ,VALUE("Each 5s", 5,  doNothing, noEvent)
-  ,VALUE("Each 10s", 10,  doNothing, noEvent)
-  ,VALUE("Each 15s", 15,  doNothing, noEvent)
-  ,VALUE("Each 30s", 30,  doNothing, noEvent)
-  ,VALUE("Each 1min", 60,  doNothing, noEvent)
-  ,VALUE("Each 2min", 120,  doNothing, noEvent)
-  ,VALUE("Each 5min", 300,  doNothing, noEvent));
+  ,VALUE("Every 5s", 5,  doNothing, noEvent)
+  ,VALUE("Every 10s", 10,  doNothing, noEvent)
+  ,VALUE("Every 15s", 15,  doNothing, noEvent)
+  ,VALUE("Every 30s", 30,  doNothing, noEvent)
+  ,VALUE("Every 1min", 60,  doNothing, noEvent)
+  ,VALUE("Every 2min", 120,  doNothing, noEvent)
+  ,VALUE("Every 5min", 300,  doNothing, noEvent));
   
 TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
   ,VALUE("HIGH", BUZZER_TONE_HIGH,  doNothing, noEvent)
