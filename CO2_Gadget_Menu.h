@@ -744,23 +744,17 @@ MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
   #ifdef SUPPORT_BUZZER
-TOGGLE(activeBuzzer, activeBuzzerMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
-  ,VALUE("OFF", false,  doNothing, noEvent)
-  ,VALUE("ON", true,  doNothing, noEvent));
+TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
+  ,VALUE("OFF", -1,  doNothing, noEvent)
+  ,VALUE("One time", 0,  doNothing, noEvent)
+  ,VALUE("Each 5s", 5,  doNothing, noEvent)
+  ,VALUE("Each 10s", 10,  doNothing, noEvent)
+  ,VALUE("Each 15s", 15,  doNothing, noEvent)
+  ,VALUE("Each 30s", 30,  doNothing, noEvent)
+  ,VALUE("Each 1min", 60,  doNothing, noEvent)
+  ,VALUE("Each 2min", 120,  doNothing, noEvent)
+  ,VALUE("Each 5min", 300,  doNothing, noEvent));
   
-TOGGLE(repeatBuzzer, repeatBuzzerMenu, "Repeat: ", doNothing, noEvent, wrapStyle
-  ,VALUE("ONCE", false,  doNothing, noEvent)
-  ,VALUE("EVERY", true,  doNothing, noEvent));
-
-TOGGLE(timeBetweenBuzzerBeep, timeBetweenBuzzerBeepMenu, "Each: ", doNothing, noEvent, wrapStyle
-  ,VALUE("5 sec", 5,  doNothing, noEvent)
-  ,VALUE("10 sec", 10,  doNothing, noEvent)
-  ,VALUE("15 sec", 15,  doNothing, noEvent)
-  ,VALUE("30 sec", 30,  doNothing, noEvent)
-  ,VALUE("1 min", 60,  doNothing, noEvent)
-  ,VALUE("2 min", 120,  doNothing, noEvent)
-  ,VALUE("5 min", 300,  doNothing, noEvent));
-
 TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
   ,VALUE("HIGH", BUZZER_TONE_HIGH,  doNothing, noEvent)
   ,VALUE("MED", BUZZER_TONE_MED,  doNothing, noEvent)
@@ -772,8 +766,6 @@ TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent,
   ,VALUE("LONG", DURATION_BEEP_LONG,  doNothing, noEvent));
 
 MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
-  ,SUBMENU(activeBuzzerMenu)
-  ,SUBMENU(repeatBuzzerMenu)
   ,SUBMENU(timeBetweenBuzzerBeepMenu)
   ,SUBMENU(toneBuzzerBeepMenu)
   ,SUBMENU(durationBuzzerBeepMenu)
