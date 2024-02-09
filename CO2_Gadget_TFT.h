@@ -570,7 +570,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     if (posSpriteY < 0) posSpriteY = 0;
     spr.createSprite(digitWidth, height);
     if (spr.createSprite(digitWidth, height) == nullptr) {
-        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        // Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
         spr.unloadFont();
         spr.deleteSprite();
         return;
