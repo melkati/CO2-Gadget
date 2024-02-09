@@ -86,7 +86,7 @@ bool activeBuzzer = true;
 bool repeatBuzzer = true;
 uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
 uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
-uint16_t timeBetweenBuzzerBeep = 10;
+uint16_t timeBetweenBuzzerBeeps = 10;
 
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
