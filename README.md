@@ -30,6 +30,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Easy WiFi setup via bluetooth with the MyAmbiance App in iOS and Android
 - ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
+- Support for buzzer alarms on CO2 level
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
 - Support for RGB LEDs
 - GPIO outputs for alarms and activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
@@ -56,15 +57,15 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavour | Display | RX/TX | I2C (SDA/SCL) | UP/DWN Buttons | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel
-|:------------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT       | TFT 240×135    | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TTGO_TDISPLAY_SANDWICH  | TFT 240×135    | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26
-| TDISPLAY_S3             | TFT 320x170    | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16
-| esp32dev_OLED	SSH1106   | SSH1106 128×64 | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev                | No display     | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev-sandwich       | No display     | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26
-| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26
+| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26 | 13
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 27 | 25 | 32 | 33 | 34 | 26 | 13
+| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16 | 13
+| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26 | 13
+| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26 | 13
+| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 27 | 25 | 32 | 33 | 34 | 26 | 13
+| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26 | 13
 
 - Flavour: Name of the firmware variant.
 - Display: Display supported by each flavour.
@@ -77,6 +78,7 @@ These are the GPIOs used by each predefined board:
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement.
 - Neopixel GPIO: Pin to which you must connect the data line of the Neopixel (WS2812B) LEDs.
+- Buzzer: Pin to connect a passive buzzer for CO2 level sound alarms (built in transistor recommended).
 
 # Supported sensors
 

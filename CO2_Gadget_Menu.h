@@ -68,7 +68,7 @@ result systemReboot() {
 
 // using the customized menu class
 // note that first parameter is the class name
-altMENU(confirmReboot, subMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
+altMENU(confirmReboot, rebootMenu, "Reboot?", doNothing, noEvent, wrapStyle, (Menu::_menuData | Menu::_canNav), OP("Yes", systemReboot, enterEvent), EXIT("Cancel"));
 
 char tempIPAddress[16];
 
@@ -737,7 +737,40 @@ TOGGLE(outputsModeRelay, outputsModeMenu, "GPIO Outs: ", doNothing,noEvent, wrap
   ,VALUE("RGB LED", false, doSetOuputsRelayMode, anyEvent)
   ,VALUE("Relays", true, doSetOuputsRelayMode, anyEvent));
 
+
+  #ifdef SUPPORT_BUZZER
+TOGGLE(timeBetweenBuzzerBeeps, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing, noEvent, wrapStyle
+  ,VALUE("OFF", -1,  doNothing, noEvent)
+  ,VALUE("One time", 0,  doNothing, noEvent)
+  ,VALUE("Every 5s", 5,  doNothing, noEvent)
+  ,VALUE("Every 10s", 10,  doNothing, noEvent)
+  ,VALUE("Every 15s", 15,  doNothing, noEvent)
+  ,VALUE("Every 30s", 30,  doNothing, noEvent)
+  ,VALUE("Every 1min", 60,  doNothing, noEvent)
+  ,VALUE("Every 2min", 120,  doNothing, noEvent)
+  ,VALUE("Every 5min", 300,  doNothing, noEvent));
+  
+TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
+  ,VALUE("HIGH", BUZZER_TONE_HIGH,  doNothing, noEvent)
+  ,VALUE("MED", BUZZER_TONE_MED,  doNothing, noEvent)
+  ,VALUE("LOW", BUZZER_TONE_LOW,  doNothing, noEvent));
+
+TOGGLE(durationBuzzerBeep, durationBuzzerBeepMenu, "Span: ", doNothing, noEvent, wrapStyle
+  ,VALUE("SHORT", DURATION_BEEP_SHORT,  doNothing, noEvent)
+  ,VALUE("MED", DURATION_BEEP_MEDIUM,  doNothing, noEvent)
+  ,VALUE("LONG", DURATION_BEEP_LONG,  doNothing, noEvent));
+
+MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(timeBetweenBuzzerBeepMenu)
+  ,SUBMENU(toneBuzzerBeepMenu)
+  ,SUBMENU(durationBuzzerBeepMenu)
+  ,EXIT("<Back"));
+#endif
+
 MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
+  #ifdef SUPPORT_BUZZER
+  ,SUBMENU(buzzerConfigMenu)
+  #endif  
   ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
   ,SUBMENU(activeNeopixelTypeMenu)
   ,SUBMENU(outputsModeMenu)
@@ -801,17 +834,12 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-// TOGGLE(rebootMenu, rebootMenu, "Off on USB: ", doNothing,noEvent, wrapStyle
-//   ,VALUE("ON", true, doNothing, noEvent)
-//   ,VALUE("OFF", false, doNothing, noEvent));
-
 // ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(informationMenu)
-  ,SUBMENU(calibrationMenu)
   ,SUBMENU(configMenu)
-  // ,SUBMENU(rebootMenu)
-  ,SUBMENU(subMenu)
+  ,SUBMENU(calibrationMenu)
+  ,SUBMENU(rebootMenu)
   ,EXIT("<Exit"));
 
 #define MAX_DEPTH 4
@@ -1108,8 +1136,8 @@ void menu_init() {
     temperatureConfigMenu[0].disable();
     setCO2Sensor = selectedCO2Sensor;
 #ifdef DEBUG_ARDUINOMENU
-    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (setCO2Sensor): %d", setCO2Sensor);
-    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (selectedCO2Sensor): %d", selectedCO2Sensor);
+    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (setCO2Sensor): %d\n", setCO2Sensor);
+    Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (selectedCO2Sensor): %d\n", selectedCO2Sensor);
 #endif
 
     loadTempArraysWithActualValues();
