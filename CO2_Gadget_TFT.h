@@ -86,6 +86,7 @@ struct ElementLocations {
     int32_t co2X;
     int32_t co2Y;
     u_int16_t co2FontDigitsHeight;
+    u_int16_t pixelsToBaseline;
     int32_t co2UnitsX;
     int32_t co2UnitsY;
     int32_t tempX;
@@ -113,8 +114,9 @@ ElementLocations elementPosition;
 void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
         elementPosition.co2X = displayWidth - 32;
-        elementPosition.co2Y = displayHeight - 38;
-        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 70;   // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;      // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -137,8 +139,9 @@ void setElementLocations() {
 
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
-        elementPosition.co2Y = displayHeight - 38;
-        elementPosition.co2FontDigitsHeight = 100;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 100;
+        elementPosition.pixelsToBaseline = 20;
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -162,9 +165,10 @@ void setElementLocations() {
     if (displayWidth == 320 && displayHeight == 240) {  // ST7789_240x320 and similar
         elementPosition.co2X = displayWidth - 33;
         elementPosition.co2Y = displayHeight - 108;
-        elementPosition.co2FontDigitsHeight = 100;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2FontDigitsHeight = 100;
+        elementPosition.pixelsToBaseline = 20;
         elementPosition.co2UnitsX = displayWidth - 33;
-        elementPosition.co2UnitsY = displayHeight - 120;
+        elementPosition.co2UnitsY = displayHeight - 130;
         elementPosition.tempX = 1;
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
@@ -529,7 +533,7 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
+void OLDshowCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
     if (co2 > 9999) co2 = 9999;
 
     spr.loadFont(BIG_FONT);
@@ -539,7 +543,12 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     uint16_t posSpriteY = posY - height;
     if (posSpriteX < 0) posSpriteX = 0;
     if (posSpriteY < 0) posSpriteY = 0;
-    spr.createSprite(width, height);
+    if (spr.createSprite(width, height) == nullptr) {
+        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.unloadFont();
+        spr.deleteSprite();
+        return;
+    }
     // spr.drawRect(0, 0, width, height, TFT_WHITE);
     spr.setTextColor(getCO2Color(co2), TFT_BLACK);
     spr.setTextDatum(TR_DATUM);
@@ -547,6 +556,50 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     spr.pushSprite(posSpriteX, posSpriteY);
     spr.unloadFont();
     spr.deleteSprite();
+}
+
+void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
+    if ((co2 == previousCO2Value) || (co2 == 0) || (co2 > 9999)) return;
+
+    spr.loadFont(BIG_FONT);
+    uint16_t digitWidth = spr.textWidth("0");
+    uint16_t height = spr.fontHeight() - pixelsToBaseline;
+    uint16_t totalWidth = digitWidth * 4;  // Four digits
+    uint16_t posSpriteY = posY - height;
+    uint16_t color = getCO2Color(co2);
+    if (posSpriteY < 0) posSpriteY = 0;
+    spr.createSprite(digitWidth, height);
+    if (spr.createSprite(digitWidth, height) == nullptr) {
+        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.unloadFont();
+        spr.deleteSprite();
+        return;
+    }
+    spr.setTextColor(color, TFT_BLACK);
+    spr.setTextDatum(TR_DATUM);
+
+    // Store the last CO2 digits in an array
+    uint8_t lastCO2ValueDigits[4];
+    uint16_t previousCO2Value = previousCO2Value;
+    for (int i = 0; i < 4; ++i) {
+        lastCO2ValueDigits[i] = previousCO2Value % 10;
+        previousCO2Value /= 10;
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        uint16_t digit = co2 % 10;  // Get the rightmost digit
+        co2 /= 10;                  // Move to the next digit
+
+        // if (digit == lastCO2ValueDigits[i]) continue;  // Skip if the digit is equal to the corresponding digit of previousCO2Value
+        spr.fillSprite(TFT_BLACK);
+        spr.drawNumber(digit, digitWidth, 0);
+        uint16_t posSpriteX = posX - totalWidth + digitWidth * (3 - i);  // Calculate X position for the sprite
+        if (posSpriteX < 0) posSpriteX = 0;
+        spr.pushSprite(posSpriteX, posSpriteY);
+    }
+
+    spr.deleteSprite();  // Clear sprite memory
+    spr.unloadFont();
 }
 
 void showCO2units(int32_t posX, int32_t posY) {
@@ -559,7 +612,7 @@ void showCO2units(int32_t posX, int32_t posY) {
 
 void displayShowValues() {
     uint8_t currentDatum = tft.getTextDatum();
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);

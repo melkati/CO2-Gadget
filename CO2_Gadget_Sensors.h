@@ -15,6 +15,7 @@ bool autoSelfCalibration = false;
 float tempOffset = 0.0f;
 
 volatile uint16_t co2 = 0;
+volatile uint16_t previousCO2Value = 0;
 float temp, tempFahrenheit, hum = 0;
 String mainDeviceSelected = "";
 
@@ -38,6 +39,7 @@ void printSensorsDetected() {
 }
 
 void onSensorDataOk() {
+    previousCO2Value = co2;
     co2 = sensors.getCO2();
     hum = sensors.getHumidity();
     if (hum == 0.0) hum = sensors.getCO2humi();
@@ -48,6 +50,7 @@ void onSensorDataOk() {
         Serial.printf("-->[SENS] CO2: %d CO2humi: %.2f CO2temp: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2humi(), sensors.getCO2temp(), sensors.getHumidity(), sensors.getTemperature());
     }
     newReadingsAvailable = true;
+    // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
 }
 
 void onSensorDataError(const char *msg) { Serial.println(msg); }
