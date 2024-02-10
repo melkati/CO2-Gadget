@@ -47,7 +47,7 @@ void onSensorDataOk() {
     if (temp == 0.0) temp = sensors.getCO2temp();  // TO-DO: temp could be 0.0
     tempFahrenheit = (temp * 1.8 + 32);
     if (!inMenu) {
-        Serial.printf("-->[SENS] CO2: %d CO2humi: %.2f CO2temp: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2humi(), sensors.getCO2temp(), sensors.getHumidity(), sensors.getTemperature());
+        Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2temp(), sensors.getCO2humi(), sensors.getHumidity(), sensors.getTemperature());
     }
     newReadingsAvailable = true;
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
