@@ -538,6 +538,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 const char *PARAM_INPUT_1 = "MeasurementInterval";
+const char *PARAM_INPUT_2 = "CalibrateCO2";
 
 void initWebServer() {
     SPIFFS.begin();
@@ -564,9 +565,19 @@ void initWebServer() {
             if (checkStringIsNumerical(inputString)) {
                 Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
                 measurementInterval = inputString.toInt();
+                request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
             }
         };
-        request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+        // <CO2-GADGET_IP>/settings?CalibrateCO2=400
+        if (request->hasParam(PARAM_INPUT_2)) {
+            inputString = request->getParam(PARAM_INPUT_2)->value();
+            if (checkStringIsNumerical(inputString)) {
+                Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
+                calibrationValue = inputString.toInt();
+                pendingCalibration = true;
+                request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
+            }
+        };
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -582,10 +593,9 @@ void initWebServer() {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
-    server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
-        // Trigger a software reset
-        Serial.flush();
-        request->send(200, "text/plain", "ESP32 reset initiated");
+    // Trigger a software reset
+    server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
     });
@@ -647,7 +657,7 @@ bool connectToWiFi() {
     WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
     WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(customWiFiEventHandler);
-    
+
     unsigned long checkTimer = 0;  // Timer-variables MUST be of type unsigned long
     troubledWIFI = false;
     WiFiConnectionRetries = 0;
