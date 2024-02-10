@@ -82,8 +82,6 @@ bool outputsModeRelay = false;
 
 // Variables for buzzer functionality
 bool buzzerBeeping = false;
-bool activeBuzzer = true;
-bool repeatBuzzer = true;
 uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
 uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
 uint16_t timeBetweenBuzzerBeeps = 10;
