@@ -84,7 +84,7 @@ bool outputsModeRelay = false;
 bool buzzerBeeping = false;
 uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
 uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
-uint16_t timeBetweenBuzzerBeeps = 10;
+int16_t timeBetweenBuzzerBeeps = -1;
 
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
