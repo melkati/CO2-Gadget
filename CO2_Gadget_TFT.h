@@ -115,8 +115,8 @@ void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
         elementPosition.co2X = displayWidth - 32;
         elementPosition.co2Y = displayHeight - 33;
-        elementPosition.co2FontDigitsHeight = 70;   // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.pixelsToBaseline = 18;      // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -587,8 +587,9 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     }
 
     for (int i = 0; i < 4; ++i) {
-        uint16_t digit = co2 % 10;  // Get the rightmost digit
-        co2 /= 10;                  // Move to the next digit
+        uint16_t digit = co2 % 10;            // Get the rightmost digit
+        co2 /= 10;                            // Move to the next digit
+        if (digit == 0 && co2 > 0) continue;  // Skip leading ceros
 
         // if (digit == lastCO2ValueDigits[i]) continue;  // Skip if the digit is equal to the corresponding digit of previousCO2Value
         spr.fillSprite(TFT_BLACK);
