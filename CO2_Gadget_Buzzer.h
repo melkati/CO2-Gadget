@@ -36,7 +36,7 @@ void beepBuzzer() {
 
 void buzzerLoop() {
 #ifdef SUPPORT_BUZZER
-    if (timeBetweenBuzzerBeeps == -1 || inMenu) {  // Inside Menu OR activeBuzzer=OFF stop BEEPING
+    if (timeBetweenBuzzerBeeps == -1 || inMenu) {  // Inside Menu stop BEEPING
         buzzerBeeping = false;
         belowRedRange = true;
         return;
@@ -52,10 +52,7 @@ void buzzerLoop() {
 
 void initBuzzer() {
 #ifdef SUPPORT_BUZZER
-#ifdef BUZZER_DEBUG
-    activeBuzzer = true;
-    Serial.println("-->[BUZZ] Initializing Buzzer..");
-#endif
+    Serial.printf("-->[BUZZ] Initializing Buzzer on GPIO %d...\n", BUZZER_PIN);
     pinMode(BUZZER_PIN, OUTPUT);
 
     // LEDC initialization
