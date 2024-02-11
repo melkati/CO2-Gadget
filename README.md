@@ -4,9 +4,13 @@
 
 # CO2-Gadget
 
-An easy to build CO2 Monitor/Meter with cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
+An advanced fimware for CO2 Monitor/Meter. It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99,99% of them).
 
-This repository is mainly addressed at developers. If you are an end user willing to build the CO2 Gadget you will find complete instructions at [my blog](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/) including instructions in how to build the hardware and load the firmware very easily, with just two clicks in your browser (without having edit files, compile or install anything on your computer).
+With cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
+
+This repository is mainly addressed at developers. If you are an end user willing to install and use the CO2 Gadget firmware, you will find complete instructions at [my blog](https://emariete.com/en/co2-meter-gadget/) including instructions in how to install the firmware very easily, with just two clicks in your browser (without having edit files, compile or install anything on your computer).
+
+If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
 
 <p align="center">
 <img width="810" alt="Medidor-de-CO2-Display-TFT-Color-con-TTGO-T-Display-Sensirion-SCD30-Bluetooth-LE-2-ENG" src="https://user-images.githubusercontent.com/11509521/153776844-bd79fdda-4fb0-41c5-b816-5bfd2c443ccc.png">
@@ -33,22 +37,21 @@ This repository is mainly addressed at developers. If you are an end user willin
 - Support for buzzer alarms on CO2 level
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
 - Support for RGB LEDs
-- GPIO outputs for alarms and activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
-- ~~-LoRa/LoRaWAN in study. If you are interested, please [join this conversation](https://github.com/melkati/CO2-Gadget/issues/35).~~
+- GPIO outputs for alarms and activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
 
 # Supported hardware and build
 
 This project support a large selection of ESP32 boards, displays and sensors.
 
-As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor and support for battery [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
+As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor (and battery support) [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
 ![image](https://user-images.githubusercontent.com/11509521/146636210-ee11a49a-5ebc-4e3c-a11e-91e2d8676410.png)
 
-For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/medidor-co2-gadget/)
+For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
 
 ## OLED Displays
 
-CO2 Gadget right now has support for many different OLED displays (by using the U8g2 library). There are precompiled versions for OLED I2C 1.3" 128x64 pixels display for real time measurements.
+CO2 Gadget right now has support for many different OLED displays. There are precompiled versions for OLED I2C 1.3" 128x64 pixels display.
 ![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
 
 ## ESP32 Boards
