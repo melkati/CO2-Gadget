@@ -12,9 +12,7 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
 
-<p align="center">
-<img width="810" alt="Medidor-de-CO2-Display-TFT-Color-con-TTGO-T-Display-Sensirion-SCD30-Bluetooth-LE-2-ENG" src="https://user-images.githubusercontent.com/11509521/153776844-bd79fdda-4fb0-41c5-b816-5bfd2c443ccc.png">
-</p> 
+![CO2_Gadget_DIY_CO2_Monitor](https://github.com/melkati/CO2-Gadget/assets/11509521/58e1f306-af46-416f-a399-5900965e8c10)
 
 # Features
 
