@@ -154,7 +154,7 @@ void initPreferences() {
     // Retrieve buzzer preferences
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
-    timeBetweenBuzzerBeeps = preferences.getInt("timeBtwnBzr", 10);                // Time between consecutive beeps
+    timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);                // Time between consecutive beeps
 
     rootTopic.trim();
     mqttClientId.trim();
@@ -234,7 +234,7 @@ void putPreferences() {
     // Buzzer preferences
     preferences.putUInt("toneBzrBeep", toneBuzzerBeep);        // Buzzer frequency
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);     // Buzzer duration
-    preferences.putInt("timeBtwnBzr", timeBetweenBuzzerBeeps); // Time between beeps
+    preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps); // Time between beeps
 
     preferences.end();
 }
@@ -294,7 +294,7 @@ String getPreferencesAsJson() {
     // Buzzer preferences
     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);  // Buzzer frequency
     doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);     // Buzzer duration
-    doc["timeBtwnBzr"] = preferences.getInt("timeBtwnBzr", 10);     // Time between beeps
+    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);     // Time between beeps
 
     preferences.end();
 
