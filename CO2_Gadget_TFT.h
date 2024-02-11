@@ -371,7 +371,7 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
-    if (!displayShowBattery) return;
+    if ((!displayShowBattery) || (battery_voltage < 1)) return;
     String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
@@ -382,7 +382,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    if (!displayShowBattery) return;
+    if ((!displayShowBattery) || (battery_voltage < 1)) return;
     uint8_t batteryLevel = battery.level();
     uint16_t color;
     if (batteryLevel < 20) {
@@ -510,17 +510,6 @@ void showHumidity(float hum, int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void OLDshowHumidity(float hum, int32_t posX, int32_t posY) {
-    if (!displayShowHumidity) return;
-    showHumidityIcon(posX - 20, posY - 2);
-    tft.setTextColor(getHumidityColor(hum), TFT_BLACK);
-    tft.setTextDatum(BR_DATUM);
-    showHumidityIcon(tft.width() - 60, tft.height() - 22);
-    tft.loadFont(SMALL_FONT);
-    tft.drawString(String(hum, 0) + "%", posX, posY);
-    tft.unloadFont();
-}
-
 uint16_t getCO2Color(uint16_t co2) {
     uint16_t color;
     if (co2 < co2OrangeRange) {
@@ -580,23 +569,25 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
 
     // Store the last CO2 digits in an array
     uint8_t lastCO2ValueDigits[4];
-    uint16_t previousCO2Value = previousCO2Value;
     for (int i = 0; i < 4; ++i) {
         lastCO2ValueDigits[i] = previousCO2Value % 10;
         previousCO2Value /= 10;
     }
 
     for (int i = 0; i < 4; ++i) {
-        uint16_t digit = co2 % 10;            // Get the rightmost digit
-        co2 /= 10;                            // Move to the next digit
-        if (digit == 0 && co2 > 0) continue;  // Skip leading ceros
+        uint16_t digit = co2 % 10;  // Get the rightmost digit
+        co2 /= 10;                  // Move to the next digit
 
         // if (digit == lastCO2ValueDigits[i]) continue;  // Skip if the digit is equal to the corresponding digit of previousCO2Value
         spr.fillSprite(TFT_BLACK);
-        spr.drawNumber(digit, digitWidth, 0);
-        uint16_t posSpriteX = posX - totalWidth + digitWidth * (3 - i);  // Calculate X position for the sprite
-        if (posSpriteX < 0) posSpriteX = 0;
-        spr.pushSprite(posSpriteX, posSpriteY);
+        if ((i == 3) && (digit == 0)) {  // Don't draw leading zero and fill black
+            spr.pushSprite(posX - totalWidth + digitWidth * (3 - i), posSpriteY);
+        } else {
+            spr.drawNumber(digit, digitWidth, 0);
+            uint16_t posSpriteX = posX - totalWidth + digitWidth * (3 - i);  // Calculate X position for the sprite
+            // if (posSpriteX < 0) posSpriteX = 0;
+            spr.pushSprite(posSpriteX, posSpriteY);
+        }
     }
 
     spr.deleteSprite();  // Clear sprite memory
