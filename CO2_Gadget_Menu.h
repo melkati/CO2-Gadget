@@ -59,8 +59,8 @@ result systemReboot() {
     // do some termination stuff here
     if (sensorsGetMainDeviceSelected().equals("SCD30")) {
         Serial.println("-->[MENU] Resetting SCD30 sensor...");
-        delay(100);
         sensors.scd30.reset();
+        delay(100);
     }
     ESP.restart();
     return quit;
