@@ -446,8 +446,8 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
 #endif  // DEBUG_WIFI_EVENTS
 }
 
-#ifdef SUPPORT_MDNS
 void initMDNS() {
+#ifdef SUPPORT_MDNS
     /*use mdns for host name resolution*/
     if (!MDNS.begin(hostName.c_str())) {  // http://esp32.local
         Serial.println("-->[WiFi] Error setting up MDNS responder!");
@@ -455,12 +455,13 @@ void initMDNS() {
             delay(100);
         }
     }
-    Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
-    Serial.print(hostName);
-    Serial.println(".local");
+    // Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
+    // Serial.print(hostName);
+    // Serial.println(".local");
+    Serial.printf("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://%s.local\n", hostName.c_str());
     MDNS.addService("http", "tcp", 80);
-}
 #endif
+}
 
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
@@ -537,6 +538,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 const char *PARAM_INPUT_1 = "MeasurementInterval";
+const char *PARAM_INPUT_2 = "CalibrateCO2";
 
 void initWebServer() {
     SPIFFS.begin();
@@ -563,9 +565,19 @@ void initWebServer() {
             if (checkStringIsNumerical(inputString)) {
                 Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
                 measurementInterval = inputString.toInt();
+                request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
             }
         };
-        request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+        // <CO2-GADGET_IP>/settings?CalibrateCO2=400
+        if (request->hasParam(PARAM_INPUT_2)) {
+            inputString = request->getParam(PARAM_INPUT_2)->value();
+            if (checkStringIsNumerical(inputString)) {
+                Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
+                calibrationValue = inputString.toInt();
+                pendingCalibration = true;
+                request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
+            }
+        };
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -581,10 +593,9 @@ void initWebServer() {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
-    server.on("/restart-esp32", HTTP_POST, [](AsyncWebServerRequest *request) {
-        // Trigger a software reset
-        Serial.flush();
-        request->send(200, "text/plain", "ESP32 reset initiated");
+    // Trigger a software reset
+    server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
     });
@@ -631,7 +642,67 @@ boolean TimePeriodIsOver(unsigned long &startOfPeriod, unsigned long TimePeriod)
         return false;  // actual TimePeriod is NOT yet over
 }
 
-unsigned long MyTestTimer = 0;  // Timer-variables MUST be of type unsigned long
+bool connectToWiFi() {
+    displayNotification("Init WiFi", notifyInfo);
+    Serial.print("\n-->[WiFi] Initializing WiFi...\n");
+    WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
+    delay(100);
+    WiFi.mode(WIFI_STA);
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    WiFi.setHostname(hostName.c_str());
+    Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
+    Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+
+    WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
+    WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+    WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+    WiFi.onEvent(customWiFiEventHandler);
+
+    unsigned long checkTimer = 0;  // Timer-variables MUST be of type unsigned long
+    troubledWIFI = false;
+    WiFiConnectionRetries = 0;
+
+    WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
+
+    // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
+    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+        if (TimePeriodIsOver(checkTimer, 500)) {  // Once every 500 miliseconds
+            Serial.print(".");
+            WiFiConnectionRetries++;
+            if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
+                Serial.println();
+                Serial.print("not connected ");
+            }
+        }
+        yield();
+    }
+
+    if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+        disableWiFi();
+        troubledWIFI = true;
+        timeTroubledWIFI = millis();
+        Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+    }
+
+    if (troubledWIFI) {
+        Serial.println("");
+        return false;
+    } else {
+        Serial.println("");
+        Serial.print("-->[WiFi] MAC: ");
+        Serial.println(MACAddress);
+        Serial.print("-->[WiFi] WiFi connected - IP = ");
+        Serial.println(WiFi.localIP());
+        return true;
+    }
+}
+
+void initOTA() {
+#ifdef SUPPORT_OTA
+    AsyncElegantOTA.begin(&server);
+    Serial.println("-->[WiFi] OTA ready");
+#endif
+}
 
 void initWifi() {
     if (wifiSSID == "") {
@@ -639,80 +710,21 @@ void initWifi() {
     }
     if (activeWIFI) {
         wifiChanged = true;
-        troubledWIFI = false;
-        WiFiConnectionRetries = 0;
-        displayNotification("Init WiFi", notifyInfo);
-        Serial.print("-->[WiFi] Initializing WiFi...\n");
-        WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
-        delay(500);
-        WiFi.mode(WIFI_STA);
-        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        Serial.printf("-->[WiFi] Setting hostname %s: %d\n", hostName.c_str(),
-                      WiFi.setHostname(hostName.c_str()));
 
-        WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
-        WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-        WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-        WiFi.onEvent(customWiFiEventHandler);
-
-        // Possible to optimize battery? (further investigation needed)
-        // WiFi.setSleep(true);
-        // WiFi.setSleep(WIFI_PS_NONE);
-
-        String connectMessage = "-->[WiFi] Connecting to WiFi (SSID: " + String(wifiSSID) + ")\n";
-        Serial.print(connectMessage);
-        WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
-
-        // Wait for connection
-        while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
-            yield();                                   // very important to execute yield to make it work
-            if (TimePeriodIsOver(MyTestTimer, 500)) {  // once every 500 miliseconds
-                Serial.print(".");                     // print a dot
-                WiFiConnectionRetries++;
-                if (WiFiConnectionRetries > maxWiFiConnectionRetries) {  // after maxWiFiConnectionRetries dots
-                    Serial.println();
-                    Serial.print("not connected ");
-                }
-            }
-        }
-        if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
-            disableWiFi();
-            troubledWIFI = true;
-            timeTroubledWIFI = millis();
-            Serial.printf(
-                "-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n",
-                WiFiConnectionRetries);
-        }
-        if (troubledWIFI) {
+        if (!connectToWiFi()) {
             return;
         }
 
-        Serial.println("");
-        Serial.print("-->[WiFi] MAC: ");
-        Serial.println(MACAddress);
-        Serial.print("-->[WiFi] WiFi connected - IP = ");
-        Serial.println(WiFi.localIP());
-#ifdef SUPPORT_MDNS
-        mDNSName = WiFi.getHostname();
-        initMDNS();
-#endif
         initWebServer();
-
-#ifdef SUPPORT_OTA
-        AsyncElegantOTA.begin(&server);  // Start ElegantOTA
-        Serial.println("-->[WiFi] OTA ready");
-#endif
+        initMDNS();
+        initOTA();
 
         server.begin();
         Serial.println("-->[WiFi] HTTP server started");
-
         printWiFiStatus();
 
         // Try to connect to MQTT broker on next loop if needed
         troubledMQTT = false;
-
-    } else {
-        disableWiFi();
     }
 }
 
@@ -720,12 +732,15 @@ void wifiClientLoop() {
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
     }
-    
+
     // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
     // Only checks for SSID changed (not password)
     if ((WiFi.SSID() != wifiSSID) && (!inMenu)) {
         Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+        Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
+        Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
         wifiSSID = WiFi.SSID();
+        activeWIFI = true;
         putPreferences();
         // initWifi();
         wifiChanged = true;

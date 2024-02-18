@@ -20,7 +20,7 @@
         <legend>Networking</legend>
 
         <div>
-          <label for="activeWIFI">Active WIFI:</label>
+          <label for="activeWIFI">WIFI Active:</label>
           <input type="checkbox" id="activeWIFI" name="activeWIFI">
         </div>
 
@@ -127,11 +127,49 @@
             <input type="number" id="selNeopxType" name="selNeopxType" value="">
           </div>
         </fieldset>
+
+        <!-- Buzzer Group -->
+        <fieldset id="buzzerFieldset">
+          <legend>Buzzer</legend>
+
+          <label for="timeBtwnBzr">Buzzer Beeps:</label>
+          <select id="timeBtwnBzr" name="timeBtwnBzr">
+            <option value="65535">OFF</option>
+            <option value="0">One time</option>
+            <option value="5">Every 5 sec</option>
+            <option value="10">Every 10 sec</option>
+            <option value="15">Every 15 sec</option>
+            <option value="30">Every 30 sec</option>
+            <option value="60">Every 1 min</option>
+            <option value="120">Every 2 min</option>
+            <option value="300">Every 5 min</option>
+          </select>
+
+          <label for="toneBzrBeep">Tone of Buzzer Beep:</label>
+          <select id="toneBzrBeep" name="toneBzrBeep">
+            <option value="1500">High</option>
+            <option value="1000">Med</option>
+            <option value="300">Low</option>
+          </select>
+
+          <label for="durBzrBeep">Buzzer Beep Duration:</label>
+          <select id="durBzrBeep" name="durBzrBeep">
+            <option value="50">Short</option>
+            <option value="150">Medium</option>
+            <option value="300">Long</option>
+          </select>
+
+        </fieldset>
+
+
+
         <div>
-          <label for="outModeRelay">Outputs Mode Relay:</label>
+          <label for="outModeRelay">GPIO Outputs in Relay Mode:</label>
           <input type="checkbox" id="outModeRelay" name="outModeRelay">
         </div>
       </fieldset>
+
+
 
       <!-- Connectivity Group -->
       <fieldset>
@@ -314,6 +352,10 @@
         <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
       </div>
     </form>
+    <!-- Popup to display a message -->
+    <div id="popup">
+      <p>Saving preferences...</p>
+    </div>
   </div>
 
   <script>
@@ -463,8 +505,18 @@
 
           if (getPreferencesDebug) console.log('Setting debugSensors to:', preferences.debugSensors);
           document.getElementById("debugSensors").checked = preferences.debugSensors;
+
+          if (getPreferencesDebug) console.log('Setting toneBzrBeep to:', preferences.toneBzrBeep);
+          document.getElementById("toneBzrBeep").value = preferences.toneBzrBeep;
+
+          if (getPreferencesDebug) console.log('Setting durBzrBeep to:', preferences.durBzrBeep);
+          document.getElementById("durBzrBeep").value = preferences.durBzrBeep;
+
+          if (getPreferencesDebug) console.log('Setting timeBtwnBzr to:', preferences.timeBtwnBzr);
+          document.getElementById("timeBtwnBzr").value = preferences.timeBtwnBzr;
+
         })
-        .catch(error => console.error('Error al obtener preferencias:', error));
+        .catch(error => console.error('Error retrieving preferences:', error));
     }
 
     function collectPreferencesData() {
@@ -512,15 +564,32 @@
         // showPM25: document.getElementById("showPM25").checked,
         mqttClientId: document.getElementById("mqttClientId").value,
         mqttBroker: document.getElementById("mqttBroker").value,
-        mqttUser: document.getElementById("mqttUser").value
+        mqttUser: document.getElementById("mqttUser").value,
         // mqttPass: document.getElementById("mqttPass").value
+        toneBzrBeep: document.getElementById("toneBzrBeep").value,
+        durBzrBeep: document.getElementById("durBzrBeep").value,
+        timeBtwnBzr: document.getElementById("timeBtwnBzr").value
       };
-
       return preferencesData;
+    }
+
+    function showSavingPopup() {
+      // Show the popup
+      document.getElementById("popup").style.display = "block";
+      console.log("Show popup");
+
+      // After 2 seconds, hide the popup
+      setTimeout(function () {
+        // Oculta el popup
+        document.getElementById("popup").style.display = "none";
+        console.log("Hide popup");
+      }, 2000);
     }
 
     // Function to save preferences
     function savePreferences() {
+      // Show a popup to indicate that the preferences are being saved
+      showSavingPopup();
       // Collect preferences data from the form
       var preferencesData = collectPreferencesData();
       console.log("Sending preferences to server:", preferencesData);
@@ -541,11 +610,7 @@
       };
     }
 
-    // Set initial values when the page loads
-    document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
-  </script>
 
-  <script>
     function restartESP32() {
       // Show a confirmation dialog
       var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
@@ -575,6 +640,9 @@
         // User chose not to restart, you can add additional logic or leave it empty
       }
     }
+
+    // Set initial values when the page loads
+    document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
   </script>
 
 

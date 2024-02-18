@@ -1,4 +1,4 @@
-name: Release V2.3
+name: Release V2.4
 
 # # # # # # # # # # #
 # To create new release, just push a new tag with the format v* (v1.0, v2.0, v2.1, v2.2, etc)
@@ -48,11 +48,7 @@ jobs:
         strategy:
           matrix:
             # environment: ${{ fromJSON(needs.get_default_envs.outputs.environments) }}
-            environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3]
-            # environment: [TDISPLAY_S3]
-            # environment: [TTGO_TDISPLAY_SANDWICH]
-            # environment: [esp32dev, esp32dev-sandwich]
-            # environment: [esp32dev-sandwich]
+            environment: [esp32dev, esp32dev_OLED, TTGO_TDISPLAY, TTGO_TDISPLAY_SANDWICH, TDISPLAY_S3, esp32dev_ST7789_240x320]
 
         env:
           CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}        
