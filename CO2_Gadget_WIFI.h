@@ -737,6 +737,8 @@ void wifiClientLoop() {
     // Only checks for SSID changed (not password)
     if ((WiFi.SSID() != wifiSSID) && (!inMenu)) {
         Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+        Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
+        Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
         wifiSSID = WiFi.SSID();
         activeWIFI = true;
         putPreferences();
