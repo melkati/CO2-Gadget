@@ -738,6 +738,7 @@ void wifiClientLoop() {
     if ((WiFi.SSID() != wifiSSID) && (!inMenu)) {
         Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
         wifiSSID = WiFi.SSID();
+        activeWIFI = true;
         putPreferences();
         // initWifi();
         wifiChanged = true;
