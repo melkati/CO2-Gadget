@@ -21,9 +21,9 @@
 // Load fonts for TTGO T-Display and others with 240x135 resolution
 #if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
 #if TFT_WIDTH == 135 && TFT_HEIGHT == 240
-#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansBold15pt_mp.h"
 #include "FontNotoSansBold20.h"
+#include "FontNotoSansBold90ptDigits.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansBold15pt_mp
 #define SMALL_FONT FontNotoSansBold20
@@ -46,10 +46,24 @@
 #endif
 #endif
 
+// Load fonts for ST7789_240x320 and others with 320x240 resolution
+#if defined(TFT_WIDTH) && defined(TFT_HEIGHT)
+#if TFT_WIDTH == 240 && TFT_HEIGHT == 320
+#include "FontNotoSansBold120ptDigits.h"
+#include "FontNotoSansBold15pt_mp.h"
+#include "FontNotoSansBold20.h"
+#define GFXFF 1
+#define MINI_FONT FontNotoSansBold15pt_mp
+#define SMALL_FONT FontNotoSansBold20
+#define BIG_FONT FontNotoSansBold120ptDigits
+#define FONTS_LOADED
+#endif
+#endif
+
 // Default fonts
 #ifndef FONTS_LOADED
-#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansBold15pt_mp.h"
+#include "FontNotoSansBold90ptDigits.h"
 #include "FontNotoSansRegular20.h"
 #define GFXFF 1
 #define MINI_FONT FontNotoSansBold15pt_mp
@@ -72,6 +86,7 @@ struct ElementLocations {
     int32_t co2X;
     int32_t co2Y;
     u_int16_t co2FontDigitsHeight;
+    u_int16_t pixelsToBaseline;
     int32_t co2UnitsX;
     int32_t co2UnitsY;
     int32_t tempX;
@@ -99,8 +114,9 @@ ElementLocations elementPosition;
 void setElementLocations() {
     if (displayWidth == 240 && displayHeight == 135) {  // TTGO T-Display and similar
         elementPosition.co2X = displayWidth - 32;
-        elementPosition.co2Y = displayHeight - 38;
+        elementPosition.co2Y = displayHeight - 33;
         elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempX = 1;
@@ -123,10 +139,36 @@ void setElementLocations() {
 
     if (displayWidth == 320 && displayHeight == 170) {  // T-Display-S3 and similar
         elementPosition.co2X = displayWidth - 33;
-        elementPosition.co2Y = displayHeight - 38;
-        elementPosition.co2FontDigitsHeight = 100;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 100;
+        elementPosition.pixelsToBaseline = 20;
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconY = 4;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 2;
+    }
+
+    if (displayWidth == 320 && displayHeight == 240) {  // ST7789_240x320 and similar
+        elementPosition.co2X = displayWidth - 33;
+        elementPosition.co2Y = displayHeight - 108;
+        elementPosition.co2FontDigitsHeight = 100;
+        elementPosition.pixelsToBaseline = 20;
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 130;
         elementPosition.tempX = 1;
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
@@ -169,6 +211,12 @@ void setDisplayBrightness(uint16_t newBrightness) {
         actualDisplayBrightness = newBrightness;
     }
 #endif
+#ifdef ST7789_240x320
+    if (actualDisplayBrightness != newBrightness) {
+        analogWrite(TFT_BL, newBrightness);
+        actualDisplayBrightness = newBrightness;
+    }
+#endif
 }
 
 void turnOffDisplay() {
@@ -198,6 +246,14 @@ void displaySplashScreen() {
     uint16_t GadgetLogoX = 152;
     uint16_t GadgetLogoY = 95;
 #endif
+#if TFT_WIDTH == 240 && TFT_HEIGHT == 320
+    uint16_t eMarieteLogoX = 100;
+    uint16_t eMarieteLogoY = 150;
+    uint16_t CO2LogoX = 50;
+    uint16_t CO2LogoY = 78;
+    uint16_t GadgetLogoX = 152;
+    uint16_t GadgetLogoY = 95;
+#endif
 
     tft.fillScreen(TFT_WHITE);
     tft.setSwapBytes(true);
@@ -207,7 +263,7 @@ void displaySplashScreen() {
 }
 
 void initBacklight() {
-#ifdef TTGO_TDISPLAY
+#if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BL, OUTPUT);
     setDisplayBrightness(DisplayBrightness);
 #endif
@@ -315,6 +371,7 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
+    if ((!displayShowBattery) || (battery_voltage < 1)) return;
     String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
@@ -325,7 +382,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    if (!displayShowBattery) return;
+    if ((!displayShowBattery) || (battery_voltage < 1)) return;
     uint8_t batteryLevel = battery.level();
     uint16_t color;
     if (batteryLevel < 20) {
@@ -453,17 +510,6 @@ void showHumidity(float hum, int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void OLDshowHumidity(float hum, int32_t posX, int32_t posY) {
-    if (!displayShowHumidity) return;
-    showHumidityIcon(posX - 20, posY - 2);
-    tft.setTextColor(getHumidityColor(hum), TFT_BLACK);
-    tft.setTextDatum(BR_DATUM);
-    showHumidityIcon(tft.width() - 60, tft.height() - 22);
-    tft.loadFont(SMALL_FONT);
-    tft.drawString(String(hum, 0) + "%", posX, posY);
-    tft.unloadFont();
-}
-
 uint16_t getCO2Color(uint16_t co2) {
     uint16_t color;
     if (co2 < co2OrangeRange) {
@@ -476,7 +522,7 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
+void OLDshowCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
     if (co2 > 9999) co2 = 9999;
 
     spr.loadFont(BIG_FONT);
@@ -486,7 +532,12 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     uint16_t posSpriteY = posY - height;
     if (posSpriteX < 0) posSpriteX = 0;
     if (posSpriteY < 0) posSpriteY = 0;
-    spr.createSprite(width, height);
+    if (spr.createSprite(width, height) == nullptr) {
+        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.unloadFont();
+        spr.deleteSprite();
+        return;
+    }
     // spr.drawRect(0, 0, width, height, TFT_WHITE);
     spr.setTextColor(getCO2Color(co2), TFT_BLACK);
     spr.setTextDatum(TR_DATUM);
@@ -494,6 +545,53 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY) {
     spr.pushSprite(posSpriteX, posSpriteY);
     spr.unloadFont();
     spr.deleteSprite();
+}
+
+void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
+    if ((co2 == previousCO2Value) || (co2 == 0) || (co2 > 9999)) return;
+
+    spr.loadFont(BIG_FONT);
+    uint16_t digitWidth = spr.textWidth("0");
+    uint16_t height = spr.fontHeight() - pixelsToBaseline;
+    uint16_t totalWidth = digitWidth * 4;  // Four digits
+    uint16_t posSpriteY = posY - height;
+    uint16_t color = getCO2Color(co2);
+    if (posSpriteY < 0) posSpriteY = 0;
+    spr.createSprite(digitWidth, height);
+    if (spr.createSprite(digitWidth, height) == nullptr) {
+        // Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.unloadFont();
+        spr.deleteSprite();
+        return;
+    }
+    spr.setTextColor(color, TFT_BLACK);
+    spr.setTextDatum(TR_DATUM);
+
+    // Store the last CO2 digits in an array
+    uint8_t lastCO2ValueDigits[4];
+    for (int i = 0; i < 4; ++i) {
+        lastCO2ValueDigits[i] = previousCO2Value % 10;
+        previousCO2Value /= 10;
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        uint16_t digit = co2 % 10;  // Get the rightmost digit
+        co2 /= 10;                  // Move to the next digit
+
+        // if (digit == lastCO2ValueDigits[i]) continue;  // Skip if the digit is equal to the corresponding digit of previousCO2Value
+        spr.fillSprite(TFT_BLACK);
+        if ((i == 3) && (digit == 0)) {  // Don't draw leading zero and fill black
+            spr.pushSprite(posX - totalWidth + digitWidth * (3 - i), posSpriteY);
+        } else {
+            spr.drawNumber(digit, digitWidth, 0);
+            uint16_t posSpriteX = posX - totalWidth + digitWidth * (3 - i);  // Calculate X position for the sprite
+            // if (posSpriteX < 0) posSpriteX = 0;
+            spr.pushSprite(posSpriteX, posSpriteY);
+        }
+    }
+
+    spr.deleteSprite();  // Clear sprite memory
+    spr.unloadFont();
 }
 
 void showCO2units(int32_t posX, int32_t posY) {
@@ -506,7 +604,7 @@ void showCO2units(int32_t posX, int32_t posY) {
 
 void displayShowValues() {
     uint8_t currentDatum = tft.getTextDatum();
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y);
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
