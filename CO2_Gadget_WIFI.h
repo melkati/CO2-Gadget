@@ -573,9 +573,13 @@ void initWebServer() {
             inputString = request->getParam(PARAM_INPUT_2)->value();
             if (checkStringIsNumerical(inputString)) {
                 Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
-                calibrationValue = inputString.toInt();
-                pendingCalibration = true;
-                request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
+                if ((inputString.toInt() >= 400) && (inputString.toInt() <= 2000)) {
+                    calibrationValue = inputString.toInt();
+                    pendingCalibration = true;
+                    request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
+                } else {
+                    request->send(200, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
+                }
             }
         };
     });
