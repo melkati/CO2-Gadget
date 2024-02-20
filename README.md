@@ -2,6 +2,14 @@
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 
+<table>
+	<tr>
+		<td>
+			Don't forget to star ⭐ this repository
+		</td>
+	</tr>
+</table>
+
 # CO2-Gadget
 
 An advanced fimware for CO2 Monitor/Meter. It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99,99% of them).
@@ -58,15 +66,15 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO EN | GPIO Green | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
-| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | -- | 02 | 03 | 01 | 04 | 16 | 2
-| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
-| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
-| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
-| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 19/0 | -- | 25 | 32 | 33 | 34 | 26 | 2
+| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
+|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 32 | 33 | 34 | 26 | 2
+| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 32 | 33 | 34 | 26 | 2
+| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | 03 | 01 | 04 | 16 | 2
+| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
+| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
+| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 32 | 33 | 34 | 26 | 2
+| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 19/0 | 32 | 33 | 34 | 26 | 2
 
 - Flavour: Name of the firmware variant.
 - Display: Display supported by each flavour.
@@ -74,7 +82,6 @@ These are the GPIOs used by each predefined board:
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
 - EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
-- Green GPIO: Pin (GPIO) corresponding to the output before reaching the orange level (for relays, alarms, and RGB LED).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement.
