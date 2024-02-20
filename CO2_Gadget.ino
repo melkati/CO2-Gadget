@@ -323,8 +323,10 @@ void processPendingCommands() {
 }
 
 void initGPIO() {
+    #ifdef GREEN_PIN
     pinMode(GREEN_PIN, OUTPUT);
     digitalWrite(GREEN_PIN, LOW);
+    #endif
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
@@ -333,12 +335,14 @@ void initGPIO() {
 
 void outputsRelays() {
     if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
+    #ifdef GREEN_PIN
     if (co2 >= co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
     }
     if (co2 < co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
     }
+    #endif
     if (co2 >= co2OrangeRange) {
         digitalWrite(BLUE_PIN, BLUE_PIN_HIGH);
     }
@@ -356,20 +360,26 @@ void outputsRelays() {
 void outputsRGBLeds() {
     if ((outputsModeRelay) || (co2 == 0)) return;  // Don't turn on led until there is CO2 Data
     if (co2 > co2RedRange) {
-        digitalWrite(RED_PIN, RED_PIN_HIGH);
+        #ifdef GREEN_PIN
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
+        #endif
+        digitalWrite(RED_PIN, RED_PIN_HIGH);
         digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
         return;
     }
     if (co2 >= co2OrangeRange) {
-        digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
+        #ifdef GREEN_PIN
         digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
+        #endif
+        digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
         digitalWrite(RED_PIN, RED_PIN_HIGH);
         return;
     }
+    #ifdef GREEN_PIN
     digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
-    digitalWrite(BLUE_PIN, GREEN_PIN_LOW);
-    digitalWrite(RED_PIN, GREEN_PIN_LOW);
+    #endif
+    digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
+    digitalWrite(RED_PIN, RED_PIN_LOW);
 }
 
 void outputsLoop() {
