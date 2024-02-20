@@ -55,6 +55,32 @@ void onSensorDataOk() {
 
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
+// To move into the sensorlib
+uint16_t getSCD4xFeatureSet() {
+    uint16_t featureSet = 0;
+    uint16_t error = 0;
+    error = sensors.scd4x.stopPeriodicMeasurement();
+    error = sensors.scd4x.getFeatures(featureSet);
+    if (error != 0) {
+        Serial.println("-->[SENS] SCD4x getFeatures error: " + String(error));
+    } else {
+        uint8_t typeOfSensor = ((featureSet & 0x1000) >> 12);
+        switch (typeOfSensor) {
+            case 0:
+                Serial.println("-->[SENS] SCD4x Sensor Type: SCD40");
+                break;
+            case 1:
+                Serial.println("-->[SENS] SCD4x Sensor Type: SCD41");
+                break;
+            default:
+                Serial.println("-->[SENS] SCD4x Sensor Type: Unknown (probably unsupported SCD42 obsolete sensor)");
+                break;
+        }
+    }
+    sensors.scd4x.startPeriodicMeasurement();
+    return featureSet;
+}
+
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
     if (firstCO2SensorInit) {
@@ -125,6 +151,11 @@ void initSensors() {
 
     if (!sensorsGetMainDeviceSelected().isEmpty()) {
         Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
+
+        // Temporary getFeatureSet() for SCD4x. To be moved into the sensorlib
+        if (sensorsGetMainDeviceSelected() == "SCD4X") {
+            Serial.println("-->[SENS] SCD4x Feature Set: " + String(getSCD4xFeatureSet()));
+        }
     }
 }
 
