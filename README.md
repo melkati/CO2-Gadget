@@ -81,7 +81,6 @@ These are the GPIOs used by each predefined board:
 - RX / TX: Pins (GPIO) used for sensors connected by serial port.
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
-- EN: Pin (GPIO) that supplies an ENABLE signal for switching the sensors on and off (reserved for future use).
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement.
