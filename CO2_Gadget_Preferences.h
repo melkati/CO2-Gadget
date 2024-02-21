@@ -424,7 +424,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
             vRef = JsonDocument["vRef"];
             battery.begin(vRef, voltageDividerRatio, &sigmoidal);
             delay(10);
-            battery_voltage = (float)battery.voltage() / 1000;
+            batteryVoltage = (float)battery.voltage() / 1000;
         }
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();

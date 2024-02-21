@@ -282,7 +282,7 @@ void publishMQTTAlarms() {
 
 void publishMQTTSystemData() {
     publishIntMQTT("/uptime", millis() / 1000);
-    publishFloatMQTT("/voltage", battery_voltage);
+    publishFloatMQTT("/voltage", batteryVoltage);
     publishIntMQTT("/battery", battery_level);
     publishIntMQTT("/freeMem", ESP.getFreeHeap());
     publishIntMQTT("/wifiRSSI", WiFi.RSSI());

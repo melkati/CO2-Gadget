@@ -356,13 +356,13 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-uint16_t getBatteryColor(uint16_t battery_voltage) {
+uint16_t getBatteryColor(uint16_t batteryVoltage) {
     uint16_t color;
-    if (battery_voltage <= 3.6) {
+    if (batteryVoltage <= 3.6) {
         color = TFT_RED;
-    } else if (battery_voltage <= 3.8) {
+    } else if (batteryVoltage <= 3.8) {
         color = TFT_ORANGE;
-    } else if (battery_voltage <= 4.5) {
+    } else if (batteryVoltage <= 4.5) {
         color = TFT_GREEN;
     } else {
         color = TFT_SKYBLUE;
@@ -371,8 +371,8 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
-    if ((!displayShowBattery) || (battery_voltage < 1)) return;
-    String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
+    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
+    String batteryVoltageString = " " + String(batteryVoltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
     spr.loadFont(SMALL_FONT);
@@ -382,7 +382,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    if ((!displayShowBattery) || (battery_voltage < 1)) return;
+    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
     uint8_t batteryLevel = battery.level();
     uint16_t color;
     if (batteryLevel < 20) {
@@ -391,7 +391,7 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
         color = TFT_SILVER;
     }
 
-    if (battery_voltage > 4.5) {  // Charging...
+    if (batteryVoltage > 4.5) {  // Charging...
         color = iconDefaultColor;
     }
 
