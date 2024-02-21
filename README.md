@@ -66,11 +66,11 @@ Supporting any other ESP32 board is very easy. Yoy just have to setup the pines 
 
 These are the GPIOs used by each predefined board:
 
-| Flavor | Display | RX/TX | I2C | UP/DWN  | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
+| Flavor | Display | RX/TX | I2C SDA/SCL | UP/DWN  | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
 |:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 | TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 32 | 33 | 34 | 26 | 2
 | TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 32 | 33 | 34 | 26 | 2
-| TDISPLAY_S3            | TFT 320x170      | 18/17   | 42/43 | 14/0 | 03 | 01 | 04 | 16 | 2
+| TDISPLAY_S3            | TFT 320x170      | 18/17   | 43/44 | 14/0 | 03 | 01 | 04 | 16 | 2
 | esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 32 | 33 | 34 | 26 | 2
