@@ -93,8 +93,9 @@ uint64_t timeInitializationCompleted = 0;
 // Variables for Battery reading
 float battery_voltage = 0;
 uint8_t battery_level = 0;
-uint16_t timeBetweenBatteryRead = 15;
-uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
+uint16_t vRef = 1100;
+uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
 bool workingOnExternalPower = true;      // True if working on external power (USB connected)
@@ -177,9 +178,6 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                           INCLUDE BATTERY FUNCTIONALITY                           *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
-uint16_t vRef = 1100;
-uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
-uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 #include "CO2_Gadget_Battery.h"
 
 /*****************************************************************************************************/
@@ -323,10 +321,10 @@ void processPendingCommands() {
 }
 
 void initGPIO() {
-    #ifdef GREEN_PIN
+#ifdef GREEN_PIN
     pinMode(GREEN_PIN, OUTPUT);
     digitalWrite(GREEN_PIN, LOW);
-    #endif
+#endif
     pinMode(BLUE_PIN, OUTPUT);
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
@@ -335,14 +333,14 @@ void initGPIO() {
 
 void outputsRelays() {
     if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
-    #ifdef GREEN_PIN
+#ifdef GREEN_PIN
     if (co2 >= co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
     }
     if (co2 < co2OrangeRange) {
         digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
     }
-    #endif
+#endif
     if (co2 >= co2OrangeRange) {
         digitalWrite(BLUE_PIN, BLUE_PIN_HIGH);
     }
@@ -360,24 +358,24 @@ void outputsRelays() {
 void outputsRGBLeds() {
     if ((outputsModeRelay) || (co2 == 0)) return;  // Don't turn on led until there is CO2 Data
     if (co2 > co2RedRange) {
-        #ifdef GREEN_PIN
+#ifdef GREEN_PIN
         digitalWrite(GREEN_PIN, GREEN_PIN_LOW);
-        #endif
+#endif
         digitalWrite(RED_PIN, RED_PIN_HIGH);
         digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
         return;
     }
     if (co2 >= co2OrangeRange) {
-        #ifdef GREEN_PIN
+#ifdef GREEN_PIN
         digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
-        #endif
+#endif
         digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
         digitalWrite(RED_PIN, RED_PIN_HIGH);
         return;
     }
-    #ifdef GREEN_PIN
+#ifdef GREEN_PIN
     digitalWrite(GREEN_PIN, GREEN_PIN_HIGH);
-    #endif
+#endif
     digitalWrite(BLUE_PIN, BLUE_PIN_LOW);
     digitalWrite(RED_PIN, RED_PIN_LOW);
 }
@@ -457,19 +455,6 @@ void adjustBrightnessLoop() {
         turnOffDisplay();
     }
 #endif
-}
-
-void batteryLoop() {
-    const float lastBatteryVoltage = battery_voltage;
-    readBatteryVoltage();
-    if (!inMenu) {
-        if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1, update battery level
-            battery_level = getBatteryPercentage();
-            // Serial.printf("-->[BATT] Battery Level: %d%%\n", battery.level());
-        }
-    }
-    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
-    workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
 }
 
 void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
