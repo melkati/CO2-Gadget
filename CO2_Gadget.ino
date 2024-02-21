@@ -91,7 +91,7 @@ uint16_t boardIdESPNow = 0;
 uint64_t timeInitializationCompleted = 0;
 
 // Variables for Battery reading
-float battery_voltage = 0;
+float batteryVoltage = 0;
 uint8_t battery_level = 0;
 uint16_t vRef = 1100;
 uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
@@ -420,7 +420,7 @@ void adjustBrightnessLoop() {
     }
 
     // If battery pin not connected, assume it's working on external power
-    if (battery_voltage < 1) {
+    if (batteryVoltage < 1) {
         workingOnExternalPower = true;
     }
 
@@ -478,10 +478,10 @@ void utilityLoop() {
     const int16_t lowCpuFrequency = 80;
 
     if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", battery_voltage, highCpuFrequency);
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
         setCpuFrequencyAndReinitSerial(highCpuFrequency);
     } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", battery_voltage, lowCpuFrequency);
+        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
         setCpuFrequencyAndReinitSerial(lowCpuFrequency);
     }
 }

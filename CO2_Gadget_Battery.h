@@ -41,13 +41,13 @@ float readBatteryVoltage() {
             delay(10);
         }
         avrgBatteryVoltage /= 3;
-        battery_voltage = avrgBatteryVoltage;
+        batteryVoltage = avrgBatteryVoltage;
         // Serial.print("-->[BATT] Battery read: ");
-        // Serial.print(battery_voltage);
+        // Serial.print(batteryVoltage);
         // Serial.println("V");
         lastTimeBatteryRead = millis();
     }
-    return (battery_voltage);
+    return (batteryVoltage);
 }
 
 uint8_t getBatteryPercentage() {
@@ -58,14 +58,14 @@ void batteryLoop() {
     static float lastBatteryVoltage = readBatteryVoltage();
     readBatteryVoltage();
     if (!inMenu) {
-        if (abs(lastBatteryVoltage - battery_voltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level
+        if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level
             battery_level = getBatteryPercentage();
-            // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", battery_level, lastBatteryVoltage, battery_voltage);
-            lastBatteryVoltage = battery_voltage;
+            // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", battery_level, lastBatteryVoltage, batteryVoltage);
+            lastBatteryVoltage = batteryVoltage;
         }
     }
     // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
-    workingOnExternalPower = (battery_voltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+    workingOnExternalPower = (batteryVoltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
 }
 
 #endif  // CO2_Gadget_Battery_h
