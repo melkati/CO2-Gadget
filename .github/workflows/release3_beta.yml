@@ -1,9 +1,11 @@
 name: Beta Release V2.5 Beta
 
 on:
-  # push:
-  #   branches:
-  #     - development
+  push:
+    branches:
+      - development
+    paths-ignore:
+      - '!.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
   workflow_dispatch:
 
 jobs:
@@ -11,6 +13,8 @@ jobs:
     name: Create Beta Release
 
     runs-on: ubuntu-latest
+
+    if: contains(github.event.head_commit.message, 'Beta')
 
     strategy:
       matrix:
