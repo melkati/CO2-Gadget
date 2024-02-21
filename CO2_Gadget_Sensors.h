@@ -65,17 +65,7 @@ uint16_t getSCD4xFeatureSet() {
         Serial.println("-->[SENS] SCD4x getFeatures error: " + String(error));
     } else {
         uint8_t typeOfSensor = ((featureSet & 0x1000) >> 12);
-        switch (typeOfSensor) {
-            case 0:
-                Serial.println("-->[SENS] SCD4x Sensor Type: SCD40");
-                break;
-            case 1:
-                Serial.println("-->[SENS] SCD4x Sensor Type: SCD41");
-                break;
-            default:
-                Serial.println("-->[SENS] SCD4x Sensor Type: Unknown (probably unsupported SCD42 obsolete sensor)");
-                break;
-        }
+        Serial.println("-->[SENS] SCD4x Sensor Type: SCD4" + String(typeOfSensor));
     }
     sensors.scd4x.startPeriodicMeasurement();
     return featureSet;
