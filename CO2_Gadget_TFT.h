@@ -356,13 +356,13 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-uint16_t getBatteryColor(uint16_t batteryVoltage) {
+uint16_t getBatteryColor(float batteryVoltage) {
     uint16_t color;
     if (batteryVoltage <= 3.6) {
         color = TFT_RED;
     } else if (batteryVoltage <= 3.8) {
         color = TFT_ORANGE;
-    } else if (batteryVoltage <= 4.5) {
+    } else if (batteryVoltage <= (batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100)) / 100) {
         color = TFT_GREEN;
     } else {
         color = TFT_SKYBLUE;
