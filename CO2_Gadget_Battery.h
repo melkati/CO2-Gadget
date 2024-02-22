@@ -54,18 +54,27 @@ uint8_t getBatteryPercentage() {
     return battery.level();
 }
 
+const unsigned long BATTERY_READ_INTERVAL = 3000; // 3 seconds
+
 void batteryLoop() {
     static float lastBatteryVoltage = readBatteryVoltage();
-    readBatteryVoltage();
-    if (!inMenu) {
-        if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level
-            battery_level = getBatteryPercentage();
-            // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", battery_level, lastBatteryVoltage, batteryVoltage);
-            lastBatteryVoltage = batteryVoltage;
+    static unsigned long lastBatteryReadTime = 0;
+    
+    if (millis() - lastBatteryReadTime >= BATTERY_READ_INTERVAL) {  // Check if at least 3 segundos have passed
+        readBatteryVoltage();
+        if (!inMenu) {
+            if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level
+                batteryLevel = getBatteryPercentage();
+                // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", batteryLevel, lastBatteryVoltage, batteryVoltage);
+                lastBatteryVoltage = batteryVoltage;
+            }
         }
+        // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V), assume it's working on external power
+        workingOnExternalPower = (batteryVoltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100));
+        // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage: %.4fV. Working on external power: %s\n", batteryLevel, batteryVoltage, workingOnExternalPower ? "Yes" : "No");
+        lastBatteryReadTime = millis();  // Update last read time
     }
-    // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V), asume it's working on external power
-    workingOnExternalPower = (batteryVoltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100));
 }
+
 
 #endif  // CO2_Gadget_Battery_h
