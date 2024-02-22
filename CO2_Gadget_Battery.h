@@ -10,7 +10,7 @@
 /*****************************************************************************************************/
 // clang-format on
 
-uint16_t timeBetweenBatteryRead = 5;
+uint16_t timeBetweenBatteryRead = 1;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading
 const uint8_t batterySamples = 3;  // Number of samples to average for battery voltage.
 
@@ -54,12 +54,32 @@ uint8_t getBatteryPercentage() {
     return battery.level();
 }
 
-const unsigned long BATTERY_READ_INTERVAL = 3000; // 3 seconds
+// #include <esp_adc_cal.h>
 
-void batteryLoop() {
+// void readEfuse() {
+//     esp_adc_cal_characteristics_t chars;
+//     auto val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &chars);
+//     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+//         Serial.println("eFuse Vref");
+//     } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+//         Serial.println("Two Point");
+//     } else {
+//         Serial.println("Default");
+//     }
+// }
+
+const unsigned long BATTERY_READ_INTERVAL = 3000;  // 3 seconds
+// static bool firstReadBattery = true;
+
+void batteryLoop(bool forceReading = false) {
     static float lastBatteryVoltage = readBatteryVoltage();
     static unsigned long lastBatteryReadTime = 0;
-    
+
+    // if (firstReadBattery) {
+    //     readEfuse();
+    //     firstReadBattery = false;
+    // }
+
     if (millis() - lastBatteryReadTime >= BATTERY_READ_INTERVAL) {  // Check if at least 3 segundos have passed
         readBatteryVoltage();
         if (!inMenu) {
@@ -75,6 +95,5 @@ void batteryLoop() {
         lastBatteryReadTime = millis();  // Update last read time
     }
 }
-
 
 #endif  // CO2_Gadget_Battery_h
