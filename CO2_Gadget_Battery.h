@@ -64,8 +64,8 @@ void batteryLoop() {
             lastBatteryVoltage = batteryVoltage;
         }
     }
-    // If battery voltage is more than 5% of the fully charged battery voltage, asume it's working on external power
-    workingOnExternalPower = (batteryVoltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 5 / 100));
+    // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V), asume it's working on external power
+    workingOnExternalPower = (batteryVoltage * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100));
 }
 
 #endif  // CO2_Gadget_Battery_h
