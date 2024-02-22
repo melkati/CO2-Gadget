@@ -19,12 +19,12 @@ jobs:
     strategy:
       matrix:
         environment:
-          # - esp32dev_beta
-          # - esp32dev_OLED_beta
-          # - TTGO_TDISPLAY_beta
-          - TTGO_TDISPLAY_SANDWICH_beta
-          # - TDISPLAY_S3_beta
-          # - esp32dev_ST7789_240x320_beta
+          # - esp32dev
+          # - esp32dev_OLED
+          # - TTGO_TDISPLAY
+          - TTGO_TDISPLAY_SANDWICH
+          # - TDISPLAY_S3
+          # - esp32dev_ST7789_240x320
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3_beta' && 'ESP32-S3' || 'ESP32' }}
