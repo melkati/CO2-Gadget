@@ -376,15 +376,14 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
     spr.loadFont(SMALL_FONT);
-    spr.setTextColor(getBatteryColor(battery.voltage()), TFT_BLACK);
+    spr.setTextColor(getBatteryColor(batteryVoltage), TFT_BLACK);
     spr.printToSprite(batteryVoltageString);  // Space padding helps over-write old numbers
     spr.unloadFont();
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
-    uint8_t batteryLevel = battery.level();
     uint16_t color;
+    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
     if (batteryLevel < 20) {
         color = TFT_RED;
     } else {
