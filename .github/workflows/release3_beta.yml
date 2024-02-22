@@ -1,11 +1,11 @@
-name: Beta Release V2.6
+name: Beta Release V2.7 Beta
 
 on:
   push:
     branches:
       - development
     paths-ignore:
-      - '!.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
+      - '.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
   workflow_dispatch:
 
 jobs:
@@ -75,6 +75,18 @@ jobs:
             echo "Commit message does not contain version information."
             exit 1
           fi
+
+      - name: Create Git tag
+        if: success()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "<>"
+          git tag -a "v${{ steps.get_version.outputs.VERSION }}-beta" -m "Beta Release v${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Push Git tag
+        if: success()
+        run: |
+          git push origin "v${{ steps.get_version.outputs.VERSION }}-beta"
 
       - name: Show version
         run: echo ${{ steps.get_version.outputs.VERSION }}
@@ -170,8 +182,10 @@ jobs:
           draft: false
           prerelease: true
           generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_ACTION_TOKEN }}
+          CHIP_FAMILY: ${{ env.CHIP_FAMILY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📂 Sync beta files - FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
