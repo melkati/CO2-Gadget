@@ -590,7 +590,7 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
 #endif // SUPPORT_ESPNOW
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
-  battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+  battery.begin(vRef, voltageDividerRatio, &asigmoidal);
   delay(10);
   batteryVoltage = (float)battery.voltage() / 1000;
   nav.target-> dirty = true;

@@ -422,7 +422,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         batteryFullyChargedMillivolts = JsonDocument["batChargd"];
         if (vRef != JsonDocument["vRef"]) { // If battery reference changed, apply it
             vRef = JsonDocument["vRef"];
-            battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+            battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
             vRef = JsonDocument["vRef"];
