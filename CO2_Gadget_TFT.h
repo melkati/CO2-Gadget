@@ -395,6 +395,40 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
         color = iconDefaultColor;
     }
 
+    if (spr.createSprite(34, 14) == nullptr) {
+        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.deleteSprite();
+        return;
+    }
+
+    spr.fillSprite(TFT_BLACK);
+
+    spr.drawRoundRect(0, 0, 32, 14, 2, color);  // Battery outter rectangle
+    spr.drawLine(33, 4, 33, 10, color);
+
+    if (batteryLevel > 20) spr.fillRect(4, 2, 4, 10, color);
+    if (batteryLevel > 40) spr.fillRect(11, 2, 4, 10, color);
+    if (batteryLevel > 60) spr.fillRect(18, 2, 4, 10, color);
+    if (batteryLevel > 80) spr.fillRect(25, 2, 4, 10, color);
+
+    spr.pushSprite(posX, posY);
+    spr.deleteSprite();
+}
+
+void showBatteryIconOLD(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
+    uint16_t color;
+    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
+
+    if (batteryLevel < 20) {
+        color = TFT_RED;
+    } else {
+        color = TFT_SILVER;
+    }
+
+    if (batteryVoltage > 4.5) {  // Charging...
+        color = iconDefaultColor;
+    }
+
     tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
     tft.drawLine(posX + 33, posY + 4, posX + 33, posY + 10, color);
 
@@ -522,31 +556,6 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void OLDshowCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
-    if (co2 > 9999) co2 = 9999;
-
-    spr.loadFont(BIG_FONT);
-    uint16_t width = spr.textWidth("0000");
-    uint16_t height = elementPosition.co2FontDigitsHeight;
-    uint16_t posSpriteX = posX - width;
-    uint16_t posSpriteY = posY - height;
-    if (posSpriteX < 0) posSpriteX = 0;
-    if (posSpriteY < 0) posSpriteY = 0;
-    if (spr.createSprite(width, height) == nullptr) {
-        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
-        spr.unloadFont();
-        spr.deleteSprite();
-        return;
-    }
-    // spr.drawRect(0, 0, width, height, TFT_WHITE);
-    spr.setTextColor(getCO2Color(co2), TFT_BLACK);
-    spr.setTextDatum(TR_DATUM);
-    spr.drawNumber(co2, width, 0);
-    spr.pushSprite(posSpriteX, posSpriteY);
-    spr.unloadFont();
-    spr.deleteSprite();
-}
-
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
     if ((co2 == previousCO2Value) || (co2 == 0) || (co2 > 9999)) return;
 
@@ -557,7 +566,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     uint16_t posSpriteY = posY - height;
     uint16_t color = getCO2Color(co2);
     if (posSpriteY < 0) posSpriteY = 0;
-    spr.createSprite(digitWidth, height);
+    // spr.createSprite(digitWidth, height);
     if (spr.createSprite(digitWidth, height) == nullptr) {
         // Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
         spr.unloadFont();
