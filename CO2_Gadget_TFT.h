@@ -401,8 +401,9 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
         return;
     }
 
-    spr.fillSprite(TFT_BLACK);
+    publishMQTTLogData("Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
 
+    spr.fillSprite(TFT_BLACK);
     spr.drawRoundRect(0, 0, 32, 14, 2, color);  // Battery outter rectangle
     spr.drawLine(33, 4, 33, 10, color);
 

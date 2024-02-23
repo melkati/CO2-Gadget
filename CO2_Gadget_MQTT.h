@@ -253,9 +253,9 @@ void initMQTT() {
 
 void publishMQTTLogData(String logData) {
 #ifdef SUPPORT_MQTT
-    // if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
-    //     publishStrMQTT("/log", logData);
-    // }
+    if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+        publishStrMQTT("/log", logData);
+    }
 #endif
 }
 

@@ -28,7 +28,7 @@ Battery battery(batteryDischargedMillivolts, batteryFullyChargedMillivolts, ADC_
 
 void initBattery() {
     battery.onDemand(battery.ON_DEMAND_DISABLE, LOW);
-    battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+    battery.begin(vRef, voltageDividerRatio, &asigmoidal);
     Serial.println("-->[BATT***] Battery initialized with vRef: " + String(vRef) + " and voltage divider ratio: " + String(voltageDividerRatio));
 }
 
@@ -41,7 +41,7 @@ void readBatteryVoltage() {
         }
         batteryVoltageNow /= 3;
         batteryVoltage = batteryVoltageNow;
-        batteryLevel = battery.level();
+        batteryLevel = battery.level(batteryVoltage*1000);
         lastTimeBatteryRead = millis();
         
         // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V), assume it's working on external power
