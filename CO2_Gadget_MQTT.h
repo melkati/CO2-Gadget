@@ -251,6 +251,14 @@ void initMQTT() {
 #endif
 }
 
+void publishMQTTLogData(String logData) {
+#ifdef SUPPORT_MQTT
+    // if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+    //     publishStrMQTT("/log", logData);
+    // }
+#endif
+}
+
 void publishMQTTAlarms() {
     static bool MQTTGreenAlarm, MQTTOrangeAlarm, MQTTRedAlarm = false;
 
