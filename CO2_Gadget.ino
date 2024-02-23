@@ -18,6 +18,7 @@
 // Functions and enum definitions
 void reverseButtons(bool reversed);
 void outputsLoop();
+void publishMQTTLogData(String logData);
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -93,7 +94,7 @@ uint64_t timeInitializationCompleted = 0;
 // Variables for Battery reading
 float batteryVoltage = 0;
 uint8_t batteryLevel = 100;
-uint16_t vRef = 1100;
+uint16_t vRef = 960;
 uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
@@ -102,7 +103,7 @@ bool workingOnExternalPower = true;      // True if working on external power (U
 uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
-volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp a button was pressed
+volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
 
 // Variables for MQTT timming
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
@@ -287,6 +288,7 @@ void wakeUpDisplay() {
     if (actualDisplayBrightness == 0) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);
+        publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
 #endif
         lastTimeButtonPressed = millis();
     }
@@ -434,25 +436,40 @@ void adjustBrightnessLoop() {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
             setDisplayBrightness(DisplayBrightness);
         }
+        if (timeToDisplayOff==0) {
+            setDisplayBrightness(DisplayBrightness);
+        }
         return;
     }
 
     // Display backlight is NOT sleeping and brightness change detected
     if ((actualDisplayBrightness > 0) && (actualDisplayBrightness != DisplayBrightness)) {
         setDisplayBrightness(DisplayBrightness);
+        publishMQTTLogData("Setting display brightness to " + String(DisplayBrightness));
     }
 
-    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0))
-    if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
+    // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0, then turn on display))
+    if ((workingOnExternalPower) && (!displayOffOnExternalPower)) {
         if (actualDisplayBrightness == 0) {
             setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
+            publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
         }
         return;
     }
 
+    if (timeToDisplayOff == 0) return;  // If timeToDisplayOff is 0, don't turn off the display
+
     if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
-        Serial.println("-->[MAIN] Turning off display to save power. Actual brightness: " + String(actualDisplayBrightness));
-        turnOffDisplay();
+        if ((workingOnExternalPower) && (displayOffOnExternalPower)) {
+            Serial.println("-->[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
+            turnOffDisplay();
+            publishMQTTLogData("[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
+        }
+        if (!workingOnExternalPower) {
+            Serial.println("-->[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+            turnOffDisplay();
+            publishMQTTLogData("[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+        }
     }
 #endif
 }
@@ -490,8 +507,8 @@ void utilityLoop() {
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
-    setCpuFrequencyMhz(80);                                           // Lower CPU frecuency to reduce power consumption
     Serial.begin(115200);
+    Serial.setRxBufferSize(1024);
     delay(50);
 #ifdef AUTO_VERSION
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
@@ -505,14 +522,13 @@ void setup() {
     Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
 
     // Get the size of the flash memory
-    uint32_t flash_size = ESP.getFlashChipSize();
-    Serial.printf("-->[STUP] Flash size: %d\n", flash_size);
-    Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
-    Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+    // Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
+    // Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+    // Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
-    initImprov();
+    // initImprov();
     initPreferences();
     initBattery();
     initGPIO();

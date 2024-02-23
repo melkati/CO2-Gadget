@@ -362,7 +362,7 @@ uint16_t getBatteryColor(float batteryVoltage) {
         color = TFT_RED;
     } else if (batteryVoltage <= 3.8) {
         color = TFT_ORANGE;
-    } else if (batteryVoltage <= (batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100)) / 100) {
+    } else if (!workingOnExternalPower) {
         color = TFT_GREEN;
     } else {
         color = TFT_SKYBLUE;
@@ -384,6 +384,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
     uint16_t color;
     if ((!displayShowBattery) || (batteryVoltage < 1)) return;
+
     if (batteryLevel < 20) {
         color = TFT_RED;
     } else {
