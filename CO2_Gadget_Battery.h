@@ -29,7 +29,7 @@ Battery battery(batteryDischargedMillivolts, batteryFullyChargedMillivolts, ADC_
 void initBattery() {
     battery.onDemand(battery.ON_DEMAND_DISABLE, LOW);
     battery.begin(vRef, voltageDividerRatio, &asigmoidal);
-    Serial.println("-->[BATT***] Battery initialized with vRef: " + String(vRef) + " and voltage divider ratio: " + String(voltageDividerRatio));
+    // Serial.println("-->[BATT***] Battery initialized with vRef: " + String(vRef) + " and voltage divider ratio: " + String(voltageDividerRatio));
 }
 
 void readBatteryVoltage() {
@@ -71,7 +71,7 @@ void batteryLoop() {
         // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage: %.4fV\n", batteryLevel, batteryVoltageNow);
         if (!inMenu) {
             if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level                
-                Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", batteryLevel, lastBatteryVoltage, batteryVoltage);
+                // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", batteryLevel, lastBatteryVoltage, batteryVoltage);
                 lastBatteryVoltage = batteryVoltage;
             }
         }
