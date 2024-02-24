@@ -618,7 +618,7 @@
       // If the user confirms, proceed with the restart
       if (isConfirmed) {
         // Send a request to the ESP32 endpoint to trigger a reset
-        fetch('/restart-esp32', {
+        fetch('/restart', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
