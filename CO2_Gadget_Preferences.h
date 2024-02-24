@@ -5,9 +5,14 @@
 #include <Preferences.h>
 Preferences preferences;
 
+uint8_t prefVersion = 0;
+uint8_t prefRevision = 0;
+
 void printPreferences() {
     Serial.printf("-->[PREF] \n");
     Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
+    Serial.printf("-->[PREF] prefVersion:\t #%d#\n", prefVersion);
+    Serial.printf("-->[PREF] prefRevision:\t #%d#\n", prefRevision);
     Serial.printf("-->[PREF] customCalValue: #%d#\n", customCalibrationValue);
     Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
     Serial.printf("-->[PREF] altitudeMeters:\t #%d#\n", altitudeMeters);
@@ -76,9 +81,10 @@ void initPreferences() {
     //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
     // }
     // preferences.end();
-    // delay(1000);
+    // delay(000);
     preferences.begin("CO2-Gadget", false);
-    // preferences.clear(); // Remove all preferences
+    prefVersion = preferences.getUInt("prefVersion", 0);
+    prefRevision = preferences.getUInt("prefRevision", 0);
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
@@ -102,7 +108,7 @@ void initPreferences() {
         activeMQTT = false;
         preferences.putBool("activeMQTT", activeMQTT);
     }
-    batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
+    batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3200);
     batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
     vRef = preferences.getUInt("vRef", 930);  // Looks like, due to a bug, 930 is a goos starting number for vRef
     timeToDisplayOff = preferences.getUInt("tToDispOff", 60);
@@ -165,7 +171,7 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-#define DEBUG_PREFERENCES
+// #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif
@@ -263,7 +269,7 @@ String getPreferencesAsJson() {
     doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
     doc["activeOTA"] = preferences.getBool("activeOTA", false);
     doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
-    doc["batDischgd"] = preferences.getInt("batDischgd", 3500);
+    doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
     doc["batChargd"] = preferences.getInt("batChargd", 4200);
     doc["vRef"] = preferences.getInt("vRef", 930);
     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
@@ -420,12 +426,12 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
         batteryDischargedMillivolts = JsonDocument["batDischgd"];
         batteryFullyChargedMillivolts = JsonDocument["batChargd"];
-        if (vRef != JsonDocument["vRef"]) {
+        if (vRef != JsonDocument["vRef"]) { // If battery reference changed, apply it
             vRef = JsonDocument["vRef"];
-            battery.begin(vRef, voltageDividerRatio, &sigmoidal);
-            delay(10);
-            battery_voltage = (float)battery.voltage() / 1000;
+            battery.begin(vRef, voltageDividerRatio, &asigmoidal);
+            readBatteryVoltage();
         }
+            vRef = JsonDocument["vRef"];
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
         mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
