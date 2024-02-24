@@ -154,7 +154,7 @@ uint16_t co2RedRange = 1000;
 #include <FS.h>
 #include <SPIFFS.h>
 
-Stream& miSerialPort = Serial;
+// Stream& miSerialPort = Serial;
 
 enum notificationTypes { notifyNothing,
                          notifyInfo,
