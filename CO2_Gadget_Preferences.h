@@ -76,9 +76,8 @@ void initPreferences() {
     //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
     // }
     // preferences.end();
-    // delay(1000);
+    // delay(000);
     preferences.begin("CO2-Gadget", false);
-    // preferences.clear(); // Remove all preferences
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
@@ -102,7 +101,7 @@ void initPreferences() {
         activeMQTT = false;
         preferences.putBool("activeMQTT", activeMQTT);
     }
-    batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3500);
+    batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3200);
     batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
     vRef = preferences.getUInt("vRef", 930);  // Looks like, due to a bug, 930 is a goos starting number for vRef
     timeToDisplayOff = preferences.getUInt("tToDispOff", 60);
@@ -263,7 +262,7 @@ String getPreferencesAsJson() {
     doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
     doc["activeOTA"] = preferences.getBool("activeOTA", false);
     doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
-    doc["batDischgd"] = preferences.getInt("batDischgd", 3500);
+    doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
     doc["batChargd"] = preferences.getInt("batChargd", 4200);
     doc["vRef"] = preferences.getInt("vRef", 930);
     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);

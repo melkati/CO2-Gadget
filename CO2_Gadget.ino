@@ -95,7 +95,7 @@ uint64_t timeInitializationCompleted = 0;
 float batteryVoltage = 0;
 uint8_t batteryLevel = 100;
 uint16_t vRef = 960;
-uint16_t batteryDischargedMillivolts = 3500;    // Voltage of battery when we consider it discharged (0%).
+uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
