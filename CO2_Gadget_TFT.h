@@ -406,6 +406,11 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
 
 void showWiFiIcon(int32_t posX, int32_t posY) {
     int8_t rssi = WiFi.RSSI();
+    if (troubledWIFI) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_RED);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeWIFI) {
         tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -415,10 +420,10 @@ void showWiFiIcon(int32_t posX, int32_t posY) {
                 tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
             else if (rssi < 70)
                 tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_ORANGE);
-            else if (rssi < 90)
+            else if (rssi < 80)
                 tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_YELLOW);
         } else {
-            tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_RED);
+            tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
         }
     }
 }
@@ -433,6 +438,11 @@ void showBLEIcon(int32_t posX, int32_t posY) {
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY) {
+    if (troubledMQTT) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_RED);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeMQTT) {
         tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
