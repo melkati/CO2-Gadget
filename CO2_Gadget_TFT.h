@@ -198,7 +198,7 @@ void setDisplayBrightness(uint16_t newBrightness) {
         actualDisplayBrightness = newBrightness;
     }
 #endif
-#ifdef TDISPLAY_S3
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     if (actualDisplayBrightness != newBrightness) {
         // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
         // Serial.printf("-->[TFT ] Old actualDisplayBrightness value at %d\n", actualDisplayBrightness);
@@ -267,7 +267,7 @@ void initBacklight() {
     pinMode(TFT_BL, OUTPUT);
     setDisplayBrightness(DisplayBrightness);
 #endif
-#ifdef TDISPLAY_S3
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     pinMode(TFT_BL, OUTPUT);
     pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
     delay(50);
