@@ -5,9 +5,14 @@
 #include <Preferences.h>
 Preferences preferences;
 
+uint8_t prefVersion = 0;
+uint8_t prefRevision = 0;
+
 void printPreferences() {
     Serial.printf("-->[PREF] \n");
     Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
+    Serial.printf("-->[PREF] prefVersion:\t #%d#\n", prefVersion);
+    Serial.printf("-->[PREF] prefRevision:\t #%d#\n", prefRevision);
     Serial.printf("-->[PREF] customCalValue: #%d#\n", customCalibrationValue);
     Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
     Serial.printf("-->[PREF] altitudeMeters:\t #%d#\n", altitudeMeters);
@@ -78,6 +83,8 @@ void initPreferences() {
     // preferences.end();
     // delay(000);
     preferences.begin("CO2-Gadget", false);
+    prefVersion = preferences.getUInt("prefVersion", 0);
+    prefRevision = preferences.getUInt("prefRevision", 0);
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
