@@ -194,7 +194,7 @@ void setDisplayBrightness(uint16_t newBrightness) {
         // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
         // Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
         // Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
-        analogWrite(TFT_BL, newBrightness);
+        analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
@@ -204,16 +204,16 @@ void setDisplayBrightness(uint16_t newBrightness) {
         // Serial.printf("-->[TFT ] Old actualDisplayBrightness value at %d\n", actualDisplayBrightness);
         // Serial.printf("-->[TFT ] New actualDisplayBrightness value at %d\n", newBrightness);
         if (newBrightness == 0) {
-            digitalWrite(TFT_BL, LOW);
+            digitalWrite(TFT_BACKLIGHT, LOW);
         } else {
-            digitalWrite(TFT_BL, HIGH);
+            digitalWrite(TFT_BACKLIGHT, HIGH);
         }
         actualDisplayBrightness = newBrightness;
     }
 #endif
 #ifdef ST7789_240x320
     if (actualDisplayBrightness != newBrightness) {
-        analogWrite(TFT_BL, newBrightness);
+        analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
@@ -264,14 +264,14 @@ void displaySplashScreen() {
 
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
-    pinMode(TFT_BL, OUTPUT);
+    pinMode(TFT_BACKLIGHT, OUTPUT);
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef TDISPLAY_S3
-    pinMode(TFT_BL, OUTPUT);
+    pinMode(TFT_BACKLIGHT, OUTPUT);
     pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
-    delay(50);
-    digitalWrite(TFT_BL, HIGH);
+    delay(20);
+    digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
 #endif
 }
