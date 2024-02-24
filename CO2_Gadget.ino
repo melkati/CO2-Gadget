@@ -508,7 +508,6 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
-    Serial.setRxBufferSize(1024);
     delay(50);
 #ifdef AUTO_VERSION
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
@@ -528,7 +527,7 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
-    // initImprov();
+    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
