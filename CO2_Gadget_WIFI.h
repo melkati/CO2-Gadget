@@ -713,9 +713,8 @@ void initWifi() {
         activeWIFI = false;
     }
     if (activeWIFI) {
-        wifiChanged = true;
-
         if (!connectToWiFi()) {
+            wifiChanged = false;
             return;
         }
 
@@ -729,6 +728,8 @@ void initWifi() {
 
         // Try to connect to MQTT broker on next loop if needed
         troubledMQTT = false;
+
+        wifiChanged = true;
     }
 }
 
@@ -745,9 +746,10 @@ void wifiClientLoop() {
         Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
         wifiSSID = WiFi.SSID();
         activeWIFI = true;
-        putPreferences();
-        // initWifi();
-        wifiChanged = true;
+        if (wifiSSID != "") {
+            putPreferences();
+            wifiChanged = true;
+        }
     }
 
     if ((wifiChanged) && (!inMenu)) {
