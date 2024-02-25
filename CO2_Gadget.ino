@@ -71,6 +71,7 @@ bool showFahrenheit = false;
 bool displayShowTemperature = true;
 bool displayShowHumidity = true;
 bool displayShowBattery = true;
+bool displayShowBatteryVoltage = false;
 bool displayShowCO2 = true;
 bool displayShowPM25 = true;
 bool debugSensors = false;
