@@ -19,6 +19,7 @@
 void reverseButtons(bool reversed);
 void outputsLoop();
 void publishMQTTLogData(String logData);
+void putPreferences();
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
