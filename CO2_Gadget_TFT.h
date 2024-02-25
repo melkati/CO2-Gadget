@@ -123,7 +123,7 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconX = displayWidth - 34;
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
@@ -148,7 +148,7 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconX = displayWidth - 34;
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
@@ -173,7 +173,7 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
+        elementPosition.batteryIconX = displayWidth - 34;
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
@@ -371,7 +371,7 @@ uint16_t getBatteryColor(float batteryVoltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
-    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
+    if ((!displayShowBatteryVoltage) || (!displayShowBattery) || (batteryVoltage < 1)) return;
     String batteryVoltageString = " " + String(batteryVoltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
@@ -410,39 +410,17 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
         spr.setSwapBytes(true);
         spr.drawBitmap(14, 2, iconUSB, 16, 16, TFT_BLACK, iconDefaultColor);
     } else {
-        spr.drawRoundRect(0, 0, 32, 14, 2, color);  // Battery outter rectangle
-        spr.drawLine(33, 4, 33, 10, color);
-        if (batteryLevel > 20) spr.fillRect(4, 2, 4, 10, color);
-        if (batteryLevel > 40) spr.fillRect(11, 2, 4, 10, color);
-        if (batteryLevel > 60) spr.fillRect(18, 2, 4, 10, color);
-        if (batteryLevel > 80) spr.fillRect(25, 2, 4, 10, color);
+        uint32_t upperLine = 4;
+        spr.drawRoundRect(0, upperLine, 32, 14, 2, color);  // Battery outter rectangle
+        spr.drawLine(33, upperLine + 4, 33, upperLine + 10, color);
+        if (batteryLevel > 20) spr.fillRect(4, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 40) spr.fillRect(11, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 60) spr.fillRect(18, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 80) spr.fillRect(25, upperLine + 2, 4, 10, color);
     }
 
     spr.pushSprite(posX, posY);
     spr.deleteSprite();
-}
-
-void showBatteryIconOLD(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    uint16_t color;
-    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
-
-    if (batteryLevel < 20) {
-        color = TFT_RED;
-    } else {
-        color = TFT_SILVER;
-    }
-
-    if (batteryVoltage > 4.5) {  // Charging...
-        color = iconDefaultColor;
-    }
-
-    tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
-    tft.drawLine(posX + 33, posY + 4, posX + 33, posY + 10, color);
-
-    if (batteryLevel > 20) tft.fillRect(posX + 4, posY + 2, 4, 10, color);
-    if (batteryLevel > 40) tft.fillRect(posX + 11, posY + 2, 4, 10, color);
-    if (batteryLevel > 60) tft.fillRect(posX + 18, posY + 2, 4, 10, color);
-    if (batteryLevel > 80) tft.fillRect(posX + 25, posY + 2, 4, 10, color);
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY) {
@@ -637,7 +615,7 @@ void displayShowValues() {
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY);
-    // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
+    showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY);

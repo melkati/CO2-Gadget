@@ -62,6 +62,7 @@ void printPreferences() {
     Serial.printf("-->[PREF] showTemp:\t #%s#\n", ((displayShowTemperature) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showHumidity:\t #%s#\n", ((displayShowHumidity) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showBattery:\t #%s#\n", ((displayShowBattery) ? "Show" : "Hide"));
+    Serial.printf("-->[PREF] showBatteryVolt:\t #%s#\n", ((displayShowBatteryVoltage) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showCO2:\t #%s#\n", ((displayShowCO2) ? "Show" : "Hide"));
     Serial.printf("-->[PREF] showPM25:\t #%s#\n", ((displayShowPM25) ? "Show" : "Hide"));
 
@@ -154,6 +155,7 @@ void initPreferences() {
     displayShowTemperature = preferences.getBool("showTemp", true);
     displayShowHumidity = preferences.getBool("showHumidity", true);
     displayShowBattery = preferences.getBool("showBattery", true);
+    displayShowBatteryVoltage = preferences.getBool("showBattVolt", false);
     displayShowCO2 = preferences.getBool("showCO2", true);
     displayShowPM25 = preferences.getBool("showPM25", true);
 
@@ -234,6 +236,7 @@ void putPreferences() {
     preferences.putBool("showTemp", displayShowTemperature);
     preferences.putBool("showHumidity", displayShowHumidity);
     preferences.putBool("showBattery", displayShowBattery);
+    preferences.putBool("showBattVolt", displayShowBatteryVoltage);
     preferences.putBool("showCO2", displayShowCO2);
     preferences.putBool("showPM25", displayShowPM25);
 
@@ -369,6 +372,7 @@ String getActualSettingsAsJson() {
     doc["showTemp"] = displayShowTemperature;
     doc["showHumidity"] = displayShowHumidity;
     doc["showBattery"] = displayShowBattery;
+    doc["showBattVolt"] = displayShowBatteryVoltage;
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
     doc["measInterval"] = measurementInterval;
@@ -464,6 +468,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayShowTemperature = JsonDocument["showTemp"];
         displayShowHumidity = JsonDocument["showHumidity"];
         displayShowBattery = JsonDocument["showBattery"];
+        displayShowBatteryVoltage = JsonDocument["showBattVolt"];
         displayShowCO2 = JsonDocument["showCO2"];
         displayShowPM25 = JsonDocument["showPM25"];
 
