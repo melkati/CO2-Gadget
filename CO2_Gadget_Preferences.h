@@ -8,6 +8,15 @@ Preferences preferences;
 uint8_t prefVersion = 0;
 uint8_t prefRevision = 0;
 
+void upgradePreferences() {
+    if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
+        batteryDischargedMillivolts = 3200;
+        Serial.printf("-->[PREF] Upgrading preferences batteryDischargedMillivolts to %d\n", batteryDischargedMillivolts);
+        prefRevision = 1;
+        putPreferences();
+    }
+}
+
 void printPreferences() {
     Serial.printf("-->[PREF] \n");
     Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
@@ -177,6 +186,7 @@ void initPreferences() {
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif
+upgradePreferences();
 }
 
 void putPreferences() {
