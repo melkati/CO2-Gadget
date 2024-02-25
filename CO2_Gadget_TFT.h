@@ -427,7 +427,7 @@ void showWiFiIcon(int32_t posX, int32_t posY) {
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
-        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_RED);
+        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
@@ -459,7 +459,7 @@ void showBLEIcon(int32_t posX, int32_t posY) {
 void showMQTTIcon(int32_t posX, int32_t posY) {
     if (troubledMQTT) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
-        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_RED);
+        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
@@ -472,6 +472,11 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
 
 void showEspNowIcon(int32_t posX, int32_t posY) {
 #ifdef SUPPORT_ESPNOW
+    if (troubledESPNOW) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeESPNOW) {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
