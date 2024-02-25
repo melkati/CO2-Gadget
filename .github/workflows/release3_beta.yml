@@ -23,9 +23,9 @@ jobs:
         environment:
           # - esp32dev
           # - esp32dev_OLED
-          # - TTGO_TDISPLAY
+          - TTGO_TDISPLAY
           - TTGO_TDISPLAY_SANDWICH
-          # - TDISPLAY_S3
+          - TDISPLAY_S3
           # - esp32dev_ST7789_240x320
 
     env:
