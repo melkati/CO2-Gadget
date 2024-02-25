@@ -487,12 +487,14 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY) {
+    #ifdef SUPPORT_ESPNOW
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeESPNOW) {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
     } else {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
     }
+    #endif
 }
 
 void showTemperatureIcon(int32_t posX, int32_t posY) {
