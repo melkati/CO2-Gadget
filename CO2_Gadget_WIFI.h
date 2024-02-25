@@ -560,17 +560,19 @@ void initWebServer() {
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
         String inputString;
         // <CO2-GADGET_IP>/settings?MeasurementInterval=100
-        if (request->hasParam(PARAM_INPUT_1)) {
-            inputString = request->getParam(PARAM_INPUT_1)->value();
+        if (request->hasParam("MeasurementInterval")) {
+            inputString = request->getParam("MeasurementInterval")->value();
             if (checkStringIsNumerical(inputString)) {
                 Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
                 measurementInterval = inputString.toInt();
                 request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+            } else {
+                request->send(400, "text/plain", "Error. MeasurementInterval must have a number as parameter.");
             }
         };
         // <CO2-GADGET_IP>/settings?CalibrateCO2=400
-        if (request->hasParam(PARAM_INPUT_2)) {
-            inputString = request->getParam(PARAM_INPUT_2)->value();
+        if (request->hasParam("CalibrateCO2")) {
+            inputString = request->getParam("CalibrateCO2")->value();
             if (checkStringIsNumerical(inputString)) {
                 Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
                 if ((inputString.toInt() >= 400) && (inputString.toInt() <= 2000)) {
@@ -578,10 +580,22 @@ void initWebServer() {
                     pendingCalibration = true;
                     request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
                 } else {
-                    request->send(200, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
+                    request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
                 }
             }
         };
+        // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
+        if (request->hasParam("displayShowBatteryVoltage")) {
+            String inputString = request->getParam("displayShowBatteryVoltage")->value();
+            if (inputString.equalsIgnoreCase("true") || inputString.equalsIgnoreCase("false")) {
+                bool newValue = inputString.equalsIgnoreCase("true");
+                displayShowBatteryVoltage = newValue;
+                Serial.printf("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: %s\n", newValue ? "true" : "false");
+                request->send(200, "text/plain", "OK. Setting displayShowBatteryVoltage to " + inputString);
+            } else {
+                request->send(400, "text/plain", "Error. Invalid parameter. Use 'true' or 'false'");
+            }
+        }
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -713,9 +727,8 @@ void initWifi() {
         activeWIFI = false;
     }
     if (activeWIFI) {
-        wifiChanged = true;
-
         if (!connectToWiFi()) {
+            wifiChanged = false;
             return;
         }
 
@@ -729,6 +742,8 @@ void initWifi() {
 
         // Try to connect to MQTT broker on next loop if needed
         troubledMQTT = false;
+
+        wifiChanged = true;
     }
 }
 
@@ -745,9 +760,10 @@ void wifiClientLoop() {
         Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
         wifiSSID = WiFi.SSID();
         activeWIFI = true;
-        putPreferences();
-        // initWifi();
-        wifiChanged = true;
+        if (wifiSSID != "") {
+            putPreferences();
+            wifiChanged = true;
+        }
     }
 
     if ((wifiChanged) && (!inMenu)) {

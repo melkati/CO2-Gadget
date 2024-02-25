@@ -251,6 +251,14 @@ void initMQTT() {
 #endif
 }
 
+void publishMQTTLogData(String logData) {
+#ifdef SUPPORT_MQTT
+    // if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+    //     publishStrMQTT("/log", logData);
+    // }
+#endif
+}
+
 void publishMQTTAlarms() {
     static bool MQTTGreenAlarm, MQTTOrangeAlarm, MQTTRedAlarm = false;
 
@@ -282,8 +290,8 @@ void publishMQTTAlarms() {
 
 void publishMQTTSystemData() {
     publishIntMQTT("/uptime", millis() / 1000);
-    publishFloatMQTT("/voltage", battery_voltage);
-    publishIntMQTT("/battery", battery_level);
+    publishFloatMQTT("/voltage", batteryVoltage);
+    publishIntMQTT("/battery", batteryLevel);
     publishIntMQTT("/freeMem", ESP.getFreeHeap());
     publishIntMQTT("/wifiRSSI", WiFi.RSSI());
     publishStrMQTT("/IP", WiFi.localIP().toString());

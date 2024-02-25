@@ -185,7 +185,7 @@ void publishESPNow() {
         outgoingReadings.co2 = co2;
         outgoingReadings.temp = temp;
         outgoingReadings.hum = hum;
-        outgoingReadings.battery = battery_voltage;
+        outgoingReadings.battery = batteryVoltage;
         outgoingReadings.readingId++;
 
         // Send message via ESP-NOW

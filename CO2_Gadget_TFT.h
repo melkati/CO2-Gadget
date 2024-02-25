@@ -123,16 +123,16 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 1;
+        elementPosition.bleIconY = 2;
         elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 1;
+        elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 1;
+        elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
     }
@@ -148,8 +148,8 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
@@ -173,8 +173,8 @@ void setElementLocations() {
         elementPosition.tempY = displayHeight - 25;
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
-        elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
@@ -194,26 +194,26 @@ void setDisplayBrightness(uint16_t newBrightness) {
         // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
         // Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
         // Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
-        analogWrite(TFT_BL, newBrightness);
+        analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
-#ifdef TDISPLAY_S3
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     if (actualDisplayBrightness != newBrightness) {
         // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
         // Serial.printf("-->[TFT ] Old actualDisplayBrightness value at %d\n", actualDisplayBrightness);
         // Serial.printf("-->[TFT ] New actualDisplayBrightness value at %d\n", newBrightness);
         if (newBrightness == 0) {
-            digitalWrite(TFT_BL, LOW);
+            digitalWrite(TFT_BACKLIGHT, LOW);
         } else {
-            digitalWrite(TFT_BL, HIGH);
+            digitalWrite(TFT_BACKLIGHT, HIGH);
         }
         actualDisplayBrightness = newBrightness;
     }
 #endif
 #ifdef ST7789_240x320
     if (actualDisplayBrightness != newBrightness) {
-        analogWrite(TFT_BL, newBrightness);
+        analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
@@ -264,14 +264,14 @@ void displaySplashScreen() {
 
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
-    pinMode(TFT_BL, OUTPUT);
+    pinMode(TFT_BACKLIGHT, OUTPUT);
     setDisplayBrightness(DisplayBrightness);
 #endif
-#ifdef TDISPLAY_S3
-    pinMode(TFT_BL, OUTPUT);
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+    pinMode(TFT_BACKLIGHT, OUTPUT);
     pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
-    delay(50);
-    digitalWrite(TFT_BL, HIGH);
+    delay(20);
+    digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
 #endif
 }
@@ -356,13 +356,13 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-uint16_t getBatteryColor(uint16_t battery_voltage) {
+uint16_t getBatteryColor(float batteryVoltage) {
     uint16_t color;
-    if (battery_voltage <= 3.6) {
+    if (batteryVoltage <= 3.6) {
         color = TFT_RED;
-    } else if (battery_voltage <= 3.8) {
+    } else if (batteryVoltage <= 3.8) {
         color = TFT_ORANGE;
-    } else if (battery_voltage <= 4.5) {
+    } else if (!workingOnExternalPower) {
         color = TFT_GREEN;
     } else {
         color = TFT_SKYBLUE;
@@ -371,41 +371,65 @@ uint16_t getBatteryColor(uint16_t battery_voltage) {
 }
 
 void showBatteryVoltage(int32_t posX, int32_t posY) {
-    if ((!displayShowBattery) || (battery_voltage < 1)) return;
-    String batteryVoltageString = " " + String(battery_voltage, 1) + "V ";
+    if ((!displayShowBatteryVoltage) || (!displayShowBattery) || (batteryVoltage < 1)) return;
+    String batteryVoltageString = " " + String(batteryVoltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
     tft.setCursor(posX, posY);
     spr.loadFont(SMALL_FONT);
-    spr.setTextColor(getBatteryColor(battery.voltage()), TFT_BLACK);
+    spr.setTextColor(getBatteryColor(batteryVoltage), TFT_BLACK);
     spr.printToSprite(batteryVoltageString);  // Space padding helps over-write old numbers
     spr.unloadFont();
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
-    if ((!displayShowBattery) || (battery_voltage < 1)) return;
-    uint8_t batteryLevel = battery.level();
     uint16_t color;
+    if ((!displayShowBattery) || (batteryVoltage < 1)) return;
+
     if (batteryLevel < 20) {
         color = TFT_RED;
     } else {
         color = TFT_SILVER;
     }
 
-    if (battery_voltage > 4.5) {  // Charging...
+    if (batteryVoltage > 4.5) {  // Charging...
         color = iconDefaultColor;
     }
 
-    tft.drawRoundRect(posX, posY, 32, 14, 2, color);  // Battery outter rectangle
-    tft.drawLine(posX + 33, posY + 4, posX + 33, posY + 10, color);
+    if (spr.createSprite(34, 20) == nullptr) {
+        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
+        spr.deleteSprite();
+        return;
+    }
 
-    if (batteryLevel > 20) tft.fillRect(posX + 4, posY + 2, 4, 10, color);
-    if (batteryLevel > 40) tft.fillRect(posX + 11, posY + 2, 4, 10, color);
-    if (batteryLevel > 60) tft.fillRect(posX + 18, posY + 2, 4, 10, color);
-    if (batteryLevel > 80) tft.fillRect(posX + 25, posY + 2, 4, 10, color);
+    publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
+
+    spr.fillSprite(TFT_BLACK);
+
+    if (workingOnExternalPower) {
+        spr.drawRoundRect(12, 0, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+        spr.setSwapBytes(true);
+        spr.drawBitmap(14, 2, iconUSB, 16, 16, TFT_BLACK, iconDefaultColor);
+    } else {
+        uint32_t upperLine = 4;
+        spr.drawRoundRect(0, upperLine, 32, 14, 2, color);  // Battery outter rectangle
+        spr.drawLine(33, upperLine + 4, 33, upperLine + 10, color);
+        if (batteryLevel > 20) spr.fillRect(4, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 40) spr.fillRect(11, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 60) spr.fillRect(18, upperLine + 2, 4, 10, color);
+        if (batteryLevel > 80) spr.fillRect(25, upperLine + 2, 4, 10, color);
+    }
+
+    spr.pushSprite(posX, posY);
+    spr.deleteSprite();
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY) {
     int8_t rssi = WiFi.RSSI();
+    if (troubledWIFI) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeWIFI) {
         tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -415,10 +439,10 @@ void showWiFiIcon(int32_t posX, int32_t posY) {
                 tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
             else if (rssi < 70)
                 tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_ORANGE);
-            else if (rssi < 90)
+            else if (rssi < 80)
                 tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_YELLOW);
         } else {
-            tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_RED);
+            tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
         }
     }
 }
@@ -433,6 +457,11 @@ void showBLEIcon(int32_t posX, int32_t posY) {
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY) {
+    if (troubledMQTT) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeMQTT) {
         tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -442,12 +471,19 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY) {
+#ifdef SUPPORT_ESPNOW
+    if (troubledESPNOW) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
+        return;
+    }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeESPNOW) {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
     } else {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
     }
+#endif
 }
 
 void showTemperatureIcon(int32_t posX, int32_t posY) {
@@ -522,31 +558,6 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void OLDshowCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
-    if (co2 > 9999) co2 = 9999;
-
-    spr.loadFont(BIG_FONT);
-    uint16_t width = spr.textWidth("0000");
-    uint16_t height = elementPosition.co2FontDigitsHeight;
-    uint16_t posSpriteX = posX - width;
-    uint16_t posSpriteY = posY - height;
-    if (posSpriteX < 0) posSpriteX = 0;
-    if (posSpriteY < 0) posSpriteY = 0;
-    if (spr.createSprite(width, height) == nullptr) {
-        Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
-        spr.unloadFont();
-        spr.deleteSprite();
-        return;
-    }
-    // spr.drawRect(0, 0, width, height, TFT_WHITE);
-    spr.setTextColor(getCO2Color(co2), TFT_BLACK);
-    spr.setTextDatum(TR_DATUM);
-    spr.drawNumber(co2, width, 0);
-    spr.pushSprite(posSpriteX, posSpriteY);
-    spr.unloadFont();
-    spr.deleteSprite();
-}
-
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
     if ((co2 == previousCO2Value) || (co2 == 0) || (co2 > 9999)) return;
 
@@ -557,7 +568,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     uint16_t posSpriteY = posY - height;
     uint16_t color = getCO2Color(co2);
     if (posSpriteY < 0) posSpriteY = 0;
-    spr.createSprite(digitWidth, height);
+    // spr.createSprite(digitWidth, height);
     if (spr.createSprite(digitWidth, height) == nullptr) {
         // Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
         spr.unloadFont();

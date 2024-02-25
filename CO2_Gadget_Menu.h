@@ -590,15 +590,15 @@ MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
 #endif // SUPPORT_ESPNOW
 
 result doSetvRef(eventMask e, navNode &nav, prompt &item) {
-  battery.begin(vRef, voltageDividerRatio, &sigmoidal);
+  battery.begin(vRef, voltageDividerRatio, &asigmoidal);
   delay(10);
-  battery_voltage = (float)battery.voltage() / 1000;
+  batteryVoltage = (float)battery.voltage() / 1000;
   nav.target-> dirty = true;
   return proceed;
 }
 
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,FIELD(batteryVoltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
   ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
@@ -817,7 +817,7 @@ public:
 
 
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
-  ,FIELD(battery_voltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,FIELD(batteryVoltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,OP("Comp " BUILD_GIT, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,OP("" FLAVOUR, doNothing, noEvent)
@@ -834,7 +834,7 @@ result enterMainMenu(menuOut &o, idleEvent e) {
   return proceed;
 }
 
-// ,FIELD(battery_voltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
+// ,FIELD(batteryVoltage, "Battery", "Volts", 0, 9, 0, 0, doNothing, noEvent, noStyle) // It was removed from menu as updates avoids timeout to work
 MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(informationMenu)
   ,SUBMENU(configMenu)
@@ -1060,10 +1060,10 @@ result idle(menuOut &o, idleEvent e) {
 void menuLoop() {
     uint16_t timeToWaitForImprov = 5;                   // Time to wait for Improv-WiFi to connect on startup
     if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
-        inMenu = true;
-        if (inMenu) {
+        // inMenu = true;
+        // if (inMenu) {
             nav.doInput();  // Do input, even if no display, as serial menu needs this
-        }
+        // }
     }
 
     if (millis() < timeInitializationCompleted + timeToWaitForImprov * 1000) {  // Wait before starting the menu to avoid issues with Improv-WiFi
