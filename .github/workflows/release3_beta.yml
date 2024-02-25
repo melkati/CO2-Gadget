@@ -1,4 +1,4 @@
-name: Beta Release V2.9
+name: Beta Release V2.91
 
 # # # # # # # # # # #
 # To create new Beta version and upload so web server, just commit with a message with the format "Beta v*.*.*" (Beta v1.0.1, Beta v1.1.12, Beta v2.1.123, etc)
@@ -10,6 +10,9 @@ on:
       - development
     paths-ignore:
       - '.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
+    # Only run when commit message contains "Beta"
+    # Use 'contains' with 'github.event.head_commit.message'
+    if: contains(github.event.head_commit.message, 'Beta') || github.event_name == 'workflow_dispatch'
   workflow_dispatch:
 
 jobs:
