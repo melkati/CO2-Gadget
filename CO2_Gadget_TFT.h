@@ -265,6 +265,7 @@ void displaySplashScreen() {
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BACKLIGHT, OUTPUT);
+    digitalWrite(TFT_BACKLIGHT, TFT_BACKLIGHT_ON);
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
