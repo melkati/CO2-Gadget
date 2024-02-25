@@ -23,9 +23,9 @@ jobs:
         environment:
           # - esp32dev
           # - esp32dev_OLED
-          - TTGO_TDISPLAY
+          # - TTGO_TDISPLAY
           - TTGO_TDISPLAY_SANDWICH
-          - TDISPLAY_S3
+          # - TDISPLAY_S3
           # - esp32dev_ST7789_240x320
 
     env:
@@ -40,7 +40,6 @@ jobs:
       - name: Show environments
         run: |
           echo
-
       - name: Determine chipFamily
         id: determine_chip_family
         run: |
@@ -54,7 +53,6 @@ jobs:
             CHIP_FAMILY="UNKNOWN";;
           esac
           echo "::set-output name=chipFamily::${CHIP_FAMILY}"
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -65,7 +63,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           platformio update
-
       - name: Get the version
         id: get_version
         run: |
@@ -79,19 +76,16 @@ jobs:
             echo "Commit message does not contain version information."
             exit 1
           fi
-
       - name: Create Git tag
         if: success()
         run: |
           git config user.name "GitHub Actions"
           git config user.email "<>"
           git tag -a "v${{ steps.get_version.outputs.VERSION }}-beta" -m "Beta Release v${{ steps.get_version.outputs.VERSION }}"
-
       - name: Push Git tag
         if: success()
         run: |
           git push origin "v${{ steps.get_version.outputs.VERSION }}-beta"
-
       - name: Show version
         run: echo ${{ steps.get_version.outputs.VERSION }}
 
@@ -100,7 +94,6 @@ jobs:
         run: |
           echo "::set-output name=date::$(date +'%d-%m-%Y')"
           echo "::set-output name=time::$(date +'%H:%M:%S')"
-
       - name: Create beta manifest file
         id: create_betamanifest
         run: |
@@ -119,7 +112,6 @@ jobs:
             firmware_offset=65536
             spiffs_offset=3997696
           fi
-
           # Create beta manifest
           echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
           echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
@@ -143,38 +135,31 @@ jobs:
           echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
           echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
           echo "::set-output name=betamanifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json)"
-
       - name: Read beta manifest files
         run:  |
           echo "Beta Manifest:"
           echo ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
           echo "Beta Manifest file contents read with cat:"
           cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-
       - name: Copy beta manifest files
         run: |            
           mkdir ./beta_firmware      
           cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-
       - name: Build beta firmware file
         run: |
           pio run -e ${{ matrix.environment }}
-
       - name: Copy beta firmware files
         run: |
           cp .pio/build/${{ matrix.environment }}/bootloader.bin ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-bootloader.bin
           cp .pio/build/${{ matrix.environment }}/partitions.bin  ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-partitions.bin
           cp .pio/build/${{ matrix.environment }}/firmware.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-firmware.bin
-
       - name: Build beta spiffs file
         run: |
           pio run -e ${{ matrix.environment }} -t buildfs
-
       - name: Copy beta spiffs files
         run: |
           ls -la ./beta_firmware
           cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.get_version.outputs.VERSION }}-spiffs.bin
-
       - name: 📂 Sync beta files - FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
@@ -190,4 +175,4 @@ jobs:
       - name: Clean eMariete.com Cache
         # run: curl https://emariete.com/clean_cache_wp_rocket.php
         run: curl https://emariete.com/clean_cache_litespeed.php
-
+        
