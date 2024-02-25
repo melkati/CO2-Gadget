@@ -124,15 +124,15 @@ void setElementLocations() {
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
         elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 1;
+        elementPosition.bleIconY = 2;
         elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 1;
+        elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 1;
+        elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
     }
@@ -149,7 +149,7 @@ void setElementLocations() {
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
         elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
@@ -174,7 +174,7 @@ void setElementLocations() {
         elementPosition.humidityX = displayWidth - 60;
         elementPosition.humidityY = displayHeight - 25;
         elementPosition.batteryIconX = displayWidth - 36;
-        elementPosition.batteryIconY = 4;
+        elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 2;
@@ -395,22 +395,28 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
         color = iconDefaultColor;
     }
 
-    if (spr.createSprite(34, 14) == nullptr) {
+    if (spr.createSprite(34, 20) == nullptr) {
         Serial.printf("-->[TFT ] Error: sprite not created, not enough free RAM! Free RAM: %d\n", ESP.getFreeHeap());
         spr.deleteSprite();
         return;
     }
 
-    publishMQTTLogData("Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
+    publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
 
     spr.fillSprite(TFT_BLACK);
-    spr.drawRoundRect(0, 0, 32, 14, 2, color);  // Battery outter rectangle
-    spr.drawLine(33, 4, 33, 10, color);
 
-    if (batteryLevel > 20) spr.fillRect(4, 2, 4, 10, color);
-    if (batteryLevel > 40) spr.fillRect(11, 2, 4, 10, color);
-    if (batteryLevel > 60) spr.fillRect(18, 2, 4, 10, color);
-    if (batteryLevel > 80) spr.fillRect(25, 2, 4, 10, color);
+    if (workingOnExternalPower) {
+        spr.drawRoundRect(12, 0, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+        spr.setSwapBytes(true);
+        spr.drawBitmap(14, 2, iconUSB, 16, 16, TFT_BLACK, iconDefaultColor);
+    } else {
+        spr.drawRoundRect(0, 0, 32, 14, 2, color);  // Battery outter rectangle
+        spr.drawLine(33, 4, 33, 10, color);
+        if (batteryLevel > 20) spr.fillRect(4, 2, 4, 10, color);
+        if (batteryLevel > 40) spr.fillRect(11, 2, 4, 10, color);
+        if (batteryLevel > 60) spr.fillRect(18, 2, 4, 10, color);
+        if (batteryLevel > 80) spr.fillRect(25, 2, 4, 10, color);
+    }
 
     spr.pushSprite(posX, posY);
     spr.deleteSprite();
@@ -487,14 +493,14 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY) {
-    #ifdef SUPPORT_ESPNOW
+#ifdef SUPPORT_ESPNOW
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeESPNOW) {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
     } else {
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
     }
-    #endif
+#endif
 }
 
 void showTemperatureIcon(int32_t posX, int32_t posY) {
@@ -631,7 +637,7 @@ void displayShowValues() {
     showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY);
-    showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
+    // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY);
