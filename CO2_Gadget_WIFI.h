@@ -631,8 +631,8 @@ void initWebServer() {
         String response;
         serializeJson(data, response);
         request->send(200, "application/json", response);
-        Serial.print("-->[WiFi] Received /savepreferences command with parameter ");
-        Serial.println(response);
+        // Serial.print("-->[WiFi] Received /savepreferences command with parameter: ");
+        // Serial.println(response);
         handleSavePreferencesfromJSON(response);
     });
 
