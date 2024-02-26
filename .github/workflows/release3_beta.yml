@@ -1,4 +1,4 @@
-name: Beta Release V2.91
+name: Beta Release V2.92
 
 # # # # # # # # # # #
 # To create new Beta version and upload so web server, just commit with a message with the format "Beta v*.*.*" (Beta v1.0.1, Beta v1.1.12, Beta v2.1.123, etc)
@@ -24,15 +24,15 @@ jobs:
     strategy:
       matrix:
         environment:
-          # - esp32dev
-          # - esp32dev_OLED
+          - esp32dev
+          - esp32dev_OLED
           - TTGO_TDISPLAY
           - TTGO_TDISPLAY_SANDWICH
           - TDISPLAY_S3
-          # - esp32dev_ST7789_240x320
+          - esp32dev_ST7789_240x320
 
     env:
-      CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3_beta' && 'ESP32-S3' || 'ESP32' }}
+      CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
 
     timeout-minutes: 30
 
@@ -64,7 +64,7 @@ jobs:
           case "${{ matrix.environment }}" in
           "esp32dev_beta")
             CHIP_FAMILY="ESP32";;
-          "TDISPLAY_S3_beta")
+          "TDISPLAY_S3")
             CHIP_FAMILY="ESP32-S3";;
           # Add more cases for other environments as needed
           *)
