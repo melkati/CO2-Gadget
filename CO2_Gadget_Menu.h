@@ -1115,7 +1115,7 @@ void menuLoop() {
     }
 
     // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
-    if ((Serial.availableForWrite() < 150) || (!workingOnExternalPower)) {
+    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
         Serial.end();
         delay(10);
         Serial.begin(115200);
