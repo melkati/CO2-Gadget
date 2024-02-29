@@ -15,8 +15,8 @@
 #include <U8g2lib.h>
 #include "bootlogo.h"
 #include "icons.h"
-// U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
-U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Frame Buffer: u8g2.clearBuffer, u8g2.sendBuffer. Less RAM usage, Slower
+U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);  // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
+// U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Frame Buffer: u8g2.clearBuffer, u8g2.sendBuffer. Less RAM usage, Slower
 
 char oled_msg[20];
 int displayWidth = 128;
