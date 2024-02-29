@@ -41,12 +41,12 @@ void readBatteryVoltage() {
         }
         batteryVoltageNow /= 3;
         batteryVoltage = batteryVoltageNow;
-        batteryLevel = battery.level(batteryVoltage*1000);
+        batteryLevel = battery.level(batteryVoltage * 1000);
         lastTimeBatteryRead = millis();
-        
-        // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V), assume it's working on external power
-        workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100));
-        
+
+        // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V) or if battery voltage is less than 1V (no battery connected to sense pin), then assume that the device is working on external power.
+        workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100)) || (batteryVoltageNow < 1000);
+
         // publishMQTTLogData("Battery Level: " + String(batteryLevel) + "%   Battery voltage changed from: " + String(lastBatteryVoltage) + "V to " + String(batteryVoltage) + "V");
     }
 }
@@ -67,14 +67,14 @@ void readBatteryVoltage() {
 
 void batteryLoop() {
     float batteryVoltageNow = 0;
-        readBatteryVoltage();
-        // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage: %.4fV\n", batteryLevel, batteryVoltageNow);
-        if (!inMenu) {
-            if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level                
-                // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", batteryLevel, lastBatteryVoltage, batteryVoltage);
-                lastBatteryVoltage = batteryVoltage;
-            }
+    readBatteryVoltage();
+    // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage: %.4fV\n", batteryLevel, batteryVoltageNow);
+    if (!inMenu) {
+        if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level
+            // Serial.printf("-->[BATT] Battery Level: %d%%. Battery voltage changed from: %.4fV to %.4fV\n", batteryLevel, lastBatteryVoltage, batteryVoltage);
+            lastBatteryVoltage = batteryVoltage;
         }
+    }
 }
 
 #endif  // CO2_Gadget_Battery_h
