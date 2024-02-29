@@ -15,8 +15,8 @@
 #include <U8g2lib.h>
 #include "bootlogo.h"
 #include "icons.h"
-U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
-// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Page Buffer: firstPage/nextPage. Less RAM usage, Slower
+U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);  // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
+// U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Frame Buffer: u8g2.clearBuffer, u8g2.sendBuffer. Less RAM usage, Slower
 
 char oled_msg[20];
 int displayWidth = 128;
@@ -83,12 +83,17 @@ void initDisplay() {
   delay(1000);
 }
 
-void displayShowValues() {
+void displayShowValues(bool forceRedraw = false) {  
+    if ((co2 == 0) || (co2 > 9999)) return;
+    String co2Str = String(co2);
+    if (co2Str.length() < 4) {
+        co2Str = " " + co2Str;
+    }
     u8g2.firstPage();
     do {
         u8g2.setFont(u8g2_font_7Segments_26x42_mn);
         u8g2.setCursor(0, 44);
-        u8g2.print(co2);
+        u8g2.print(co2Str);
         u8g2.setFont(u8g2_font_5x7_tf);
         u8g2.setCursor(110, 51);
         u8g2.print("ppm");

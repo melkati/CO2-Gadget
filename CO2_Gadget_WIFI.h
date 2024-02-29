@@ -631,8 +631,8 @@ void initWebServer() {
         String response;
         serializeJson(data, response);
         request->send(200, "application/json", response);
-        Serial.print("-->[WiFi] Received /savepreferences command with parameter ");
-        Serial.println(response);
+        // Serial.print("-->[WiFi] Received /savepreferences command with parameter: ");
+        // Serial.println(response);
         handleSavePreferencesfromJSON(response);
     });
 
@@ -754,7 +754,7 @@ void wifiClientLoop() {
 
     // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
     // Only checks for SSID changed (not password)
-    if ((WiFi.SSID() != wifiSSID) && (!inMenu)) {
+    if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
         Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
         Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
         Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
