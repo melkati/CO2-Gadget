@@ -371,7 +371,7 @@ uint16_t getBatteryColor(float batteryVoltage) {
     return color;
 }
 
-void showBatteryVoltage(int32_t posX, int32_t posY) {
+void showBatteryVoltage(int32_t posX, int32_t posY, bool forceRedraw) {
     if ((!displayShowBatteryVoltage) || (!displayShowBattery) || (batteryVoltage < 1)) return;
     String batteryVoltageString = " " + String(batteryVoltage, 1) + "V ";
     tft.setTextDatum(TL_DATUM);
@@ -382,7 +382,7 @@ void showBatteryVoltage(int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
+void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTGO T-Display posX=tft.width() - 32, posY=4
     uint16_t color;
     if ((!displayShowBattery) || (batteryVoltage < 1)) return;
 
@@ -424,7 +424,7 @@ void showBatteryIcon(int32_t posX, int32_t posY) {  // For TTGO T-Display posX=t
     spr.deleteSprite();
 }
 
-void showWiFiIcon(int32_t posX, int32_t posY) {
+void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
@@ -448,7 +448,7 @@ void showWiFiIcon(int32_t posX, int32_t posY) {
     }
 }
 
-void showBLEIcon(int32_t posX, int32_t posY) {
+void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeBLE) {
         tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -457,7 +457,7 @@ void showBLEIcon(int32_t posX, int32_t posY) {
     }
 }
 
-void showMQTTIcon(int32_t posX, int32_t posY) {
+void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (troubledMQTT) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
         tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
@@ -471,7 +471,7 @@ void showMQTTIcon(int32_t posX, int32_t posY) {
     }
 }
 
-void showEspNowIcon(int32_t posX, int32_t posY) {
+void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_ESPNOW
     if (troubledESPNOW) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
@@ -487,7 +487,7 @@ void showEspNowIcon(int32_t posX, int32_t posY) {
 #endif
 }
 
-void showTemperatureIcon(int32_t posX, int32_t posY) {
+void showTemperatureIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     tft.setSwapBytes(true);
     tft.pushImage(posX, posY, 16, 16, iconTemperature);
 }
@@ -504,9 +504,9 @@ uint16_t getTemperatureColor(float temp) {
     return color;
 }
 
-void showTemperature(float temp, int32_t posX, int32_t posY) {
+void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowTemperature) return;
-    showTemperatureIcon(posX, posY);
+    showTemperatureIcon(posX, posY, forceRedraw);
     String temperatureString = (showFahrenheit ? String(tempFahrenheit, 1) : String(temp, 1)) + "° ";
     tft.setCursor(posX + 18, posY);
     spr.loadFont(SMALL_FONT);
@@ -515,7 +515,7 @@ void showTemperature(float temp, int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void showHumidityIcon(int32_t posX, int32_t posY) {
+void showHumidityIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     tft.setSwapBytes(true);
     tft.pushImage(posX, posY, 16, 16, iconHumidity);
 }
@@ -536,9 +536,9 @@ uint16_t getHumidityColor(float hum) {
     return color;
 }
 
-void showHumidity(float hum, int32_t posX, int32_t posY) {
+void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowHumidity) return;
-    showHumidityIcon(posX, posY);
+    showHumidityIcon(posX, posY, forceRedraw);
     String humidityString = String(hum, 0) + "% ";
     tft.setCursor(posX + 18, posY);
     spr.loadFont(SMALL_FONT);
@@ -559,8 +559,9 @@ uint16_t getCO2Color(uint16_t co2) {
     return color;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline) {
-    if ((co2 == previousCO2Value) || (co2 == 0) || (co2 > 9999)) return;
+void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline, bool forceRedraw) {
+    if (!forceRedraw && (co2 == previousCO2Value)) return;
+    if ((co2 == 0) || (co2 > 9999)) return;
 
     spr.loadFont(BIG_FONT);
     uint16_t digitWidth = spr.textWidth("0");
@@ -606,7 +607,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     spr.unloadFont();
 }
 
-void showCO2units(int32_t posX, int32_t posY) {
+void showCO2units(int32_t posX, int32_t posY, bool forceRedraw) {
     spr.loadFont(MINI_FONT);
     spr.setTextColor(getCO2Color(co2), TFT_BLACK);
     tft.setCursor(posX, posY);
@@ -614,20 +615,27 @@ void showCO2units(int32_t posX, int32_t posY) {
     spr.unloadFont();
 }
 
-void displayShowValues() {
+void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline);
-    showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY);
-    showTemperature(temp, elementPosition.tempX, elementPosition.tempY);
-    showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY);
-    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY);
-    showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY);
-    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY);
-    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY);
-    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY);
-    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY);
+    tft.unloadFont();
+    if (forceRedraw) {
+        // tft.fillScreen(TFT_BLACK);
+    }
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
+    showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
+    showTemperature(temp, elementPosition.tempX, elementPosition.tempY, forceRedraw);
+    showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
+    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
+    showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    forceRedraw = false;
 
     // Revert the datum setting
+    tft.loadFont(SMALL_FONT);
+
     tft.setTextDatum(currentDatum);
     tft.setTextSize(2);
 }
