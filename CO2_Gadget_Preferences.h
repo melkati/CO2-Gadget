@@ -500,7 +500,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
 
     // Send a successful response
     // request->send(200, "text/plain", "Preferences saved successfully");
-    Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesfromJSON()");
+    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesfromJSON()");
     putPreferences();
     return true;
 }

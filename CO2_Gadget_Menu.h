@@ -871,17 +871,6 @@ serialOut outSerial(Serial, serialTops);
 #define White RGB565(255, 255, 255)
 #define DarkerOrange RGB565(255, 140, 0)
 
-// TFT color table
-// const colorDef<uint16_t> colors[6] MEMMODE = {
-//     //{{disabled normal,disabled selected}, {enabled normal,  enabled selected, enabled editing}}
-//     {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Blue}},   // bgColor
-//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // fgColor
-//     {{(uint16_t)Red,    (uint16_t)Red},    {(uint16_t)Yellow, (uint16_t)Yellow, (uint16_t)Yellow}}, // valColor
-//     {{(uint16_t)White,  (uint16_t)White},  {(uint16_t)White,  (uint16_t)White,  (uint16_t)White}},  // unitColor
-//     {{(uint16_t)White,  (uint16_t)Gray},   {(uint16_t)Black,  (uint16_t)Red,    (uint16_t)White}},  // cursorColor
-//     {{(uint16_t)White,  (uint16_t)Yellow}, {(uint16_t)Black,  (uint16_t)Blue,   (uint16_t)Red}},    // titleColor
-// };
-
 const colorDef<uint16_t> colors[6] MEMMODE = {
     //{{disabled normal,disabled selected}, {enabled normal,  enabled selected,       enabled editing}}
     {{(uint16_t)Black,  (uint16_t)Black},  {(uint16_t)Black,  (uint16_t)Blue,         (uint16_t)Blue}},   // bgColor
@@ -919,6 +908,7 @@ panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
+menuOut *constMEM outputsNoSerial[] MEMMODE = {&eSpiOut}; // list of output devices
 #endif // SUPPORT_TFT
 
 #ifdef SUPPORT_OLED
@@ -1030,47 +1020,105 @@ void loadTempArraysWithActualValues() {
 
 // when menu is suspended
 result idle(menuOut &o, idleEvent e) {
-    if (e == idleStart) {
+    switch (e) {
+        case idleStart:
 #ifdef DEBUG_ARDUINOMENU
-        Serial.println("-->[MENU] Event idleStart");
+            Serial.println("-->[MENU] Event idleStart");
 #endif
-        setInMenu(false);
-    } else if (e == idling) {  // When out of menu (CO2 Monitor is doing his business)
+            //       setInMenu(false);
+            //       nav.poll();
+
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+            displayShowValues(true);
+#endif
+            break;
+        case idling:
 #ifdef DEBUG_ARDUINOMENU
-        Serial.println("-->[MENU] Event iddling");
+            Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-        // displayShowValues();
+            displayShowValues(false);
 #endif
-    } else if (e == idleEnd) {
+            break;
+        case idleEnd:
 #ifdef DEBUG_ARDUINOMENU
-        Serial.println("-->[MENU] Event idleEnd");
+            Serial.println("-->[MENU] Event idleEnd");
 #endif
-        setInMenu(true);
-        loadTempArraysWithActualValues();
-    } else {
+            setInMenu(true);
+            //   displayNotification("Enter menu", notifyInfo);
+            //   delay(1000);
+            loadTempArraysWithActualValues();
+            break;
+        default:
 #ifdef DEBUG_ARDUINOMENU
-        Serial.print("-->[MENU] Unhandled event: ");
-        Serial.println(e);
+            Serial.print("-->[MENU] Unhandled event: ");
+            Serial.println(e);
 #endif
+            break;
     }
+    // displayNotification("Idle end", notifyInfo);
+    // delay(1000);
     return proceed;
 }
 
-void menuLoop() {
-    uint16_t timeToWaitForImprov = 5;                   // Time to wait for Improv-WiFi to connect on startup
-    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
-        // inMenu = true;
-        // if (inMenu) {
-            nav.doInput();  // Do input, even if no display, as serial menu needs this
-        // }
+void menuLoopTFT() {
+#ifdef SUPPORT_TFT
+    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+        displayShowValues(false);
+        return;
     }
 
-    if (millis() < timeInitializationCompleted + timeToWaitForImprov * 1000) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-        displayShowValues();
+    if ((wifiChanged) && (!inMenu)) {
+        wifiChanged = false;
+        displayNotification("To clear display", notifyInfo);
+        delay(1000);
+        tft.fillScreen(TFT_BLACK);
+        displayNotification("Display cleared", notifyInfo);
+        delay(1000);
+    }
+
+    nav.doInput();
+    if (nav.sleepTask) {
+        displayShowValues(false);
+    } else {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
 #endif
+}
+
+void menuLoopOLED() {
+#ifdef SUPPORT_OLED
+    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+        displayShowValues(false);
         return;
+    }
+
+    if (nav.sleepTask) {
+        displayShowValues(false);
+    } else {
+        if (nav.changed(0)) {
+            u8g2.firstPage();
+            do nav.doOutput();
+            while (u8g2.nextPage());
+        }
+    }
+#endif
+}
+
+void menuLoop() {
+    // Time to wait for Improv-WiFi to connect on startup. 0x2A is the '*' character.
+    uint16_t timeToWaitForImprov = 5;
+    if (Serial.available() && Serial.peek() == 0x2A) {
+        nav.doInput();  // Do input, even if no display, as serial menu needs this
+    }
+
+    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
+    if ((Serial.availableForWrite() < 150) || (!workingOnExternalPower)) {
+        Serial.end();
+        delay(10);
+        Serial.begin(115200);
     }
 
     if (activeWIFI) {
@@ -1079,30 +1127,10 @@ void menuLoop() {
         activeMQTTMenu[0].disable();
     }
 
-#if defined(SUPPORT_TFT)
-    if ((wifiChanged) && (!inMenu)) {
-        wifiChanged = false;
-        tft.fillScreen(TFT_BLACK);
-    }
-    if (inMenu) {
-        nav.poll();  // this device only draws when needed
-    }
-    nav.doOutput();
-    if (nav.sleepTask) {
-        tft.unloadFont();
-        displayShowValues();
-        tft.loadFont(SMALL_FONT);
-    }
+#ifdef SUPPORT_TFT
+    menuLoopTFT();
 #elif defined(SUPPORT_OLED)
-    if (nav.sleepTask) {
-        displayShowValues();
-    } else {
-        if (nav.changed(0)) {
-            u8g2.firstPage();
-            do nav.doOutput();
-            while (u8g2.nextPage());
-        }
-    }
+    menuLoopOLED();
 #else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {
@@ -1117,8 +1145,8 @@ void menu_init() {
     tft.loadFont(SMALL_FONT);
 #endif
     nav.idleTask = idle;  // function to be called when menu is suspended
-    nav.idleOn(idle);
-    // nav.timeOut = 30; // Removed timeout as it was causing issues with the display clean at exit from menu by timeout
+    nav.idleOn(idle);     // start the menu in idle state
+    nav.timeOut = 10;
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
