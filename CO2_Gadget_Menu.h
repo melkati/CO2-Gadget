@@ -908,6 +908,7 @@ panelsList pList(panels, nodes, 1); // a list of panels and nodes
 idx_t eSpiTops[MAX_DEPTH] = {0};
 TFT_eSPIOut eSpiOut(tft, colors, eSpiTops, pList, fontW, fontH + 1);
 menuOut *constMEM outputs[] MEMMODE = {&outSerial, &eSpiOut}; // list of output devices
+menuOut *constMEM outputsNoSerial[] MEMMODE = {&eSpiOut}; // list of output devices
 #endif // SUPPORT_TFT
 
 #ifdef SUPPORT_OLED
@@ -1107,9 +1108,17 @@ void menuLoopOLED() {
 }
 
 void menuLoop() {
-    uint16_t timeToWaitForImprov = 5;                   // Time to wait for Improv-WiFi to connect on startup
-    if (Serial.available() && Serial.peek() == 0x2A) {  // 0x2A is the '*' character.
-        nav.doInput();                                  // Do input, even if no display, as serial menu needs this
+    // Time to wait for Improv-WiFi to connect on startup. 0x2A is the '*' character.
+    uint16_t timeToWaitForImprov = 5;
+    if (Serial.available() && Serial.peek() == 0x2A) {
+        nav.doInput();  // Do input, even if no display, as serial menu needs this
+    }
+
+    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
+    if ((Serial.availableForWrite() < 150) || (!workingOnExternalPower)) {
+        Serial.end();
+        delay(10);
+        Serial.begin(115200);
     }
 
     if (activeWIFI) {
