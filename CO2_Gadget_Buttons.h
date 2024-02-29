@@ -15,14 +15,23 @@ void IRAM_ATTR buttonUpISR() {
     }
 }
 
+void IRAM_ATTR buttonDownISR() {
+    if (actualDisplayBrightness == 0)  // Turn on the display only if it's OFF
+    {
+        shouldWakeUpDisplay = true;
+        lastTimeButtonPressed = millis();
+    }
+}
+
 // void doubleClick(Button2& btn) {
 //   Serial.println("-->[BUTT] Test double click...");
 //   displayNotification("Test functionality", "double click", notifyInfo);
 // }
 
-void buttonsInit() {
+void initButtons() {
     // Interrupt Service Routine to turn on the display on button UP press
     attachInterrupt(BTN_UP, buttonUpISR, RISING);
+    attachInterrupt(BTN_DWN, buttonUpISR, RISING);
 
     btnUp.setLongClickTime(LONGCLICK_TIME_MS);
     btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
