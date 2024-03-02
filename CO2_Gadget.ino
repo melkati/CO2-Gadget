@@ -122,6 +122,9 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 uint16_t co2OrangeRange = 700;
 uint16_t co2RedRange = 1000;
 
+// Variables for Improv-Serial
+uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif  // ifdef BUILD_GIT
@@ -552,7 +555,7 @@ void setup() {
     initMQTT();
 #endif
     menu_init();
-    buttonsInit();
+    initButtons();
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
