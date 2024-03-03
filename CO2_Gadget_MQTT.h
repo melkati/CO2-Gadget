@@ -11,6 +11,8 @@
 #ifdef SUPPORT_MQTT
 #include <PubSubClient.h>
 
+// #define DEBUG_MQTT_SENDING
+
 char charPublish[20];
 PubSubClient mqttClient(espClient);
 #endif
@@ -92,8 +94,10 @@ void publishIntMQTT(String topic, int64_t payload) {
     dtostrf(payload, 0, 0, charPublish);
     topic = rootTopic + topic;
     if (!inMenu) {
+        #ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %d to ", payload);
         Serial.println("topic: " + topic);
+        #endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -104,8 +108,10 @@ void publishFloatMQTT(String topic, float payload) {
     dtostrf(payload, 0, 2, charPublish);
     topic = rootTopic + topic;
     if (!inMenu) {
+        #ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
         Serial.println("topic: " + topic);
+        #endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -115,8 +121,10 @@ void publishStrMQTT(String topic, String payload) {
 #ifdef SUPPORT_MQTT
     topic = rootTopic + topic;
     if (!inMenu) {
+        #ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
+        #endif        
     }
     mqttClient.publish(topic.c_str(), payload.c_str());
 #endif
@@ -125,8 +133,10 @@ void publishStrMQTT(String topic, String payload) {
 void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
     if (!inMenu) {
-        // Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
-        // Serial.println("topic: " + topic);
+        #ifdef DEBUG_MQTT_SENDING
+        Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
+        Serial.println("topic: " + topic);
+        #endif
     }
     mqttClient.publish(topic.c_str(), payload.c_str(), true);
 #endif
