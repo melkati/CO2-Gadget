@@ -3,7 +3,6 @@
 
 #include <Sensors.hpp>
 
-bool firstCO2SensorInit = true;
 volatile bool pendingCalibration = false;
 volatile bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
@@ -73,10 +72,6 @@ uint16_t getSCD4xFeatureSet() {
 
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
-    if (firstCO2SensorInit) {
-        Serial.printf("-->[SENS] Using sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
-        firstCO2SensorInit = false;
-    }
 
     displayNotification("Init sensors", notifyInfo);
 
@@ -119,22 +114,32 @@ void initSensors() {
 
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
-    if (selectedCO2Sensor == AUTO) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: AutoSensor (I2C)");
-        sensors.detectI2COnly(true);
-        sensors.init();
-    } else if (selectedCO2Sensor == MHZ19) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
-        sensors.detectI2COnly(false);
-        sensors.init(MHZ19);
-    } else if (selectedCO2Sensor == CM1106) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
-        sensors.detectI2COnly(false);
-        sensors.init(CM1106);
-    } else if (selectedCO2Sensor == SENSEAIRS8) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
-        sensors.detectI2COnly(false);
-        sensors.init(SENSEAIRS8);
+    Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
+
+    // Possible values NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
+    sensors.setLowPowerMode(NO_LOWPOWER);  // TO-DO: Move to preferences
+
+    if ((sensors.lowPowerConfig.lowPowerMode != NO_LOWPOWER) && (selectedCO2Sensor == AUTO)) {
+        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
+        sensors.initCO2LowPowerMode(sensors.getLowPowerMode());
+    } else {
+        if (selectedCO2Sensor == AUTO) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: AutoSensor (I2C)");
+            sensors.detectI2COnly(true);
+            sensors.init();
+        } else if (selectedCO2Sensor == MHZ19) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+            sensors.detectI2COnly(false);
+            sensors.init(MHZ19);
+        } else if (selectedCO2Sensor == CM1106) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+            sensors.detectI2COnly(false);
+            sensors.init(CM1106);
+        } else if (selectedCO2Sensor == SENSEAIRS8) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
+            sensors.detectI2COnly(false);
+            sensors.init(SENSEAIRS8);
+        }
     }
 
     printSensorsDetected();
