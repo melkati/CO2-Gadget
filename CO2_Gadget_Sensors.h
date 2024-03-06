@@ -54,24 +54,9 @@ void onSensorDataOk() {
 
 void onSensorDataError(const char *msg) { Serial.println(msg); }
 
-// To move into the sensorlib
-uint16_t getSCD4xFeatureSet() {
-    uint16_t featureSet = 0;
-    uint16_t error = 0;
-    error = sensors.scd4x.stopPeriodicMeasurement();
-    error = sensors.scd4x.getFeatures(featureSet);
-    if (error != 0) {
-        Serial.println("-->[SENS] SCD4x getFeatures error: " + String(error));
-    } else {
-        uint8_t typeOfSensor = ((featureSet & 0x1000) >> 12);
-        Serial.println("-->[SENS] SCD4x Sensor Type: SCD4" + String(typeOfSensor));
-    }
-    sensors.scd4x.startPeriodicMeasurement();
-    return featureSet;
-}
-
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
+    bool initLowPower = false;
 
     displayNotification("Init sensors", notifyInfo);
 
@@ -113,16 +98,37 @@ void initSensors() {
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
-
     Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
 
     // Possible values NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
-    sensors.setLowPowerMode(NO_LOWPOWER);  // TO-DO: Move to preferences
+    sensors.setLowPowerMode(MEDIUM_LOWPOWER);  // TO-DO: Move to preferences
+    sensors.setSampleTime(5);
 
-    if ((sensors.lowPowerConfig.lowPowerMode != NO_LOWPOWER) && (selectedCO2Sensor == AUTO)) {
+    if ((sensors.lowPowerData.lowPowerMode != NO_LOWPOWER) && (selectedCO2Sensor == AUTO)) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
         sensors.initCO2LowPowerMode(sensors.getLowPowerMode());
-    } else {
+
+        switch (sensors.getLowPowerMode()) {
+            case BASIC_LOWPOWER:
+                Serial.println("-->[SENS] Low Power Mode: BASIC_LOWPOWER");
+                initLowPower = true;
+                break;
+            case MEDIUM_LOWPOWER:
+                Serial.println("-->[SENS] Low Power Mode: MEDIUM_LOWPOWER");
+                initLowPower = true;
+                break;
+            case MAXIMUM_LOWPOWER:
+                Serial.println("-->[SENS] Low Power Mode: MAXIMUM_LOWPOWER");
+                initLowPower = true;
+                break;
+            default:
+                Serial.println("-->[SENS] Low Power Mode: NO_LOWPOWER");
+                initLowPower = false;
+                break;
+        }
+    }
+
+    if (!initLowPower) {
         if (selectedCO2Sensor == AUTO) {
             Serial.println("-->[SENS] Trying to init CO2 sensor: AutoSensor (I2C)");
             sensors.detectI2COnly(true);
@@ -146,15 +152,33 @@ void initSensors() {
 
     if (!sensorsGetMainDeviceSelected().isEmpty()) {
         Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
-
-        // Temporary getFeatureSet() for SCD4x. To be moved into the sensorlib
-        if (sensorsGetMainDeviceSelected() == "SCD4X") {
-            Serial.println("-->[SENS] SCD4x Feature Set: " + String(getSCD4xFeatureSet()));
-        }
     }
 }
 
+void sensorsLoopLowPower() {
+    static unsigned long previousMillis = 0;
+    deepSleepData.waitingForDataReady = true;
+
+    while (!sensors.isDataReady()) {
+        sensors.loop();
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis >= 1000) {
+            previousMillis = currentMillis;
+            Serial.print(".");
+            delay(100);
+        }
+    }
+
+    Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2temp(), sensors.getCO2humi(), sensors.getHumidity(), sensors.getTemperature());
+
+    toDeepSleep();
+}
+
 void sensorsLoop() {
+    // if ((deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+    //     sensorsLoopLowPower();
+    //     return;
+    // }
     if (!buzzerBeeping) {
         sensors.loop();
     }

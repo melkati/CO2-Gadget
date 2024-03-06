@@ -1,20 +1,3 @@
-/*****************************************************************************************************/
-/*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
-/*****************************************************************************************************/
-/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
-/* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
-/*  THIS SECTION IS OUTDATED, IF YOU WANT TO USE ARDUINO YOU WILL HAVE TO SHORT IT OUT BY YOURSELF   */
-/*            I WILL PREPARE THE CODE AND WRITE NEW INSTRUCTIONS AS TIME PERMITS.                    */
-/*                                                                                                   */
-#ifndef PLATFORMIO
-#define SUPPORT_OTA
-#define SUPPORT_TFT
-#define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
-// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
-#endif
-/*****************************************************************************************************/
-
 // Functions and enum definitions
 void reverseButtons(bool reversed);
 void outputsLoop();
@@ -56,7 +39,7 @@ bool activeESPNOW = false;
 bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
 bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
-bool  troubledESPNOW = false;            // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+bool troubledESPNOW = false;             // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
 uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
@@ -125,6 +108,20 @@ uint16_t co2RedRange = 1000;
 // Variables for Improv-Serial
 uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 
+// Variables for deep sleep
+bool deepSleepEnabled = true;
+uint64_t lastTimeDeepSleep = 0;
+uint64_t timeBetweenDeepSleep = 10;
+
+typedef struct {
+    uint16_t co2Sensor;
+    uint16_t lowPowerMode;
+    uint32_t gpioConfig;
+    bool waitingForDataReady;
+} deepSleepData_t;
+
+RTC_DATA_ATTR deepSleepData_t deepSleepData;
+
 #ifdef BUILD_GIT
 #undef BUILD_GIT
 #endif  // ifdef BUILD_GIT
@@ -172,6 +169,13 @@ bool displayNotification(String notificationText, String notificationText2, noti
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                      INCLUDE DEEP SLEEP FUNCIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include <CO2_Gadget_DeepSleep.h>
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -442,7 +446,7 @@ void adjustBrightnessLoop() {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
             setDisplayBrightness(DisplayBrightness);
         }
-        if (timeToDisplayOff==0) {
+        if (timeToDisplayOff == 0) {
             setDisplayBrightness(DisplayBrightness);
         }
         return;
@@ -509,63 +513,120 @@ void utilityLoop() {
     }
 }
 
+void deepSleepLoop() {
+    bool dataReady = false;
+    bool timeOut = false;
+    int error = 0;
+    uint16_t co2 = 0;
+    float temp = 0, hum = 0;
+
+    fromDeepSleep();
+
+    unsigned long currentMillis = millis();
+    unsigned long previousMillis = currentMillis;
+    while ((!dataReady) && (!timeOut)) {
+        error = dataReady = sensors.scd4x.getDataReadyFlag(dataReady);
+        delay(10);
+        sensors.loop();
+        if (currentMillis - previousMillis >= 1000) {
+            previousMillis = currentMillis;
+            Serial.print("+");
+            delay(100);
+        }
+    }
+    Serial.println("   Data ready");
+    error = sensors.scd4x.readMeasurement(co2, temp, hum);
+    if (error != 0) {
+        Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
+    } else {
+        Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %.2f ppm, Temperature: %.2f °C, Humidity: %.2f %%\n", co2, temp, hum);
+    }
+
+    while (true) {
+        batteryLoop();
+        // wifiClientLoop();
+        // mqttClientLoop();
+        sensorsLoop();
+        // outputsLoop();
+        // processPendingCommands();
+        // readingsLoop();
+        // OTALoop();
+        // adjustBrightnessLoop();
+        // buttonsLoop();
+        // menuLoop();
+        // BLELoop();
+        toDeepSleep();
+    }
+}
+
 // application entry point
 void setup() {
+    // Manually set los power mode until implementation in preferences
+    sensors.setLowPowerMode(MEDIUM_LOWPOWER);
+    deepSleepData.lowPowerMode = sensors.getLowPowerMode();
+
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     delay(50);
+    if (esp_reset_reason() == ESP_RST_DEEPSLEEP) {
+        deepSleepLoop();
+    } else {
+        resetReason();
 #ifdef AUTO_VERSION
-    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
+        Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
 #else
-    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+        Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
 #endif
-    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
-    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
-    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
-    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+        Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
+        Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
+        Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+        Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
+        Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
 
-    // Get the size of the flash memory
-    // Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
-    // Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
-    // Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+        if (ESP.getFlashChipSize() > 0) {
+            Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
+            Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+            Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+        }
 
-    Serial.printf("-->[STUP] Starting up...\n\n");
+        Serial.printf("-->[STUP] Starting up...\n\n");
 
-    initImprov();
-    initPreferences();
-    initBattery();
-    initGPIO();
-    initNeopixel();
-    initBuzzer();
+        initImprov();
+        initPreferences();
+        initBattery();
+        initGPIO();
+        initNeopixel();
+        initBuzzer();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    initDisplay();
+        initDisplay();
 #endif
 #ifdef SUPPORT_BLE
-    initBLE();
+        initBLE();
 #endif
-    initSensors();
-    initWifi();
-    wifiChanged = false;
+        initSensors();
+        initWifi();
+        wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
-    initESPNow();
+        initESPNow();
 #endif
 #ifdef SUPPORT_MQTT
-    initMQTT();
+        initMQTT();
 #endif
-    menu_init();
-    initButtons();
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("");
-        printLargeASCII(WiFi.localIP().toString().c_str());
-        Serial.println("");
+        menu_init();
+        initButtons();
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("");
+            printLargeASCII(WiFi.localIP().toString().c_str());
+            Serial.println("");
+        }
+        WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+        Serial.println("-->[STUP] Ready.");
+        timeInitializationCompleted = millis();
     }
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
-    Serial.println("-->[STUP] Ready.");
-    timeInitializationCompleted = millis();
 }
 
+uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user to interact with the device before going to deep sleep
 void loop() {
     batteryLoop();
     utilityLoop();
@@ -581,4 +642,15 @@ void loop() {
     buttonsLoop();
     menuLoop();
     BLELoop();
+
+    if ((deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+        if ((waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000 > 5) {
+            Serial.printf("Time remaining for deep sleep on first boot: %d\n", (waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000);
+        }
+        if (millis() - timeInitializationCompleted >= waitToGoDeepSleepOnFirstBoot) {
+            Serial.println("=");
+            toDeepSleep();
+        } else {
+        }
+    }
 }
