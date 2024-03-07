@@ -219,6 +219,20 @@ void setDisplayBrightness(uint16_t newBrightness) {
 #endif
 }
 
+
+void displaySleep(bool value) // https://github.com/Bodmer/TFT_eSPI/issues/715
+{
+    if (value)
+    {
+        tft.writecommand(0x10);   // Send command to put the display to sleep.
+        delay(150);           // Delay for shutdown time before another command can be sent.
+    }
+    else
+    {
+        tft.init();               // This sends the wake up command and initialises the display
+    }
+}
+
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
 }

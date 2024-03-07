@@ -111,7 +111,7 @@ uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 // Variables for deep sleep
 bool deepSleepEnabled = true;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeBetweenDeepSleep = 10;
+uint64_t timeBetweenDeepSleep = 60;
 
 typedef struct {
     uint16_t co2Sensor;
@@ -562,16 +562,17 @@ void deepSleepLoop() {
 // application entry point
 void setup() {
     // Manually set los power mode until implementation in preferences
+    // Choose one of enum LowPowerMode NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
     sensors.setLowPowerMode(MEDIUM_LOWPOWER);
     deepSleepData.lowPowerMode = sensors.getLowPowerMode();
 
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
-    delay(50);
-    if (esp_reset_reason() == ESP_RST_DEEPSLEEP) {
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
         deepSleepLoop();
     } else {
+        delay(50);
         resetReason();
 #ifdef AUTO_VERSION
         Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
@@ -626,7 +627,7 @@ void setup() {
     }
 }
 
-uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user to interact with the device before going to deep sleep
+uint64_t waitToGoDeepSleepOnFirstBoot = 60000;  // Give an opportunity to user to interact with the device before going to deep sleep
 void loop() {
     batteryLoop();
     utilityLoop();
@@ -643,14 +644,13 @@ void loop() {
     menuLoop();
     BLELoop();
 
-    if ((deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
-        if ((waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000 > 5) {
-            Serial.printf("Time remaining for deep sleep on first boot: %d\n", (waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000);
-        }
-        if (millis() - timeInitializationCompleted >= waitToGoDeepSleepOnFirstBoot) {
-            Serial.println("=");
-            toDeepSleep();
+    if (sensors.getLowPowerMode() != NO_LOWPOWER) {
+        if (millis() - timeInitializationCompleted < waitToGoDeepSleepOnFirstBoot) {
+            Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000);
         } else {
+            turnOffDisplay();
+            displaySleep(true);
+            toDeepSleep();
         }
     }
 }
