@@ -100,8 +100,6 @@ void initSensors() {
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
     Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
 
-    // Possible values NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
-    sensors.setLowPowerMode(MEDIUM_LOWPOWER);  // TO-DO: Move to preferences
     sensors.setSampleTime(5);
 
     if ((sensors.lowPowerData.lowPowerMode != NO_LOWPOWER) && (selectedCO2Sensor == AUTO)) {

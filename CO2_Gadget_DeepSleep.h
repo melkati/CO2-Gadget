@@ -16,20 +16,28 @@
 void SetDeepSleepEnabled(bool enabled) {
     deepSleepEnabled = enabled;
     if (deepSleepEnabled) {
+        #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] Deep sleep enabled");
+        #endif
     } else {
+        #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] Deep sleep disabled");
+        #endif
     }
 }
 
 void SetTimeBetweenDeepSleep(uint16_t time) {
     timeBetweenDeepSleep = time;
+    #ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP] Time between deep sleep: " + String(timeBetweenDeepSleep) + " seconds");
+    #endif
 }
 
 void resetReason() {
     esp_reset_reason_t reason = esp_reset_reason();
 
+    #ifdef DEEP_SLEEP_DEBUG
+    Serial.print("-->[DEEP] ");
     switch (reason) {
         case ESP_RST_UNKNOWN:
             Serial.println("Unknown reset reason");
@@ -68,6 +76,7 @@ void resetReason() {
             Serial.println("Other reset reason");
             break;
     }
+    #endif
 }
 
 // Save GPIO pins configuration before deep sleep
@@ -126,6 +135,8 @@ void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
 
+    #ifdef DEEP_SLEEP_DEBUG
+    Serial.print("-->[DEEP] ");
     switch (wakeup_reason) {
         case ESP_SLEEP_WAKEUP_EXT0:
             Serial.println("Wakeup caused by external signal using RTC_IO");
@@ -146,9 +157,10 @@ void fromDeepSleep() {
             Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
             break;
     }
+    #endif
 
     // Set lowPowerMode using the correct type
-    sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
+    // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
     // gpioConfig;
 
     // Re-Initialize I2C bus
@@ -161,19 +173,22 @@ void fromDeepSleep() {
 
     switch (sensors.getLowPowerMode()) {
         case NO_LOWPOWER:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: NO_LOWPOWER\n");
+        #endif
             break;
         case BASIC_LOWPOWER:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER\n");
+        #endif
             break;
         case MEDIUM_LOWPOWER:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER\n");
-            Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() begin...");
+        #endif
             error = sensors.scd4x.measureSingleShot();
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: %d\n", error);
-            } else {
-                Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() end...");
             }
             while (!isDataReadySingleShot()) {
                 unsigned long currentMillis = millis();
@@ -183,20 +198,45 @@ void fromDeepSleep() {
                     delay(100);
                 }
             }
-            Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() data ready...");
             error = sensors.scd4x.readMeasurement(co2, temperature, humidity);
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
             } else {
+                #ifdef DEEP_SLEEP_DEBUG
                 Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temperature, humidity);
+                #endif
             }
             toDeepSleep();
 
             break;
         case MAXIMUM_LOWPOWER:
+            #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: MAXIMUM_LOWPOWER\n");
-            sensors.scd4x.wakeUp();
-            sensors.scd4x.measureSingleShot();
+            #endif
+            error = sensors.scd4x.wakeUp();
+            error = sensors.scd4x.measureSingleShot();
+            if (error != 0) {
+                Serial.printf("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: %d\n", error);
+            }
+            while (!isDataReadySingleShot()) {
+                unsigned long currentMillis = millis();
+                if (currentMillis - previousMillis >= 1000) {
+                    previousMillis = currentMillis;
+                    Serial.print("+");
+                    delay(100);
+                }
+            }
+            error = sensors.scd4x.readMeasurement(co2, temperature, humidity);
+            if (error != 0) {
+                Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
+            } else {
+                #ifdef DEEP_SLEEP_DEBUG
+                Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temperature, humidity);
+                #endif
+            }
+            
+            error = sensors.scd4x.powerDown();
+            toDeepSleep();
             break;
         default:
             sensors.init();
