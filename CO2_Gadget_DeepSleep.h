@@ -105,12 +105,15 @@ void restoreGPIOConfig() {
 void toDeepSleep() {
     Serial.printf("-->[DEEP] Going into deep sleep for %d seconds with LowPowerMode: %d\n", timeBetweenDeepSleep, sensors.getLowPowerMode());
     Serial.flush();
-    delay(1000);
     saveGPIOConfig();
     deepSleepData.lowPowerMode = sensors.getLowPowerMode();
     // deepSleepData.co2Sensor = sensors.getMainDeviceSelected();
 
+    esp_deep_sleep_disable_rom_logging();
+    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), 0);  // 1 = High, 0 = Low
     esp_sleep_enable_timer_wakeup(timeBetweenDeepSleep * 1000000);
+    delay(10);
+    // gpio_deep_sleep_hold_en();
     esp_deep_sleep_start();
     // esp_deep_sleep(timeBetweenDeepSleep * 1000000);
 }
@@ -125,39 +128,14 @@ bool isDataReadySingleShot() {
     return dataReadyFlag;
 }
 
-void fromDeepSleep() {    
+void fromDeepSleepTimer() {    
     unsigned long previousMillis = 0;
     uint16_t error = 0;
     uint16_t co2 = 0;
     float temperature = 0;
     float humidity = 0;
     // restoreGPIOConfig();
-    esp_sleep_wakeup_cause_t wakeup_reason;
-    wakeup_reason = esp_sleep_get_wakeup_cause();
-
-    #ifdef DEEP_SLEEP_DEBUG
-    Serial.print("-->[DEEP] ");
-    switch (wakeup_reason) {
-        case ESP_SLEEP_WAKEUP_EXT0:
-            Serial.println("Wakeup caused by external signal using RTC_IO");
-            break;
-        case ESP_SLEEP_WAKEUP_EXT1:
-            Serial.println("Wakeup caused by external signal using RTC_CNTL");
-            break;
-        case ESP_SLEEP_WAKEUP_TIMER:
-            Serial.println("Wakeup caused by timer");
-            break;
-        case ESP_SLEEP_WAKEUP_TOUCHPAD:
-            Serial.println("Wakeup caused by touchpad");
-            break;
-        case ESP_SLEEP_WAKEUP_ULP:
-            Serial.println("Wakeup caused by ULP program");
-            break;
-        default:
-            Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-            break;
-    }
-    #endif
+    
 
     // Set lowPowerMode using the correct type
     // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
@@ -186,7 +164,7 @@ void fromDeepSleep() {
         #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER\n");
         #endif
-            error = sensors.scd4x.measureSingleShot();
+            error = sensors.scd4x.measureSingleShot(true);
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: %d\n", error);
             }
@@ -195,7 +173,7 @@ void fromDeepSleep() {
                 if (currentMillis - previousMillis >= 1000) {
                     previousMillis = currentMillis;
                     Serial.print("+");
-                    delay(100);
+                    delay(10);
                 }
             }
             error = sensors.scd4x.readMeasurement(co2, temperature, humidity);

@@ -109,9 +109,11 @@ uint16_t co2RedRange = 1000;
 uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 
 // Variables for deep sleep
+uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user to interact with the device before going to deep sleep
 bool deepSleepEnabled = true;
+uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeBetweenDeepSleep = 60;
+uint64_t timeBetweenDeepSleep = 15;
 
 typedef struct {
     uint16_t co2Sensor;
@@ -513,50 +515,80 @@ void utilityLoop() {
     }
 }
 
-void deepSleepLoop() {
-    bool dataReady = false;
-    bool timeOut = false;
-    int error = 0;
-    uint16_t co2 = 0;
-    float temp = 0, hum = 0;
+void fromDeepSleepRTC_IO() {
+    uint16_t error = 0;
+    uint16_t co2value = 0;
+    float temperature = 0;
+    float humidity = 0;
 
-    fromDeepSleep();
+    if (isButtonPressedOnWakeUp()) {
+        initDisplay(true);
+        Serial.println("-->[DEEP] Button pressed on wakeup. Entering interactive mode.");
+        delay(1000);
+        return;
+    }
 
-    unsigned long currentMillis = millis();
-    unsigned long previousMillis = currentMillis;
-    while ((!dataReady) && (!timeOut)) {
-        error = dataReady = sensors.scd4x.getDataReadyFlag(dataReady);
-        delay(10);
-        sensors.loop();
+    // Re-Initialize I2C bus
+#ifdef I2C_SDA &&defined(I2C_SCL)
+    Wire.begin(I2C_SDA, I2C_SCL);
+#else
+    Wire.begin();
+    sensors.scd4x.begin(Wire);
+#endif
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    error = sensors.scd4x.measureSingleShot(true);
+    initDisplay(true);
+    unsigned long previousMillis = millis();
+    while (!isDataReadySingleShot()) {
+        unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
-            Serial.print("+");
-            delay(100);
+            Serial.print("#");
+            delay(10);
         }
     }
-    Serial.println("   Data ready");
-    error = sensors.scd4x.readMeasurement(co2, temp, hum);
+    error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
-        Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
+        Serial.printf("-->[DEEP] readMeasurement() error: %d\n", error);
     } else {
-        Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %.2f ppm, Temperature: %.2f °C, Humidity: %.2f %%\n", co2, temp, hum);
+        co2 = co2value;
+        temp = temperature;
+        hum = humidity;
+        Serial.printf("-->[DEEP] CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%\n", co2, temp, hum);
     }
+    displayShowValues(true);
+    delay(5000);
+    toDeepSleep();
+#endif
+}
 
-    while (true) {
-        batteryLoop();
-        // wifiClientLoop();
-        // mqttClientLoop();
-        sensorsLoop();
-        // outputsLoop();
-        // processPendingCommands();
-        // readingsLoop();
-        // OTALoop();
-        // adjustBrightnessLoop();
-        // buttonsLoop();
-        // menuLoop();
-        // BLELoop();
-        toDeepSleep();
+void fromDeepSleep() {
+    esp_sleep_wakeup_cause_t wakeup_reason;
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+#ifdef DEEP_SLEEP_DEBUG
+    switch (wakeup_reason) {
+        case ESP_SLEEP_WAKEUP_EXT0:
+            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
+            fromDeepSleepRTC_IO();
+            break;
+        case ESP_SLEEP_WAKEUP_EXT1:
+            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
+            break;
+        case ESP_SLEEP_WAKEUP_TIMER:
+            Serial.println("-->[DEEP] Wakeup caused by timer");
+            fromDeepSleepTimer();
+            break;
+        case ESP_SLEEP_WAKEUP_TOUCHPAD:
+            Serial.println("-->[DEEP] Wakeup caused by touchpad");
+            break;
+        case ESP_SLEEP_WAKEUP_ULP:
+            Serial.println("-->[DEEP] Wakeup caused by ULP program");
+            break;
+        default:
+            Serial.printf("-->[DEEP] Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+            break;
     }
+#endif
 }
 
 // application entry point
@@ -570,7 +602,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
-        deepSleepLoop();
+        fromDeepSleep();
     } else {
         delay(50);
         resetReason();
@@ -624,10 +656,13 @@ void setup() {
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
         Serial.println("-->[STUP] Ready.");
         timeInitializationCompleted = millis();
+        startTimerToDeepSleep = millis();
+        if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
+            Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+        }
     }
 }
 
-uint64_t waitToGoDeepSleepOnFirstBoot = 60000;  // Give an opportunity to user to interact with the device before going to deep sleep
 void loop() {
     batteryLoop();
     utilityLoop();
@@ -644,13 +679,17 @@ void loop() {
     menuLoop();
     BLELoop();
 
-    if (sensors.getLowPowerMode() != NO_LOWPOWER) {
-        if (millis() - timeInitializationCompleted < waitToGoDeepSleepOnFirstBoot) {
-            Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - timeInitializationCompleted)) / 1000);
-        } else {
-            turnOffDisplay();
-            displaySleep(true);
-            toDeepSleep();
+    if (inMenu) {
+        startTimerToDeepSleep = millis();
+    } else {
+        if ((sensors.getLowPowerMode() != NO_LOWPOWER)) {
+            if (millis() - startTimerToDeepSleep < waitToGoDeepSleepOnFirstBoot) {
+                Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+            } else {
+                turnOffDisplay();
+                displaySleep(true);
+                toDeepSleep();
+            }
         }
     }
 }
