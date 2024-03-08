@@ -263,9 +263,9 @@ void initMQTT() {
 
 void publishMQTTLogData(String logData) {
 #ifdef SUPPORT_MQTT
-    if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
-        publishStrMQTT("/log", logData);
-    }
+    // if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+    //     publishStrMQTT("/log", logData);
+    // }
 #endif
 }
 
@@ -316,10 +316,10 @@ void publishMeasurementsMQTT() {
     publishFloatMQTT("/humi", hum);
 }
 
-void publishMQTT() {
+void publishMQTT(bool forcePublish = false) {
 #ifdef SUPPORT_MQTT
     if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
-        if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0)) {
+        if ((forcePublish) || ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0))) {
             publishMeasurementsMQTT();
             publishMQTTAlarms();
             publishMQTTSystemData();

@@ -57,8 +57,14 @@ void onSensorDataError(const char *msg) { Serial.println(msg); }
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
     bool initLowPower = false;
+    bool lowPowerMode = false;
 
-    displayNotification("Init sensors", notifyInfo);
+    if ((deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+        lowPowerMode = true;
+        displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
+    } else {
+        displayNotification("Init sensors", notifyInfo);
+    }
 
 #ifdef ENABLE_PIN
     // Turn On the Sensor (reserved for future use)
@@ -151,25 +157,6 @@ void initSensors() {
     if (!sensorsGetMainDeviceSelected().isEmpty()) {
         Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
     }
-}
-
-void sensorsLoopLowPower() {
-    static unsigned long previousMillis = 0;
-    deepSleepData.waitingForDataReady = true;
-
-    while (!sensors.isDataReady()) {
-        sensors.loop();
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print(".");
-            delay(100);
-        }
-    }
-
-    Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2temp(), sensors.getCO2humi(), sensors.getHumidity(), sensors.getTemperature());
-
-    toDeepSleep();
 }
 
 void sensorsLoop() {

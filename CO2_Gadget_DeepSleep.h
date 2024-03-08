@@ -16,67 +16,65 @@
 void SetDeepSleepEnabled(bool enabled) {
     deepSleepEnabled = enabled;
     if (deepSleepEnabled) {
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] Deep sleep enabled");
-        #endif
+#endif
     } else {
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] Deep sleep disabled");
-        #endif
+#endif
     }
 }
 
 void SetTimeBetweenDeepSleep(uint16_t time) {
     timeBetweenDeepSleep = time;
-    #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP] Time between deep sleep: " + String(timeBetweenDeepSleep) + " seconds");
-    #endif
+#endif
 }
 
 void resetReason() {
     esp_reset_reason_t reason = esp_reset_reason();
-
-    #ifdef DEEP_SLEEP_DEBUG
-    Serial.print("-->[DEEP] ");
+#ifdef DEEP_SLEEP_DEBUG
     switch (reason) {
         case ESP_RST_UNKNOWN:
-            Serial.println("Unknown reset reason");
+            Serial.println("-->[DEEP] Unknown reset reason");
             break;
         case ESP_RST_POWERON:
-            Serial.println("Power-on reset");
+            Serial.println("-->[DEEP] Power-on reset");
             break;
         case ESP_RST_EXT:
-            Serial.println("External reset");
+            Serial.println("-->[DEEP] External reset");
             break;
         case ESP_RST_SW:
-            Serial.println("Software reset");
+            Serial.println("-->[DEEP] Software reset");
             break;
         case ESP_RST_PANIC:
-            Serial.println("Exception reset");
+            Serial.println("-->[DEEP] Exception reset");
             break;
         case ESP_RST_INT_WDT:
-            Serial.println("Watchdog reset (core)");
+            Serial.println("-->[DEEP] Watchdog reset (core)");
             break;
         case ESP_RST_TASK_WDT:
-            Serial.println("Watchdog reset (task)");
+            Serial.println("-->[DEEP] Watchdog reset (task)");
             break;
         case ESP_RST_WDT:
-            Serial.println("Watchdog reset (other)");
+            Serial.println("-->[DEEP] Watchdog reset (other)");
             break;
         case ESP_RST_DEEPSLEEP:
-            Serial.println("Deep sleep reset");
+            Serial.println("-->[DEEP] Deep sleep reset");
             break;
         case ESP_RST_BROWNOUT:
-            Serial.println("Brownout reset");
+            Serial.println("-->[DEEP] Brownout reset");
             break;
         case ESP_RST_SDIO:
-            Serial.println("SDIO reset");
+            Serial.println("-->[DEEP] SDIO reset");
             break;
         default:
-            Serial.println("Other reset reason");
+            Serial.println("-->[DEEP] Other reset reason");
             break;
     }
-    #endif
+#endif
 }
 
 // Save GPIO pins configuration before deep sleep
@@ -105,6 +103,10 @@ void restoreGPIOConfig() {
 void toDeepSleep() {
     Serial.printf("-->[DEEP] Going into deep sleep for %d seconds with LowPowerMode: %d\n", timeBetweenDeepSleep, sensors.getLowPowerMode());
     Serial.flush();
+    // Experimental: Turn off green LED and display on S3 board
+    // #if defined(CONFIG_IDF_TARGET_ESP32S3)
+    // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
+    // #endif
     saveGPIOConfig();
     deepSleepData.lowPowerMode = sensors.getLowPowerMode();
     // deepSleepData.co2Sensor = sensors.getMainDeviceSelected();
@@ -128,14 +130,42 @@ bool isDataReadySingleShot() {
     return dataReadyFlag;
 }
 
-void fromDeepSleepTimer() {    
+void doDeepSleepMQTTConnect() {
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.printf("-->[DEEP] Initializing MQTT to broker IP: %s\n", mqttBroker.c_str());
+        mqttClient.setServer(mqttBroker.c_str(), 1883);
+        mqttClient.setCallback(callbackMQTT);
+        mqttClient.setBufferSize(1024);
+        if (mqttClient.connect((mqttClientId).c_str(), (mqttUser).c_str(), (mqttPass).c_str())) {
+            Serial.printf("connected\n");
+            Serial.print("-->[DEEP] rootTopic: ");
+            Serial.println(rootTopic);
+        }
+    }
+}
+
+void doDeepSleepWiFiConnect() {
+    initPreferences();
+    initBattery();
+    connectToWiFi();
+#ifdef SUPPORT_ESPNOW
+    initESPNow();
+#endif
+#ifdef SUPPORT_MQTT
+    doDeepSleepMQTTConnect();
+#endif
+    deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
+}
+
+void fromDeepSleepTimer() {
     unsigned long previousMillis = 0;
     uint16_t error = 0;
-    uint16_t co2 = 0;
+    uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
+
+    --deepSleepData.cyclesToWiFiConnect;
     // restoreGPIOConfig();
-    
 
     // Set lowPowerMode using the correct type
     // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
@@ -151,19 +181,22 @@ void fromDeepSleepTimer() {
 
     switch (sensors.getLowPowerMode()) {
         case NO_LOWPOWER:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: NO_LOWPOWER\n");
-        #endif
+#endif
             break;
         case BASIC_LOWPOWER:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER\n");
-        #endif
+#endif
             break;
         case MEDIUM_LOWPOWER:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER\n");
-        #endif
+#endif
+            if (deepSleepData.cyclesToWiFiConnect == 0) {
+                doDeepSleepWiFiConnect();
+            }
             error = sensors.scd4x.measureSingleShot(true);
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: %d\n", error);
@@ -176,21 +209,43 @@ void fromDeepSleepTimer() {
                     delay(10);
                 }
             }
-            error = sensors.scd4x.readMeasurement(co2, temperature, humidity);
+            error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
+            co2 = co2value;
+            temp = temperature;
+            hum = humidity;
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
             } else {
-                #ifdef DEEP_SLEEP_DEBUG
-                Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temperature, humidity);
-                #endif
+#ifdef SUPPORT_MQTT
+                if (WiFi.status() == WL_CONNECTED) {
+                    Serial.printf("-->[DEEP] MQTT connected. Publishing measurements.\n");
+                    // publishIntMQTT("/co2", co2);
+                    // publishFloatMQTT("/temp", temp);
+                    // publishFloatMQTT("/humi", hum);
+                    publishMQTT(true);
+                    // publishMeasurementsMQTT();
+                    // publishMQTTAlarms();
+                    // publishMQTTSystemData();
+                    // unsigned long startTime = millis();
+                    // while (millis() - startTime < 10000) {
+                    //     mqttClient.loop();
+                    //     delay(100);
+                    // }
+                } else {
+                    Serial.println("-->[DEEP] MQTT not connected. Skipping publish.");
+                }
+#endif
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.printf("-->[DEEP] CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temp, hum);
+#endif
             }
             toDeepSleep();
 
             break;
         case MAXIMUM_LOWPOWER:
-            #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Waking up from deep sleep. LowPowerMode: MAXIMUM_LOWPOWER\n");
-            #endif
+#endif
             error = sensors.scd4x.wakeUp();
             error = sensors.scd4x.measureSingleShot();
             if (error != 0) {
@@ -204,15 +259,18 @@ void fromDeepSleepTimer() {
                     delay(100);
                 }
             }
-            error = sensors.scd4x.readMeasurement(co2, temperature, humidity);
+            error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
+            co2 = co2value;
+            temp = temperature;
+            hum = humidity;
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
             } else {
-                #ifdef DEEP_SLEEP_DEBUG
-                Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temperature, humidity);
-                #endif
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.printf("-->[DEEP] Waking up from deep sleep. CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temp, hum);
+#endif
             }
-            
+
             error = sensors.scd4x.powerDown();
             toDeepSleep();
             break;
@@ -222,6 +280,10 @@ void fromDeepSleepTimer() {
     }
 
     Serial.flush();
+}
+
+void initDeepSleep() {
+    deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
 }
 
 #endif  // CO2_Gadget_DeepSleep_h

@@ -113,13 +113,15 @@ uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user t
 bool deepSleepEnabled = true;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeBetweenDeepSleep = 15;
+uint64_t timeBetweenDeepSleep = 60;
+uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
 
 typedef struct {
     uint16_t co2Sensor;
     uint16_t lowPowerMode;
     uint32_t gpioConfig;
     bool waitingForDataReady;
+    uint16_t cyclesToWiFiConnect;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -171,13 +173,6 @@ bool displayNotification(String notificationText, String notificationText2, noti
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
-
-/*****************************************************************************************************/
-/*********                                                                                   *********/
-/*********                      INCLUDE DEEP SLEEP FUNCIONALITY                              *********/
-/*********                                                                                   *********/
-/*****************************************************************************************************/
-#include <CO2_Gadget_DeepSleep.h>
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -290,6 +285,13 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*****************************************************************************************************/
 #include "Arduino.h"
 #include "CO2_Gadget_Buttons.h"
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                      INCLUDE DEEP SLEEP FUNCIONALITY                              *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#include <CO2_Gadget_DeepSleep.h>
 
 /*****************************************************************************************************/
 
@@ -562,7 +564,7 @@ void fromDeepSleepRTC_IO() {
 #endif
 }
 
-void fromDeepSleep() {
+void fromDeepSleep() {    
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
 #ifdef DEEP_SLEEP_DEBUG
@@ -657,6 +659,7 @@ void setup() {
         Serial.println("-->[STUP] Ready.");
         timeInitializationCompleted = millis();
         startTimerToDeepSleep = millis();
+        initDeepSleep();
         if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
             Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
         }
