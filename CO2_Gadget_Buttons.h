@@ -91,4 +91,34 @@ void buttonsLoop() {
     btnDwn.loop();
 }
 
+bool isButtonPressedOnWakeUp() {
+    unsigned long buttonPressStartTime = millis();
+    bool buttonState = digitalRead(BTN_DWN); // Initial button state
+
+    // If the button is not pressed, return false immediately
+    if (buttonState == HIGH) {
+        return false;
+    }
+
+    // Wait for the button to be released or for LONGCLICK_TIME_MS
+    while (buttonState == LOW && (millis() - buttonPressStartTime < LONGCLICK_TIME_MS)) {
+        delay(10); // Debouncing delay
+        buttonState = digitalRead(BTN_DWN);
+
+        // Check if the button is released
+        if (buttonState == HIGH) {
+            // Button was released before LONGCLICK_TIME_MS
+            return false;
+        }
+    }
+
+    // Check if the button is still pressed after waiting
+    if (buttonState == LOW && (millis() - buttonPressStartTime >= LONGCLICK_TIME_MS)) {
+        // Button was pressed and held for LONGCLICK_TIME_MS
+        return true;
+    }
+
+    return false;
+}
+
 #endif  // CO2_Gadget_Buttons_h
