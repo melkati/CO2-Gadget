@@ -25,9 +25,9 @@ String sensorsGetMainDeviceSelected() {
 void printSensorsDetected() {
     uint16_t sensors_count = sensors.getSensorsRegisteredCount();
     uint16_t units_count = sensors.getUnitsRegisteredCount();
-    Serial.println("-->[SENS]  Sensors detected count\t: " + String(sensors_count));
-    Serial.println("-->[SENS]  Sensors units count  \t: " + String(units_count));
-    Serial.print("-->[SENS]  Sensors devices names\t: ");
+    Serial.println("-->[SENS] Sensors detected count\t: " + String(sensors_count));
+    Serial.println("-->[SENS] Sensors units count  \t: " + String(units_count));
+    Serial.print("-->[SENS] Sensors devices names\t: ");
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
         Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
@@ -155,7 +155,11 @@ void initSensors() {
     printSensorsDetected();
 
     if (!sensorsGetMainDeviceSelected().isEmpty()) {
-        Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
+        if ((sensorsGetMainDeviceSelected()) == "SCD4X") {
+            Serial.println("-->[SENS] Sensor configured: " + sensors.getSCD4xModel());
+        } else {
+            Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
+        }
     }
 }
 

@@ -231,8 +231,6 @@ void fromDeepSleepTimer() {
                     //     mqttClient.loop();
                     //     delay(100);
                     // }
-                } else {
-                    Serial.println("-->[DEEP] MQTT not connected. Skipping publish.");
                 }
 #endif
 #ifdef DEEP_SLEEP_DEBUG
