@@ -11,16 +11,16 @@
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 // clang-format on
-#include <Fonts/FreeMonoBold24pt7b.h>
-#include <Fonts/FreeMonoBold9pt7b.h>
 #include <GxEPD2_BW.h>
 
-#include "bootlogo.h"
-#include "icons.h"
-const GFXfont SmallFont = FreeMonoBold9pt7b;
-const GFXfont BigFont = FreeMonoBold24pt7b;
 
 #ifdef EINKBOARDDEPG0213BN
+#include "bootlogo.h"
+#include "icons.h"
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = FreeMonoBold24pt7b;
 #define EPD_SCLK SCK  // 18
 #define EPD_MISO 17
 #define EPD_DC 17      // MISO
@@ -29,6 +29,23 @@ const GFXfont BigFont = FreeMonoBold24pt7b;
 #define EPD_RST 16
 #define EPD_BUSY 4
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> u8g2(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
+#endif
+
+#ifdef EINKBOARDGDEW029T5
+#include "bootlogo.h" // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = FreeMonoBold18pt7b;
+#define EPD_SCLK SCK  // 18
+#define EPD_MISO 17
+#define EPD_DC 17  // MISO
+#define EPD_MOSI MOSI  // 23
+#define EPD_CS SS  // 17
+#define EPD_RST 16
+#define EPD_BUSY 4
+GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> u8g2(GxEPD2_290_T5(/* EPD_CS */ 5, /* EPD_MISO */ 17, /* EPD_RST */ 16, /* EPD_BUSY */ 4));  // GDEW029T5
 #endif
 
 char oled_msg[20];
