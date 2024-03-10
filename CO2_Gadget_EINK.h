@@ -34,11 +34,11 @@ const GFXfont BigFont = FreeMonoBold24pt7b;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
 
-#ifdef EINKBOARDGDEW029T5
+#ifdef EINKBOARDGDEM029T94
 #include <NotoSans_Bold48pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 
-#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+// #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 // https://github.com/olikraus/u8g2/wiki/fntlist99
 const GFXfont SmallFont = FreeMonoBold9pt7b;
@@ -51,12 +51,6 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_RST 16
 #define EPD_BUSY 4
 GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
-// GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/* EPD_CS */ 5, /* EPD_MISO */ 17, /* EPD_RST */ 16, /* EPD_BUSY */ 4));  // GDEW029T5
-// GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
-// GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW029T5
-// GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW029T5
-// GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(/* EPD_CS */ 5, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW029T5
-// GxEPD2_BW<GxEPD2_290_T5D, GxEPD2_290_T5D::HEIGHT> display(GxEPD2_290_T5D(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW029T5
 #endif
 
 char oled_msg[20];
@@ -91,15 +85,15 @@ void drawScreenCenterText(const String text) {
     display.print(text);
 }
 
-void displaySplashScreenLOGO() {
-    display.setFullWindow();
-    display.firstPage();
-    do {
-        // Draw bitmap
-        display.fillScreen(GxEPD_WHITE);
-        display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
-    } while (display.nextPage());
-}
+// void displaySplashScreenLOGO() {
+//     display.setFullWindow();
+//     display.firstPage();
+//     do {
+//         // Draw bitmap
+//         display.fillScreen(GxEPD_WHITE);
+//         display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
+//     } while (display.nextPage());
+// }
 
 void displaySplashScreen() {
     display.setFullWindow();  // Activate full screen refresh
@@ -127,15 +121,15 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-void drawLogoScreen() {
-    display.setFullWindow();
-    display.firstPage();
-    do {
-        // Draw bitmap
-        display.fillScreen(GxEPD_WHITE);
-        display.drawInvertedBitmap((display.width() - 128) / 2, (display.height() - 64) / 2, splash, 128, 64, GxEPD_BLACK);
-    } while (display.nextPage());
-}
+// void drawLogoScreen() {
+//     display.setFullWindow();
+//     display.firstPage();
+//     do {
+//         // Draw bitmap
+//         display.fillScreen(GxEPD_WHITE);
+//         display.drawInvertedBitmap((display.width() - 128) / 2, (display.height() - 64) / 2, splash, 128, 64, GxEPD_BLACK);
+//     } while (display.nextPage());
+// }
 
 void drawHoritzontalCenterText(int16_t y, const String text) {
     int16_t tbx, tby;
@@ -222,6 +216,9 @@ void showValues() {
         return;
     }
 
+    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+
     timer.start();
 
     // Erase old values
@@ -278,12 +275,9 @@ void initDisplay() {
 
     // Show splash screen the first time
     // if (bootCount == 1) {
-    displaySplashScreenLOGO();
-    delay(4000);
-    displaySplashScreen();
-    // delay(1000);
-    // drawLogoScreen();
-    // delay(1000);
+    // displaySplashScreenLOGO();
+    // delay(4000);
+    // displaySplashScreen();
     drawMainScreen();
     // }
 
