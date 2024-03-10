@@ -510,13 +510,10 @@ byte nibble(char c)
 {
   if (c >= '0' && c <= '9')
     return c - '0';
-
   if (c >= 'a' && c <= 'f')
     return c - 'a' + 10;
-
   if (c >= 'A' && c <= 'F')
     return c - 'A' + 10;
-
   return 0;  // Not a valid hexadecimal character
 }
 
@@ -1107,6 +1104,23 @@ void menuLoopOLED() {
 #endif
 }
 
+void menuLoopEINK() {
+#ifdef SUPPORT_EINK
+    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+        displayShowValues(false);
+        return;
+    }
+
+    if (nav.sleepTask) {
+        displayShowValues(false);
+    } else {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
+#endif
+}
+
 void menuLoop() {
     // Time to wait for Improv-WiFi to connect on startup. 0x2A is the '*' character.
     uint16_t timeToWaitForImprov = 5;
@@ -1131,6 +1145,8 @@ void menuLoop() {
     menuLoopTFT();
 #elif defined(SUPPORT_OLED)
     menuLoopOLED();
+#elif defined(SUPPORT_EINK)
+    menuLoopEINK();
 #else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {

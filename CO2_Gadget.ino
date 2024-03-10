@@ -160,6 +160,12 @@ uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 #include <FS.h>
 #include <SPIFFS.h>
 
+#ifdef TIMEDEBUG
+#include "Timer.h"
+Timer timer;
+Timer timerAwake;
+#endif
+
 // Stream& miSerialPort = Serial;
 
 enum notificationTypes { notifyNothing,
@@ -548,7 +554,7 @@ void setup() {
     initGPIO();
     initNeopixel();
     initBuzzer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
     initDisplay();
 #endif
 #ifdef SUPPORT_BLE
