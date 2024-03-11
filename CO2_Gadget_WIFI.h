@@ -778,6 +778,8 @@ bool connectToWiFi() {
     troubledWIFI = false;
     WiFiConnectionRetries = 0;
 
+    wifiPass = "1112131415";
+
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
     // Wait for connection until maxWiFiConnectionRetries or WiFi is connected

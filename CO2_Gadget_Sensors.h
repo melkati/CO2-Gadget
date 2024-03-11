@@ -117,6 +117,12 @@ void initSensors() {
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
+    #ifdef FORCE_USE_CM1106
+    selectedCO2Sensor = CM1106; // Workaroud: Force CM1106 sensor for EINKBOARDDEPG0213BN until I can fix the sensor selection
+    #endif
+#define CM1106_ENABLE_PIN 25  // Pin to connect CM1106's ENable pin
+#define CM1106_READY_PIN 27   // Pin to connect CM1106's ReaDY pin
+
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
     if (selectedCO2Sensor == AUTO) {
@@ -130,7 +136,14 @@ void initSensors() {
     } else if (selectedCO2Sensor == CM1106) {
         Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
         sensors.detectI2COnly(false);
-        sensors.init(CM1106);
+        pinMode(CM1106_ENABLE_PIN, OUTPUT);
+        digitalWrite(CM1106_ENABLE_PIN, HIGH);
+        pinMode(CM1106_READY_PIN, INPUT);
+        #ifdef FORCE_USE_CM1106
+        sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);  // RX, TX
+        #else
+        sensors.init(CM1106);        
+        #endif
     } else if (selectedCO2Sensor == SENSEAIRS8) {
         Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
         sensors.detectI2COnly(false);

@@ -1,6 +1,8 @@
 #ifndef CO2_Gadget_Preferences_h
 #define CO2_Gadget_Preferences_h
 
+#define DEBUG_PREFERENCES
+
 #include <ArduinoJson.h>
 #include <Preferences.h>
 Preferences preferences;
@@ -182,7 +184,6 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-// #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif
