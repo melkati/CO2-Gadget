@@ -103,6 +103,12 @@ void initSensors() {
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
+    #ifdef FORCE_USE_CM1106
+    selectedCO2Sensor = CM1106; // Workaroud: Force CM1106 sensor for EINKBOARDDEPG0213BN until I can fix the sensor selection
+    #endif
+#define CM1106_ENABLE_PIN 25  // Pin to connect CM1106's ENable pin
+#define CM1106_READY_PIN 27   // Pin to connect CM1106's ReaDY pin
+
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
     Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
 

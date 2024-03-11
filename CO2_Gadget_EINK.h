@@ -1,0 +1,448 @@
+// https://rop.nl/truetype2gfx/ to convert fonts to .h files
+// https://oleddisplay.squix.ch/#/home
+// https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
+
+#ifndef CO2_Gadget_EINK_h
+#define CO2_Gadget_EINK_h
+
+#ifdef SUPPORT_EINK
+
+// clang-format off
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********                          SETUP EINK DISPLAY FUNCTIONALITY                         *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+// clang-format on
+#include <GxEPD2_BW.h>
+
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+int displayWidth = 212;
+int displayHeight = 104;
+
+#include "bootlogo.h"
+#include "icons.h"
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
+#define EPD_SCLK SCK  // 18
+#define EPD_MISO 17
+#define EPD_DC 17      // MISO
+#define EPD_MOSI MOSI  // 23
+#define EPD_CS SS
+#define EPD_RST 16
+#define EPD_BUSY 4
+
+#ifdef EINKBOARDDEPG0213BN
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
+#endif
+#ifdef EINKBOARDGDEM0213B74
+GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
+#endif
+#endif
+
+#ifdef EINKBOARDGDEM029T94
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+int displayWidth = 296;
+int displayHeight = 128;
+
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
+#define EPD_SCLK SCK
+#define EPD_MISO 17
+#define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_RST 16
+// #define EPD_DC 17
+// #define EPD_BUSY 4
+
+#define EPD_CS SS
+#define EPD_DC 27
+#define EPD_RST 25
+#define EPD_BUSY 32
+// GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
+GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+
+#endif
+
+// Define a structure for the locations of elements
+struct ElementLocations {
+    int32_t co2X;
+    int32_t co2Y;
+    u_int16_t co2FontDigitsHeight;
+    u_int16_t pixelsToBaseline;
+    int32_t co2UnitsX;
+    int32_t co2UnitsY;
+    int32_t tempX;
+    int32_t tempY;
+    int32_t humidityX;
+    int32_t humidityY;
+    int32_t batteryIconX;
+    int32_t batteryIconY;
+    int32_t batteryVoltageX;
+    int32_t batteryVoltageY;
+    int32_t wifiIconX;
+    int32_t wifiIconY;
+    int32_t mqttIconX;
+    int32_t mqttIconY;
+    int32_t bleIconX;
+    int32_t bleIconY;
+    int32_t espNowIconX;
+    int32_t espNowIconY;
+};
+
+// Define an instance of the structure for the chosen resolution
+ElementLocations elementPosition;
+
+// Function to set element locations based on screen resolution
+void setElementLocations() {
+#ifdef EINKBOARDGDEM029T94
+    if (displayWidth == 296 && displayHeight == 128) {  // 296x128 GDEM029T94 and similar
+        elementPosition.co2X = displayWidth - 32;
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 1;
+    }
+#endif
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    if (displayWidth == 212 && displayHeight == 104) {  // 212x104 DEPG0213BN, GDEM0213B74 and similar
+        elementPosition.co2X = displayWidth - 32;
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 1;
+    }
+#endif
+}
+
+void setDisplayBrightness(uint32_t newBrightness) {
+    Serial.printf("-->[EINK] Setting display brightness value at %d\n", newBrightness);
+    // display.setContrast(newBrightness);
+    // actualDisplayBrightness = newBrightness;
+}
+
+void turnOffDisplay() {
+    setDisplayBrightness(0);  // Turn off the display
+}
+
+void drawScreenCenterText(const String text) {
+    int16_t tbx, tby;
+    uint16_t tbw, tbh;
+
+    // Calculate text bounds
+    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    // Center bounding box by transposition of origin
+    uint16_t x = ((display.width() - tbw) / 2) - tbx;
+    uint16_t y = ((display.height() - tbh) / 2) - tby;
+
+    // Display text
+    display.setCursor(x, y);
+    display.print(text);
+}
+
+void displaySplashScreenLOGO() {
+    timer.start();
+    display.setFullWindow();
+    display.firstPage();
+    do {
+        // Draw bitmap
+        display.fillScreen(GxEPD_WHITE);
+        display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
+    } while (display.nextPage());
+    Serial.print("time used to displaySplashScreenLOGO: ");
+    Serial.println(timer.read());
+}
+
+void displaySplashScreen() {
+    display.setFullWindow();  // Activate full screen refresh
+    display.firstPage();      // Clear screen
+    do {
+        // Show program name & version
+        drawScreenCenterText("eMariete CO2 Gadget Monitor");
+    } while (display.nextPage());  // Do full refresh
+}
+
+/***************************************************************************************
+** Function name:           displayNotification
+** Description:             Display a boxed  notification in the display
+***************************************************************************************/
+// parameters:
+//      notificationText = string to display.
+//      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
+bool displayNotification(String notificationText, notificationTypes notificationType) {
+    uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+    return true;
+}
+
+bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {
+    uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+    return true;
+}
+
+// void drawLogoScreen() {
+//     display.setFullWindow();
+//     display.firstPage();
+//     do {
+//         // Draw bitmap
+//         display.fillScreen(GxEPD_WHITE);
+//         display.drawInvertedBitmap((display.width() - 128) / 2, (display.height() - 64) / 2, splash, 128, 64, GxEPD_BLACK);
+//     } while (display.nextPage());
+// }
+
+void drawHoritzontalCenterText(int16_t y, const String text) {
+    int16_t tbx, tby;
+    uint16_t tbw, tbh;
+
+    // Calculate text bounds
+    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    // Center bounding box by transposition of origin
+    uint16_t x = ((display.width() - tbw) / 2) - tbx;
+
+    // Display text
+    display.setCursor(x, y);
+    display.print(text);
+}
+
+void showBattery() {
+    if (workingOnExternalPower) {
+        display.fillRect(display.width() - 27, 2, 26, 12, GxEPD_WHITE);  // Delete battery icon
+        return;
+    }
+    display.drawRect(display.width() - 27, 2, 26, 12, GxEPD_BLACK);  // Battery outter rectangle
+    display.drawLine(display.width() - 2, 4, display.width(), 10, GxEPD_BLACK);
+    if (batteryLevel > 20) {
+        display.fillRect(display.width() - 25, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 40) {
+        display.fillRect(display.width() - 19, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 60) {
+        display.fillRect(display.width() - 13, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 80) {
+        display.fillRect(display.width() - 7, 4, 4, 10, GxEPD_BLACK);
+    }
+}
+
+void drawMainScreen() {
+    static uint16_t drawTimes = 0;
+    if (drawTimes > 0) {
+        return;
+    }
+    timer.start();
+    drawTimes++;
+
+    // Enable partial refresh
+    display.setPartialWindow(0, 0, display.width(), display.height());
+    Serial.printf("-->[EINK] Drawing main screen at %dx%d\n", display.width(), display.height());
+
+    // Clear screen
+    display.fillScreen(GxEPD_WHITE);
+
+    // Draw labels and field rectangles
+    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    display.setRotation(1);
+    display.setTextColor(GxEPD_BLACK);
+    display.setCursor(0, 12);
+    display.print("TEMP: ");
+    display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
+    display.print("HUM: ");
+    display.setRotation(4);
+    display.setCursor((display.width() / 2) - 20, display.height() - 3);
+    display.print("PPM");
+    display.setRotation(1);
+
+    // Refresh screen in partial mode
+    display.displayWindow(0, 0, display.width(), display.height());
+
+    Serial.print("time used to drawMainScreen: ");
+    Serial.println(timer.read());
+}
+
+void showValues() {
+    static uint16_t oldCO2Value = 0;
+    static float oldTempValue = 0;
+    static float oldHumiValue = 0;
+
+    if (oldCO2Value == co2 && oldTempValue == temp && oldHumiValue == hum) {
+        return;
+    }
+
+    // Serial.printf("-->[EINK] Total heap: %d\n", ESP.getHeapSize());
+    // Serial.printf("-->[EINK] Free heap: %d\n", ESP.getFreeHeap());
+
+    timer.start();
+
+    // Erase old values
+    display.setTextColor(GxEPD_WHITE);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
+    display.setTextSize(1);
+    display.setFont(&SmallFont);
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    display.printf("%.0f%%", oldHumiValue);
+
+    // Show values
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
+    display.setTextSize(1);
+    display.setFont(&SmallFont);
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    display.printf("%.0f%%", hum);
+
+    // Refresh screen in partial mode
+    // display.displayWindow(0, 0, display.width(), display.height());
+
+    showBattery();
+
+    // display.setTextColor(GxEPD_BLACK);
+    // display.setCursor(240, 12);
+    // display.print(readBattery());
+
+    display.displayWindow(0, 0, display.width(), display.height());
+
+    oldCO2Value = co2;
+    oldTempValue = temp;
+    oldHumiValue = hum;
+
+    Serial.print("-->[EINK] Time used to showValues: ");
+    Serial.println(timer.read());
+}
+
+void showPages() {
+    display.setRotation(0);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setTextColor(GxEPD_BLACK);
+    display.clearScreen(0);  // black
+    display.setFullWindow();
+    display.fillScreen(GxEPD_WHITE);
+    display.setCursor(0, 10);
+    if (display.width() >= 300) {
+        display.print("would need ");
+        display.print(display.pages());
+        display.println(" pages of height ");
+        display.print(display.pageHeight());
+    } else {
+        display.println("would need");
+        display.print(display.pages());
+        display.println(" pages of");
+        display.print("height ");
+        display.print(display.pageHeight());
+    }
+    display.display(false);  // full update
+}
+
+void initDisplay() {
+    SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
+    display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+
+    Serial.printf("-->[EINK] Display hasPartialUpdate %d\n", display.epd2.hasPartialUpdate);
+    Serial.printf("-->[EINK] Display hasFastPartialUpdate %d\n", display.epd2.hasFastPartialUpdate);
+
+    if (display.pages() > 1) {
+        delay(100);
+        Serial.print("pages = ");
+        Serial.print(display.pages());
+        Serial.print(" page height = ");
+        Serial.println(display.pageHeight());
+        delay(1000);
+        showPages();
+        display.hibernate();
+    }
+
+    // Set default options to draw
+  display.setRotation(1);
+  display.setFont(&SmallFont);
+  display.setTextColor(GxEPD_BLACK);
+  // setElementLocations();
+
+  // Show splash screen the first time
+  // if (bootCount == 1) {
+  // displaySplashScreenLOGO();
+  // delay(1000);
+  // displaySplashScreen();
+  // delay(1000);
+  drawMainScreen();
+  // }
+
+  // // Each 25 boots do a full screen refresh
+  // if (bootCount > 1 && (bootCount % bootsToFullUpdate == 0)) {
+  //     display.fillScreen(GxEPD_WHITE);
+  //     display.display();
+  //     drawMainScreen();
+  // }
+  // DisplayInititialized = true;
+  display.hibernate();
+}
+
+void displayShowValues(bool forceRedraw = false) {
+    if (forceRedraw) {
+        // tft.fillScreen(TFT_BLACK);
+    }
+    drawMainScreen();
+    showValues();
+    // showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
+    // showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
+    // showTemperature(temp, elementPosition.tempX, elementPosition.tempY, forceRedraw);
+    // showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
+    // showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
+    // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
+    // showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    // showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    // showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    // display.hibernate();
+    forceRedraw = false;
+}
+
+#endif  // SUPPORT_EINK
+#endif  // CO2_Gadget_EINK_h

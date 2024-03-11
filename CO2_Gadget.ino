@@ -161,6 +161,12 @@ RTC_DATA_ATTR deepSleepData_t deepSleepData;
 #include <FS.h>
 #include <SPIFFS.h>
 
+#ifdef TIMEDEBUG
+#include "Timer.h"
+Timer timer;
+Timer timerAwake;
+#endif
+
 // Stream& miSerialPort = Serial;
 
 enum notificationTypes { notifyNothing,
@@ -169,7 +175,7 @@ enum notificationTypes { notifyNothing,
                          notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#if (!SUPPORT_OLED && !SUPPORT_TFT && !SUPPORT_EINK)
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
@@ -244,6 +250,15 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*****************************************************************************************************/
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               INCLUDE EINK DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#if defined SUPPORT_EINK
+#include <CO2_Gadget_EINK.h>
 #endif
 
 /*****************************************************************************************************/
@@ -627,14 +642,14 @@ void setup() {
 
         Serial.printf("-->[STUP] Starting up...\n\n");
 
-        initImprov();
-        initPreferences();
-        initBattery();
-        initGPIO();
-        initNeopixel();
-        initBuzzer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-        initDisplay();
+    initImprov();
+    initPreferences();
+    initBattery();
+    initGPIO();
+    initNeopixel();
+    initBuzzer();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    initDisplay();
 #endif
 #ifdef SUPPORT_BLE
         initBLE();
