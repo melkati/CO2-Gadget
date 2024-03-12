@@ -111,13 +111,17 @@ void toDeepSleep() {
     deepSleepData.lowPowerMode = sensors.getLowPowerMode();
     // deepSleepData.co2Sensor = sensors.getMainDeviceSelected();
 
+    // Pull up pin 13 to put flash memory into deep sleep
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+    // gpio_hold_en(gpio_num_t(13));
+
     esp_deep_sleep_disable_rom_logging();
     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), 0);  // 1 = High, 0 = Low
     esp_sleep_enable_timer_wakeup(timeBetweenDeepSleep * 1000000);
     delay(10);
-    // gpio_deep_sleep_hold_en();
+    gpio_deep_sleep_hold_en();
     esp_deep_sleep_start();
-    // esp_deep_sleep(timeBetweenDeepSleep * 1000000);
 }
 
 bool isDataReadySingleShot() {
@@ -155,6 +159,13 @@ void doDeepSleepWiFiConnect() {
     doDeepSleepMQTTConnect();
 #endif
     deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
+}
+
+void displayFromDeepSleep() {
+#ifdef SUPPORT_EINK
+    initDisplayFromDeepSleep();
+    displayShowValues();
+#endif
 }
 
 void fromDeepSleepTimer() {
@@ -216,6 +227,7 @@ void fromDeepSleepTimer() {
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
             } else {
+                displayFromDeepSleep();
 #ifdef SUPPORT_MQTT
                 if (WiFi.status() == WL_CONNECTED) {
                     Serial.printf("-->[DEEP] MQTT connected. Publishing measurements.\n");
@@ -237,6 +249,9 @@ void fromDeepSleepTimer() {
                 Serial.printf("-->[DEEP] CO2: %d CO2temp: %.2f CO2humi: %.2f\n", co2, temp, hum);
 #endif
             }
+
+            turnOffDisplay();
+            displaySleep(true);
             toDeepSleep();
 
             break;

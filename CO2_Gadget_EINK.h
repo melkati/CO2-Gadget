@@ -156,13 +156,24 @@ void setElementLocations() {
 }
 
 void setDisplayBrightness(uint32_t newBrightness) {
-    Serial.printf("-->[EINK] Setting display brightness value at %d\n", newBrightness);
+    Serial.printf("-->[EINK] Setting display brightness value at %d (ignore)\n", newBrightness);
     // display.setContrast(newBrightness);
     // actualDisplayBrightness = newBrightness;
 }
 
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
+}
+
+void displaySleep(bool value)  // https://github.com/Bodmer/TFT_eSPI/issues/715
+{
+    display.hibernate();
+    if (value) {
+        // display.powerOff();  // Send command to put the display to sleep.
+        // delay(150);              // Delay for shutdown time before another command can be sent.
+    } else {
+        ;  // This sends the wake up command and initialises the display
+    }
 }
 
 void drawScreenCenterText(const String text) {
@@ -266,9 +277,9 @@ void showBattery() {
     }
 }
 
-void drawMainScreen() {
+void drawMainScreen(bool force = false) {
     static uint16_t drawTimes = 0;
-    if (drawTimes > 0) {
+    if ((!force) && (drawTimes > 0)) {
         return;
     }
     timer.start();
@@ -302,9 +313,9 @@ void drawMainScreen() {
 }
 
 void showValues() {
-    static uint16_t oldCO2Value = 0;
-    static float oldTempValue = 0;
-    static float oldHumiValue = 0;
+    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
+    RTC_DATA_ATTR static float oldTempValue = 0;
+    RTC_DATA_ATTR static float oldHumiValue = 0;
 
     if (oldCO2Value == co2 && oldTempValue == temp && oldHumiValue == hum) {
         return;
@@ -381,9 +392,31 @@ void showPages() {
     display.display(false);  // full update
 }
 
-void initDisplay() {
+void initDisplayFromDeepSleep() {
+    SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
+    display.init(115200, false, 2, false);
+    
+    // Set default options to draw
+    display.setRotation(1);
+    display.setFont(&SmallFont);
+    display.setTextColor(GxEPD_BLACK);
+    display.setFullWindow();
+    // display.setPartialWindow(0, 0, display.width(), display.height());
+
+    drawMainScreen(true);
+}
+
+void initDisplay(bool fastMode = false) {
+    if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+
+    // Set default options to draw
+    display.setRotation(1);
+    display.setFont(&SmallFont);
+    display.setTextColor(GxEPD_BLACK);
+    display.setFullWindow();
+    display.setPartialWindow(0, 0, display.width(), display.height());
 
     Serial.printf("-->[EINK] Display hasPartialUpdate %d\n", display.epd2.hasPartialUpdate);
     Serial.printf("-->[EINK] Display hasFastPartialUpdate %d\n", display.epd2.hasFastPartialUpdate);
@@ -399,36 +432,32 @@ void initDisplay() {
         display.hibernate();
     }
 
-    // Set default options to draw
-  display.setRotation(1);
-  display.setFont(&SmallFont);
-  display.setTextColor(GxEPD_BLACK);
-  // setElementLocations();
+    // setElementLocations();
 
-  // Show splash screen the first time
-  // if (bootCount == 1) {
-  // displaySplashScreenLOGO();
-  // delay(1000);
-  // displaySplashScreen();
-  // delay(1000);
-  drawMainScreen();
-  // }
+    // Show splash screen the first time
+    // if (bootCount == 1) {
+    // displaySplashScreenLOGO();
+    // delay(1000);
+    // displaySplashScreen();
+    // delay(1000);
+    drawMainScreen();
+    // }
 
-  // // Each 25 boots do a full screen refresh
-  // if (bootCount > 1 && (bootCount % bootsToFullUpdate == 0)) {
-  //     display.fillScreen(GxEPD_WHITE);
-  //     display.display();
-  //     drawMainScreen();
-  // }
-  // DisplayInititialized = true;
-  display.hibernate();
+    // // Each 25 boots do a full screen refresh
+    // if (bootCount > 1 && (bootCount % bootsToFullUpdate == 0)) {
+    //     display.fillScreen(GxEPD_WHITE);
+    //     display.display();
+    //     drawMainScreen();
+    // }
+    // DisplayInititialized = true;
+    display.hibernate();
 }
 
 void displayShowValues(bool forceRedraw = false) {
     if (forceRedraw) {
         // tft.fillScreen(TFT_BLACK);
     }
-    drawMainScreen();
+    // drawMainScreen();
     showValues();
     // showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
     // showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);

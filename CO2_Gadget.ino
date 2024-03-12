@@ -113,7 +113,7 @@ uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user t
 bool deepSleepEnabled = true;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeBetweenDeepSleep = 60;
+uint64_t timeBetweenDeepSleep = 15;
 uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
 
 typedef struct {
@@ -552,7 +552,7 @@ void fromDeepSleepRTC_IO() {
     Wire.begin();
     sensors.scd4x.begin(Wire);
 #endif
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT) || defined(SUPPORT_EINK)
     error = sensors.scd4x.measureSingleShot(true);
     initDisplay(true);
     unsigned long previousMillis = millis();
