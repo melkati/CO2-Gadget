@@ -161,9 +161,9 @@ void doDeepSleepWiFiConnect() {
     deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
 }
 
-void displayFromDeepSleep() {
+void displayFromDeepSleep(bool forceRedraw = false) {
 #ifdef SUPPORT_EINK
-    initDisplayFromDeepSleep();
+    initDisplayFromDeepSleep(forceRedraw);
     displayShowValues();
 #endif
 }
@@ -176,6 +176,9 @@ void fromDeepSleepTimer() {
     float humidity = 0;
 
     --deepSleepData.cyclesToWiFiConnect;
+    --deepSleepData.cyclesToRedrawDisplay;
+    Serial.printf("-->[DEEP] Cycles to redraw display: %d\n", deepSleepData.cyclesToRedrawDisplay);
+
     // restoreGPIOConfig();
 
     // Set lowPowerMode using the correct type
@@ -227,22 +230,11 @@ void fromDeepSleepTimer() {
             if (error != 0) {
                 Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
             } else {
-                displayFromDeepSleep();
+                displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
 #ifdef SUPPORT_MQTT
                 if (WiFi.status() == WL_CONNECTED) {
                     Serial.printf("-->[DEEP] MQTT connected. Publishing measurements.\n");
-                    // publishIntMQTT("/co2", co2);
-                    // publishFloatMQTT("/temp", temp);
-                    // publishFloatMQTT("/humi", hum);
                     publishMQTT(true);
-                    // publishMeasurementsMQTT();
-                    // publishMQTTAlarms();
-                    // publishMQTTSystemData();
-                    // unsigned long startTime = millis();
-                    // while (millis() - startTime < 10000) {
-                    //     mqttClient.loop();
-                    //     delay(100);
-                    // }
                 }
 #endif
 #ifdef DEEP_SLEEP_DEBUG

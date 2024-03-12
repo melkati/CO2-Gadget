@@ -16,6 +16,8 @@
 // clang-format on
 #include <GxEPD2_BW.h>
 
+uint16_t deepSleepReadrawEach = 5;
+
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <NotoSans_Bold48pt7b.h>
@@ -392,24 +394,38 @@ void showPages() {
     display.display(false);  // full update
 }
 
-void initDisplayFromDeepSleep() {
+void initDisplayFromDeepSleep(bool forceRedraw = false) {
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, false, 2, false);
-    
+
     // Set default options to draw
     display.setRotation(1);
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    display.setFullWindow();
+    // display.setFullWindow();
     // display.setPartialWindow(0, 0, display.width(), display.height());
 
-    drawMainScreen(true);
+    // Each deepSleepReadrawEach boots do a full screen refresh
+    if (forceRedraw) {        
+        Serial.printf("-->[EINK] Initializing display from deep sleep with force redraw\n");
+        display.fillScreen(GxEPD_WHITE);
+        display.display();
+        drawMainScreen(true);
+        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+    } else {
+        display.setPartialWindow(0, 0, display.width(), display.height());
+        display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
+        display.displayWindow(0, 0, display.width(), display.height());
+        drawMainScreen(true);
+    }
 }
 
 void initDisplay(bool fastMode = false) {
     if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+
+    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
 
     // Set default options to draw
     display.setRotation(1);

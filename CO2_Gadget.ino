@@ -109,12 +109,13 @@ uint16_t co2RedRange = 1000;
 uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 
 // Variables for deep sleep
-uint64_t waitToGoDeepSleepOnFirstBoot = 15000;  // Give an opportunity to user to interact with the device before going to deep sleep
+uint64_t waitToGoDeepSleepOnFirstBoot = 60000;  // Give an opportunity to user to interact with the device before going to deep sleep
 bool deepSleepEnabled = true;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeBetweenDeepSleep = 15;
+uint64_t timeBetweenDeepSleep = 60;
 uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
+uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
 
 typedef struct {
     uint16_t co2Sensor;
@@ -122,6 +123,7 @@ typedef struct {
     uint32_t gpioConfig;
     bool waitingForDataReady;
     uint16_t cyclesToWiFiConnect;
+    uint16_t cyclesToRedrawDisplay;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -703,6 +705,7 @@ void loop() {
         if ((sensors.getLowPowerMode() != NO_LOWPOWER)) {
             if (millis() - startTimerToDeepSleep < waitToGoDeepSleepOnFirstBoot) {
                 Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+                Serial.flush();
             } else {
                 turnOffDisplay();
                 displaySleep(true);

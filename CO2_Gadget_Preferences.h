@@ -175,6 +175,8 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);                // Time between consecutive beeps
 
+    cyclesToRedrawDisplay = preferences.getUInt("cyc2RedrawDis", 5);
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
