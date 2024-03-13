@@ -158,7 +158,7 @@ void setElementLocations() {
 }
 
 void setDisplayBrightness(uint32_t newBrightness) {
-    Serial.printf("-->[EINK] Setting display brightness value at %d (ignore)\n", newBrightness);
+    Serial.printf("-->[EINK] Setting display brightness value at %d (ignore for e-Ink)\n", newBrightness);
     // display.setContrast(newBrightness);
     // actualDisplayBrightness = newBrightness;
 }

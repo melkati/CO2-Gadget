@@ -117,8 +117,21 @@ uint64_t timeBetweenDeepSleep = 60;
 uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
 uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
 
+// Define enum for sensors
+typedef enum {
+    CO2Sensor_NONE = -1,
+    CO2Sensor_SCD30 = 1,
+    CO2Sensor_SCD40 = 2,
+    CO2Sensor_SCD41 = 3,
+    CO2Sensor_MHZ19 = 4,
+    CO2Sensor_CM1106 = 5,
+    CO2Sensor_CM1106SL_NS = 6,
+    CO2Sensor_SENSEAIRS8 = 7,
+    CO2Sensor_DEMO = 127
+} CO2SENSORS_t;
+
 typedef struct {
-    uint16_t co2Sensor;
+    CO2SENSORS_t co2Sensor;
     uint16_t lowPowerMode;
     uint32_t gpioConfig;
     bool waitingForDataReady;
@@ -534,84 +547,11 @@ void utilityLoop() {
     }
 }
 
-void fromDeepSleepRTC_IO() {
-    uint16_t error = 0;
-    uint16_t co2value = 0;
-    float temperature = 0;
-    float humidity = 0;
-
-    if (isButtonPressedOnWakeUp()) {
-        initDisplay(true);
-        Serial.println("-->[DEEP] Button pressed on wakeup. Entering interactive mode.");
-        delay(1000);
-        return;
-    }
-
-    // Re-Initialize I2C bus
-#ifdef I2C_SDA &&defined(I2C_SCL)
-    Wire.begin(I2C_SDA, I2C_SCL);
-#else
-    Wire.begin();
-    sensors.scd4x.begin(Wire);
-#endif
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT) || defined(SUPPORT_EINK)
-    error = sensors.scd4x.measureSingleShot(true);
-    initDisplay(true);
-    unsigned long previousMillis = millis();
-    while (!isDataReadySingleShot()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("#");
-            delay(10);
-        }
-    }
-    error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
-    if (error != 0) {
-        Serial.printf("-->[DEEP] readMeasurement() error: %d\n", error);
-    } else {
-        co2 = co2value;
-        temp = temperature;
-        hum = humidity;
-        Serial.printf("-->[DEEP] CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%\n", co2, temp, hum);
-    }
-    displayShowValues(true);
-    delay(5000);
-    toDeepSleep();
-#endif
-}
-
-void fromDeepSleep() {    
-    esp_sleep_wakeup_cause_t wakeup_reason;
-    wakeup_reason = esp_sleep_get_wakeup_cause();
-#ifdef DEEP_SLEEP_DEBUG
-    switch (wakeup_reason) {
-        case ESP_SLEEP_WAKEUP_EXT0:
-            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
-            fromDeepSleepRTC_IO();
-            break;
-        case ESP_SLEEP_WAKEUP_EXT1:
-            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
-            break;
-        case ESP_SLEEP_WAKEUP_TIMER:
-            Serial.println("-->[DEEP] Wakeup caused by timer");
-            fromDeepSleepTimer();
-            break;
-        case ESP_SLEEP_WAKEUP_TOUCHPAD:
-            Serial.println("-->[DEEP] Wakeup caused by touchpad");
-            break;
-        case ESP_SLEEP_WAKEUP_ULP:
-            Serial.println("-->[DEEP] Wakeup caused by ULP program");
-            break;
-        default:
-            Serial.printf("-->[DEEP] Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-            break;
-    }
-#endif
-}
-
 // application entry point
 void setup() {
+#ifdef TIMEDEBUG
+    timerAwake.start();
+#endif
     // Manually set los power mode until implementation in preferences
     // Choose one of enum LowPowerMode NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
     sensors.setLowPowerMode(MEDIUM_LOWPOWER);
@@ -644,14 +584,14 @@ void setup() {
 
         Serial.printf("-->[STUP] Starting up...\n\n");
 
-    initImprov();
-    initPreferences();
-    initBattery();
-    initGPIO();
-    initNeopixel();
-    initBuzzer();
+        initImprov();
+        initPreferences();
+        initBattery();
+        initGPIO();
+        initNeopixel();
+        initBuzzer();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-    initDisplay();
+        initDisplay();
 #endif
 #ifdef SUPPORT_BLE
         initBLE();
@@ -704,8 +644,8 @@ void loop() {
     } else {
         if ((sensors.getLowPowerMode() != NO_LOWPOWER)) {
             if (millis() - startTimerToDeepSleep < waitToGoDeepSleepOnFirstBoot) {
-                Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
-                Serial.flush();
+                // Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+                // Serial.flush();
             } else {
                 turnOffDisplay();
                 displaySleep(true);
