@@ -157,6 +157,8 @@ void setElementLocations() {
 #endif
 }
 
+void drawMainScreen(bool force = false);  // Forward declaration
+
 void setDisplayBrightness(uint32_t newBrightness) {
     Serial.printf("-->[EINK] Setting display brightness value at %d (ignore for e-Ink)\n", newBrightness);
     // display.setContrast(newBrightness);
@@ -258,119 +260,6 @@ void drawHoritzontalCenterText(int16_t y, const String text) {
     display.print(text);
 }
 
-void showBattery() {
-    if (workingOnExternalPower) {
-        display.fillRect(display.width() - 27, 2, 26, 12, GxEPD_WHITE);  // Delete battery icon
-        return;
-    }
-    display.drawRect(display.width() - 27, 2, 26, 12, GxEPD_BLACK);  // Battery outter rectangle
-    display.drawLine(display.width() - 2, 4, display.width(), 10, GxEPD_BLACK);
-    if (batteryLevel > 20) {
-        display.fillRect(display.width() - 25, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 40) {
-        display.fillRect(display.width() - 19, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 60) {
-        display.fillRect(display.width() - 13, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 80) {
-        display.fillRect(display.width() - 7, 4, 4, 10, GxEPD_BLACK);
-    }
-}
-
-void drawMainScreen(bool force = false) {
-    static uint16_t drawTimes = 0;
-    if ((!force) && (drawTimes > 0)) {
-        return;
-    }
-    timer.start();
-    drawTimes++;
-
-    // Enable partial refresh
-    display.setPartialWindow(0, 0, display.width(), display.height());
-    Serial.printf("-->[EINK] Drawing main screen at %dx%d\n", display.width(), display.height());
-
-    // Clear screen
-    display.fillScreen(GxEPD_WHITE);
-
-    // Draw labels and field rectangles
-    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
-    display.setRotation(1);
-    display.setTextColor(GxEPD_BLACK);
-    display.setCursor(0, 12);
-    display.print("TEMP: ");
-    display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
-    display.print("HUM: ");
-    display.setRotation(4);
-    display.setCursor((display.width() / 2) - 20, display.height() - 3);
-    display.print("PPM");
-    display.setRotation(1);
-
-    // Refresh screen in partial mode
-    display.displayWindow(0, 0, display.width(), display.height());
-
-    Serial.print("-->[EINK] Time used to drawMainScreen: \t");
-    Serial.println(timer.read());
-}
-
-void showValues() {
-    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
-    RTC_DATA_ATTR static float oldTempValue = 0;
-    RTC_DATA_ATTR static float oldHumiValue = 0;
-
-    if (oldCO2Value == co2 && oldTempValue == temp && oldHumiValue == hum) {
-        return;
-    }
-
-    // Serial.printf("-->[EINK] Total heap: %d\n", ESP.getHeapSize());
-    // Serial.printf("-->[EINK] Free heap: %d\n", ESP.getFreeHeap());
-
-    timer.start();
-
-    // Erase old values
-    display.setTextColor(GxEPD_WHITE);
-    display.setFont(&BigFont);
-    display.setTextSize(1);
-    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
-    display.setTextSize(1);
-    display.setFont(&SmallFont);
-    display.setCursor(55, 12);
-    display.printf("%.1fºC", oldTempValue);
-    display.setCursor((display.width()) - 5 * 9 - 35, 12);
-    display.printf("%.0f%%", oldHumiValue);
-
-    // Show values
-    display.setTextColor(GxEPD_BLACK);
-    display.setFont(&BigFont);
-    display.setTextSize(1);
-    drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
-    display.setTextSize(1);
-    display.setFont(&SmallFont);
-    display.setCursor(55, 12);
-    display.printf("%.1fºC", temp);
-    display.setCursor((display.width()) - 5 * 9 - 35, 12);
-    display.printf("%.0f%%", hum);
-
-    // Refresh screen in partial mode
-    // display.displayWindow(0, 0, display.width(), display.height());
-
-    showBattery();
-
-    // display.setTextColor(GxEPD_BLACK);
-    // display.setCursor(240, 12);
-    // display.print(readBattery());
-
-    display.displayWindow(0, 0, display.width(), display.height());
-
-    oldCO2Value = co2;
-    oldTempValue = temp;
-    oldHumiValue = hum;
-
-    Serial.print("-->[EINK] Time used to showValues: ");
-    Serial.println(timer.read());
-}
-
 void showPages() {
     display.setRotation(0);
     display.setFont(&FreeMonoBold9pt7b);
@@ -406,7 +295,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     // display.setPartialWindow(0, 0, display.width(), display.height());
 
     // Each deepSleepReadrawEach boots do a full screen refresh
-    if (forceRedraw) {        
+    if (forceRedraw) {
         Serial.printf("-->[EINK] Initializing display from deep sleep with force redraw\n");
         display.fillScreen(GxEPD_WHITE);
         display.display();
@@ -469,7 +358,149 @@ void initDisplay(bool fastMode = false) {
     display.hibernate();
 }
 
+void showBattery() {
+    if (workingOnExternalPower) {
+        display.fillRect(display.width() - 27, 2, 26, 12, GxEPD_WHITE);  // Delete battery icon
+        return;
+    }
+    display.drawRect(display.width() - 27, 2, 26, 12, GxEPD_BLACK);  // Battery outter rectangle
+    display.drawLine(display.width() - 2, 4, display.width(), 10, GxEPD_BLACK);
+    if (batteryLevel > 20) {
+        display.fillRect(display.width() - 25, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 40) {
+        display.fillRect(display.width() - 19, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 60) {
+        display.fillRect(display.width() - 13, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 80) {
+        display.fillRect(display.width() - 7, 4, 4, 10, GxEPD_BLACK);
+    }
+}
+
+void drawMainScreen(bool force) {
+    RTC_DATA_ATTR static uint16_t drawTimes = 0;
+    if ((!force) && (drawTimes > 0)) {
+        return;
+    }
+    timer.start();
+    drawTimes++;
+
+    // Enable partial refresh
+    display.setPartialWindow(0, 0, display.width(), display.height());
+    Serial.printf("-->[EINK] Drawing main screen at %dx%d\n", display.width(), display.height());
+
+    // Clear screen
+    display.fillScreen(GxEPD_WHITE);
+
+    // Draw labels and field rectangles
+    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    display.setRotation(1);
+    display.setTextColor(GxEPD_BLACK);
+    display.setCursor(0, 12);
+    display.print("TEMP: ");
+    display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
+    display.print("HUM: ");
+    display.setRotation(4);
+    display.setCursor((display.width() / 2) - 20, display.height() - 3);
+    display.print("PPM");
+    display.setRotation(1);
+
+    // Refresh screen in partial mode
+    display.displayWindow(0, 0, display.width(), display.height());
+
+    Serial.print("-->[EINK] Time used to drawMainScreen: \t");
+    Serial.println(timer.read());
+}
+
+void showValues() {
+    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
+    RTC_DATA_ATTR static float oldTempValue = 0;
+    RTC_DATA_ATTR static float oldHumiValue = 0;
+
+    if (oldCO2Value == co2 && oldTempValue == temp && oldHumiValue == hum) {
+        return;
+    }
+
+    // Erase old values
+    display.setTextColor(GxEPD_WHITE);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
+    display.setTextSize(1);
+    display.setFont(&SmallFont);
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    display.printf("%.0f%%", oldHumiValue);
+
+    // Show values
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
+    display.setTextSize(1);
+    display.setFont(&SmallFont);
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    display.printf("%.0f%%", hum);
+
+    // Refresh screen in partial mode
+    // display.displayWindow(0, 0, display.width(), display.height());
+
+    showBattery();
+
+    // display.setTextColor(GxEPD_BLACK);
+    // display.setCursor(240, 12);
+    // display.print(readBattery());
+
+    display.displayWindow(0, 0, display.width(), display.height());
+
+    oldCO2Value = co2;
+    oldTempValue = temp;
+    oldHumiValue = hum;
+}
+
+void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline, bool forceRedraw) {
+    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
+    if (!forceRedraw && (co2 == oldCO2Value)) return;
+    if ((co2 == 0) || (co2 > 9999)) return;
+    int16_t tbx, tby;
+    uint16_t tbw, tbh;
+
+    // full window mode is the initial mode, set it anyway
+    display.setFullWindow();
+    display.setRotation(1);
+    display.setFont(&BigFont);
+    display.setTextColor(GxEPD_BLACK);
+
+    display.getTextBounds(String(oldCO2Value), 0, 0, &tbx, &tby, &tbw, &tbh);
+    Serial.printf("-->[EINK] CO2 OLD text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", oldCO2Value, tbx, tby, tbw, tbh);
+
+    uint16_t utx = ((display.width() - tbw) / 2) - tbx;
+    uint16_t uty = ((display.height() / 4) - tbh / 2) - tby - 30;
+    display.setTextColor(GxEPD_WHITE);
+    display.setCursor(utx, uty);
+    display.print(String(oldCO2Value));
+
+    display.getTextBounds(String(co2), 0, 0, &tbx, &tby, &tbw, &tbh);
+    Serial.printf("-->[EINK] CO2 NEW text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", co2, tbx, tby, tbw, tbh);
+
+    uint16_t umx = ((display.width() - tbw) / 2) - tbx;
+    uint16_t umy = ((display.height() * 3 / 4) - tbh / 2) - tby - 30;
+    display.setTextColor(GxEPD_BLACK);
+    display.setCursor(umx, umy);
+    display.print(String(co2));
+
+    display.display(true);
+
+    oldCO2Value = co2;
+}
+
 void displayShowValues(bool forceRedraw = false) {
+    timer.start();
     if (forceRedraw) {
         // tft.fillScreen(TFT_BLACK);
     }
@@ -486,6 +517,8 @@ void displayShowValues(bool forceRedraw = false) {
     // showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
+    Serial.print("-->[EINK] Time used to showValues: ");
+    Serial.println(timer.read());
     forceRedraw = false;
 }
 

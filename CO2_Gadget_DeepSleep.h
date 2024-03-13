@@ -247,7 +247,8 @@ void fromDeepSleepTimer() {
 
     --deepSleepData.cyclesToWiFiConnect;
     --deepSleepData.cyclesToRedrawDisplay;
-    Serial.printf("-->[DEEP] Cycles to redraw display: %d\n", deepSleepData.cyclesToRedrawDisplay);
+    Serial.printf("-->[DEEP] Cycles left to redraw display: %d\n", deepSleepData.cyclesToRedrawDisplay);
+    Serial.printf("-->[DEEP] Cycles left to connect to WiFi: %d\n", deepSleepData.cyclesToWiFiConnect);
 
     // restoreGPIOConfig();
 

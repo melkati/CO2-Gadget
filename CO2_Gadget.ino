@@ -564,7 +564,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
     // if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
-        if (esp_reset_reason() == ESP_RST_DEEPSLEEP) {
+    if (esp_reset_reason() == ESP_RST_DEEPSLEEP) {
         fromDeepSleep();
     } else {
         delay(50);
@@ -587,43 +587,43 @@ void setup() {
         }
 
         Serial.printf("-->[STUP] Starting up...\n\n");
+    }
 
-        initImprov();
-        initPreferences();
-        initBattery();
-        initGPIO();
-        initNeopixel();
-        initBuzzer();
+    initImprov();
+    initPreferences();
+    initBattery();
+    initGPIO();
+    initNeopixel();
+    initBuzzer();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-        initDisplay();
+    initDisplay();
 #endif
 #ifdef SUPPORT_BLE
-        initBLE();
+    initBLE();
 #endif
-        initSensors();
-        initWifi();
-        wifiChanged = false;
+    initSensors();
+    initWifi();
+    wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
-        initESPNow();
+    initESPNow();
 #endif
 #ifdef SUPPORT_MQTT
-        initMQTT();
+    initMQTT();
 #endif
-        menu_init();
-        initButtons();
-        if (WiFi.status() == WL_CONNECTED) {
-            Serial.println("");
-            printLargeASCII(WiFi.localIP().toString().c_str());
-            Serial.println("");
-        }
-        WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
-        Serial.println("-->[STUP] Ready.");
-        timeInitializationCompleted = millis();
-        startTimerToDeepSleep = millis();
-        initDeepSleep();
-        if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
-            Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
-        }
+    menu_init();
+    initButtons();
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("");
+        printLargeASCII(WiFi.localIP().toString().c_str());
+        Serial.println("");
+    }
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+    Serial.println("-->[STUP] Ready.");
+    timeInitializationCompleted = millis();
+    startTimerToDeepSleep = millis();
+    initDeepSleep();
+    if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
+        Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
     }
 }
 
