@@ -310,10 +310,7 @@ void fromDeepSleepTimer() {
 }
 
 void fromDeepSleepRTC_IO() {
-    uint16_t error = 0;
-    uint16_t co2value = 0;
-    float temperature = 0;
-    float humidity = 0;
+    return;
 
     if (isButtonPressedOnWakeUp()) {
         initDisplay(true);
@@ -321,39 +318,6 @@ void fromDeepSleepRTC_IO() {
         delay(1000);
         return;
     }
-
-    // Re-Initialize I2C bus
-#ifdef I2C_SDA &&defined(I2C_SCL)
-    Wire.begin(I2C_SDA, I2C_SCL);
-#else
-    Wire.begin();
-    sensors.scd4x.begin(Wire);
-#endif
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT) || defined(SUPPORT_EINK)
-    error = sensors.scd4x.measureSingleShot(true);
-    initDisplay(true);
-    unsigned long previousMillis = millis();
-    while (!isDataReadySingleShot()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("#");
-            delay(10);
-        }
-    }
-    error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
-    if (error != 0) {
-        Serial.printf("-->[DEEP] readMeasurement() error: %d\n", error);
-    } else {
-        co2 = co2value;
-        temp = temperature;
-        hum = humidity;
-        Serial.printf("-->[DEEP] CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%\n", co2, temp, hum);
-    }
-    displayShowValues(true);
-    delay(5000);
-    toDeepSleep();
-#endif
 }
 
 void fromDeepSleep() {
@@ -363,32 +327,44 @@ void fromDeepSleep() {
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("");
     Serial.println("");
+#endif
     switch (wakeup_reason) {
         case ESP_SLEEP_WAKEUP_EXT0:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
-            fromDeepSleepRTC_IO();
+        #endif
+            // fromDeepSleepRTC_IO();
             break;
         case ESP_SLEEP_WAKEUP_EXT1:
+            #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
+            #endif
             break;
         case ESP_SLEEP_WAKEUP_TIMER:
+            #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by timer");
+            #endif
             fromDeepSleepTimer();
+            turnOffDisplay();
+            displaySleep(true);
+            toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by touchpad");
+        #endif
             break;
         case ESP_SLEEP_WAKEUP_ULP:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by ULP program");
+        #endif
             break;
         default:
+        #ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+        #endif
             break;
     }
-#endif
-    turnOffDisplay();
-    displaySleep(true);
-    toDeepSleep();
 }
 
 void initDeepSleep() {

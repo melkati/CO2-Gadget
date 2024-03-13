@@ -310,7 +310,7 @@ void drawMainScreen(bool force = false) {
     // Refresh screen in partial mode
     display.displayWindow(0, 0, display.width(), display.height());
 
-    Serial.print("time used to drawMainScreen: ");
+    Serial.print("-->[EINK] Time used to drawMainScreen: \t");
     Serial.println(timer.read());
 }
 
