@@ -206,7 +206,7 @@ void setDisplayBrightness(uint16_t newBrightness) {
         else
             dif = actualDisplayBrightness - newBrightness;
 
-        Serial.printf("-->[TFT ] Change brightness %d levels", dif);
+        // Serial.printf("-->[TFT ] Change brightness %d levels", dif);
         for (i = 1; i <= dif; i++) {
             digitalWrite(TFT_BACKLIGHT, LOW);
             delayMicroseconds(20);
@@ -278,7 +278,9 @@ void initBacklight() {
     delay(20);
     digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
-    actualDisplayBrightness = 15;  // At the beginning brightness is at maximum level
+    actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
+    if (DisplayBrightness > 16)    // Prevent malfunction if upper values are stored in preferences
+        DisplayBrightness = 16;
     setDisplayBrightness(DisplayBrightness);
 #endif
 }
