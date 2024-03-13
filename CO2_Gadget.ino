@@ -563,8 +563,7 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.begin(115200);
-    // if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
-    if (esp_reset_reason() == ESP_RST_DEEPSLEEP) {
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
         fromDeepSleep();
     } else {
         delay(50);
@@ -620,9 +619,9 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     Serial.println("-->[STUP] Ready.");
     timeInitializationCompleted = millis();
-    startTimerToDeepSleep = millis();
-    initDeepSleep();
     if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
+        startTimerToDeepSleep = millis();
+        initDeepSleep();
         Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
     }
 }
@@ -642,19 +641,5 @@ void loop() {
     buttonsLoop();
     menuLoop();
     BLELoop();
-
-    if (inMenu) {
-        startTimerToDeepSleep = millis();
-    } else {
-        if ((sensors.getLowPowerMode() != NO_LOWPOWER)) {
-            if (millis() - startTimerToDeepSleep < waitToGoDeepSleepOnFirstBoot) {
-                // Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
-                // Serial.flush();
-            } else {
-                turnOffDisplay();
-                displaySleep(true);
-                toDeepSleep();
-            }
-        }
-    }
+    deepSleepLoop();    
 }

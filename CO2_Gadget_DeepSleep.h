@@ -123,9 +123,11 @@ void toDeepSleep() {
     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
 #else
     if (BTN_UP >= 0) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
     }
-    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+    if (BTN_DWN >= 0) {
+    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+    }
 #endif
     esp_sleep_enable_timer_wakeup(timeBetweenDeepSleep * 1000000);
     delay(10);
@@ -370,6 +372,24 @@ void fromDeepSleep() {
 
 void initDeepSleep() {
     deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
+    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+}
+
+void deepSleepLoop() {
+    if (inMenu) {
+        startTimerToDeepSleep = millis();
+    } else {
+        if ((sensors.getLowPowerMode() != NO_LOWPOWER)) {
+            if (millis() - startTimerToDeepSleep < waitToGoDeepSleepOnFirstBoot) {
+                // Serial.printf("-->[MAIN] Waiting to go to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+                // Serial.flush();
+            } else {
+                turnOffDisplay();
+                displaySleep(true);
+                toDeepSleep();
+            }
+        }
+    }
 }
 
 #endif  // CO2_Gadget_DeepSleep_h

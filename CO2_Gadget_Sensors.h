@@ -163,7 +163,7 @@ void initSensors() {
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
-#ifdef FORCE_USE_CM1106
+#ifdef FORCE_USE_CM1106XX
     selectedCO2Sensor = CM1106;  // Workaroud: Force CM1106 sensor for EINKBOARDDEPG0213BN until I can fix the sensor selection
 #endif
 
@@ -208,11 +208,18 @@ void initSensors() {
         } else if (selectedCO2Sensor == CM1106) {
             Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
             sensors.detectI2COnly(false);
-#ifdef FORCE_USE_CM1106
+            #ifdef CM1106_ENABLE_PIN
             pinMode(CM1106_ENABLE_PIN, OUTPUT);
             digitalWrite(CM1106_ENABLE_PIN, HIGH);
+            #endif
+            #ifdef CM1106_READY_PIN
             pinMode(CM1106_READY_PIN, INPUT);
+            #endif
+            #if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
             sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);
+            #else
+            sensors.init(CM1106);
+            #endif
             sensors.cm1106->set_working_status(CM1106_CONTINUOUS_MEASUREMENT);
             sensors.cm1106->get_measurement_period(&period, &smooth);
             Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
@@ -220,9 +227,6 @@ void initSensors() {
             sensors.cm1106->get_measurement_period(&period, &smooth);
             Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
             // sensors.cm1106->set_working_status(CM1106_SINGLE_MEASUREMENT);
-#else
-            sensors.init(CM1106);
-#endif
         } else if (selectedCO2Sensor == SENSEAIRS8) {
             Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
             sensors.detectI2COnly(false);

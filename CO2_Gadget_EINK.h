@@ -517,8 +517,10 @@ void displayShowValues(bool forceRedraw = false) {
     // showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
-    Serial.print("-->[EINK] Time used to showValues: ");
-    Serial.println(timer.read());
+    uint32_t elapsed = timer.read();
+    if (elapsed > 10) {
+        Serial.printf("-->[EINK] Time used to showValues:\t%d\n", elapsed);
+    }
     forceRedraw = false;
 }
 
