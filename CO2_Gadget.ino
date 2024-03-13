@@ -375,6 +375,9 @@ void initGPIO() {
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
     digitalWrite(RED_PIN, LOW);
+#ifdef BTN_WAKEUP
+    pinMode(BTN_WAKEUP, INPUT_PULLUP);
+#endif
 }
 
 void outputsRelays() {
