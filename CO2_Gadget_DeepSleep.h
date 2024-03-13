@@ -101,6 +101,9 @@ void restoreGPIOConfig() {
 }
 
 void toDeepSleep() {
+#ifdef TIMEDEBUG
+    Serial.printf("-->[DEEP] Time awake: %d ms\n", timerAwake.read());
+#endif
     Serial.printf("-->[DEEP] Going into deep sleep for %d seconds with LowPowerMode: %d\n", timeBetweenDeepSleep, sensors.getLowPowerMode());
     Serial.flush();
     // Experimental: Turn off green LED and display on S3 board
@@ -116,7 +119,14 @@ void toDeepSleep() {
     // gpio_hold_en(gpio_num_t(13));
 
     esp_deep_sleep_disable_rom_logging();
-    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), 0);  // 1 = High, 0 = Low
+#ifdef BTN_WAKEUP
+    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+#else
+    if (BTN_UP >= 0) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+    }
+    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+#endif
     esp_sleep_enable_timer_wakeup(timeBetweenDeepSleep * 1000000);
     delay(10);
     gpio_deep_sleep_hold_en();
@@ -203,10 +213,6 @@ void scd4xHandleFromDeepSleep() {
     } else {
         displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
     }
-
-    turnOffDisplay();
-    displaySleep(true);
-    toDeepSleep();
 }
 
 void cm1106HandleFromDeepSleep() {
@@ -214,23 +220,17 @@ void cm1106HandleFromDeepSleep() {
     digitalWrite(CM1106_ENABLE_PIN, HIGH);
     pinMode(CM1106_READY_PIN, INPUT);
     Serial.println("-->[DEEP] Waking up from deep sleep. CM1106 not supported yet");
-    #if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
+#if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
     sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);
-    #else
+#else
     sensors.init(CM1106);
-    #endif
+#endif
 
     while (true) {
         if (digitalRead(CM1106_READY_PIN) == HIGH) {
             co2 = sensors.cm1106->get_co2();
             Serial.printf("[DEEP] CO2 value: %d ppm\n", co2);
             displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
-            turnOffDisplay();
-            displaySleep(true);
-#ifdef TIMEDEBUG
-            Serial.printf("-->[DEEP] Time awake: %d ms\n", timerAwake.read());
-#endif
-            toDeepSleep();
         }
     }
 }
@@ -359,7 +359,7 @@ void fromDeepSleepRTC_IO() {
 void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
-    initButtons();
+    // initButtons();
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("");
     Serial.println("");
@@ -386,6 +386,9 @@ void fromDeepSleep() {
             break;
     }
 #endif
+    turnOffDisplay();
+    displaySleep(true);
+    toDeepSleep();
 }
 
 void initDeepSleep() {
