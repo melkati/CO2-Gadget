@@ -31,17 +31,15 @@ void printSensorsDetected() {
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
         Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
-        if (sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]) == "SCD4X") {
-            mainDeviceSelected = sensors.getSCD4xModel();
-            Serial.print(" (");
-            Serial.print(mainDeviceSelected);
-            Serial.print(")");
-        } else {
-            mainDeviceSelected = sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]);
-        }
+        mainDeviceSelected = sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]);
         Serial.print(",");
     }
     Serial.println();
+    if (mainDeviceSelected == "SCD4X") {
+        Serial.print("-->[SENS***] SCD4X Model: ");
+        mainDeviceSelected = sensors.getSCD4xModel();
+        Serial.println(mainDeviceSelected);
+    }
 }
 
 void onSensorDataOk() {
@@ -60,6 +58,59 @@ void onSensorDataOk() {
 }
 
 void onSensorDataError(const char *msg) { Serial.println(msg); }
+
+void storeSensorSelectedInRTC() {
+    if (!sensorsGetMainDeviceSelected().isEmpty()) {
+        Serial.println("-->[SENS] Storing main device selected to RTC Memory: [" + sensorsGetMainDeviceSelected() + "]");
+        if (sensorsGetMainDeviceSelected() == "SCD40") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD40;
+            Serial.println("-->[SENS-SCD4X] Sensor initialized A: CO2Sensor_SCD40");
+        }
+
+        if (sensorsGetMainDeviceSelected() == "SCD41") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD41;
+            Serial.println("-->[SENS-SCD4X] Sensor initialized B: CO2Sensor_SCD41");
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "CM1106") {
+            char softver[CM1106_LEN_SOFTVER];
+            sensors.cm1106->get_software_version(softver);
+            String softverStr(softver);
+            Serial.println("-->[SENS-CM1106] CM1106 version detected 1\t: " + softverStr);
+
+            if (softverStr.length() >= 10 && softverStr.endsWith("SL-NS")) {
+                deepSleepData.co2Sensor = CO2Sensor_CM1106SL_NS;
+                Serial.printf("-->[SENS-CM1106] CM1106 version detected 2\t: CO2Sensor_CM1106SL_NS\n");
+            } else if (softverStr.endsWith("CM")) {
+                deepSleepData.co2Sensor = CO2Sensor_CM1106;
+                Serial.printf("-->[SENS-CM1106] CM1106 version detected 3\t: CO2Sensor_CM1106\n");
+            } else {
+                deepSleepData.co2Sensor = CO2Sensor_NONE;
+                Serial.printf("-->[SENS-CM1106] CM1106 version detected 4\t: CO2Sensor_NONE\n");
+            }
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "SCD30") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD30;
+            Serial.println("-->[SENS-SCD30] Sensor initialized G\t: CO2Sensor_SCD30");
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "MHZ19") {
+            deepSleepData.co2Sensor = CO2Sensor_MHZ19;
+            Serial.println("-->[SENS] Sensor initialized C\t: CO2Sensor_MHZ19");
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "SENSEAIRS8") {
+            deepSleepData.co2Sensor = CO2Sensor_SENSEAIRS8;
+            Serial.println("-->[SENS] Sensor initialized B\t: CO2Sensor_SENSEAIRS8");
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "NONE") {
+            deepSleepData.co2Sensor = CO2Sensor_NONE;
+            Serial.println("-->[SENS] Sensor initialized E\t: CO2Sensor_NONE");
+        }
+    }
+}
 
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
@@ -180,56 +231,7 @@ void initSensors() {
     }
 
     printSensorsDetected();
-
-    if (!sensorsGetMainDeviceSelected().isEmpty()) {
-        if ((sensorsGetMainDeviceSelected()) == "SCD4X") {
-            if (sensors.getSCD4xModel() == "SCD40") {
-                deepSleepData.co2Sensor = CO2Sensor_SCD40;
-                Serial.println("-->[SENS-SCD4X] Sensor initialized A: CO2Sensor_SCD40");
-            } else {
-                deepSleepData.co2Sensor = CO2Sensor_SCD41;
-                Serial.println("-->[SENS-SCD4X] Sensor initialized B: CO2Sensor_SCD41");
-            }
-        }
-
-        if ((sensorsGetMainDeviceSelected()) == "CM1106") {
-            char softver[CM1106_LEN_SOFTVER];
-            sensors.cm1106->get_software_version(softver);
-            String softverStr(softver);  // Fix: Changed the conversion to String using the String constructor
-            Serial.println("-->[SENS-CM1106] CM1106 version detected 1\t: " + softverStr);
-
-            if (softverStr.length() >= 10 && softverStr.endsWith("SL-NS")) {
-                deepSleepData.co2Sensor = CO2Sensor_CM1106SL_NS;
-                Serial.printf("-->[SENS-CM1106] CM1106 version detected 2\t: CO2Sensor_CM1106SL_NS\n");
-            } else if (softverStr.endsWith("CM")) {
-                deepSleepData.co2Sensor = CO2Sensor_CM1106;
-                Serial.printf("-->[SENS-CM1106] CM1106 version detected 3\t: CO2Sensor_CM1106\n");
-            } else {
-                deepSleepData.co2Sensor = CO2Sensor_NONE;
-                Serial.printf("-->[SENS-CM1106] CM1106 version detected 4\t: CO2Sensor_NONE\n");
-            }
-        }
-
-        if ((sensorsGetMainDeviceSelected()) == "SCD30") {
-            deepSleepData.co2Sensor = CO2Sensor_SCD30;
-            Serial.println("-->[SENS-SCD30] Sensor initialized G\t: CO2Sensor_SCD30");
-        }
-
-        if ((sensorsGetMainDeviceSelected()) == "MHZ19") {
-            deepSleepData.co2Sensor = CO2Sensor_MHZ19;
-            Serial.println("-->[SENS] Sensor initialized C\t: CO2Sensor_MHZ19");
-        }
-
-        if ((sensorsGetMainDeviceSelected()) == "SENSEAIRS8") {
-            deepSleepData.co2Sensor = CO2Sensor_SENSEAIRS8;
-            Serial.println("-->[SENS] Sensor initialized B\t: CO2Sensor_SENSEAIRS8");
-        }
-
-        if ((sensorsGetMainDeviceSelected()) == "NONE") {
-            deepSleepData.co2Sensor = CO2Sensor_NONE;
-            Serial.println("-->[SENS] Sensor initialized E\t: CO2Sensor_NONE");
-        }
-    }
+    storeSensorSelectedInRTC();
 }
 
 void sensorsLoop() {
