@@ -1,7 +1,7 @@
 #ifndef CO2_Gadget_Preferences_h
 #define CO2_Gadget_Preferences_h
 
-#define DEBUG_PREFERENCES
+// #define DEBUG_PREFERENCES
 
 #include <ArduinoJson.h>
 #include <Preferences.h>

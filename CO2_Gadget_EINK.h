@@ -302,6 +302,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         drawMainScreen(true);
         deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
+        // TO-DO: Optimize this to avoid full screen refresh and save display update time
         display.setPartialWindow(0, 0, display.width(), display.height());
         display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
         display.displayWindow(0, 0, display.width(), display.height());
