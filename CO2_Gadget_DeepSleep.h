@@ -126,7 +126,7 @@ void toDeepSleep() {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
     }
     if (BTN_DWN >= 0) {
-    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
     }
 #endif
     esp_sleep_enable_timer_wakeup(timeBetweenDeepSleep * 1000000);
@@ -221,20 +221,23 @@ void cm1106HandleFromDeepSleep() {
     pinMode(CM1106_ENABLE_PIN, OUTPUT);
     digitalWrite(CM1106_ENABLE_PIN, HIGH);
     pinMode(CM1106_READY_PIN, INPUT);
-    Serial.println("-->[DEEP] Waking up from deep sleep. CM1106 not supported yet");
+    Serial.print("-->[DEEP] Waking up from deep sleep. Handling CM1106 ");
 #if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
     sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);
 #else
     sensors.init(CM1106);
 #endif
 
-    while (true) {
-        if (digitalRead(CM1106_READY_PIN) == HIGH) {
-            co2 = sensors.cm1106->get_co2();
-            Serial.printf("[DEEP] CO2 value: %d ppm\n", co2);
-            displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
-        }
+    while (digitalRead(CM1106_READY_PIN) == LOW) {
+        Serial.print("+");
+        delay(10);
     }
+
+    Serial.println("");
+
+    co2 = sensors.cm1106->get_co2();
+    Serial.printf("-->[DEEP] CO2 value: %d ppm\n", co2);
+    displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
 }
 
 void scd30HandleFromDeepSleep() {
@@ -333,39 +336,39 @@ void fromDeepSleep() {
 #endif
     switch (wakeup_reason) {
         case ESP_SLEEP_WAKEUP_EXT0:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
-        #endif
+#endif
             // fromDeepSleepRTC_IO();
             break;
         case ESP_SLEEP_WAKEUP_EXT1:
-            #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
-            #endif
+#endif
             break;
         case ESP_SLEEP_WAKEUP_TIMER:
-            #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by timer");
-            #endif
+#endif
             fromDeepSleepTimer();
             turnOffDisplay();
             displaySleep(true);
             toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by touchpad");
-        #endif
+#endif
             break;
         case ESP_SLEEP_WAKEUP_ULP:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by ULP program");
-        #endif
+#endif
             break;
         default:
-        #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
             Serial.printf("-->[DEEP] Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-        #endif
+#endif
             break;
     }
 }
