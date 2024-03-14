@@ -45,7 +45,8 @@ void readBatteryVoltage() {
         lastTimeBatteryRead = millis();
 
         // If battery voltage is more than 9% of the fully charged battery voltage (~4.58V) or if battery voltage is less than 1V (no battery connected to sense pin), then assume that the device is working on external power.
-        workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100)) || (batteryVoltageNow < 1000);
+        workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 9 / 100)) || (batteryVoltageNow < 1);
+        publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower));
 
         // publishMQTTLogData("Battery Level: " + String(batteryLevel) + "%   Battery voltage changed from: " + String(lastBatteryVoltage) + "V to " + String(batteryVoltage) + "V");
     }
