@@ -305,7 +305,7 @@ String getPreferencesAsJson() {
     doc["debugSensors"] = preferences.getBool("debugSensors", false);
     doc["displayReverse"] = preferences.getBool("displayReverse", false);
     doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-    doc["measurementInterval"] = preferences.getInt("measInterval", 10);
+    doc["measurementInterval"] = preferences.getInt("measInterval", 5);
     doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
     doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
     doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
@@ -315,7 +315,7 @@ String getPreferencesAsJson() {
     doc["showBattery"] = preferences.getBool("showBattery", true);
     doc["showCO2"] = preferences.getBool("showCO2", true);
     doc["showPM25"] = preferences.getBool("showPM25", true);
-    doc["measInterval"] = preferences.getInt("measInterval", 10);
+    doc["measInterval"] = preferences.getInt("measInterval", 5);
 
     // Buzzer preferences
     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);  // Buzzer frequency
