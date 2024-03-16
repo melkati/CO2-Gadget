@@ -109,13 +109,24 @@ uint16_t co2RedRange = 1000;
 uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 
 // Variables for deep sleep
-uint64_t waitToGoDeepSleepOnFirstBoot = 60000;  // Give an opportunity to user to interact with the device before going to deep sleep
+bool interactiveMode = false;
+uint64_t waitToGoDeepSleepOnFirstBoot = 60 * 1000;  // Give an opportunity to user to interact with the device before going to deep sleep
 bool deepSleepEnabled = true;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
 uint64_t timeBetweenDeepSleep = 60;
 uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
 uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
+
+// Define enum for state machine
+typedef enum {
+    defaultMode = 0,
+    deepSleepTimerBoot = 1,
+    deepSleepGPIOBoot = 2,
+    awaitingMeasurement = 3
+} BOOTSTATE_t;
+
+RTC_DATA_ATTR BOOTSTATE_t bootState;
 
 // Define enum for sensors
 typedef enum {
@@ -550,46 +561,46 @@ void utilityLoop() {
     }
 }
 
-// application entry point
-void setup() {
-#ifdef TIMEDEBUG
-    timerAwake.start();
-#endif
+void setDeepSleepPreferences() {  // Manually force options until it's included in preferences
     // Manually set los power mode until implementation in preferences
-    // Choose one of enum LowPowerMode NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
-    sensors.setLowPowerMode(MEDIUM_LOWPOWER);
-    deepSleepData.lowPowerMode = sensors.getLowPowerMode();
+    // Choose CO2 Gadget working power mode from one of enum LowPowerMode: NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
+    LowPowerMode initLowPowerMode = MEDIUM_LOWPOWER;
 
-    uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
-    Serial.begin(115200);
-    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
-        fromDeepSleep();
-    } else {
-        delay(50);
-        resetReason();
+    // Set CO2 Gadget working power mode
+    sensors.setLowPowerMode(initLowPowerMode);
+    deepSleepEnabled = true; // (initLowPowerMode == NO_LOWPOWER);
+    
+    // Variables for deep sleep
+    waitToGoDeepSleepOnFirstBoot = 30 * 1000;  // Give an opportunity to user to interact with the device before going to deep sleep
+    timeBetweenDeepSleep = 15;
+    deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
+    cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
+}
+
+void initNoLowPower() {
+    bootState = defaultMode;
+    interactiveMode = true;
+    sensors.setLowPowerMode(NO_LOWPOWER);
+    printResetReason();
 #ifdef AUTO_VERSION
-        Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
 #else
-        Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
+    Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
 #endif
-        Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-        Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
-        Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
-        Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
-        Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
+    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
+    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
+    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
 
-        if (ESP.getFlashChipSize() > 0) {
-            Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
-            Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
-            Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
-        }
-
-        Serial.printf("-->[STUP] Starting up...\n\n");
+    if (ESP.getFlashChipSize() > 0) {
+        Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
+        Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
+        Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
     }
 
-    initImprov();
     initPreferences();
+    initImprov();
     initBattery();
     initGPIO();
     initNeopixel();
@@ -616,30 +627,103 @@ void setup() {
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
     }
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
-    Serial.println("-->[STUP] Ready.");
     timeInitializationCompleted = millis();
-    if (sensors.getLowPowerMode() == MEDIUM_LOWPOWER || sensors.getLowPowerMode() == MAXIMUM_LOWPOWER) {
+    Serial.println("-->[STUP] Ready.");
+}
+
+void initGPIOLowPower() {
+    Serial.println("-->[STUP] Initializing for low power mode GPIO wake up");
+    interactiveMode = true;
+    initBattery();
+    initGPIO();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    // initDisplay();
+#endif
+#ifdef SUPPORT_BLE
+    initBLE();
+#endif
+    // initSensors();
+    initWifi();
+    wifiChanged = false;
+#ifdef SUPPORT_ESPNOW
+    initESPNow();
+#endif
+#ifdef SUPPORT_MQTT
+    initMQTT();
+#endif
+    menu_init();
+    initButtons();
+    timeInitializationCompleted = millis();
+    if (deepSleepEnabled) {
         startTimerToDeepSleep = millis();
-        initDeepSleep();
         Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+    }
+    Serial.println("-->[STUP] Ready.");
+}
+
+void setup() {
+#ifdef TIMEDEBUG
+    timerAwake.start();
+#endif
+    uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    setDeepSleepPreferences();                                        // Set options manually until they are included in preferences
+
+    Serial.setTxBufferSize(4098);
+    Serial.setRxBufferSize(4098);
+    Serial.begin(115200);
+    printResetReason();
+
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
+        switch (esp_sleep_get_wakeup_cause()) {
+            case ESP_SLEEP_WAKEUP_TIMER:
+                bootState = deepSleepTimerBoot;
+                fromDeepSleep();
+                break;
+            case ESP_SLEEP_WAKEUP_GPIO:
+                bootState = deepSleepGPIOBoot;
+                initGPIOLowPower();
+                break;
+            default:
+                bootState = defaultMode;
+                initNoLowPower();
+                break;
+        }
+    } else {
+        if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC)) {
+            bootState = defaultMode;
+            initNoLowPower();
+            if (deepSleepEnabled) {
+                startTimerToDeepSleep = millis();
+                initLowPowerMode();
+                Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+            }
+        } else {
+            bootState = defaultMode;
+            Serial.printf("-->[STUP] No mode defined. Reset reason: %d\n", esp_reset_reason());
+            printResetReason();
+            while (1) {
+                delay(10);
+            }
+        }
+        WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     }
 }
 
 void loop() {
     batteryLoop();
     utilityLoop();
-    improvLoop();
+    if (bootState == defaultMode) improvLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
-    OTALoop();
+    if (bootState == defaultMode) OTALoop();
     adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
     BLELoop();
-    deepSleepLoop();    
+    if (deepSleepEnabled) deepSleepLoop();
 }
