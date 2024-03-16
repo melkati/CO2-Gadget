@@ -11,6 +11,10 @@
 #ifdef SUPPORT_MQTT
 #include <PubSubClient.h>
 
+// Forward declarations
+bool publishMQTTDiscovery(int qos);
+void mqttClientLoop();
+
 // #define DEBUG_MQTT_SENDING
 
 char charPublish[20];
@@ -41,6 +45,12 @@ void mqttReconnect() {
                     subscriptionTopic = rootTopic + "/ambientpressure";
                     mqttClient.subscribe((subscriptionTopic).c_str());
                     printf("-->[MQTT] Suscribing to: %s\n", subscriptionTopic.c_str());
+                    // Send discovery
+                    if (!mqttDiscoverySent) {
+                        Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
+                        publishMQTTDiscovery(0);
+                        mqttDiscoverySent = true;
+                    }
                 } else {
                     ++mqttConnectionRetries;
                     mqttClient.setSocketTimeout(2);  // Drop timeout to 2 secs for subsecuents tries
@@ -94,10 +104,10 @@ void publishIntMQTT(String topic, int64_t payload) {
     dtostrf(payload, 0, 0, charPublish);
     topic = rootTopic + topic;
     if (!inMenu) {
-        #ifdef DEBUG_MQTT_SENDING
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %d to ", payload);
         Serial.println("topic: " + topic);
-        #endif
+#endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -108,10 +118,10 @@ void publishFloatMQTT(String topic, float payload) {
     dtostrf(payload, 0, 2, charPublish);
     topic = rootTopic + topic;
     if (!inMenu) {
-        #ifdef DEBUG_MQTT_SENDING
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
         Serial.println("topic: " + topic);
-        #endif
+#endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -121,10 +131,10 @@ void publishStrMQTT(String topic, String payload) {
 #ifdef SUPPORT_MQTT
     topic = rootTopic + topic;
     if (!inMenu) {
-        #ifdef DEBUG_MQTT_SENDING
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
-        #endif        
+#endif
     }
     mqttClient.publish(topic.c_str(), payload.c_str());
 #endif
@@ -133,10 +143,10 @@ void publishStrMQTT(String topic, String payload) {
 void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
     if (!inMenu) {
-        #ifdef DEBUG_MQTT_SENDING
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
         Serial.println("topic: " + topic);
-        #endif
+#endif
     }
     mqttClient.publish(topic.c_str(), payload.c_str(), true);
 #endif
@@ -257,6 +267,7 @@ void initMQTT() {
         mqttClient.setBufferSize(1024);
 
         mqttReconnect();
+        mqttClientLoop();
     }
 #endif
 }
