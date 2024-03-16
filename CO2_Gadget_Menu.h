@@ -1022,7 +1022,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
             Serial.println("-->[MENU] Event idleStart");
 #endif
-            //       setInMenu(false);
+            setInMenu(false);
             //       nav.poll();
 
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
