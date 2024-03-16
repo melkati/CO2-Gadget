@@ -160,7 +160,8 @@ void setElementLocations() {
 void drawMainScreen(bool force = false);  // Forward declaration
 
 void setDisplayBrightness(uint32_t newBrightness) {
-    Serial.printf("-->[EINK] Setting display brightness value at %d (ignore for e-Ink)\n", newBrightness);
+    // Serial.printf("-->[EINK] Setting display brightness value at %d (ignore for e-Ink)\n", newBrightness);
+    // Serial.println("-->[EINK] Setting display brightness (ignore for e-Ink) to: " + String(newBrightness));
     // display.setContrast(newBrightness);
     // actualDisplayBrightness = newBrightness;
 }
@@ -296,7 +297,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 
     // Each deepSleepReadrawEach boots do a full screen refresh
     if (forceRedraw) {
-        Serial.printf("-->[EINK] Initializing display from deep sleep with force redraw\n");
+        // Serial.printf("-->[EINK] Initializing display from deep sleep with force redraw\n");
+        Serial.println("-->[EINK] Initializing display from deep sleep with force redraw");
         display.fillScreen(GxEPD_WHITE);
         display.display();
         drawMainScreen(true);
@@ -311,7 +313,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 }
 
 void initDisplay(bool fastMode = false) {
-    if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
+    // if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
+    if (!fastMode) Serial.println("-->[TFT ] Initializing display");
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 
@@ -324,8 +327,10 @@ void initDisplay(bool fastMode = false) {
     display.setFullWindow();
     display.setPartialWindow(0, 0, display.width(), display.height());
 
-    Serial.printf("-->[EINK] Display hasPartialUpdate %d\n", display.epd2.hasPartialUpdate);
-    Serial.printf("-->[EINK] Display hasFastPartialUpdate %d\n", display.epd2.hasFastPartialUpdate);
+    // Serial.printf("-->[EINK] Display hasPartialUpdate %d\n", display.epd2.hasPartialUpdate);
+    // Serial.printf("-->[EINK] Display hasFastPartialUpdate %d\n", display.epd2.hasFastPartialUpdate);
+    Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
+    Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
 
     if (display.pages() > 1) {
         delay(100);
@@ -390,7 +395,8 @@ void drawMainScreen(bool force) {
 
     // Enable partial refresh
     display.setPartialWindow(0, 0, display.width(), display.height());
-    Serial.printf("-->[EINK] Drawing main screen at %dx%d\n", display.width(), display.height());
+    // Serial.printf("-->[EINK] Drawing main screen at %dx%d\n", display.width(), display.height());
+    Serial.println("-->[EINK] Drawing main screen at " + String(display.width()) + "x" + String(display.height()));
 
     // Clear screen
     display.fillScreen(GxEPD_WHITE);
@@ -478,7 +484,8 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     display.setTextColor(GxEPD_BLACK);
 
     display.getTextBounds(String(oldCO2Value), 0, 0, &tbx, &tby, &tbw, &tbh);
-    Serial.printf("-->[EINK] CO2 OLD text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", oldCO2Value, tbx, tby, tbw, tbh);
+    // Serial.printf("-->[EINK] CO2 OLD text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", oldCO2Value, tbx, tby, tbw, tbh);
+    Serial.println("-->[EINK] CO2 OLD text bounds: value=" + String(oldCO2Value) + ", tbx=" + String(tbx) + ", tby=" + String(tby) + ", tbw=" + String(tbw) + ", tbh=" + String(tbh));
 
     uint16_t utx = ((display.width() - tbw) / 2) - tbx;
     uint16_t uty = ((display.height() / 4) - tbh / 2) - tby - 30;
@@ -487,7 +494,8 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     display.print(String(oldCO2Value));
 
     display.getTextBounds(String(co2), 0, 0, &tbx, &tby, &tbw, &tbh);
-    Serial.printf("-->[EINK] CO2 NEW text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", co2, tbx, tby, tbw, tbh);
+    // Serial.printf("-->[EINK] CO2 NEW text bounds: value=%d, tbx=%d, tby=%d, tbw=%d, tbh=%d\n", co2, tbx, tby, tbw, tbh);
+    Serial.println("-->[EINK] CO2 NEW text bounds: value=" + String(co2) + ", tbx=" + String(tbx) + ", tby=" + String(tby) + ", tbw=" + String(tbw) + ", tbh=" + String(tbh));
 
     uint16_t umx = ((display.width() - tbw) / 2) - tbx;
     uint16_t umy = ((display.height() * 3 / 4) - tbh / 2) - tby - 30;
@@ -520,7 +528,8 @@ void displayShowValues(bool forceRedraw = false) {
     // display.hibernate();
     uint32_t elapsed = timer.read();
     if (elapsed > 10) {
-        Serial.printf("-->[EINK] Time used to showValues:\t%d\n", elapsed);
+        // Serial.printf("-->[EINK] Time used to showValues:\t%d\n", elapsed);
+        Serial.println("-->[EINK] Time used to showValues: " + String(elapsed));
     }
     forceRedraw = false;
 }
