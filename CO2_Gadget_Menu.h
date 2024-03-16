@@ -677,7 +677,12 @@ TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wr
   ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+  ,FIELD(DisplayBrightness, "Brightness:", "", 1, 16, 1, 1, doSetDisplayBrightness, anyEvent, wrapStyle)
+#endif  
+#ifdef TTGO_TDISPLAY || ST7789_240x320
   ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetDisplayBrightness, anyEvent, wrapStyle)
+#endif  
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,SUBMENU(activeDisplayReverse)

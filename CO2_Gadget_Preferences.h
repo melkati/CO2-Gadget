@@ -103,7 +103,11 @@ void initPreferences() {
     autoSelfCalibration = preferences.getBool("autoSelfCal", false);
     co2OrangeRange = preferences.getUInt("co2OrangeRange", 700);
     co2RedRange = preferences.getUInt("co2RedRange", 1000);
+#ifdef LILYGO_T_DISPLAY_S3
+    DisplayBrightness = preferences.getUInt("DisplayBright", 8);
+#else
     DisplayBrightness = preferences.getUInt("DisplayBright", 100);
+#endif
     neopixelBrightness = preferences.getUInt("neopixBright", 50);
     selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
     activeBLE = preferences.getBool("activeBLE", true);
@@ -173,7 +177,7 @@ void initPreferences() {
     // Retrieve buzzer preferences
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
-    timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);                // Time between consecutive beeps
+    timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
     cyclesToRedrawDisplay = preferences.getUInt("cyc2RedrawDis", 5);
 
@@ -189,7 +193,7 @@ void initPreferences() {
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif
-upgradePreferences();
+    upgradePreferences();
 }
 
 void putPreferences() {
@@ -254,9 +258,9 @@ void putPreferences() {
     preferences.putBool("showPM25", displayShowPM25);
 
     // Buzzer preferences
-    preferences.putUInt("toneBzrBeep", toneBuzzerBeep);        // Buzzer frequency
-    preferences.putUInt("durBzrBeep", durationBuzzerBeep);     // Buzzer duration
-    preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps); // Time between beeps
+    preferences.putUInt("toneBzrBeep", toneBuzzerBeep);          // Buzzer frequency
+    preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
+    preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
     preferences.end();
 
@@ -318,9 +322,9 @@ String getPreferencesAsJson() {
     doc["measInterval"] = preferences.getInt("measInterval", 5);
 
     // Buzzer preferences
-    doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);  // Buzzer frequency
-    doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);     // Buzzer duration
-    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);     // Time between beeps
+    doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
+    doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
+    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
 
     preferences.end();
 
@@ -391,9 +395,9 @@ String getActualSettingsAsJson() {
     doc["measInterval"] = measurementInterval;
 
     // Buzzer preferences
-    doc["toneBzrBeep"] = toneBuzzerBeep;         // Buzzer frequency
-    doc["durBzrBeep"] = durationBuzzerBeep;      // Buzzer duration
-    doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps; // Time between beeps
+    doc["toneBzrBeep"] = toneBuzzerBeep;          // Buzzer frequency
+    doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
+    doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
@@ -443,12 +447,12 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
         batteryDischargedMillivolts = JsonDocument["batDischgd"];
         batteryFullyChargedMillivolts = JsonDocument["batChargd"];
-        if (vRef != JsonDocument["vRef"]) { // If battery reference changed, apply it
+        if (vRef != JsonDocument["vRef"]) {  // If battery reference changed, apply it
             vRef = JsonDocument["vRef"];
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
-            vRef = JsonDocument["vRef"];
+        vRef = JsonDocument["vRef"];
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
         mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
@@ -486,9 +490,9 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayShowPM25 = JsonDocument["showPM25"];
 
         // Buzzer preferences
-        toneBuzzerBeep = JsonDocument["toneBzrBeep"];         // Buzzer frequency
-        durationBuzzerBeep = JsonDocument["durBzrBeep"];      // Buzzer duration
-        timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"]; // Time between beeps
+        toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
+        durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
+        timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
         // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
