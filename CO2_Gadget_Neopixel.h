@@ -31,7 +31,7 @@ uint32_t green = strip.Color(0, 255, 0);
 uint32_t yellow = strip.Color(255, 100, 0);
 
 void setNeopixelBrightness(uint8_t newBrightness) {
-  Serial.printf("-->[NPIX] Setting neopixel brightness value at %d\n", newBrightness);
+  // Serial.printf("-->[NPIX] Setting neopixel brightness value at %d\n", newBrightness);
   strip.setBrightness(newBrightness);
   strip.show();
 }
