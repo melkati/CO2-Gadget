@@ -71,6 +71,68 @@ void SetTimeToDeepSleep(uint16_t time) {
 #endif
 }
 
+String getWakeupCause() {
+    switch (esp_sleep_get_wakeup_cause()) {
+        case ESP_SLEEP_WAKEUP_UNDEFINED:
+            return "Undefined";
+        case ESP_SLEEP_WAKEUP_ALL:
+            return "All";
+        case ESP_SLEEP_WAKEUP_EXT0:
+            return "External signal using RTC_IO";
+        case ESP_SLEEP_WAKEUP_EXT1:
+            return "External signal using RTC_CNTL";
+        case ESP_SLEEP_WAKEUP_TIMER:
+            return "Timer";
+        case ESP_SLEEP_WAKEUP_TOUCHPAD:
+            return "Touchpad";
+        case ESP_SLEEP_WAKEUP_ULP:
+            return "ULP program";
+        case ESP_SLEEP_WAKEUP_GPIO:
+            return "GPIO";
+        case ESP_SLEEP_WAKEUP_UART:
+            return "UART";
+        case ESP_SLEEP_WAKEUP_WIFI:
+            return "WIFI";
+        case ESP_SLEEP_WAKEUP_COCPU:
+            return "COCPU int";
+        case ESP_SLEEP_WAKEUP_COCPU_TRAP_TRIG:
+            return "COCPU crash";
+        case ESP_SLEEP_WAKEUP_BT:
+            return "BT";
+        default:
+            return "Unknown";
+    }
+}
+
+String getResetReason() {
+    switch (esp_reset_reason()) {
+        case ESP_RST_UNKNOWN:
+            return "Unknown reset reason";
+        case ESP_RST_POWERON:
+            return "Power on reset";
+        case ESP_RST_EXT:
+            return "External reset";
+        case ESP_RST_SW:
+            return "Software reset";
+        case ESP_RST_PANIC:
+            return "Software reset due to exception/panic";
+        case ESP_RST_INT_WDT:
+            return "Reset due to interrupt watchdog";
+        case ESP_RST_TASK_WDT:
+            return "Reset due to task watchdog";
+        case ESP_RST_WDT:
+            return "Reset due to other watchdogs";
+        case ESP_RST_DEEPSLEEP:
+            return "Reset after exiting deep sleep mode";
+        case ESP_RST_BROWNOUT:
+            return "Brownout reset";
+        case ESP_RST_SDIO:
+            return "Reset over SDIO";
+        default:
+            return "Unknown reset reason";
+    }
+}
+
 void printResetReason() {
 #ifdef DEEP_SLEEP_DEBUG
     esp_reset_reason_t reason = esp_reset_reason();
@@ -252,6 +314,7 @@ void cm1106HandleFromDeepSleep() {
     Serial.println("");
 
     co2 = sensors.cm1106->get_co2();
+    deepSleepData.lastCO2Value = co2;
     // Serial.printf("-->[DEEP] CO2 value: %d ppm\n", co2);
     Serial.println("-->[DEEP] CO2 value: " + String(co2) + " ppm");
     displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
@@ -283,6 +346,9 @@ void scd4xHandleFromDeepSleep() {
     co2 = co2value;
     temp = temperature;
     hum = humidity;
+    deepSleepData.lastCO2Value = co2;
+    deepSleepData.lastTemperatureValue = temp;
+    deepSleepData.lastHumidityValue = hum;
     if (error != 0) {
         // Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
         Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
@@ -364,16 +430,19 @@ void scd30HandleFromDeepSleepNEW() {
     Serial.println("-->[DEEP][SCD30] CO2: " + String(scd30.CO2, 3) + " ppm");
     if (scd30.CO2 > 0) {
         co2 = scd30.CO2;
+        deepSleepData.lastCO2Value = co2;
     }
 
     Serial.println("-->[DEEP][SCD30] Temperature: " + String(scd30.temperature) + " degrees C");
     if (scd30.temperature > 0) {
         temp = scd30.temperature;
+        deepSleepData.lastTemperatureValue = temp;
     }
 
     Serial.println("-->[DEEP][SCD30] Relative Humidity: " + String(scd30.relative_humidity) + " %");
     if (scd30.relative_humidity > 0) {
         hum = scd30.relative_humidity;
+        deepSleepData.lastHumidityValue = hum;
     }
 
     Serial.println("-->[DEEP][SCD30] Stopping continuous measurement");
