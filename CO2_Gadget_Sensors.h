@@ -37,7 +37,9 @@ void printSensorsDetected() {
     Serial.println();
     if (mainDeviceSelected == "SCD4X") {
         Serial.print("-->[SENS***] SCD4X Model: ");
+        sensors.scd4x.stopPeriodicMeasurement();
         mainDeviceSelected = sensors.getSCD4xModel();
+        sensors.scd4x.startPeriodicMeasurement();
         Serial.println(mainDeviceSelected);
     }
 }
@@ -113,13 +115,15 @@ void storeSensorSelectedInRTC() {
     }
 }
 
-void initSensorsLowPower() {    
+void initSensorsLowPower() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
-        sensors.initCO2LowPowerMode(sensors.getLowPowerMode());
 
-        switch (sensors.getLowPowerMode()) {
+        // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+        sensors.initCO2LowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
+
+        switch (deepSleepData.lowPowerMode) {
             case BASIC_LOWPOWER:
                 Serial.println("-->[SENS] Low Power Mode: BASIC_LOWPOWER");
                 break;
@@ -129,13 +133,13 @@ void initSensorsLowPower() {
             case MAXIMUM_LOWPOWER:
                 Serial.println("-->[SENS] Low Power Mode: MAXIMUM_LOWPOWER");
                 break;
-            default:                
+            default:
                 while (true) {
                     Serial.println("-->[SENS][ERROR!!!] Low Power Mode: NO_LOWPOWER");
                     delay(1000);
                 }
         }
-    }    
+    }
 }
 
 void initSensors() {
@@ -165,7 +169,6 @@ void initSensors() {
 
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
     Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
-
 
     if ((lowPowerMode) && (!interactiveMode)) {
         displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
@@ -259,16 +262,16 @@ void sensorsLoopLowPower() {
     }
 }
 
-void sensorsLoop() {    
+void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
-    if ((deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+    if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[-]");        // Print a - every loop to show that the device is alive
         //     lastDotPrintTime = millis();
         // }
         sensorsLoopLowPower();
         return;
-    } else if (!buzzerBeeping) {
+    } else if (!buzzerBeeping) { // Avoid affecting beep sound
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
         //     lastDotPrintTime = millis();
