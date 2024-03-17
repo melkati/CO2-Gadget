@@ -151,6 +151,9 @@ typedef struct {
     bool waitingForDataReady;
     uint16_t cyclesToWiFiConnect;
     uint16_t cyclesToRedrawDisplay;
+    uint16_t lastCO2Value;
+    float lastTemperatureValue;
+    float lastHumidityValue;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -637,11 +640,14 @@ void initNoLowPower() {
 
 void initGPIOLowPower() {
     Serial.println("-->[STUP] Initializing for low power mode GPIO wake up");
+    co2 = deepSleepData.lastCO2Value;
+    temp = deepSleepData.lastTemperatureValue;
+    hum = deepSleepData.lastHumidityValue;
     interactiveMode = true;
     initBattery();
     initGPIO();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-    // initDisplay();
+    initDisplay(true);
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
@@ -660,7 +666,9 @@ void initGPIOLowPower() {
     timeInitializationCompleted = millis();
     if (deepSleepEnabled) {
         startTimerToDeepSleep = millis();
-        Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+        // Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
+        Serial.println("-->[STUP] Going to deep sleep in: " + String((waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+        Serial.println("-->[STUP] waitToGoDeepSleepOnFirstBoot: " + String(waitToGoDeepSleepOnFirstBoot) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
     }
     Serial.println("-->[STUP] Ready.");
 }
@@ -673,32 +681,51 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     setDeepSleepPreferences();                                        // Set options manually until they are included in preferences
 
-    Serial.setTxBufferSize(4098);
-    Serial.setRxBufferSize(4098);
+    Serial.setTxBufferSize(1024);
+    Serial.setRxBufferSize(1024);
     Serial.begin(115200);
     Serial.println();
     Serial.println();
-    printResetReason();
+    Serial.println("-->[STUP] Reset reason: (" + String(esp_reset_reason()) + ") " + getResetReason());
+    Serial.println("-->[STUP] Wakeup cause: (" + String(esp_sleep_get_wakeup_cause()) + ") " + getWakeupCause());
 
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
         switch (esp_sleep_get_wakeup_cause()) {
             case ESP_SLEEP_WAKEUP_TIMER:
                 bootState = deepSleepTimerBoot;
+                Serial.println("-->[STUP] Initializing from deep sleep timer");
                 fromDeepSleep();
                 break;
-            case ESP_SLEEP_WAKEUP_GPIO:
+            case ESP_SLEEP_WAKEUP_EXT0:
+            case ESP_SLEEP_WAKEUP_EXT1:
                 bootState = deepSleepGPIOBoot;
+                Serial.println("-->[STUP] Initializing from deep sleep GPIO");
                 initGPIOLowPower();
                 break;
             default:
                 bootState = defaultMode;
+                Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
                 initNoLowPower();
                 break;
         }
     } else {
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
             bootState = defaultMode;
-            Serial.println("-->[STUP] Initializing from normal boot");
+            if (esp_reset_reason() == ESP_RST_POWERON) {
+                Serial.println("-->[STUP] Initializing from power on");
+            } else if (esp_reset_reason() == ESP_RST_BROWNOUT) {
+                Serial.println("-->[STUP] Initializing from brownout");
+            } else if (esp_reset_reason() == ESP_RST_SW) {
+                Serial.println("-->[STUP] Initializing from software reset");
+            } else if (esp_reset_reason() == ESP_RST_PANIC) {
+                Serial.println("-->[STUP] Initializing from panic reset");
+            } else if (esp_reset_reason() == ESP_RST_INT_WDT) {
+                Serial.println("-->[STUP] Initializing from interrupt watchdog reset");
+            } else if (esp_reset_reason() == ESP_RST_TASK_WDT) {
+                Serial.println("-->[STUP] Initializing from task watchdog reset");
+            } else if (esp_reset_reason() == ESP_RST_WDT) {
+                Serial.println("-->[STUP] Initializing from watchdog reset");
+            }
             initNoLowPower();
             if (deepSleepEnabled) {
                 startTimerToDeepSleep = millis();
