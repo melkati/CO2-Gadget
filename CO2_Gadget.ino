@@ -110,23 +110,11 @@ uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 
 // Variables for deep sleep
 bool interactiveMode = false;
-uint64_t waitToGoDeepSleepOnFirstBoot = 60 * 1000;  // Give an opportunity to user to interact with the device before going to deep sleep
-bool deepSleepEnabled = true;
+bool deepSleepEnabled = false;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint64_t timeToDeepSleep = 60;
 uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
 uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
-
-// Define enum for state machine
-typedef enum {
-    defaultMode = 0,
-    deepSleepTimerBoot = 1,
-    deepSleepGPIOBoot = 2,
-    awaitingMeasurement = 3
-} BOOTSTATE_t;
-
-RTC_DATA_ATTR BOOTSTATE_t bootState;
 
 // Define enum for sensors
 typedef enum {
@@ -142,11 +130,13 @@ typedef enum {
 } CO2SENSORS_t;
 
 // LOW POWER MODES
-// typedef enum LowPowerMode { NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER };
+// typedef enum LowPowerMode { HIGH_PERFORMANCE, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER };
 
 typedef struct {
+    uint16_t lowPowerMode;  // 0 = No low power, 1 = Basic low power, 2 = Medium low power, 3 = Maximum low power
     CO2SENSORS_t co2Sensor;
-    uint16_t lowPowerMode;
+    uint16_t waitToGoDeepSleepOn1stBoot;  // Give an opportunity to user to interact with the device before going to deep sleep
+    uint16_t timeSleeping;
     uint32_t gpioConfig;
     bool waitingForDataReady;
     uint16_t cyclesToWiFiConnect;
@@ -154,6 +144,10 @@ typedef struct {
     uint16_t lastCO2Value;
     float lastTemperatureValue;
     float lastHumidityValue;
+    bool activeWifiOnWake;
+    bool sendMQTTOnWake;
+    bool sendESPNowOnWake;
+    bool displayOnWake;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -358,23 +352,25 @@ void wakeUpDisplay() {
 
 void processPendingCommands() {
     if (pendingCalibration == true) {
-        if (calibrationValue != 0) {
-            printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
+        if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
+            Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
+            // Serial.printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
         } else {
-            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
+            Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
+            // Serial.printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
             pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
         if (ambientPressureValue != 0) {
-            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
+            Serial.printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
             pendingAmbientPressure = false;
             // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
         } else {
-            printf(
+            Serial.printf(
                 "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
                 "value at %d mbar\n",
                 ambientPressureValue);
@@ -462,11 +458,6 @@ void readingsLoop() {
 #ifdef SUPPORT_BLE
             publishBLE();
 #endif
-            // Provide the sensor values for Tools -> Serial Monitor or Serial Plotter
-            // Serial.printf("CO2[ppm]:%d\tTemperature[\u00B0C]:%.2f\tHumidity[%%]:%.2f\n", co2, temp, hum);
-            // if ((!troubledWIFI) && (activeWIFI) && (WiFi.status() != WL_CONNECTED)) {
-            //     Serial.println("-->[MAIN] WiFi not connected");
-            // }
 #ifdef SUPPORT_MQTT
             publishMQTT();
 #endif
@@ -559,54 +550,44 @@ void utilityLoop() {
     const int16_t lowCpuFrequency = 80;
 
     if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
+        Serial.println("-->[BATT] Battery voltage: " + String(batteryVoltage) + "V. Increasing CPU frequency to " + String(highCpuFrequency) + "MHz");
+        // Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
         setCpuFrequencyAndReinitSerial(highCpuFrequency);
     } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
+        Serial.println("-->[BATT] Battery voltage: " + String(batteryVoltage) + "V. Decreasing CPU frequency to " + String(lowCpuFrequency) + "MHz");
+        // Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
         setCpuFrequencyAndReinitSerial(lowCpuFrequency);
     }
 }
 
-void setDeepSleepPreferences() {  // Manually force options until it's included in preferences
-    // Manually set los power mode until implementation in preferences
-    // Choose CO2 Gadget working power mode from one of enum LowPowerMode: NO_LOWPOWER, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER
-    LowPowerMode initLowPowerMode = MEDIUM_LOWPOWER;
-
-    // Set CO2 Gadget working power mode
-    deepSleepData.lowPowerMode = initLowPowerMode;
-    sensors.setLowPowerMode(initLowPowerMode);
-    deepSleepEnabled = true;  // (initLowPowerMode == NO_LOWPOWER);
-
-    // Variables for deep sleep
-    waitToGoDeepSleepOnFirstBoot = 60 * 1000;  // Give an opportunity to user to interact with the device before going to deep sleep
-    timeToDeepSleep = 60;
-    deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
-    cyclesToRedrawDisplay = 5;     // For EINK displays: Redraw display each X deep sleep cycles (0 to disable)
-}
-
 void initNoLowPower() {
-    bootState = defaultMode;
-    interactiveMode = true;
-    sensors.setLowPowerMode(NO_LOWPOWER);
-    printResetReason();
+    Serial.println("");
+    Serial.println("-->**********************************************");
+    Serial.println("-->[DEEP]--> INITIALIZING HIGH PERFORMANCE MODE *");
+    Serial.println("-->**********************************************");
+    Serial.println("");
 #ifdef AUTO_VERSION
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s (Git HEAD: %s)\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR, AUTO_VERSION);
 #else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
 #endif
-    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
-    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
-    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
-    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
-
-    if (ESP.getFlashChipSize() > 0) {
-        Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
-        Serial.printf("-->[STUP] Flash speed: %d\n", ESP.getFlashChipSpeed());
-        Serial.printf("-->[STUP] Flash mode: %d\n", ESP.getFlashChipMode());
+    Serial.println("-->[STUP] Version compiled: " __DATE__ " at " __TIME__);
+    Serial.println("-->[STUP] Total heap: " + String(ESP.getHeapSize()));
+    Serial.println("-->[STUP] Free heap: " + String(ESP.getFreeHeap()));
+    if (ESP.getPsramSize() > 0) {
+        Serial.println("-->[STUP] Total PSRAM: " + String(ESP.getPsramSize()));
+        Serial.println("-->[STUP] Free PSRAM: " + String(ESP.getFreePsram()));
+    } else {
+        Serial.println("-->[STUP] No PSRAM available");
     }
 
-    initPreferences();
+    if (ESP.getFlashChipSize() > 0) {
+        Serial.println("-->[STUP] Flash size: " + String(ESP.getFlashChipSize()));
+        Serial.println("-->[STUP] Flash speed: " + String(ESP.getFlashChipSpeed()));
+        Serial.println("-->[STUP] Flash mode: " + String(ESP.getFlashChipMode()));
+    }
+
+    printResetReason();
     initImprov();
     initBattery();
     initGPIO();
@@ -635,7 +616,8 @@ void initNoLowPower() {
         Serial.println("");
     }
     timeInitializationCompleted = millis();
-    Serial.println("-->[STUP] Ready.");
+    startTimerToDeepSleep = timeInitializationCompleted;
+    Serial.println("-->[STUP] Initialization in HIGH PERFORMANCE MODE Ready.");
 }
 
 void initGPIOLowPower() {
@@ -666,11 +648,11 @@ void initGPIOLowPower() {
     timeInitializationCompleted = millis();
     if (deepSleepEnabled) {
         startTimerToDeepSleep = millis();
-        // Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
-        Serial.println("-->[STUP] Going to deep sleep in: " + String((waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-        Serial.println("-->[STUP] waitToGoDeepSleepOnFirstBoot: " + String(waitToGoDeepSleepOnFirstBoot) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
+        // Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000);
+        Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+        Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
     }
-    Serial.println("-->[STUP] Ready.");
+    Serial.println("-->[STUP] Initialization in LOW POWER MODE Ready.");
 }
 
 void setup() {
@@ -679,65 +661,55 @@ void setup() {
 #endif
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
-    setDeepSleepPreferences();                                        // Set options manually until they are included in preferences
-
+    Serial.setDebugOutput(true);
     Serial.setTxBufferSize(1024);
     Serial.setRxBufferSize(1024);
     Serial.begin(115200);
     Serial.println();
+    printRTCMemoryExit();
     Serial.println();
+    Serial.println("-->[STUP] millis(): " + String(millis()));
     Serial.println("-->[STUP] Reset reason: (" + String(esp_reset_reason()) + ") " + getResetReason());
     Serial.println("-->[STUP] Wakeup cause: (" + String(esp_sleep_get_wakeup_cause()) + ") " + getWakeupCause());
+    Serial.println("-->[STUP] lowPowerMode mode (from RTC memory): (" + String(deepSleepData.lowPowerMode) + ") " + getLowPowerModeName(deepSleepData.lowPowerMode));
 
-    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (sensors.getLowPowerMode() != NO_LOWPOWER)) {
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
         switch (esp_sleep_get_wakeup_cause()) {
             case ESP_SLEEP_WAKEUP_TIMER:
-                bootState = deepSleepTimerBoot;
                 Serial.println("-->[STUP] Initializing from deep sleep timer");
                 fromDeepSleep();
                 break;
             case ESP_SLEEP_WAKEUP_EXT0:
             case ESP_SLEEP_WAKEUP_EXT1:
-                bootState = deepSleepGPIOBoot;
                 Serial.println("-->[STUP] Initializing from deep sleep GPIO");
                 initGPIOLowPower();
                 break;
             default:
-                bootState = defaultMode;
                 Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
                 initNoLowPower();
                 break;
         }
     } else {
+        // Normal boot from any reason
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
-            bootState = defaultMode;
-            if (esp_reset_reason() == ESP_RST_POWERON) {
-                Serial.println("-->[STUP] Initializing from power on");
-            } else if (esp_reset_reason() == ESP_RST_BROWNOUT) {
-                Serial.println("-->[STUP] Initializing from brownout");
-            } else if (esp_reset_reason() == ESP_RST_SW) {
-                Serial.println("-->[STUP] Initializing from software reset");
-            } else if (esp_reset_reason() == ESP_RST_PANIC) {
-                Serial.println("-->[STUP] Initializing from panic reset");
-            } else if (esp_reset_reason() == ESP_RST_INT_WDT) {
-                Serial.println("-->[STUP] Initializing from interrupt watchdog reset");
-            } else if (esp_reset_reason() == ESP_RST_TASK_WDT) {
-                Serial.println("-->[STUP] Initializing from task watchdog reset");
-            } else if (esp_reset_reason() == ESP_RST_WDT) {
-                Serial.println("-->[STUP] Initializing from watchdog reset");
+            Serial.println("-->[STUP] Initializing from: " + getResetReason());
+            initPreferences();
+            if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) {
+                Serial.println("-->[STUP] Will go into high performance mode after initialization");
+                deepSleepEnabled = false;
+                initNoLowPower();
+            } else {
+                Serial.println("-->[STUP] Will go into low power mode " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " secs after initialization");
+                interactiveMode = true;
+                deepSleepEnabled = true;
+                startTimerToDeepSleep = millis();
             }
             initNoLowPower();
-            if (deepSleepEnabled) {
-                startTimerToDeepSleep = millis();
-                initLowPowerMode();
-                // Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000);
-                Serial.println("-->[STUP] Going to deep sleep in: " + String((waitToGoDeepSleepOnFirstBoot - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-            }
         } else {
-            bootState = defaultMode;
-            // Serial.printf("-->[STUP][ERROR] No mode defined. Reset reason: %d\n", esp_reset_reason());
             Serial.println("-->[STUP][ERROR] No mode defined. Reset reason: " + String(esp_reset_reason()));
             printResetReason();
+            delay(5000);
+            ESP.restart();
             while (1) {
                 delay(10);
             }
@@ -749,17 +721,17 @@ void setup() {
 void loop() {
     batteryLoop();
     utilityLoop();
-    if (bootState == defaultMode) improvLoop();
+    improvLoop();
     wifiClientLoop();
     mqttClientLoop();
     sensorsLoop();
     outputsLoop();
     processPendingCommands();
     readingsLoop();
-    if (bootState == defaultMode) OTALoop();
+    OTALoop();
     adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
     BLELoop();
-    if (deepSleepEnabled) deepSleepLoop();
+    deepSleepLoop();
 }
