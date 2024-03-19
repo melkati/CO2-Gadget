@@ -216,7 +216,7 @@ void restoreGPIOConfig() {
 }
 
 void printRTCMemoryEnter() {
-#ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG2
     Serial.println("-->[DEEP][ENTER] lowPowerMode: " + String(deepSleepData.lowPowerMode));
     Serial.println("-->[DEEP][ENTER] co2Sensor: " + String(deepSleepData.co2Sensor));
     Serial.println("-->[DEEP][ENTER] waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot));
@@ -236,7 +236,7 @@ void printRTCMemoryEnter() {
 }
 
 void printRTCMemoryExit() {
-#ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG2
     Serial.println("-->[DEEP][EXIT] lowPowerMode: " + String(deepSleepData.lowPowerMode));
     Serial.println("-->[DEEP][EXIT] co2Sensor: " + String(deepSleepData.co2Sensor));
     Serial.println("-->[DEEP][EXIT] waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot));
@@ -625,6 +625,11 @@ void fromDeepSleepTimer() {
                 Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
                 scd4xHandleFromDeepSleep();
 #endif
+            } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
+                scd4xHandleFromDeepSleep();
+#endif
             } else {
                 Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
                 sensors.init();
@@ -745,7 +750,7 @@ void deepSleepLoop() {
         // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
 
         Serial.println("-->[DEEP] Waiting to go to deep sleep in (seconds): " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-        Serial.println("-->[DEEP] startTimerToDeepSleep (s): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
+        // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
         lastSerialPrintTime = millis();  // Update last print time
     }
 
