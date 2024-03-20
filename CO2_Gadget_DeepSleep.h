@@ -66,19 +66,6 @@ String getDeepSleepDataCo2SensorName() {
     }
 }
 
-void SetDeepSleepEnabled(bool enabled) {
-    deepSleepEnabled = enabled;
-    if (deepSleepEnabled) {
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] Deep sleep enabled");
-#endif
-    } else {
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] Deep sleep disabled");
-#endif
-    }
-}
-
 void SetTimeToDeepSleep(uint16_t time) {
     deepSleepData.timeSleeping = time;
 #ifdef DEEP_SLEEP_DEBUG
@@ -259,7 +246,7 @@ void toDeepSleep() {
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
 #endif
-    deepSleepData.lowPowerMode = 2;
+    // deepSleepData.lowPowerMode = 2;
     Serial.println("");
     Serial.println("");
     Serial.println("-->************************************************************************************************************************************************");
@@ -284,10 +271,10 @@ void toDeepSleep() {
 #ifdef BTN_WAKEUP
     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
 #else
-    if (BTN_UP >= 0) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
-    } else if (BTN_DWN >= 0) {
+    if (BTN_DWN != -1) {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+    } else if (BTN_UP != -1) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
     }
 #endif
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
@@ -379,15 +366,23 @@ void cm1106HandleFromDeepSleep() {
     displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
 }
 
-void scd4xHandleFromDeepSleep() {
+void scd41HandleFromDeepSleep(bool blockingMode = true) {
+    static bool initialized = false;
     unsigned long previousMillis = 0;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
 
-    reInitI2C();
-    sensors.scd4x.begin(Wire);
+    Serial.println("-->[DEEP] scd41HandleFromDeepSleep()");
+
+    if (!initialized) {
+        reInitI2C();
+        sensors.scd4x.begin(Wire);
+        initialized = true;
+    }
+
+    if ((!blockingMode) && (!isDataReadySingleShotSCD41())) return;
 
     error = sensors.scd4x.measureSingleShot(true);
     if (error != 0) {
@@ -410,6 +405,50 @@ void scd4xHandleFromDeepSleep() {
     deepSleepData.lastHumidityValue = hum;
     if (error != 0) {
         // Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
+        Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
+
+    } else {
+        displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
+    }
+}
+
+void scd40HandleFromDeepSleep(bool blockingMode = true) {
+    static bool initialized = false;
+    unsigned long previousMillis = 0;
+    uint16_t error = 0;
+    uint16_t co2value = 0;
+    float temperature = 0;
+    float humidity = 0;
+
+    Serial.println("-->[DEEP] scd40HandleFromDeepSleep()");
+
+    if (!initialized) {
+        reInitI2C();
+        sensors.scd4x.begin(Wire);
+        initialized = true;
+    }
+
+    // error = sensors.scd4x.measureSingleShot(true);
+    if (error != 0) {
+        Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: " + String(error));
+    }
+    if ((!blockingMode) && (!isDataReadySingleShotSCD41())) return;
+    while (!isDataReadySingleShotSCD41()) {
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis >= 1000) {
+            previousMillis = currentMillis;
+            Serial.print("+");
+            delay(10);
+        }
+    }
+    error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
+    co2 = co2value;
+    temp = temperature;
+    hum = humidity;
+    deepSleepData.lastCO2Value = co2;
+    deepSleepData.lastTemperatureValue = temp;
+    deepSleepData.lastHumidityValue = hum;
+    if (error != 0) {
         Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
 
     } else {
@@ -569,45 +608,9 @@ void scd30HandleFromDeepSleepOLD() {
     }
 }
 
-void fromDeepSleepTimer() {
-    unsigned long previousMillis = 0;
-    uint16_t error = 0;
-    uint16_t co2value = 0;
-    float temperature = 0;
-    float humidity = 0;
-
-    --deepSleepData.cyclesToWiFiConnect;
-    --deepSleepData.cyclesToRedrawDisplay;
-#if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
-    Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
-    Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
-#endif
-
-    // restoreGPIOConfig();
-
-    // Set lowPowerMode using the correct type
-    // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
-    // gpioConfig;
-
-    switch (deepSleepData.lowPowerMode) {
-        case HIGH_PERFORMANCE:
-            Serial.println("-->[DEEP][ERROR] Waking up from deep sleep. LowPowerMode: HIGH_PERFORMANCE");
-            break;
-
-        case BASIC_LOWPOWER:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER");
-#endif
-            break;
-
-        case MEDIUM_LOWPOWER:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
-#endif
-            if (deepSleepData.cyclesToWiFiConnect == 0) {
-                doDeepSleepWiFiConnect();
-            }
-
+void handleLowPowerSensors() {
+    bool blockingMode = true;
+    if ((deepSleepEnabled) && (interactiveMode)) blockingMode = false;
             if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
 #ifdef DEEP_SLEEP_DEBUG
                 Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
@@ -623,17 +626,49 @@ void fromDeepSleepTimer() {
             } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
 #ifdef DEEP_SLEEP_DEBUG
                 Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
-                scd4xHandleFromDeepSleep();
+                scd41HandleFromDeepSleep(blockingMode);
 #endif
             } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
 #ifdef DEEP_SLEEP_DEBUG
                 Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
-                scd4xHandleFromDeepSleep();
+                scd40HandleFromDeepSleep(blockingMode);
 #endif
             } else {
                 Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
                 sensors.init();
             }
+}
+
+void fromDeepSleepTimer() {
+    --deepSleepData.cyclesToWiFiConnect;
+    --deepSleepData.cyclesToRedrawDisplay;
+#if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
+    Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
+    Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
+#endif
+
+    // restoreGPIOConfig();
+
+    // Set lowPowerMode using the correct type
+    // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
+    // gpioConfig;
+
+    switch (deepSleepData.lowPowerMode) {
+        case BASIC_LOWPOWER:
+#ifdef DEEP_SLEEP_DEBUG
+            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER");
+#endif
+            break;
+
+        case MEDIUM_LOWPOWER:
+#ifdef DEEP_SLEEP_DEBUG
+            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
+#endif
+            if (deepSleepData.cyclesToWiFiConnect == 0) {
+                doDeepSleepWiFiConnect();
+            }
+
+            handleLowPowerSensors();
 
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] CO2: " + String(co2) + " CO2temp: " + String(temp) + " CO2humi: " + String(hum));
@@ -655,36 +690,21 @@ void fromDeepSleepTimer() {
     Serial.flush();
 }
 
-void fromDeepSleepRTC_IO() {
-    return;
-
-    if (isButtonPressedOnWakeUp()) {
-        initDisplay(true);
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] Button pressed on wakeup. Entering interactive mode.");
-#endif
-        delay(100);
-        return;
-    }
-}
-
 void fromDeepSleep() {
-    esp_sleep_wakeup_cause_t wakeup_reason;
-    wakeup_reason = esp_sleep_get_wakeup_cause();
+    esp_sleep_wakeup_cause_t wakeupCause;
+    wakeupCause = esp_sleep_get_wakeup_cause();
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
 #endif
-    initButtons();
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("");
     Serial.println("");
 #endif
-    switch (wakeup_reason) {
+    switch (wakeupCause) {
         case ESP_SLEEP_WAKEUP_EXT0:
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
 #endif
-            fromDeepSleepRTC_IO();
             break;
         case ESP_SLEEP_WAKEUP_EXT1:
 #ifdef DEEP_SLEEP_DEBUG
@@ -712,28 +732,10 @@ void fromDeepSleep() {
 #endif
             break;
         default:
-            // Serial.printf("-->[DEEP][EEROR] Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-            Serial.println("-->[DEEP] Wakeup was not caused by deep sleep. Reason: " + String(wakeup_reason));
+            Serial.println("-->[DEEP] Wakeup was not caused by deep sleep. Reason: " + String(wakeupCause));
             break;
     }
 }
-
-// void lowPowerModeMode() {
-//     initPreferences();
-//     Serial.println("");
-//     Serial.println("-->************************************************");
-//     Serial.println("-->[DEEP]--> INITIALIZING LOW POWER MODE");
-//     Serial.println("-->[DEEP]--> TO LOW POWER MODE IN: " + String(deepSleepData.timeSleeping) + " SECONDS");
-//     Serial.println("-->************************************************");
-
-//     Serial.println("-->[DEEP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-//     Serial.println("");
-//     storeSensorSelectedInRTC();
-//     deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
-//     Serial.println("-->[DEEP] Cycles to WiFi connect: " + String(deepSleepData.cyclesToWiFiConnect));
-//     deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
-//     Serial.println("-->[DEEP] Cycles to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
-// }
 
 void deepSleepLoop() {
     // Variable to store the last time Serial.print was called

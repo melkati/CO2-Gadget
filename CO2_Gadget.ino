@@ -3,6 +3,7 @@ void reverseButtons(bool reversed);
 void outputsLoop();
 void publishMQTTLogData(String logData);
 void putPreferences();
+String getLowPowerModeName(uint16_t mode);
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -621,16 +622,21 @@ void initNoLowPower() {
 }
 
 void initGPIOLowPower() {
-    Serial.println("-->[STUP] Initializing for low power mode GPIO wake up");
+    Serial.println("");
+    Serial.println("-->***************************************************");
+    Serial.println("-->[DEEP]--> INITIALIZING LOW POWER MODE GPIO WAKE UP *");
+    Serial.println("-->***************************************************");
+    Serial.println("");
     co2 = deepSleepData.lastCO2Value;
     temp = deepSleepData.lastTemperatureValue;
     hum = deepSleepData.lastHumidityValue;
     interactiveMode = true;
-    initBattery();
-    initGPIO();
+    deepSleepEnabled = true;
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
     initDisplay(true);
 #endif
+    initBattery();
+    initGPIO();
 #ifdef SUPPORT_BLE
     initBLE();
 #endif
@@ -643,15 +649,12 @@ void initGPIOLowPower() {
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif
-    menu_init();
     initButtons();
+    menu_init();
     timeInitializationCompleted = millis();
-    if (deepSleepEnabled) {
-        startTimerToDeepSleep = millis();
-        // Serial.printf("-->[STUP] Going to deep sleep in: %d seconds\n", (deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000);
-        Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-        Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
-    }
+    startTimerToDeepSleep = millis();
+    Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+    Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
     Serial.println("-->[STUP] Initialization in LOW POWER MODE Ready.");
 }
 
@@ -683,6 +686,8 @@ void setup() {
             case ESP_SLEEP_WAKEUP_EXT1:
                 Serial.println("-->[STUP] Initializing from deep sleep GPIO");
                 initGPIOLowPower();
+                fromDeepSleep();
+                Serial.println("-->[STUP] Initialization from deep sleep GPIO completed");
                 break;
             default:
                 Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
@@ -697,7 +702,7 @@ void setup() {
             if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) {
                 Serial.println("-->[STUP] Will go into high performance mode after initialization");
                 deepSleepEnabled = false;
-                initNoLowPower();
+                // initNoLowPower();
             } else {
                 Serial.println("-->[STUP] Will go into low power mode " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " secs after initialization");
                 interactiveMode = true;
@@ -719,12 +724,30 @@ void setup() {
 }
 
 void loop() {
+    bool showDebug = true;
+    static unsigned long lastDotPrintTime = 0;
+    if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
+        lastDotPrintTime = millis();
+        Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
+        Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
+        Serial.print("Deep sleep enabled: " + String(deepSleepEnabled) + ". ");
+        Serial.print("Time to go into low power mode: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " secs. ");
+        Serial.println("...");
+    }
+
     batteryLoop();
     utilityLoop();
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
-    sensorsLoop();
+    if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1)) {
+        // Serial.println("-->[MAIN] Reading sensors in low power mode. ");
+        deepSleepLoop();
+        handleLowPowerSensors();
+    } else {
+        // Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
+        sensorsLoop();
+    }
     outputsLoop();
     processPendingCommands();
     readingsLoop();
