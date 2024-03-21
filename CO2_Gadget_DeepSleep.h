@@ -137,45 +137,7 @@ String getResetReason() {
 
 void printResetReason() {
 #ifdef DEEP_SLEEP_DEBUG
-    esp_reset_reason_t reason = esp_reset_reason();
-    switch (reason) {
-        case ESP_RST_UNKNOWN:
-            Serial.println("-->[DEEP] Unknown reset reason");
-            break;
-        case ESP_RST_POWERON:
-            Serial.println("-->[DEEP] Power-on reset");
-            break;
-        case ESP_RST_EXT:
-            Serial.println("-->[DEEP] External reset");
-            break;
-        case ESP_RST_SW:
-            Serial.println("-->[DEEP] Software reset");
-            break;
-        case ESP_RST_PANIC:
-            Serial.println("-->[DEEP] Exception reset");
-            break;
-        case ESP_RST_INT_WDT:
-            Serial.println("-->[DEEP] Watchdog reset (core)");
-            break;
-        case ESP_RST_TASK_WDT:
-            Serial.println("-->[DEEP] Watchdog reset (task)");
-            break;
-        case ESP_RST_WDT:
-            Serial.println("-->[DEEP] Watchdog reset (other)");
-            break;
-        case ESP_RST_DEEPSLEEP:
-            Serial.println("-->[DEEP] Deep sleep reset");
-            break;
-        case ESP_RST_BROWNOUT:
-            Serial.println("-->[DEEP] Brownout reset");
-            break;
-        case ESP_RST_SDIO:
-            Serial.println("-->[DEEP] SDIO reset");
-            break;
-        default:
-            Serial.println("-->[DEEP] Other reset reason");
-            break;
-    }
+    Serial.println("-->[DEEP] Reason for reset: " + getResetReason());
 #endif
 }
 
