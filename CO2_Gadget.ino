@@ -691,6 +691,7 @@ void setup() {
                 break;
             default:
                 Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
+                delay(5000);
                 initNoLowPower();
                 break;
         }
@@ -724,7 +725,7 @@ void setup() {
 }
 
 void loop() {
-    bool showDebug = true;
+    bool showDebug = false;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
@@ -741,11 +742,11 @@ void loop() {
     wifiClientLoop();
     mqttClientLoop();
     if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1)) {
-        // Serial.println("-->[MAIN] Reading sensors in low power mode. ");
+        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode. ");
         deepSleepLoop();
         handleLowPowerSensors();
     } else {
-        // Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
+        if (showDebug) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
         sensorsLoop();
     }
     outputsLoop();
