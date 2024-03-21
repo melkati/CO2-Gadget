@@ -611,32 +611,32 @@ void scd30HandleFromDeepSleepOLD() {
 void handleLowPowerSensors() {
     bool blockingMode = true;
     if ((deepSleepEnabled) && (interactiveMode)) blockingMode = false;
-            if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
+    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
+        Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
 #endif
-                // scd30HandleFromDeepSleepNEW();
-                scd30HandleFromDeepSleepOLD();
+        // scd30HandleFromDeepSleepNEW();
+        scd30HandleFromDeepSleepOLD();
 
-            } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP][CM1106SL-NS] Waking up from deep sleep. Handling CM1106SL_NS");
+        Serial.println("-->[DEEP][CM1106SL-NS] Waking up from deep sleep. Handling CM1106SL_NS");
 #endif
-                cm1106HandleFromDeepSleep();
-            } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
+        cm1106HandleFromDeepSleep();
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
-                scd41HandleFromDeepSleep(blockingMode);
+        Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
+        scd41HandleFromDeepSleep(blockingMode);
 #endif
-            } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
-                scd40HandleFromDeepSleep(blockingMode);
+        Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
+        scd40HandleFromDeepSleep(blockingMode);
 #endif
-            } else {
-                Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
-                sensors.init();
-            }
+    } else {
+        Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
+        sensors.init();
+    }
 }
 
 void fromDeepSleepTimer() {
@@ -664,6 +664,9 @@ void fromDeepSleepTimer() {
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
 #endif
+            initBattery();
+            batteryLoop();
+
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }
