@@ -141,29 +141,6 @@ void printResetReason() {
 #endif
 }
 
-// Save GPIO pins configuration before deep sleep
-void saveGPIOConfig() {
-    // Save the state of GPIO pins
-    deepSleepData.gpioConfig = 0;
-    for (gpio_num_t i = GPIO_NUM_0; i < GPIO_NUM_MAX; i = static_cast<gpio_num_t>(i + 1)) {
-        if (gpio_get_level(i)) {
-            deepSleepData.gpioConfig |= (1 << i);
-        }
-    }
-}
-
-// Restore GPIO pins configuration after deep sleep
-void restoreGPIOConfig() {
-    // Restore the state of GPIO pins
-    for (gpio_num_t i = GPIO_NUM_0; i < GPIO_NUM_MAX; i = static_cast<gpio_num_t>(i + 1)) {
-        if (deepSleepData.gpioConfig & (1 << i)) {
-            gpio_set_level(i, HIGH);
-        } else {
-            gpio_set_level(i, LOW);
-        }
-    }
-}
-
 void printRTCMemoryEnter() {
 #ifdef DEEP_SLEEP_DEBUG2
     Serial.println("-->[DEEP][ENTER] lowPowerMode: " + String(deepSleepData.lowPowerMode));
@@ -222,7 +199,6 @@ void toDeepSleep() {
     // #if defined(CONFIG_IDF_TARGET_ESP32S3)
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
-    // saveGPIOConfig();
 
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
@@ -610,8 +586,6 @@ void fromDeepSleepTimer() {
     Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
 #endif
-
-    // restoreGPIOConfig();
 
     // Set lowPowerMode using the correct type
     // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
