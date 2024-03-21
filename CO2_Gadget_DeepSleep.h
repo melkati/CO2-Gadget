@@ -283,12 +283,12 @@ void toDeepSleep() {
     esp_deep_sleep_start();
 }
 
-bool isDataReadySingleShotSCD41() {
+bool isDataReadySCD4x() {
     bool dataReadyFlag = false;
     uint16_t error = 0;
     error = sensors.scd4x.getDataReadyFlag(dataReadyFlag);
     if (error != 0) {
-        Serial.println("-->[DEEP] SCD4X isDataReadySingleShotSCD41() error: " + String(error));
+        Serial.println("-->[DEEP] SCD4X isDataReadySCD4x() error: " + String(error));
     }
     return dataReadyFlag;
 }
@@ -382,13 +382,13 @@ void scd41HandleFromDeepSleep(bool blockingMode = true) {
         initialized = true;
     }
 
-    if ((!blockingMode) && (!isDataReadySingleShotSCD41())) return;
+    if ((!blockingMode) && (!isDataReadySCD4x())) return;
 
     error = sensors.scd4x.measureSingleShot(true);
     if (error != 0) {
         Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: " + String(error));
     }
-    while (!isDataReadySingleShotSCD41()) {
+    while (!isDataReadySCD4x()) {
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
@@ -428,12 +428,8 @@ void scd40HandleFromDeepSleep(bool blockingMode = true) {
         initialized = true;
     }
 
-    // error = sensors.scd4x.measureSingleShot(true);
-    if (error != 0) {
-        Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: " + String(error));
-    }
-    if ((!blockingMode) && (!isDataReadySingleShotSCD41())) return;
-    while (!isDataReadySingleShotSCD41()) {
+    if ((!blockingMode) && (!isDataReadySCD4x())) return;
+    while (!isDataReadySCD4x()) {
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
