@@ -311,13 +311,19 @@ void doDeepSleepMQTTConnect() {
 
 void doDeepSleepWiFiConnect() {
     initPreferences();
-    initBattery();
-    connectToWiFi();
+    if (deepSleepData.activeWifiOnWake) {
+        connectToWiFi();
+    }
+
 #ifdef SUPPORT_ESPNOW
-    initESPNow();
+    if (deepSleepData.sendESPNowOnWake) {
+        initESPNow();
+    }
 #endif
 #ifdef SUPPORT_MQTT
-    doDeepSleepMQTTConnect();
+    if (deepSleepData.sendMQTTOnWake) {
+        doDeepSleepMQTTConnect();
+    }
 #endif
     deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
 }
@@ -674,7 +680,7 @@ void fromDeepSleepTimer() {
 #endif
 
 #ifdef SUPPORT_MQTT
-            if (WiFi.status() == WL_CONNECTED) {
+            if ((deepSleepData.sendMQTTOnWake) && (WiFi.status() == WL_CONNECTED)) {
                 Serial.println("-->[DEEP] MQTT connected. Publishing measurements.");
                 publishMQTT(true);
             }
