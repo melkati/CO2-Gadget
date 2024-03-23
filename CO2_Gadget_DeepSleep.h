@@ -182,18 +182,17 @@ void printRTCMemoryExit() {
 }
 
 void toDeepSleep() {
-#ifdef TIMEDEBUG
-    Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
-#endif
-    // deepSleepData.lowPowerMode = 2;
+    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
+        sensors.scd30.stopContinuousMeasurement();
+    } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) || (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
+        sensors.scd4x.stopPeriodicMeasurement();
+    }
     Serial.println("");
-    Serial.println("");
-    Serial.println("-->************************************************************************************************************************************************");
+    Serial.println("-->***********************************************************************************");
     Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
-    Serial.println("-->************************************************************************************************************************************************");
+    Serial.println("-->***********************************************************************************");
     Serial.println("");
     printRTCMemoryEnter();
-    Serial.flush();
 
     // Experimental: Turn off green LED and display on S3 board
     // #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -205,6 +204,10 @@ void toDeepSleep() {
     digitalWrite(13, HIGH);
     // gpio_hold_en(gpio_num_t(13));
 
+#ifdef TIMEDEBUG
+    Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
+#endif
+    Serial.flush();
     esp_deep_sleep_disable_rom_logging();
 #ifdef BTN_WAKEUP
     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
@@ -331,7 +334,15 @@ void scd41HandleFromDeepSleep(bool blockingMode = true) {
     error = sensors.scd4x.measureSingleShot(true);
     if (error != 0) {
         Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: " + String(error));
+        delay(50);
     }
+    esp_sleep_enable_timer_wakeup(5 * 1000000);
+    if (esp_light_sleep_start() == ESP_OK) {
+        Serial.println("-->[DEEP] Light sleep OK");
+    } else {
+        Serial.println("-->[DEEP] Light sleep failed");
+    }
+
     while (!isDataReadySCD4x()) {
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000) {
@@ -605,11 +616,11 @@ void fromDeepSleepTimer() {
             initBattery();
             batteryLoop();
 
+            handleLowPowerSensors();
+
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }
-
-            handleLowPowerSensors();
 
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] CO2: " + String(co2) + " CO2temp: " + String(temp) + " CO2humi: " + String(hum));
@@ -625,9 +636,6 @@ void fromDeepSleepTimer() {
         case MAXIMUM_LOWPOWER:
             break;
     }
-#ifdef TIMEDEBUG
-    Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
-#endif
     Serial.flush();
 }
 
@@ -635,6 +643,7 @@ void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeupCause;
     wakeupCause = esp_sleep_get_wakeup_cause();
 #ifdef DEEP_SLEEP_DEBUG
+    printRTCMemoryExit();
     Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
 #endif
 #ifdef DEEP_SLEEP_DEBUG
@@ -725,7 +734,7 @@ void deepSleepLoop() {
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
             turnOffDisplay();
             displaySleep(true);
-            deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
+            // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
         }
     }

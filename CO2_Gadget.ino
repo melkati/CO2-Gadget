@@ -561,10 +561,10 @@ void utilityLoop() {
     }
 }
 
-void initNoLowPower() {
+void initHighPerformanceMode() {
     Serial.println("");
     Serial.println("-->**********************************************");
-    Serial.println("-->[DEEP]--> INITIALIZING HIGH PERFORMANCE MODE *");
+    Serial.println("-->[STUP]--> INITIALIZING HIGH PERFORMANCE MODE *");
     Serial.println("-->**********************************************");
     Serial.println("");
 #ifdef AUTO_VERSION
@@ -587,6 +587,7 @@ void initNoLowPower() {
         Serial.println("-->[STUP] Flash speed: " + String(ESP.getFlashChipSpeed()));
         Serial.println("-->[STUP] Flash mode: " + String(ESP.getFlashChipMode()));
     }
+    delay(50);
 
     printResetReason();
     initImprov();
@@ -665,11 +666,10 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.setDebugOutput(true);
-    Serial.setTxBufferSize(1024);
+    Serial.setTxBufferSize(4096);
     Serial.setRxBufferSize(1024);
     Serial.begin(115200);
     Serial.println();
-    printRTCMemoryExit();
     Serial.println();
     Serial.println("-->[STUP] millis(): " + String(millis()));
     Serial.println("-->[STUP] Reset reason: (" + String(esp_reset_reason()) + ") " + getResetReason());
@@ -692,7 +692,7 @@ void setup() {
             default:
                 Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
                 delay(5000);
-                initNoLowPower();
+                initHighPerformanceMode();
                 break;
         }
     } else {
@@ -702,15 +702,17 @@ void setup() {
             initPreferences();
             if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) {
                 Serial.println("-->[STUP] Will go into high performance mode after initialization");
+                delay(10);
                 deepSleepEnabled = false;
-                // initNoLowPower();
+                // initHighPerformanceMode();
             } else {
                 Serial.println("-->[STUP] Will go into low power mode " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " secs after initialization");
+                delay(10);
                 interactiveMode = true;
                 deepSleepEnabled = true;
                 startTimerToDeepSleep = millis();
             }
-            initNoLowPower();
+            initHighPerformanceMode();
         } else {
             Serial.println("-->[STUP][ERROR] No mode defined. Reset reason: " + String(esp_reset_reason()));
             printResetReason();

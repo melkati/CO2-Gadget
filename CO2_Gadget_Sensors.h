@@ -36,7 +36,7 @@ void printSensorsDetected() {
     }
     Serial.println();
     if (mainDeviceSelected == "SCD4X") {
-        Serial.print("-->[SENS***] SCD4X Model: ");
+        Serial.print("-->[SENS] SCD4X model detected\t: ");
         sensors.scd4x.stopPeriodicMeasurement();
         mainDeviceSelected = sensors.getSCD4xModel();
         sensors.scd4x.startPeriodicMeasurement();
@@ -165,7 +165,7 @@ void initSensors() {
     Wire.begin();
 #endif
 
-    Serial.println("-->[SENS] Detecting sensors..");
+    Serial.println("-->[SENS] Detecting sensors...");
     sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
     sensors.setDebugMode(debugSensors);              // [optional] debug mode
@@ -174,11 +174,14 @@ void initSensors() {
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
     sensors.setSampleTime(measurementInterval);
 
-    Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
-    Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
+    // Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
+    Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+    Serial.println("-->[SENS] Measurement Interval: " + String(sensors.getSampleTime()));
+    // Serial.printf("-->[SENS] Measurement Interval: %d\n", sensors.getSampleTime());
 
     if ((deepSleepData.lowPowerMode) && (!interactiveMode)) {
         displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
+        Serial.println("-->[SENS] Trying to init sensors in Low Power Mode: " + String(deepSleepData.lowPowerMode));
         initSensorsLowPower();
     } else {
         displayNotification("Init sensors", notifyInfo);
