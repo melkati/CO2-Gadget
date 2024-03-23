@@ -145,6 +145,7 @@ typedef struct {
     uint16_t lastCO2Value;
     float lastTemperatureValue;
     float lastHumidityValue;
+    bool activeBLEOnWake = true;
     bool activeWifiOnWake;
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
