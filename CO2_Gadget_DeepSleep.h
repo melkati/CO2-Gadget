@@ -407,98 +407,7 @@ void scd40HandleFromDeepSleep(bool blockingMode = true) {
     }
 }
 
-void scd30HandleFromDeepSleepNEW() {
-    Adafruit_SCD30 scd30;
-    unsigned long previousMillis = 0;
-
-    // if (Wire.available()) {
-    //     Serial.println("-->[DEEP] Wire is available");
-    // } else {
-    //     Serial.println("-->[DEEP] Wire is NOT available");
-    reInitI2C();
-    // }
-
-    // // Try to initialize!
-    if (!scd30.begin()) {
-        Serial.println("[DEEP][ERROR] Failed to find SCD30 sensor");
-        // while (1) {
-        //     delay(10);
-        // }
-    }
-
-    if (!scd30.setMeasurementInterval(measurementInterval)) {
-        Serial.println("[DEEP][SCD30][ERROR] Failed to set measurement interval");
-        // while (1) {
-        //     delay(10);
-        // }
-    }
-
-    // While the setting is recorded, it is not immediately available to be read.
-    delay(200);
-
-    Serial.println("-->[DEEP][SCD30] Found! Starting continuous measurement");
-    uint16_t actualMeasurementInterval = scd30.getMeasurementInterval();
-    Serial.println("-->[DEEP][SCD30] Measurement Interval: " + String(actualMeasurementInterval) + " seconds");
-
-    if (!scd30.startContinuousMeasurement(0)) {
-        delay(50);
-        if (!scd30.startContinuousMeasurement(0)) {
-            Serial.println("[DEEP][SCD30][ERROR] Failed to start continuous measurement");
-            // while (1) {
-            //     delay(10);
-            // }
-        }
-    }
-
-    delay(measurementInterval * 1000 + 100);
-
-    if (!scd30.dataReady()) {
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP][SCD30] Waiting for data from sensor");
-#endif
-        while (!scd30.dataReady()) {
-            unsigned long currentMillis = millis();
-            if (currentMillis - previousMillis >= 1000) {
-                previousMillis = currentMillis;
-#ifdef DEEP_SLEEP_DEBUG
-                Serial.print("+");
-#endif
-                delay(100);
-            }
-        }
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("");
-#endif
-    }
-
-    if (!scd30.read()) {
-        Serial.println("-->[DEEP][SCD30][ERROR] Error reading data from sensor");
-        return;
-    }
-
-    Serial.println("-->[DEEP][SCD30] CO2: " + String(scd30.CO2, 3) + " ppm");
-    if (scd30.CO2 > 0) {
-        co2 = scd30.CO2;
-        deepSleepData.lastCO2Value = co2;
-    }
-
-    Serial.println("-->[DEEP][SCD30] Temperature: " + String(scd30.temperature) + " degrees C");
-    if (scd30.temperature > 0) {
-        temp = scd30.temperature;
-        deepSleepData.lastTemperatureValue = temp;
-    }
-
-    Serial.println("-->[DEEP][SCD30] Relative Humidity: " + String(scd30.relative_humidity) + " %");
-    if (scd30.relative_humidity > 0) {
-        hum = scd30.relative_humidity;
-        deepSleepData.lastHumidityValue = hum;
-    }
-
-    Serial.println("-->[DEEP][SCD30] Stopping continuous measurement");
-    scd30.stopContinuousMeasurement();
-}
-
-void scd30HandleFromDeepSleepOLD() {
+void scd30HandleFromDeepSleep() {
     unsigned long previousMillis = 0;
 
     reInitI2C();
@@ -566,8 +475,7 @@ void handleLowPowerSensors() {
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
 #endif
-        // scd30HandleFromDeepSleepNEW();
-        scd30HandleFromDeepSleepOLD();
+        scd30HandleFromDeepSleep();
 
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
 #ifdef DEEP_SLEEP_DEBUG
