@@ -525,6 +525,13 @@ void fromDeepSleepTimer() {
             batteryLoop();
 
             handleLowPowerSensors();
+#ifdef SUPPORT_BLE
+            if (deepSleepData.activeBLEOnWake) {
+                initBLE();
+                publishBLE();
+                // BLELoop();
+            }
+#endif
 
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
