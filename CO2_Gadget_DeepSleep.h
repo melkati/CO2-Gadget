@@ -184,9 +184,13 @@ void printRTCMemoryExit() {
 void toDeepSleep() {
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         sensors.scd30.stopContinuousMeasurement();
-    } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) || (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
         sensors.scd4x.stopPeriodicMeasurement();
+    } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
+        sensors.scd4x.stopPeriodicMeasurement();
+        sensors.scd4x.startLowPowerPeriodicMeasurement();
     }
+
     Serial.println("");
     Serial.println("-->***********************************************************************************");
     Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
@@ -369,13 +373,15 @@ void scd41HandleFromDeepSleep(bool blockingMode = true) {
 
 void scd40HandleFromDeepSleep(bool blockingMode = true) {
     static bool initialized = false;
+
     unsigned long previousMillis = 0;
+    unsigned long startTimeoutMillis = 0;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
 
-    Serial.println("-->[DEEP] scd40HandleFromDeepSleep()");
+    // Serial.println("-->[DEEP] scd40HandleFromDeepSleep()");
 
     if (!initialized) {
         reInitI2C();
@@ -383,14 +389,31 @@ void scd40HandleFromDeepSleep(bool blockingMode = true) {
         initialized = true;
     }
 
-    if ((!blockingMode) && (!isDataReadySCD4x())) return;
-    while (!isDataReadySCD4x()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("+");
-            delay(10);
+    if (!deepSleepData.measurementsStarted) {
+        sensors.scd4x.stopPeriodicMeasurement();
+        sensors.scd4x.startLowPowerPeriodicMeasurement();
+        deepSleepData.measurementsStarted = true;
+    }
+
+    startTimeoutMillis = millis();
+    if (!isDataReadySCD4x()) {
+        if (!blockingMode) return;
+        Serial.print("-->[DEEP] Waiting for data from sensor SCD40: ");
+        while (!isDataReadySCD4x()) {
+            unsigned long currentMillis = millis();
+            if (currentMillis - previousMillis >= 1000) {
+                previousMillis = currentMillis;
+                Serial.print("+");
+                delay(10);
+            }
+            if (currentMillis - startTimeoutMillis >= 31000) {
+                Serial.println("-->[DEEP] Timeout waiting for data from sensor SCD40");
+                return;
+            }
+            esp_sleep_enable_timer_wakeup(0.1 * 1000000);
+            esp_light_sleep_start();
         }
+        Serial.println("");
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     co2 = co2value;
@@ -566,6 +589,15 @@ void fromDeepSleep() {
     Serial.println("");
 #endif
     switch (wakeupCause) {
+        case ESP_SLEEP_WAKEUP_TIMER:
+#ifdef DEEP_SLEEP_DEBUG
+            Serial.println("-->[DEEP] Wakeup caused by timer");
+#endif
+            fromDeepSleepTimer();
+            turnOffDisplay();
+            displaySleep(true);
+            toDeepSleep();
+            break;
         case ESP_SLEEP_WAKEUP_EXT0:
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
@@ -576,15 +608,6 @@ void fromDeepSleep() {
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
             interactiveMode = true;
 #endif
-            break;
-        case ESP_SLEEP_WAKEUP_TIMER:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Wakeup caused by timer");
-#endif
-            fromDeepSleepTimer();
-            turnOffDisplay();
-            displaySleep(true);
-            toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
 #ifdef DEEP_SLEEP_DEBUG

@@ -150,6 +150,7 @@ typedef struct {
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
     bool displayOnWake;
+    bool measurementsStarted;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
