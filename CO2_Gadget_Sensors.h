@@ -71,7 +71,7 @@ void storeSensorSelectedInRTC() {
             deepSleepData.co2Sensor = CO2Sensor_SCD40;
             Serial.println("-->[SENS][SCD4X] Sensor stored: CO2Sensor_SCD40");
             return;
-        } 
+        }
 
         if (sensorsGetMainDeviceSelected() == "SCD41") {
             deepSleepData.co2Sensor = CO2Sensor_SCD41;
@@ -132,24 +132,8 @@ void initSensorsLowPower() {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
 
         // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+        deepSleepData.measurementsStarted = false;
         sensors.initCO2LowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
-
-        switch (deepSleepData.lowPowerMode) {
-            case BASIC_LOWPOWER:
-                Serial.println("-->[SENS] Low Power Mode: BASIC_LOWPOWER");
-                break;
-            case MEDIUM_LOWPOWER:
-                Serial.println("-->[SENS] Low Power Mode: MEDIUM_LOWPOWER");
-                break;
-            case MAXIMUM_LOWPOWER:
-                Serial.println("-->[SENS] Low Power Mode: MAXIMUM_LOWPOWER");
-                break;
-            default:
-                while (true) {
-                    Serial.println("-->[SENS][ERROR!!!] Low Power Mode: HIGH_PERFORMANCE");
-                    delay(1000);
-                }
-        }
     }
 }
 
@@ -280,7 +264,7 @@ void sensorsLoop() {
         // }
         sensorsLoopLowPower();
         return;
-    } else if (!buzzerBeeping) { // Avoid affecting beep sound
+    } else if (!buzzerBeeping) {  // Avoid affecting beep sound
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
         //     lastDotPrintTime = millis();

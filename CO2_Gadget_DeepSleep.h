@@ -483,6 +483,9 @@ void scd30HandleFromDeepSleep() {
             co2 = tCO2;
             hum = sensors.scd30.relative_humidity;
             temp = sensors.scd30.temperature;
+            deepSleepData.lastCO2Value = co2;
+            deepSleepData.lastTemperatureValue = temp;
+            deepSleepData.lastHumidityValue = hum;
         }
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP][SCD30] Data: CO2: " + String(tCO2) + " ppm, Temp: " + String(sensors.scd30.temperature) + " °C, Hum: " + String(sensors.scd30.relative_humidity) + " %");
@@ -529,10 +532,6 @@ void fromDeepSleepTimer() {
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
 #endif
 
-    // Set lowPowerMode using the correct type
-    // sensors.setLowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
-    // gpioConfig;
-
     switch (deepSleepData.lowPowerMode) {
         case BASIC_LOWPOWER:
 #ifdef DEEP_SLEEP_DEBUG
@@ -548,6 +547,17 @@ void fromDeepSleepTimer() {
             batteryLoop();
 
             handleLowPowerSensors();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+            if (deepSleepData.displayOnWake) {
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.println("-->[DEEP] Displaying values momentarily.");
+#endif
+                initDisplay(true);
+                displayShowValues();
+                esp_sleep_enable_timer_wakeup(3 * 1000000);
+                esp_light_sleep_start();
+            }
+#endif
 #ifdef SUPPORT_BLE
             if (deepSleepData.activeBLEOnWake) {
                 initBLE();
@@ -555,11 +565,9 @@ void fromDeepSleepTimer() {
                 // BLELoop();
             }
 #endif
-
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }
-
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] CO2: " + String(co2) + " CO2temp: " + String(temp) + " CO2humi: " + String(hum));
 #endif
