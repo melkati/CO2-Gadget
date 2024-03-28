@@ -150,6 +150,7 @@ typedef struct {
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
     bool displayOnWake;
+    uint16_t timeToDisplayOnWake = 3;
     bool measurementsStarted;
 } deepSleepData_t;
 
@@ -626,9 +627,9 @@ void initHighPerformanceMode() {
 
 void initGPIOLowPower() {
     Serial.println("");
-    Serial.println("-->***************************************************");
-    Serial.println("-->[DEEP]--> INITIALIZING LOW POWER MODE GPIO WAKE UP *");
-    Serial.println("-->***************************************************");
+    Serial.println("-->****************************************************");
+    Serial.println("-->[STUP]--> INITIALIZING LOW POWER MODE GPIO WAKE UP *");
+    Serial.println("-->****************************************************");
     Serial.println("");
     co2 = deepSleepData.lastCO2Value;
     temp = deepSleepData.lastTemperatureValue;
@@ -644,7 +645,9 @@ void initGPIOLowPower() {
     initBLE();
 #endif
     // initSensors();
-    initWifi();
+    if (deepSleepData.activeWifiOnWake) {
+        doDeepSleepWiFiConnect();
+    }
     wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
     initESPNow();
@@ -658,7 +661,30 @@ void initGPIOLowPower() {
     startTimerToDeepSleep = millis();
     Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
     Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
-    Serial.println("-->[STUP] Initialization in LOW POWER MODE Ready.");
+    Serial.println("-->**********************************************************");
+    Serial.println("-->[STUP]--> INITIALIZING LOW POWER MODE GPIO WAKE UP READY *");
+    Serial.println("-->**********************************************************");
+    Serial.println("");
+}
+
+void deepSleepDirectly() {
+    esp_sleep_enable_timer_wakeup(10 * 1000000);
+    delay(5000);
+    // gpio_deep_sleep_hold_en();
+    // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
+    // esp_wifi_stop();
+    // esp_wifi_deinit();
+    // btStop();
+
+    //   adc_power_off();
+    //   esp_wifi_stop();
+    // Pull up pin 13 to put flash memory into deep sleep
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+    // gpio_hold_en(gpio_num_t(13));
+
+    delay(1000);
+    esp_deep_sleep_start();
 }
 
 void setup() {

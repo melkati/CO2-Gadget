@@ -18,7 +18,7 @@
 
 uint16_t deepSleepReadrawEach = 5;
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213Z16)
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <NotoSans_Bold48pt7b.h>
 int displayWidth = 212;
@@ -41,6 +41,9 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS 
 #endif
 #ifdef EINKBOARDGDEM0213B74
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
+#endif
+#ifdef EINKBOARDGDEW0213Z16
+GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
 #endif
 #endif
 
@@ -129,7 +132,7 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
     }
 #endif
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213Z16)
     if (displayWidth == 212 && displayHeight == 104) {  // 212x104 DEPG0213BN, GDEM0213B74 and similar
         elementPosition.co2X = displayWidth - 32;
         elementPosition.co2Y = displayHeight - 33;

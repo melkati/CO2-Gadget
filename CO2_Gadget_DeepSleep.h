@@ -203,10 +203,12 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
+    // #if defined(EINKBOARDGDEM029T94) || defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213Z16)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
     // gpio_hold_en(gpio_num_t(13));
+// #endif
 
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
@@ -225,6 +227,7 @@ void toDeepSleep() {
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
     gpio_deep_sleep_hold_en();
+    // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
     esp_deep_sleep_start();
 }
 
@@ -312,7 +315,6 @@ void cm1106HandleFromDeepSleep() {
 
     co2 = sensors.cm1106->get_co2();
     deepSleepData.lastCO2Value = co2;
-    // Serial.printf("-->[DEEP] CO2 value: %d ppm\n", co2);
     Serial.println("-->[DEEP] CO2 value: " + String(co2) + " ppm");
     displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
 }
@@ -363,7 +365,6 @@ void scd41HandleFromDeepSleep(bool blockingMode = true) {
     deepSleepData.lastTemperatureValue = temp;
     deepSleepData.lastHumidityValue = hum;
     if (error != 0) {
-        // Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
         Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
 
     } else {
@@ -554,7 +555,7 @@ void fromDeepSleepTimer() {
 #endif
                 initDisplay(true);
                 displayShowValues();
-                esp_sleep_enable_timer_wakeup(3 * 1000000);
+                esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
                 esp_light_sleep_start();
             }
 #endif
@@ -602,8 +603,10 @@ void fromDeepSleep() {
             Serial.println("-->[DEEP] Wakeup caused by timer");
 #endif
             fromDeepSleepTimer();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             turnOffDisplay();
             displaySleep(true);
+#endif
             toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_EXT0:
@@ -678,8 +681,10 @@ void deepSleepLoop() {
         }
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             turnOffDisplay();
             displaySleep(true);
+#endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
         }
