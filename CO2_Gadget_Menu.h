@@ -1030,7 +1030,7 @@ result idle(menuOut &o, idleEvent e) {
             setInMenu(false);
             //       nav.poll();
 
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(true);
 #endif
             break;
@@ -1038,7 +1038,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
             Serial.println("-->[MENU] Event iddling");
 #endif
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(false);
 #endif
             break;
@@ -1115,7 +1115,7 @@ void menuLoopEINK() {
         displayShowValues(false);
         return;
     }
-
+    nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(false);
     } else {
