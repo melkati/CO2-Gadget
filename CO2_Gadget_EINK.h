@@ -18,11 +18,9 @@
 
 uint16_t deepSleepReadrawEach = 5;
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213Z16)
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <NotoSans_Bold48pt7b.h>
-int displayWidth = 212;
-int displayHeight = 104;
 
 #include "bootlogo.h"
 #include "icons.h"
@@ -37,13 +35,21 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_BUSY 4
 
 #ifdef EINKBOARDDEPG0213BN
+int displayWidth = 250;
+int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
 #ifdef EINKBOARDGDEM0213B74
+int displayWidth = 250;
+int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
 #endif
-#ifdef EINKBOARDGDEW0213Z16
-GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
+#ifdef EINKBOARDGDEW0213M21
+int displayWidth = 212;
+int displayHeight = 104;
+// GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
+// GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
+GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW)
 #endif
 #endif
 
@@ -132,8 +138,34 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
     }
 #endif
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213Z16)
-    if (displayWidth == 212 && displayHeight == 104) {  // 212x104 DEPG0213BN, GDEM0213B74 and similar
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    if (displayWidth == 250 && displayHeight == 122) {  // 250x122 DEPG0213BN, GDEM0213B74 and similar
+        elementPosition.co2X = displayWidth - 32;
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.tempX = 1;
+        elementPosition.tempY = displayHeight - 25;
+        elementPosition.humidityX = displayWidth - 60;
+        elementPosition.humidityY = displayHeight - 25;
+        elementPosition.batteryIconX = displayWidth - 34;
+        elementPosition.batteryIconY = 2;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 1;
+    }
+#endif
+#if defined(EINKBOARDGDEW0213M21)
+    if (displayWidth == 212 && displayHeight == 104) {  // 212x104 GDEW0213M21 and similar
         elementPosition.co2X = displayWidth - 32;
         elementPosition.co2Y = displayHeight - 33;
         elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
@@ -200,9 +232,9 @@ void drawScreenCenterText(const String text) {
 }
 
 void displaySplashScreenLOGO() {
-    #ifdef TIMEDEBUG
+#ifdef TIMEDEBUG
     timer.start();
-    #endif
+#endif
     display.setFullWindow();
     display.firstPage();
     do {
@@ -210,10 +242,10 @@ void displaySplashScreenLOGO() {
         display.fillScreen(GxEPD_WHITE);
         display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
     } while (display.nextPage());
-    #ifdef TIMEDEBUG
+#ifdef TIMEDEBUG
     Serial.print("time used to displaySplashScreenLOGO: ");
     Serial.println(timer.read());
-    #endif
+#endif
 }
 
 void displaySplashScreen() {
@@ -392,9 +424,9 @@ void drawMainScreen(bool force) {
     if ((!force) && (drawTimes > 0)) {
         return;
     }
-    #ifdef TIMEDEBUG
+#ifdef TIMEDEBUG
     timer.start();
-    #endif
+#endif
     drawTimes++;
 
     // Enable partial refresh
@@ -420,10 +452,10 @@ void drawMainScreen(bool force) {
     // Refresh screen in partial mode
     display.displayWindow(0, 0, display.width(), display.height());
 
-    #ifdef TIMEDEBUG
+#ifdef TIMEDEBUG
     Serial.print("-->[EINK] Time used to drawMainScreen: \t");
     Serial.println(timer.read());
-    #endif
+#endif
 }
 
 void showValues() {
@@ -512,31 +544,31 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
 }
 
 void displayShowValues(bool forceRedraw = false) {
-    #ifdef TIMEDEBUG
+#ifdef TIMEDEBUG
     timer.start();
-    #endif
+#endif
     if (forceRedraw) {
         // tft.fillScreen(TFT_BLACK);
     }
     // drawMainScreen();
     showValues();
-    // showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
-    // showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
-    // showTemperature(temp, elementPosition.tempX, elementPosition.tempY, forceRedraw);
-    // showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
-    // showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
-    // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
-    // showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    // showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    // showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-    // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
-    // display.hibernate();
-    #ifdef TIMEDEBUG
+// showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
+// showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
+// showTemperature(temp, elementPosition.tempX, elementPosition.tempY, forceRedraw);
+// showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
+// showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
+// showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
+// showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+// showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+// showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+// showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+// display.hibernate();
+#ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
     if (elapsed > 10) {
         Serial.println("-->[EINK] Time used to showValues: " + String(elapsed));
     }
-    #endif
+#endif
     forceRedraw = false;
 }
 
