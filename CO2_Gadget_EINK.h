@@ -19,13 +19,9 @@
 uint16_t deepSleepReadrawEach = 5;
 
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
-#include <Fonts/FreeMonoBold9pt7b.h>
-#include <NotoSans_Bold48pt7b.h>
 
 #include "bootlogo.h"
 #include "icons.h"
-const GFXfont SmallFont = FreeMonoBold9pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_SCLK SCK  // 18
 #define EPD_MISO 17
 #define EPD_DC 17      // MISO
@@ -35,16 +31,28 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_BUSY 4
 
 #ifdef EINKBOARDDEPG0213BN
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
 #ifdef EINKBOARDGDEM0213B74
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
 #endif
 #ifdef EINKBOARDGDEW0213M21
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold46pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
@@ -437,15 +445,26 @@ void drawMainScreen(bool force) {
     display.fillScreen(GxEPD_WHITE);
 
     // Draw labels and field rectangles
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    #endif
     display.setRotation(1);
     display.setTextColor(GxEPD_BLACK);
     display.setCursor(0, 12);
     display.print("TEMP: ");
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
     display.print("HUM: ");
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor((display.width()) - 5 * 9 * 2 - 20, 12);
+    display.print("HUM: ");
+    #endif    
     display.setRotation(4);
-    display.setCursor((display.width() / 2) - 20, display.height() - 3);
+    display.setCursor((display.width() / 2) - 15, display.height() - 3);
     display.print("PPM");
     display.setRotation(1);
 
@@ -476,7 +495,12 @@ void showValues() {
     display.setFont(&SmallFont);
     display.setCursor(55, 12);
     display.printf("%.1fºC", oldTempValue);
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor((display.width()) - 5 * 9 - 15, 12);
+    #endif
     display.printf("%.0f%%", oldHumiValue);
 
     // Show values
@@ -488,7 +512,13 @@ void showValues() {
     display.setFont(&SmallFont);
     display.setCursor(55, 12);
     display.printf("%.1fºC", temp);
+    
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor((display.width()) - 5 * 9 - 15, 12);
+    #endif
     display.printf("%.0f%%", hum);
 
     // Refresh screen in partial mode
