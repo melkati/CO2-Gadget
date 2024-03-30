@@ -295,6 +295,7 @@ void wakeUpDisplay() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);
         publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
+        Serial.println("-->[MAIN] Display woken up. Setting display brightness to " + String(DisplayBrightness));
 #endif
         lastTimeButtonPressed = millis();
     }
@@ -459,6 +460,7 @@ void adjustBrightnessLoop() {
         if (actualDisplayBrightness == 0) {
             setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
             publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+            Serial.println("-->[MAIN] Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
         }
         return;
     }
