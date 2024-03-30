@@ -49,9 +49,9 @@ int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
 #endif
 #ifdef EINKBOARDGDEW0213M21
-#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold6pt7b.h>
 #include <NotoSans_Bold46pt7b.h>
-const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
@@ -309,7 +309,7 @@ void drawHoritzontalCenterText(int16_t y, const String text) {
 
 void showPages() {
     display.setRotation(0);
-    display.setFont(&FreeMonoBold9pt7b);
+    display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     display.clearScreen(0);  // black
     display.setFullWindow();
@@ -358,9 +358,11 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 }
 
 void initDisplay(bool fastMode = false) {
-    if (!fastMode) Serial.println("-->[TFT ] Initializing display");
+    if (fastMode) Serial.println("-->[EINK] Initializing display in fast mode");
+    else Serial.println("-->[EINK] Initializing display in normal mode");
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
-    display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+    // display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+    display.init(115200, !fastMode, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 
     deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
 
@@ -454,15 +456,14 @@ void drawMainScreen(bool force) {
     display.setRotation(1);
     display.setTextColor(GxEPD_BLACK);
     display.setCursor(0, 12);
-    display.print("TEMP: ");
+    display.print("TEMP:");
     #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
-    display.print("HUM: ");
     #endif
     #if defined(EINKBOARDGDEW0213M21)
-    display.setCursor((display.width()) - 5 * 9 * 2 - 20, 12);
-    display.print("HUM: ");
+    display.setCursor((display.width()) - 5 * 6 * 2 - 55, 12);
     #endif    
+    display.print("HUM:");
     display.setRotation(4);
     display.setCursor((display.width() / 2) - 15, display.height() - 3);
     display.print("PPM");
@@ -486,20 +487,24 @@ void showValues() {
         return;
     }
 
+    Serial.println("-->[EINK] Erasing values: CO2=" + String(oldCO2Value) + ", Temp=" + String(oldTempValue) + ", Hum=" + String(oldHumiValue));
+    Serial.println("-->[EINK] Showing values: CO2=" + String(co2) + ", Temp=" + String(temp) + ", Hum=" + String(hum));
+
     // Erase old values
     display.setTextColor(GxEPD_WHITE);
     display.setFont(&BigFont);
     display.setTextSize(1);
     drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
-    display.setTextSize(1);
     display.setFont(&SmallFont);
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor(55, 12);
     display.printf("%.1fºC", oldTempValue);
-    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 - 35, 12);
     #endif
     #if defined(EINKBOARDGDEW0213M21)
-    display.setCursor((display.width()) - 5 * 9 - 15, 12);
+    display.setCursor(40, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 6 - 50, 12);
     #endif
     display.printf("%.0f%%", oldHumiValue);
 
@@ -508,16 +513,17 @@ void showValues() {
     display.setFont(&BigFont);
     display.setTextSize(1);
     drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
-    display.setTextSize(1);
     display.setFont(&SmallFont);
-    display.setCursor(55, 12);
-    display.printf("%.1fºC", temp);
     
     #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", temp);
     display.setCursor((display.width()) - 5 * 9 - 35, 12);
     #endif
     #if defined(EINKBOARDGDEW0213M21)
-    display.setCursor((display.width()) - 5 * 9 - 15, 12);
+    display.setCursor(40, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 6 - 50, 12);
     #endif
     display.printf("%.0f%%", hum);
 
