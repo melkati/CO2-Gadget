@@ -599,7 +599,7 @@ void initHighPerformanceMode() {
     initNeopixel();
     initBuzzer();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-    initDisplay();
+    initDisplay(false);
 #endif
 #ifdef SUPPORT_BLE
     initBLE();

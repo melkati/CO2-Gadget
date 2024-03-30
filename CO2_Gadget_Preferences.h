@@ -99,6 +99,8 @@ void printPreferences() {
     Serial.printf("-->[PREF] timeSleeping is:\t#%d#\n", deepSleepData.timeSleeping);
     Serial.printf("-->[PREF] cyclsWifiConn is:\t#%d#\n", deepSleepData.cyclesToWiFiConnect);
     Serial.printf("-->[PREF] cycRedrawDis is:\t#%d#\n", deepSleepData.cyclesToRedrawDisplay);
+    Serial.printf("-->[PREF] actBLEOnWake is:\t#%s#\n",
+                  ((deepSleepData.activeBLEOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] actWifiOnWake is:\t#%s#\n",
                   ((deepSleepData.activeWifiOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] sendMQTTWake is:\t#%s#\n",
@@ -213,6 +215,7 @@ void initPreferences() {
     deepSleepData.timeSleeping = preferences.getUInt("timeSleeping", 60);
     deepSleepData.cyclesToWiFiConnect = preferences.getUInt("cyclsWifiConn", 5);
     deepSleepData.cyclesToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
+    deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
     deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
     deepSleepData.sendMQTTOnWake = preferences.getBool("sendMQTTWake", false);
     deepSleepData.sendESPNowOnWake = preferences.getBool("sendESPNowWk", false);
@@ -313,6 +316,7 @@ void putPreferences() {
     preferences.putUInt("timeSleeping", deepSleepData.timeSleeping);
     preferences.putUInt("cyclsWifiConn", deepSleepData.cyclesToWiFiConnect);
     preferences.putUInt("cycRedrawDis", deepSleepData.cyclesToRedrawDisplay);
+    preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
     preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
     preferences.putBool("sendMQTTWake", deepSleepData.sendMQTTOnWake);
     preferences.putBool("sendESPNowWk", deepSleepData.sendESPNowOnWake);
@@ -472,6 +476,7 @@ String getActualSettingsAsJson() {
     doc["timeSleeping"] = deepSleepData.timeSleeping;
     doc["cyclsWifiConn"] = deepSleepData.cyclesToWiFiConnect;
     doc["cycRedrawDis"] = deepSleepData.cyclesToRedrawDisplay;
+    doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
     doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
     doc["sendMQTTWake"] = deepSleepData.sendMQTTOnWake;
     doc["sendESPNowWk"] = deepSleepData.sendESPNowOnWake;
@@ -578,6 +583,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         deepSleepData.timeSleeping = JsonDocument["timeSleeping"];
         deepSleepData.cyclesToWiFiConnect = JsonDocument["cyclsWifiConn"];
         deepSleepData.cyclesToRedrawDisplay = JsonDocument["cycRedrawDis"];
+        deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
         deepSleepData.activeWifiOnWake = JsonDocument["actWifiOnWake"];
         deepSleepData.sendMQTTOnWake = JsonDocument["sendMQTTWake"];
         deepSleepData.sendESPNowOnWake = JsonDocument["sendESPNowWk"];

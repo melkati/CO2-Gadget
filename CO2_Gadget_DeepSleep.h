@@ -154,6 +154,7 @@ void printRTCMemoryEnter() {
     Serial.println("-->[DEEP][ENTER] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][ENTER] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][ENTER] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
+    Serial.println("-->[DEEP][ENTER] activeBLEOnWake: " + String(deepSleepData.activeBLEOnWake));
     Serial.println("-->[DEEP][ENTER] activeWifiOnWake: " + String(deepSleepData.activeWifiOnWake));
     Serial.println("-->[DEEP][ENTER] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][ENTER] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
@@ -174,6 +175,7 @@ void printRTCMemoryExit() {
     Serial.println("-->[DEEP][EXIT] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][EXIT] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][EXIT] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
+    Serial.println("-->[DEEP][EXIT] activeBLEOnWake: " + String(deepSleepData.activeBLEOnWake));
     Serial.println("-->[DEEP][EXIT] activeWifiOnWake: " + String(deepSleepData.activeWifiOnWake));
     Serial.println("-->[DEEP][EXIT] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][EXIT] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
@@ -208,7 +210,7 @@ void toDeepSleep() {
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
     // gpio_hold_en(gpio_num_t(13));
-// #endif
+    // #endif
 
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
@@ -548,6 +550,16 @@ void fromDeepSleepTimer() {
             batteryLoop();
 
             handleLowPowerSensors();
+#ifdef SUPPORT_BLE
+            if (deepSleepData.activeBLEOnWake) {
+                initBLE();
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
+#endif
+                publishBLE();
+                // BLELoop();
+            }
+#endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
             if (deepSleepData.displayOnWake) {
 #ifdef DEEP_SLEEP_DEBUG
@@ -559,13 +571,7 @@ void fromDeepSleepTimer() {
                 esp_light_sleep_start();
             }
 #endif
-#ifdef SUPPORT_BLE
-            if (deepSleepData.activeBLEOnWake) {
-                initBLE();
-                publishBLE();
-                // BLELoop();
-            }
-#endif
+
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }

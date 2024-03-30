@@ -55,6 +55,11 @@
           <label for="cycRedrawDis">Redraw Display Each (Cycles):</label>
           <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
         </div>
+
+        <div>
+          <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+          <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+        </div>
       
         <div>
           <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
@@ -595,6 +600,9 @@
           if (getPreferencesDebug) console.log('Setting cycRedrawDis to:', preferences.cycRedrawDis);
           document.getElementById("cycRedrawDis").value = preferences.cycRedrawDis;
 
+          if (getPreferencesDebug) console.log('Setting actBLEOnWake to:', preferences.actBLEOnWake);
+          document.getElementById("actBLEOnWake").checked = preferences.actBLEOnWake;
+
           if (getPreferencesDebug) console.log('Setting actWifiOnWake to:', preferences.actWifiOnWake);
           document.getElementById("actWifiOnWake").checked = preferences.actWifiOnWake;
 
@@ -669,6 +677,7 @@
         timeSleeping: document.getElementById("timeSleeping").value,
         cyclsWifiConn: document.getElementById("cyclsWifiConn").value,
         cycRedrawDis: document.getElementById("cycRedrawDis").value,
+        actBLEOnWake: document.getElementById("actBLEOnWake").checked,
         actWifiOnWake: document.getElementById("actWifiOnWake").checked,
         sendMQTTWake: document.getElementById("sendMQTTWake").checked,
         sendESPNowWk: document.getElementById("sendESPNowWk").checked,
