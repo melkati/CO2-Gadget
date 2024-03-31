@@ -205,12 +205,12 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
-    // #if defined(EINKBOARDGDEM029T94) || defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)
+#if defined(EINKBOARDGDEM029T94) || defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
-    // gpio_hold_en(gpio_num_t(13));
-    // #endif
+// gpio_hold_en(gpio_num_t(13));
+#endif
 
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
@@ -656,7 +656,7 @@ void deepSleepLoop() {
         // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
         // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
 
-        Serial.println("-->[DEEP] Waiting to go to deep sleep in (seconds): " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+        Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
         // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
         lastSerialPrintTime = millis();  // Update last print time
     }
@@ -695,6 +695,7 @@ void deepSleepLoop() {
             toDeepSleep();
         }
     }
+    delay(20);  // Give time to Serial.print
 }
 
 #endif  // CO2_Gadget_DeepSleep_h
