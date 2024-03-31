@@ -669,25 +669,33 @@ void initGPIOLowPower() {
 
 void deepSleepDirectly() {
     esp_sleep_enable_timer_wakeup(10 * 1000000);
-    delay(5000);
+    delay(4000);
     // gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
     // esp_wifi_stop();
     // esp_wifi_deinit();
     // btStop();
 
-    //   adc_power_off();
-    //   esp_wifi_stop();
+//   adc_power_off();
+//   esp_wifi_stop();
+#if defined(EINKBOARDGDEM029T94) || defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)
+    // displaySleep(false);
+
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
-    // gpio_hold_en(gpio_num_t(13));
+    gpio_hold_en(gpio_num_t(13));
+#endif
+    gpio_deep_sleep_hold_en();
+
+    // esp_deep_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
 
     delay(1000);
     esp_deep_sleep_start();
 }
 
 void setup() {
+    // deepSleepDirectly();
 #ifdef TIMEDEBUG
     timerAwake.start();
 #endif
