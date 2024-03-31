@@ -212,12 +212,12 @@ void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
 }
 
-void displaySleep(bool value)  // https://github.com/Bodmer/TFT_eSPI/issues/715
+void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issues/715
 {
     display.hibernate();
     if (value) {
-        // display.powerOff();  // Send command to put the display to sleep.
-        // delay(150);              // Delay for shutdown time before another command can be sent.
+        display.powerOff();  // Send command to put the display to sleep.
+        delay(10);              // Delay for shutdown time before another command can be sent.
     } else {
         ;  // This sends the wake up command and initialises the display
     }
