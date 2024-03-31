@@ -83,16 +83,6 @@ void printPreferences() {
     Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
     Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
 
-    // lowPowerMode
-    // waitToDeep
-    // timeSleeping
-    // cyclsWifiConn
-    // cycRedrawDis
-    // actWifiOnWake
-    // sendMQTTWake
-    // sendESPNowWk
-    // deepSleepData.displayOnWake
-
     // Low power preferences
     Serial.printf("-->[PREF] lowPowerMode is:\t#%d#\n", deepSleepData.lowPowerMode);
     Serial.printf("-->[PREF] waitToDeep is:\t#%d#\n", deepSleepData.waitToGoDeepSleepOn1stBoot);
@@ -103,9 +93,9 @@ void printPreferences() {
                   ((deepSleepData.activeBLEOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] actWifiOnWake is:\t#%s#\n",
                   ((deepSleepData.activeWifiOnWake) ? "Enabled" : "Disabled"));
-    Serial.printf("-->[PREF] sendMQTTWake is:\t#%s#\n",
+    Serial.printf("-->[PREF] actMQTTOnWake is:\t#%s#\n",
                   ((deepSleepData.sendMQTTOnWake) ? "Enabled" : "Disabled"));
-    Serial.printf("-->[PREF] sendESPNowWk is:\t#%s#\n",
+    Serial.printf("-->[PREF] actESPnowWake is:\t#%s#\n",
                   ((deepSleepData.sendESPNowOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] displayOnWake is:\t#%s#\n",
                   ((deepSleepData.displayOnWake) ? "Enabled" : "Disabled"));
@@ -217,8 +207,8 @@ void initPreferences() {
     deepSleepData.cyclesToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
     deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
     deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
-    deepSleepData.sendMQTTOnWake = preferences.getBool("sendMQTTWake", false);
-    deepSleepData.sendESPNowOnWake = preferences.getBool("sendESPNowWk", false);
+    deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+    deepSleepData.sendESPNowOnWake = preferences.getBool("actESPnowWake", false);
     deepSleepData.displayOnWake = preferences.getBool("displayOnWake", false);
 
     // Check if the values are within the expected range
@@ -318,8 +308,8 @@ void putPreferences() {
     preferences.putUInt("cycRedrawDis", deepSleepData.cyclesToRedrawDisplay);
     preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
     preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
-    preferences.putBool("sendMQTTWake", deepSleepData.sendMQTTOnWake);
-    preferences.putBool("sendESPNowWk", deepSleepData.sendESPNowOnWake);
+    preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
+    preferences.putBool("actESPnowWake", deepSleepData.sendESPNowOnWake);
     preferences.putBool("displayOnWake", deepSleepData.displayOnWake);
 
     preferences.end();
@@ -393,8 +383,8 @@ String getPreferencesAsJson() {
     doc["cyclsWifiConn"] = preferences.getUInt("cyclsWifiConn", 10);
     doc["cycrRedrawDis"] = preferences.getUInt("cycRedrawDis", 5);
     doc["actWifiOnWake"] = preferences.getBool("actWifiOnWake", false);
-    doc["sendMQTTWake"] = preferences.getBool("sendMQTTWake", false);
-    doc["sendESPNowWk"] = preferences.getBool("sendESPNowWk", false);
+    doc["actMQTTOnWake"] = preferences.getBool("actMQTTOnWake", false);
+    doc["actESPnowWake"] = preferences.getBool("actESPnowWake", false);
     doc["displayOnWake"] = preferences.getBool("displayOnWake", false);
 
     preferences.end();
@@ -478,8 +468,8 @@ String getActualSettingsAsJson() {
     doc["cycRedrawDis"] = deepSleepData.cyclesToRedrawDisplay;
     doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
     doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
-    doc["sendMQTTWake"] = deepSleepData.sendMQTTOnWake;
-    doc["sendESPNowWk"] = deepSleepData.sendESPNowOnWake;
+    doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
+    doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
     doc["displayOnWake"] = deepSleepData.displayOnWake;
 
     String preferencesJson;
@@ -585,8 +575,8 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         deepSleepData.cyclesToRedrawDisplay = JsonDocument["cycRedrawDis"];
         deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
         deepSleepData.activeWifiOnWake = JsonDocument["actWifiOnWake"];
-        deepSleepData.sendMQTTOnWake = JsonDocument["sendMQTTWake"];
-        deepSleepData.sendESPNowOnWake = JsonDocument["sendESPNowWk"];
+        deepSleepData.sendMQTTOnWake = JsonDocument["actMQTTOnWake"];
+        deepSleepData.sendESPNowOnWake = JsonDocument["actESPnowWake"];
         deepSleepData.displayOnWake = JsonDocument["displayOnWake"];
 
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
