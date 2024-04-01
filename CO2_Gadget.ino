@@ -462,6 +462,7 @@ void adjustBrightnessLoop() {
             setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
             publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
             Serial.println("-->[MAIN] Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+            delay(10);
         }
         return;
     }
@@ -477,7 +478,8 @@ void adjustBrightnessLoop() {
         if (!workingOnExternalPower) {
             Serial.println("-->[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
             turnOffDisplay();
-            publishMQTTLogData("[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+            publishMQTTLogData("[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));            
+            delay(10);
         }
     }
 #endif
