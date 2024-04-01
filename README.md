@@ -195,7 +195,10 @@ When creating a pull request, we recommend that you do the following:
 
 # TODO
 
-- [ ] Implement full support for PM 2.5
+- [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
+- [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)
+- [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
+- [ ] [Unify and improve the existing web pages](https://github.com/melkati/CO2-Gadget/issues/166)
 
 # Useful information
 
@@ -209,6 +212,15 @@ When creating a pull request, we recommend that you do the following:
 # Credits
 
 Thanks to all collaborators, contributors and to the [eMariete](https://emariete.com) community for testing and reports.
+
+# Special thanks to:
+
+
+All the [contributors that helped improving CO2 Gadget](https://github.com/melkati/CO2-Gadget/graphs/contributors). You are awesome!
+
+<a href="https://github.com/melkati/CO2-Gadget/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" />
+</a>
 
 ---
 ## License
