@@ -331,6 +331,7 @@ bool displayNotification(String notificationText, notificationTypes notification
     tft.drawString(notificationText, tft.width() / 2, tft.height() / 2);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -362,6 +363,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
     tft.drawString(notificationText2, tft.width() / 2 - textWidth2 / 2, tft.height() / 5 * 3 - boxMarging);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -627,7 +629,8 @@ void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {
-        // tft.fillScreen(TFT_BLACK);
+        Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
