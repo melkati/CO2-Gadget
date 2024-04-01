@@ -79,6 +79,7 @@ bool displayShowPM25 = true;
 bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
+bool shouldRedrawDisplay = false;
 uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
