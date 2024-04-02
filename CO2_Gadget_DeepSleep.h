@@ -610,8 +610,11 @@ void fromDeepSleep() {
 #endif
             fromDeepSleepTimer();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+            Serial.println("-->[DEEP] Display off before going to deep sleep *");
             turnOffDisplay();
-            displaySleep(true);
+            // Serial.println("-->[DEEP] Display off *");
+            // delay(2000);
+            // displaySleep(true);
 #endif
             toDeepSleep();
             break;
@@ -688,8 +691,11 @@ void deepSleepLoop() {
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+            Serial.println("-->[DEEP] Display off before going to deep sleep");
             turnOffDisplay();
-            displaySleep(true);
+            // Serial.println("-->[DEEP] Display off");
+            // delay(2000);
+            // displaySleep(true);
 #endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
