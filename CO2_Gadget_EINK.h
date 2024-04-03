@@ -16,8 +16,6 @@
 // clang-format on
 #include <GxEPD2_BW.h>
 
-uint16_t deepSleepReadrawEach = 5;
-
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
 #include "bootlogo.h"
@@ -86,7 +84,6 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_BUSY 32
 // GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
 GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
-
 #endif
 
 // Define a structure for the locations of elements
@@ -202,14 +199,8 @@ void setElementLocations() {
 
 void drawMainScreen(bool force = false);  // Forward declaration
 
-void setDisplayBrightness(uint32_t newBrightness) {
-    // Serial.println("-->[EINK] Setting display brightness (ignore for e-Ink) to: " + String(newBrightness));
-    // display.setContrast(newBrightness);
-    // actualDisplayBrightness = newBrightness;
-}
-
 void turnOffDisplay() {
-    setDisplayBrightness(0);  // Turn off the display
+    // Ignore for eInk displays
 }
 
 void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issues/715
@@ -218,8 +209,6 @@ void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issu
     if (value) {
         display.powerOff();  // Send command to put the display to sleep.
         delay(10);           // Delay for shutdown time before another command can be sent.
-    } else {
-        ;  // This sends the wake up command and initialises the display
     }
 }
 
@@ -282,16 +271,6 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-// void drawLogoScreen() {
-//     display.setFullWindow();
-//     display.firstPage();
-//     do {
-//         // Draw bitmap
-//         display.fillScreen(GxEPD_WHITE);
-//         display.drawInvertedBitmap((display.width() - 128) / 2, (display.height() - 64) / 2, splash, 128, 64, GxEPD_BLACK);
-//     } while (display.nextPage());
-// }
-
 void drawHoritzontalCenterText(int16_t y, const String text) {
     int16_t tbx, tby;
     uint16_t tbw, tbh;
@@ -307,29 +286,6 @@ void drawHoritzontalCenterText(int16_t y, const String text) {
     display.print(text);
 }
 
-void showPages() {
-    display.setRotation(0);
-    display.setFont(&SmallFont);
-    display.setTextColor(GxEPD_BLACK);
-    display.clearScreen(0);  // black
-    display.setFullWindow();
-    display.fillScreen(GxEPD_WHITE);
-    display.setCursor(0, 10);
-    if (display.width() >= 300) {
-        display.print("would need ");
-        display.print(display.pages());
-        display.println(" pages of height ");
-        display.print(display.pageHeight());
-    } else {
-        display.println("would need");
-        display.print(display.pages());
-        display.println(" pages of");
-        display.print("height ");
-        display.print(display.pageHeight());
-    }
-    display.display(false);  // full update
-}
-
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, false, 2, false);
@@ -341,16 +297,18 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     // display.setFullWindow();
     // display.setPartialWindow(0, 0, display.width(), display.height());
 
-    // Each deepSleepReadrawEach boots do a full screen refresh
+    // Each cyclesToRedrawDisplay boots do a full screen refresh
     if (forceRedraw) {
         Serial.println("-->[EINK] Initializing display from deep sleep with force redraw");
         display.fillScreen(GxEPD_WHITE);
         display.display();
-        drawMainScreen(true);
+        drawMainScreen(false);
         deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
+        Serial.println("-->[EINK] Initializing display from deep sleep with partial refresh");
         display.setPartialWindow(0, 0, display.width(), display.height());
-        display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
+        // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
+        display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         display.displayWindow(0, 0, display.width(), display.height());
         drawMainScreen(false);
     }
@@ -377,17 +335,6 @@ void initDisplay(bool fastMode = false) {
     Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
     Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
 
-    // if (display.pages() > 1) {
-    //     delay(100);
-    //     Serial.print("pages = ");
-    //     Serial.print(display.pages());
-    //     Serial.print(" page height = ");
-    //     Serial.println(display.pageHeight());
-    //     delay(1000);
-    //     showPages();
-    //     display.hibernate();
-    // }
-
     // setElementLocations();
 
     // Show splash screen the first time
@@ -409,36 +356,15 @@ void initDisplay(bool fastMode = false) {
     display.hibernate();
 }
 
-void showBattery() {
-    if (workingOnExternalPower) {
-        display.fillRect(display.width() - 27, 2, 26, 12, GxEPD_WHITE);  // Delete battery icon
-        return;
-    }
-    display.drawRect(display.width() - 27, 2, 26, 12, GxEPD_BLACK);  // Battery outter rectangle
-    display.drawLine(display.width() - 2, 4, display.width(), 10, GxEPD_BLACK);
-    if (batteryLevel > 20) {
-        display.fillRect(display.width() - 25, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 40) {
-        display.fillRect(display.width() - 19, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 60) {
-        display.fillRect(display.width() - 13, 4, 4, 10, GxEPD_BLACK);
-    }
-    if (batteryLevel > 80) {
-        display.fillRect(display.width() - 7, 4, 4, 10, GxEPD_BLACK);
-    }
-}
-
 void drawMainScreen(bool forceRedraw) {
-    RTC_DATA_ATTR static uint16_t drawTimes = 0;
-    if ((!forceRedraw) && (drawTimes > 0)) {
-        return;
-    }
+    // RTC_DATA_ATTR static uint16_t drawTimes = 0;
+    // if ((!forceRedraw) && (drawTimes > 0)) {
+    //     return;
+    // }
 #ifdef TIMEDEBUG
     timer.start();
 #endif
-    drawTimes++;
+    // drawTimes++;
 
     if (forceRedraw) {
         display.setFullWindow();  // Enable full refresh
@@ -460,6 +386,9 @@ void drawMainScreen(bool forceRedraw) {
 #if defined(EINKBOARDGDEW0213M21)
     display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
 #endif
+#if defined(EINKBOARDGDEM029T94)
+    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+#endif
     display.setRotation(1);
     display.setTextColor(GxEPD_BLACK);
     display.setCursor(0, 12);
@@ -470,6 +399,9 @@ void drawMainScreen(bool forceRedraw) {
 #if defined(EINKBOARDGDEW0213M21)
     display.setCursor((display.width()) - 5 * 6 * 2 - 55, 12);
 #endif
+#if defined(EINKBOARDGDEM029T94)
+    display.setCursor((display.width()) - 5 * 9 * 2 - 65, 12);
+#endif
     display.print("HUM:");
     display.setRotation(4);
     display.setCursor((display.width() / 2) - 15, display.height() - 3);
@@ -479,7 +411,7 @@ void drawMainScreen(bool forceRedraw) {
     if (forceRedraw) {
         display.display();  // Full update
     } else {
-        display.displayWindow(0, 0, display.width(), display.height());  // Partial update
+        // display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
 
     // Refresh screen in partial mode
@@ -489,6 +421,27 @@ void drawMainScreen(bool forceRedraw) {
     Serial.print("-->[EINK] Time used to drawMainScreen: \t");
     Serial.println(timer.read());
 #endif
+}
+
+void showBattery() {
+    if (workingOnExternalPower) {
+        display.fillRect(display.width() - 27, 2, 26, 12, GxEPD_WHITE);  // Delete battery icon
+        return;
+    }
+    display.drawRect(display.width() - 27, 2, 26, 12, GxEPD_BLACK);  // Battery outter rectangle
+    display.drawLine(display.width() - 2, 4, display.width(), 10, GxEPD_BLACK);
+    if (batteryLevel > 20) {
+        display.fillRect(display.width() - 25, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 40) {
+        display.fillRect(display.width() - 19, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 60) {
+        display.fillRect(display.width() - 13, 4, 4, 10, GxEPD_BLACK);
+    }
+    if (batteryLevel > 80) {
+        display.fillRect(display.width() - 7, 4, 4, 10, GxEPD_BLACK);
+    }
 }
 
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline, bool forceRedraw) {
@@ -556,6 +509,11 @@ void showValues() {
     display.printf("%.1fºC", oldTempValue);
     display.setCursor((display.width()) - 5 * 6 - 50, 12);
 #endif
+#if defined(EINKBOARDGDEM029T94)
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 9 - 65, 12);
+#endif
     display.printf("%.0f%%", oldHumiValue);
 
     if (firstTime) {
@@ -580,6 +538,11 @@ void showValues() {
     display.setCursor(40, 12);
     display.printf("%.1fºC", temp);
     display.setCursor((display.width()) - 5 * 6 - 50, 12);
+#endif
+#if defined(EINKBOARDGDEM029T94)
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 9 - 65, 12);
 #endif
     display.printf("%.0f%%", hum);
     oldTempValue = temp;
