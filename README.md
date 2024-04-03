@@ -193,7 +193,7 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description and code is a must
 - Target your pull request to be merged with the `development` branch
 
-# TODO
+# TO DO
 
 - [ ] Implement full support for PM 2.5
 

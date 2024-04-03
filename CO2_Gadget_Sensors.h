@@ -131,9 +131,8 @@ void initSensorsLowPower() {
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
 
-        // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
-        deepSleepData.measurementsStarted = false;
-        sensors.initCO2LowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));
+               deepSleepData.measurementsStarted = false;
+        sensors.initCO2LowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
     }
 }
 
@@ -258,12 +257,12 @@ void sensorsLoopLowPower() {
 void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
     if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
-        // if (millis() - lastDotPrintTime >= 100) {
-        //     Serial.print("[-]");        // Print a - every loop to show that the device is alive
-        //     lastDotPrintTime = millis();
-        // }
-        sensorsLoopLowPower();
-        return;
+        // // if (millis() - lastDotPrintTime >= 100) {
+        // //     Serial.print("[-]");        // Print a - every loop to show that the device is alive
+        // //     lastDotPrintTime = millis();
+        // // }
+        // sensorsLoopLowPower();
+        // return;
     } else if (!buzzerBeeping) {  // Avoid affecting beep sound
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive

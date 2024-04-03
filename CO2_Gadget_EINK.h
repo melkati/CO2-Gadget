@@ -21,12 +21,6 @@
 
 uint16_t deepSleepReadrawEach = 5;
 
-#include <Fonts/FreeMonoBold9pt7b.h>
-#include <NotoSans_Bold48pt7b.h>
-
-#include "bootlogo.h"
-#include "icons.h"
-
 // 'iconTemperature', 16x16px
 const unsigned char iconTemp[256] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0xf7, 0xf7, 0xe7, 0xf7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -46,13 +40,13 @@ const unsigned char iconTemp[256] PROGMEM = {
     0x00, 0x00, 0x00, 0xf7, 0xf7, 0xdd, 0xe3, 0xe5, 0xdf, 0xf7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0xff, 0xf7, 0xf7, 0xef, 0xf7, 0xf7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const GFXfont SmallFont = FreeMonoBold9pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
+#include "bitmaps/Bitmaps104x212.h"  // 2.13" b/w flexible GDEW0213I5F
+#include "bitmaps/Bitmaps128x296.h"  // 2.9"  b/w
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-int displayWidth = 212;
-int displayHeight = 104;
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
+#include "bootlogo.h"
+#include "icons.h"
 #define EPD_SCLK SCK  // 18
 #define EPD_MISO 17
 #define EPD_DC 17      // MISO
@@ -62,22 +56,50 @@ int displayHeight = 104;
 #define EPD_BUSY 4
 
 #ifdef EINKBOARDDEPG0213BN
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT>
-    display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
+int displayWidth = 250;
+int displayHeight = 122;
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
+
 #ifdef EINKBOARDGDEM0213B74
-GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT>
-    display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
+int displayWidth = 250;
+int displayHeight = 122;
+GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
 #endif
 
-#include "bitmaps/Bitmaps104x212.h"  // 2.13" b/w flexible GDEW0213I5F
-
+#ifdef EINKBOARDGDEW0213M21
+#include <NotoSans_Bold6pt7b.h>
+#include <NotoSans_Bold46pt7b.h>
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
+int displayWidth = 212;
+int displayHeight = 104;
+// GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
+// GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));
+GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW)
 #endif
+
+#endif // defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
 #ifdef EINKBOARDGDEM029T94
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <NotoSans_Bold48pt7b.h>
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
 int displayWidth = 296;
 int displayHeight = 128;
 
+const GFXfont SmallFont = FreeMonoBold9pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
@@ -92,10 +114,8 @@ int displayHeight = 128;
 #define EPD_BUSY 32
 // GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
 GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+#endif // #ifdef EINKBOARDGDEM029T94
 
-#include "bitmaps/Bitmaps128x296.h"  // 2.9"  b/w
-
-#endif
 
 int32_t iconState_wifi = -9999;
 int32_t iconState_BLE = -9999;
@@ -212,6 +232,43 @@ void setElementLocations() {
         elementPosition.espNowIconY = 0;
     }
 #endif
+  
+#if defined(EINKBOARDGDEW0213M21)
+    if (displayWidth == 212 && displayHeight == 104) {  // 212x104 GDEW0213M21 and similar
+        elementPosition.co2X = displayWidth - 32;
+        elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2FontDigitsHeight = 70;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.pixelsToBaseline = 18;     // Pixels bellow baseline (p.ej "y" in "y" or "g" in "g" they draw bellow the baseline))
+        elementPosition.co2UnitsX = display.width() - 24;
+        elementPosition.co2UnitsY = 24;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.tempX = 0;
+        elementPosition.tempY = display.height() - 24;
+        elementPosition.tempW = 72;
+        elementPosition.tempH = 24;
+        elementPosition.humidityX = display.width() - 72;
+        elementPosition.humidityY = display.height() - 24;
+        elementPosition.humidityW = 72;
+        elementPosition.humidityH = 24;
+        elementPosition.batteryIconX = display.width() - 48;
+        elementPosition.batteryIconY = 0;
+        elementPosition.batteryIconW = 48;
+        elementPosition.batteryIconH = 24;
+        elementPosition.batteryVoltageX = display.width() - 96;
+        elementPosition.batteryVoltageY = 0;
+        elementPosition.batteryVoltageW = 48;
+        elementPosition.batteryVoltageH = 24;
+        elementPosition.bleIconX = 0;
+        elementPosition.bleIconY = 0;
+        elementPosition.wifiIconX = 24;
+        elementPosition.wifiIconY = 0;
+        elementPosition.mqttIconX = 48;
+        elementPosition.mqttIconY = 0;
+        elementPosition.espNowIconX = 72;
+        elementPosition.espNowIconY = 0;
+    }
+#endif
 }
 void displayShowValues(bool forceRedraw = false);  // Forward declaration
 void drawMainScreen(bool force = false);           // Forward declaration
@@ -226,13 +283,13 @@ void turnOffDisplay() {
     //    setDisplayBrightness(0);  // Turn off the display
 }
 
-void displaySleep(bool value)  // https://github.com/Bodmer/TFT_eSPI/issues/715
+void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issues/715
 {
     // return;  // e-Ink don't need hibernate display
     display.hibernate();
     if (value) {
-        // display.powerOff();  // Send command to put the display to sleep.
-        // delay(150);              // Delay for shutdown time before another command can be sent.
+        display.powerOff();  // Send command to put the display to sleep.
+        delay(10);              // Delay for shutdown time before another command can be sent.
     } else {
         ;  // This sends the wake up command and initialises the display
     }
@@ -363,7 +420,7 @@ void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String te
 
 void showPages() {
     display.setRotation(0);
-    display.setFont(&FreeMonoBold9pt7b);
+    display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     display.clearScreen(0);  // black
     display.setFullWindow();
@@ -420,7 +477,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 }
 
 void initDisplay(bool fastMode = false) {
-    if (!fastMode) Serial.println("-->[TFT ] Initializing display");
+    if (fastMode) Serial.println("-->[EINK] Initializing display in fast mode");
+    else Serial.println("-->[EINK] Initializing display in normal mode");
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.init(115200, true, 2, true);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 
@@ -492,13 +550,25 @@ void drawMainScreen(bool force) {
     display.fillScreen(GxEPD_WHITE);
 
     // Draw labels and field rectangles
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    #endif
+    display.setRotation(1);
+    display.setTextColor(GxEPD_BLACK);
     display.setCursor(0, 12);
-    display.print("TEMP: ");
+    display.print("TEMP:");
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
-    display.print("HUM: ");
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor((display.width()) - 5 * 6 * 2 - 55, 12);
+    #endif    
+    display.print("HUM:");
     display.setRotation(4);
-    display.setCursor((display.width() / 2) - 20, display.height() - 3);
+    display.setCursor((display.width() / 2) - 15, display.height() - 3);
     display.print("PPM");
 
 #ifdef TIMEDEBUG
@@ -516,6 +586,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
 
+// low-power-eink
     display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
     if (!activeWIFI) {
         display.drawInvertedBitmap(posX + 3, posY + 3, iconWiFi, 16, 16, GxEPD_BLACK);
@@ -542,6 +613,47 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         display.drawBitmap(posX + 3, posY + 3, iconBLE, 16, 16, GxEPD_BLACK);
     }
 }
+// =======
+    Serial.println("-->[EINK] Erasing values: CO2=" + String(oldCO2Value) + ", Temp=" + String(oldTempValue) + ", Hum=" + String(oldHumiValue));
+    Serial.println("-->[EINK] Showing values: CO2=" + String(co2) + ", Temp=" + String(temp) + ", Hum=" + String(hum));
+
+    // Erase old values
+    display.setTextColor(GxEPD_WHITE);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
+    display.setFont(&SmallFont);
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor(40, 12);
+    display.printf("%.1fºC", oldTempValue);
+    display.setCursor((display.width()) - 5 * 6 - 50, 12);
+    #endif
+    display.printf("%.0f%%", oldHumiValue);
+
+    // Show values
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&BigFont);
+    display.setTextSize(1);
+    drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
+    display.setFont(&SmallFont);
+    
+    #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    display.setCursor(55, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 9 - 35, 12);
+    #endif
+    #if defined(EINKBOARDGDEW0213M21)
+    display.setCursor(40, 12);
+    display.printf("%.1fºC", temp);
+    display.setCursor((display.width()) - 5 * 6 - 50, 12);
+    #endif
+    display.printf("%.0f%%", hum);
+// low-power-eink-new-layout
 
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);

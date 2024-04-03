@@ -154,6 +154,7 @@ void printRTCMemoryEnter() {
     Serial.println("-->[DEEP][ENTER] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][ENTER] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][ENTER] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
+    Serial.println("-->[DEEP][ENTER] activeBLEOnWake: " + String(deepSleepData.activeBLEOnWake));
     Serial.println("-->[DEEP][ENTER] activeWifiOnWake: " + String(deepSleepData.activeWifiOnWake));
     Serial.println("-->[DEEP][ENTER] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][ENTER] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
@@ -174,6 +175,7 @@ void printRTCMemoryExit() {
     Serial.println("-->[DEEP][EXIT] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][EXIT] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][EXIT] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
+    Serial.println("-->[DEEP][EXIT] activeBLEOnWake: " + String(deepSleepData.activeBLEOnWake));
     Serial.println("-->[DEEP][EXIT] activeWifiOnWake: " + String(deepSleepData.activeWifiOnWake));
     Serial.println("-->[DEEP][EXIT] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][EXIT] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
@@ -203,10 +205,12 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
+#if defined(EINKBOARDGDEM029T94) || defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
-    // gpio_hold_en(gpio_num_t(13));
+// gpio_hold_en(gpio_num_t(13));
+#endif
 
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
@@ -225,6 +229,7 @@ void toDeepSleep() {
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
     gpio_deep_sleep_hold_en();
+    // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
     esp_deep_sleep_start();
 }
 
@@ -312,7 +317,6 @@ void cm1106HandleFromDeepSleep() {
 
     co2 = sensors.cm1106->get_co2();
     deepSleepData.lastCO2Value = co2;
-    // Serial.printf("-->[DEEP] CO2 value: %d ppm\n", co2);
     Serial.println("-->[DEEP] CO2 value: " + String(co2) + " ppm");
     displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
 }
@@ -363,7 +367,6 @@ void scd41HandleFromDeepSleep(bool blockingMode = true) {
     deepSleepData.lastTemperatureValue = temp;
     deepSleepData.lastHumidityValue = hum;
     if (error != 0) {
-        // Serial.printf("-->[DEEP] Waking up from deep sleep. readMeasurement() error: %d\n", error);
         Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
 
     } else {
@@ -547,6 +550,16 @@ void fromDeepSleepTimer() {
             batteryLoop();
 
             handleLowPowerSensors();
+#ifdef SUPPORT_BLE
+            if (deepSleepData.activeBLEOnWake) {
+                initBLE();
+#ifdef DEEP_SLEEP_DEBUG
+                Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
+#endif
+                publishBLE();
+                // BLELoop();
+            }
+#endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
             if (deepSleepData.displayOnWake) {
 #ifdef DEEP_SLEEP_DEBUG
@@ -554,17 +567,11 @@ void fromDeepSleepTimer() {
 #endif
                 initDisplay(true);
                 displayShowValues();
-                esp_sleep_enable_timer_wakeup(3 * 1000000);
+                esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
                 esp_light_sleep_start();
             }
 #endif
-#ifdef SUPPORT_BLE
-            if (deepSleepData.activeBLEOnWake) {
-                initBLE();
-                publishBLE();
-                // BLELoop();
-            }
-#endif
+
             if (deepSleepData.cyclesToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }
@@ -602,8 +609,10 @@ void fromDeepSleep() {
             Serial.println("-->[DEEP] Wakeup caused by timer");
 #endif
             fromDeepSleepTimer();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             turnOffDisplay();
             displaySleep(true);
+#endif
             toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_EXT0:
@@ -647,7 +656,7 @@ void deepSleepLoop() {
         // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
         // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
 
-        Serial.println("-->[DEEP] Waiting to go to deep sleep in (seconds): " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+        Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
         // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
         lastSerialPrintTime = millis();  // Update last print time
     }
@@ -678,12 +687,15 @@ void deepSleepLoop() {
         }
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             turnOffDisplay();
             displaySleep(true);
+#endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
         }
     }
+    delay(20);  // Give time to Serial.print
 }
 
 #endif  // CO2_Gadget_DeepSleep_h

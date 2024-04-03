@@ -55,6 +55,11 @@
           <label for="cycRedrawDis">Redraw Display Each (Cycles):</label>
           <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
         </div>
+
+        <div>
+          <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+          <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+        </div>
       
         <div>
           <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
@@ -62,13 +67,13 @@
         </div>
       
         <div>
-          <label for="sendMQTTWake">Send Data via MQTT on Wakeup:</label>
-          <input type="checkbox" id="sendMQTTWake" name="sendMQTTWake">
+          <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
+          <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
         </div>
       
         <div>
-          <label for="sendESPNowWk">Send Data via ESPNow on Wakeup:</label>
-          <input type="checkbox" id="sendESPNowWk" name="sendESPNowWk">
+          <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
+          <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
         </div>
       
         <div>
@@ -595,14 +600,17 @@
           if (getPreferencesDebug) console.log('Setting cycRedrawDis to:', preferences.cycRedrawDis);
           document.getElementById("cycRedrawDis").value = preferences.cycRedrawDis;
 
+          if (getPreferencesDebug) console.log('Setting actBLEOnWake to:', preferences.actBLEOnWake);
+          document.getElementById("actBLEOnWake").checked = preferences.actBLEOnWake;
+
           if (getPreferencesDebug) console.log('Setting actWifiOnWake to:', preferences.actWifiOnWake);
           document.getElementById("actWifiOnWake").checked = preferences.actWifiOnWake;
 
-          if (getPreferencesDebug) console.log('Setting sendMQTTWake to:', preferences.sendMQTTWake);
-          document.getElementById("sendMQTTWake").checked = preferences.sendMQTTWake;
+          if (getPreferencesDebug) console.log('Setting actMQTTOnWake to:', preferences.actMQTTOnWake);
+          document.getElementById("actMQTTOnWake").checked = preferences.actMQTTOnWake;
 
-          if (getPreferencesDebug) console.log('Setting sendESPNowWk to:', preferences.sendESPNowWk);
-          document.getElementById("sendESPNowWk").checked = preferences.sendESPNowWk;
+          if (getPreferencesDebug) console.log('Setting actESPnowWake to:', preferences.actESPnowWake);
+          document.getElementById("actESPnowWake").checked = preferences.actESPnowWake;
 
           if (getPreferencesDebug) console.log('Setting deepSleepData.displayOnWake to:', preferences.deepSleepData.displayOnWake);
           document.getElementById("deepSleepData.displayOnWake").checked = preferences.deepSleepData.displayOnWake;
@@ -669,9 +677,10 @@
         timeSleeping: document.getElementById("timeSleeping").value,
         cyclsWifiConn: document.getElementById("cyclsWifiConn").value,
         cycRedrawDis: document.getElementById("cycRedrawDis").value,
+        actBLEOnWake: document.getElementById("actBLEOnWake").checked,
         actWifiOnWake: document.getElementById("actWifiOnWake").checked,
-        sendMQTTWake: document.getElementById("sendMQTTWake").checked,
-        sendESPNowWk: document.getElementById("sendESPNowWk").checked,
+        actMQTTOnWake: document.getElementById("actMQTTOnWake").checked,
+        actESPnowWake: document.getElementById("actESPnowWake").checked,
         displayOnWake: document.getElementById("deepSleepData.displayOnWake").checked
       };
       return preferencesData;
