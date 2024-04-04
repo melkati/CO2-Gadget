@@ -1,7 +1,7 @@
 #ifndef CO2_Gadget_WIFI
 #define CO2_Gadget_WIFI
 
-#define DEBUG_WIFI_EVENTS
+// #define DEBUG_WIFI_EVENTS
 
 // clang-format off
 /*****************************************************************************************************/
