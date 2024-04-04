@@ -2,6 +2,7 @@
 // https://notisrac.github.io/FileToCArray/ Drag and drop file on "Choose file..." button. Tick box "Treat as binary". Click "Convert". Click "Save as file" and move the header file to sketch folder. Open the sketch in IDE. Include the header file containing the array.
 // https://iconarchive.com/show/farm-fresh-icons-by-fatcow/temperature-5-icon.html
 // https://www.flaticon.com/search?word=bluetooth&order_by=4&type=icon
+// https://phosphoricons.com/
 
 
 // 'wifi-icon', 16x16px
