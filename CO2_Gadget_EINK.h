@@ -84,6 +84,7 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_BUSY 32
 // GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
 GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+// GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/* EPD_CS */ 5, /* EPD_MISO */ 17, /* EPD_RST */ 16, /* EPD_BUSY */ 4));  // GDEW029T5
 #endif
 
 // Define a structure for the locations of elements
@@ -411,7 +412,7 @@ void drawMainScreen(bool forceRedraw) {
     if (forceRedraw) {
         display.display();  // Full update
     } else {
-        // display.displayWindow(0, 0, display.width(), display.height());  // Partial update
+        display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
 
     // Refresh screen in partial mode
