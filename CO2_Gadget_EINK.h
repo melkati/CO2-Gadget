@@ -6,6 +6,7 @@
 #define CO2_Gadget_EINK_h
 
 #ifdef SUPPORT_EINK
+// #define DEBUG_EINK
 
 // clang-format off
 /*****************************************************************************************************/
@@ -82,8 +83,10 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_DC 27
 #define EPD_RST 25
 #define EPD_BUSY 32
-// GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
-GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
+GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
+// GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94 V2
+// GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94 BS
+// GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
 // GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/* EPD_CS */ 5, /* EPD_MISO */ 17, /* EPD_RST */ 16, /* EPD_BUSY */ 4));  // GDEW029T5
 #endif
 
@@ -287,39 +290,58 @@ void drawHoritzontalCenterText(int16_t y, const String text) {
     display.print(text);
 }
 
+// busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
+void busyCallback(const void* p) {
+#ifdef DEBUG_EINK
+    Serial.println("eink busyCallback light sleep");
+#endif
+    esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
+    esp_light_sleep_start();
+}
+
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
+    display.epd2.setBusyCallback(busyCallback);  // register callback to be called during BUSY active time
     display.init(115200, false, 2, false);
 
     // Set default options to draw
     display.setRotation(1);
     display.setFont(&SmallFont);
-    display.setTextColor(GxEPD_BLACK);
+    // display.setTextColor(GxEPD_BLACK);
     // display.setFullWindow();
-    // display.setPartialWindow(0, 0, display.width(), display.height());
+    display.setPartialWindow(0, 0, display.width(), display.height());
+#ifdef DEBUG_EINK
+    Serial.println("-->[EINK] Width: " + String(display.width()) + ", Height: " + String(display.height()));
+#endif
 
     // Each cyclesToRedrawDisplay boots do a full screen refresh
     if (forceRedraw) {
-        Serial.println("-->[EINK] Initializing display from deep sleep with force redraw");
+#ifdef DEBUG_EINK
+        Serial.println("-->[EINK] Initializing display from deep sleep with full refresh");
+#endif
         display.fillScreen(GxEPD_WHITE);
         display.display();
         drawMainScreen(false);
         deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
+#ifdef DEBUG_EINK
         Serial.println("-->[EINK] Initializing display from deep sleep with partial refresh");
-        display.setPartialWindow(0, 0, display.width(), display.height());
+#endif
+        // display.setPartialWindow(0, 0, display.width(), display.height());
         // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
-        display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
-        display.displayWindow(0, 0, display.width(), display.height());
+        // display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
+        // display.displayWindow(0, 0, display.width(), display.height());
         drawMainScreen(false);
     }
 }
 
 void initDisplay(bool fastMode = false) {
+#ifdef DEBUG_EINK
     if (fastMode)
         Serial.println("-->[EINK] Initializing display in fast mode");
     else
         Serial.println("-->[EINK] Initializing display in normal mode");
+#endif
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     // display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
     display.init(115200, !fastMode, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
@@ -332,9 +354,10 @@ void initDisplay(bool fastMode = false) {
     display.setTextColor(GxEPD_BLACK);
     display.setFullWindow();
     display.setPartialWindow(0, 0, display.width(), display.height());
-
+#ifdef DEBUG_EINK
     Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
     Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
+#endif
 
     // setElementLocations();
 
@@ -357,17 +380,17 @@ void initDisplay(bool fastMode = false) {
     display.hibernate();
 }
 
-void drawMainScreen(bool forceRedraw) {
-    // RTC_DATA_ATTR static uint16_t drawTimes = 0;
-    // if ((!forceRedraw) && (drawTimes > 0)) {
-    //     return;
-    // }
+void drawMainScreen(bool fullRefresh) {
+    RTC_DATA_ATTR static uint16_t drawTimes = 0;
+    if ((!fullRefresh) && (drawTimes > 0)) {
+        return;
+    }
 #ifdef TIMEDEBUG
     timer.start();
 #endif
     // drawTimes++;
 
-    if (forceRedraw) {
+    if (fullRefresh) {
         display.setFullWindow();  // Enable full refresh
     } else {
         display.setPartialWindow(0, 0, display.width(), display.height());  // Enable partial refresh
@@ -375,7 +398,9 @@ void drawMainScreen(bool forceRedraw) {
 
     // Enable partial refresh
     // display.setPartialWindow(0, 0, display.width(), display.height());
-    Serial.println("-->[EINK] Drawing main screen at " + String(display.width()) + "x" + String(display.height()) + " in " + (forceRedraw ? "full" : "partial") + " mode");
+#ifdef DEBUG_EINK
+    Serial.println("-->[EINK] Drawing main screen at " + String(display.width()) + "x" + String(display.height()) + " in " + (fullRefresh ? "full" : "partial") + " mode");
+#endif
 
     // Clear screen
     display.fillScreen(GxEPD_WHITE);
@@ -385,7 +410,7 @@ void drawMainScreen(bool forceRedraw) {
     display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
 #endif
 #if defined(EINKBOARDGDEW0213M21)
-    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    display.drawRoundRect(0, 23, display.width(), display.height() - 28, 6, GxEPD_BLACK);
 #endif
 #if defined(EINKBOARDGDEM029T94)
     display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
@@ -409,10 +434,10 @@ void drawMainScreen(bool forceRedraw) {
     display.print("PPM");
     display.setRotation(1);
 
-    if (forceRedraw) {
+    if (fullRefresh) {
         display.display();  // Full update
     } else {
-        display.displayWindow(0, 0, display.width(), display.height());  // Partial update
+        // display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
 
     // Refresh screen in partial mode
@@ -459,7 +484,9 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     display.setTextColor(GxEPD_BLACK);
 
     display.getTextBounds(String(oldCO2Value), 0, 0, &tbx, &tby, &tbw, &tbh);
+#ifdef DEBUG_EINK
     Serial.println("-->[EINK] CO2 OLD text bounds: value=" + String(oldCO2Value) + ", tbx=" + String(tbx) + ", tby=" + String(tby) + ", tbw=" + String(tbw) + ", tbh=" + String(tbh));
+#endif
 
     uint16_t utx = ((display.width() - tbw) / 2) - tbx;
     uint16_t uty = ((display.height() / 4) - tbh / 2) - tby - 30;
@@ -468,7 +495,9 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, uint16_t pixelsToBaseline
     display.print(String(oldCO2Value));
 
     display.getTextBounds(String(co2), 0, 0, &tbx, &tby, &tbw, &tbh);
+#ifdef DEBUG_EINK
     Serial.println("-->[EINK] CO2 NEW text bounds: value=" + String(co2) + ", tbx=" + String(tbx) + ", tby=" + String(tby) + ", tbw=" + String(tbw) + ", tbh=" + String(tbh));
+#endif
 
     uint16_t umx = ((display.width() - tbw) / 2) - tbx;
     uint16_t umy = ((display.height() * 3 / 4) - tbh / 2) - tby - 30;
@@ -491,8 +520,10 @@ void showValues() {
         return;
     }
 
+#ifdef DEBUG_EINK
     Serial.println("-->[EINK] Erasing values: CO2=" + String(oldCO2Value) + ", Temp=" + String(oldTempValue) + ", Hum=" + String(oldHumiValue));
     Serial.println("-->[EINK] Showing values: CO2=" + String(co2) + ", Temp=" + String(temp) + ", Hum=" + String(hum));
+#endif
 
     // Erase old values
     display.setTextColor(GxEPD_WHITE);
@@ -517,10 +548,10 @@ void showValues() {
 #endif
     display.printf("%.0f%%", oldHumiValue);
 
-    if (firstTime) {
-        display.displayWindow(0, 0, display.width(), display.height());
-        firstTime = false;
-    }
+    // if (firstTime) {
+    //     display.displayWindow(0, 0, display.width(), display.height());
+    //     firstTime = false;
+    // }
 
     // Show values
     display.setTextColor(GxEPD_BLACK);
@@ -564,7 +595,7 @@ void showValues() {
     // } else {
     //     display.displayWindow(0, 0, display.width(), display.height());
     // }
-        display.displayWindow(0, 0, display.width(), display.height());
+    display.displayWindow(0, 0, display.width(), display.height());
 }
 
 void testRedrawValues() {

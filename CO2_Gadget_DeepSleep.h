@@ -205,7 +205,7 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)  // defined(EINKBOARDGDEM029T94) ||
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21) // || defined(EINKBOARDGDEM029T94)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
