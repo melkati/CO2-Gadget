@@ -213,7 +213,7 @@ void toDeepSleep() {
 #endif
 
 #ifdef TIMEDEBUG
-    Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms");
+    Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms (in light sleep for " + String(timerLightSleep.read()) + " ms)");
 #endif
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
@@ -339,6 +339,11 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     }
 
     if ((!blockingMode) && (!isDataReadySCD4x())) {
+        esp_sleep_enable_timer_wakeup(0.3 * 1000000); // 0.3 seconds
+        timerLightSleep.resume();
+        esp_light_sleep_start();
+        timerLightSleep.pause();
+
         return (false);
     }
 
@@ -348,11 +353,13 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         delay(50);
     }
     esp_sleep_enable_timer_wakeup(5 * 1000000);
+    timerLightSleep.resume();
     if (esp_light_sleep_start() == ESP_OK) {
         Serial.println("-->[DEEP] Light sleep OK");
     } else {
         Serial.println("-->[DEEP] Light sleep failed");
     }
+    timerLightSleep.pause();
 
     while (!isDataReadySCD4x()) {
         unsigned long currentMillis = millis();
@@ -415,7 +422,9 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
                 return (false);
             }
             esp_sleep_enable_timer_wakeup(0.1 * 1000000);
+            timerLightSleep.resume();
             esp_light_sleep_start();
+            timerLightSleep.pause();
         }
         Serial.println("");
     }
@@ -568,7 +577,9 @@ void fromDeepSleepTimer() {
                 initDisplay(true);
                 displayShowValues();
                 esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
+                timerLightSleep.resume();
                 esp_light_sleep_start();
+                timerLightSleep.pause();
             }
 #endif
             if (deepSleepData.cyclesToWiFiConnect == 0) {

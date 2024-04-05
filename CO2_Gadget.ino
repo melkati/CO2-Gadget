@@ -195,6 +195,7 @@ RTC_DATA_ATTR deepSleepData_t deepSleepData;
 #include "Timer.h"
 Timer timer;
 Timer timerAwake;
+Timer timerLightSleep;
 #endif
 
 // Stream& miSerialPort = Serial;
@@ -698,6 +699,8 @@ void setup() {
     // deepSleepDirectly();
 #ifdef TIMEDEBUG
     timerAwake.start();
+    timerLightSleep.start();
+    timerLightSleep.pause();
 #endif
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector

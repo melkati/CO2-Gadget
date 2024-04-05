@@ -6,7 +6,7 @@
 #define CO2_Gadget_EINK_h
 
 #ifdef SUPPORT_EINK
-// #define DEBUG_EINK
+#define DEBUG_EINK
 
 // clang-format off
 /*****************************************************************************************************/
@@ -296,7 +296,9 @@ void busyCallback(const void* p) {
     Serial.println("eink busyCallback light sleep");
 #endif
     esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
+    timerLightSleep.resume();
     esp_light_sleep_start();
+    timerLightSleep.pause();
 }
 
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
