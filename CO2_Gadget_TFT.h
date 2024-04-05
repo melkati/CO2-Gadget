@@ -194,7 +194,7 @@ void setDisplayBrightness(uint16_t newBrightness) {
         Serial.println("\n-->[TFT ] DisplayBrightness value at: " + String(DisplayBrightness));
         Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
         Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
-        delay(10);
+        delay(20);
         analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
@@ -630,7 +630,7 @@ void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {
-        Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
         tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
