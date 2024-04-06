@@ -205,7 +205,7 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21) // || defined(EINKBOARDGDEM029T94)
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)  // || defined(EINKBOARDGDEM029T94)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
@@ -339,7 +339,7 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     }
 
     if ((!blockingMode) && (!isDataReadySCD4x())) {
-        esp_sleep_enable_timer_wakeup(0.3 * 1000000); // 0.3 seconds
+        esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
         timerLightSleep.resume();
         esp_light_sleep_start();
         timerLightSleep.pause();
@@ -620,10 +620,10 @@ void fromDeepSleep() {
             fromDeepSleepTimer();
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Display off before going to deep sleep *");
-            turnOffDisplay();
+            // turnOffDisplay();
             // Serial.println("-->[DEEP] Display off *");
-            // delay(2000);
-            // displaySleep(true);
+            delay(10);
+            displaySleep(false);
 #endif
             toDeepSleep();
             break;
@@ -673,25 +673,24 @@ void deepSleepLoop() {
         lastSerialPrintTime = millis();  // Update last print time
     }
 
-    if ((millis() - lastDotPrintTime >= 1000)) {
-        Serial.print(".");            // Print a dot from time to time to show that the device is alive
-        lastDotPrintTime = millis();  // Update last print time
-    }
+    // if ((millis() - lastDotPrintTime >= 1000)) {
+    //     Serial.print(".");            // Print a dot from time to time to show that the device is alive
+    //     lastDotPrintTime = millis();  // Update last print time
+    // }
 
     if (inMenu) {
         startTimerToDeepSleep = millis();  // If user enters the menu, reset the timer to go to deep sleep while it's on menu
-        // Check if at least one second has passed since the last print
+        // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot)*1000 + "Now: " + String(millis()));
             Serial.println("-->[DEEP] (inMenu=TRUE) Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 5000) + " seconds");
             lastSerialPrintTime = millis();  // Update last print time
         }
-        if ((millis() - lastDotPrintTime >= 1000)) {
-            Serial.print(".");            // Print a dot every loop to show that the device is alive
-            lastDotPrintTime = millis();  // Update last print time
-        }
+        // if ((millis() - lastDotPrintTime >= 1000)) {
+        //     Serial.print(".");            // Print a dot every loop to show that the device is alive
+        //     lastDotPrintTime = millis();  // Update last print time
     } else {
-        // Check if at least one second has passed since the last print
+        // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + "Now: " + String(millis()));
             Serial.println("-->[DEEP] (inMenu=FALSE) Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 5000) + " seconds");
@@ -700,11 +699,11 @@ void deepSleepLoop() {
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-            Serial.println("-->[DEEP] Display off before going to deep sleep");
-            turnOffDisplay();
+            // turnOffDisplay();
             // Serial.println("-->[DEEP] Display off");
-            // delay(2000);
-            // displaySleep(true);
+            Serial.println("-->[DEEP] Display off before going to deep sleep");
+            delay(20);
+            displaySleep(false);
 #endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
