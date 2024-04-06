@@ -4,6 +4,7 @@ void outputsLoop();
 void publishMQTTLogData(String logData);
 void putPreferences();
 String getLowPowerModeName(uint16_t mode);
+void restartTimerToDeepSleep();
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -334,7 +335,7 @@ bool displayNotification(String notificationText, notificationTypes notification
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
-/*********                      INCLUDE DEEP SLEEP FUNCIONALITY                              *********/
+/*********                       INCLUDE LOW POWER FUNCIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #include <CO2_Gadget_DeepSleep.h>
@@ -659,7 +660,7 @@ void initGPIOLowPower() {
     initButtons();
     menu_init();
     timeInitializationCompleted = millis();
-    startTimerToDeepSleep = millis();
+    restartTimerToDeepSleep();
     Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
     Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
     Serial.println("-->**********************************************************");
@@ -705,7 +706,7 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.setDebugOutput(true);
-    Serial.setTxBufferSize(4096);
+    Serial.setTxBufferSize(2048);
     Serial.setRxBufferSize(1024);
     Serial.begin(115200);
     Serial.println();
@@ -749,7 +750,7 @@ void setup() {
                 delay(10);
                 interactiveMode = true;
                 deepSleepEnabled = true;
-                startTimerToDeepSleep = millis();
+                restartTimerToDeepSleep();
             }
             initHighPerformanceMode();
         } else {

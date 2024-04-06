@@ -66,13 +66,6 @@ String getDeepSleepDataCo2SensorName() {
     }
 }
 
-void SetTimeToDeepSleep(uint16_t time) {
-    deepSleepData.timeSleeping = time;
-#ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Time to be in deep sleep: " + String(deepSleepData.timeSleeping) + " seconds");
-#endif
-}
-
 String getWakeupCause() {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_UNDEFINED:
@@ -183,7 +176,19 @@ void printRTCMemoryExit() {
 #endif
 }
 
+void restartTimerToDeepSleep() {
+    startTimerToDeepSleep = millis();
+    #ifdef DEEP_SLEEP_DEBUG
+    Serial.println("-->[DEEP] Restarting timer to deep sleep.");
+    #endif
+}
+
 void toDeepSleep() {
+
+    #ifdef SUPPORT_EINK 
+    // display.hibernate();
+    #endif
+
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
@@ -330,7 +335,6 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     float humidity = 0;
 
     Serial.println("-->[DEEP] scd41HandleFromDeepSleep()");
-    delay(10);
 
     if (!initialized) {
         reInitI2C();
@@ -340,19 +344,20 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
 
     if ((!blockingMode) && (!isDataReadySCD4x())) {
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
+        Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
+        Serial.flush();
         timerLightSleep.resume();
         esp_light_sleep_start();
         timerLightSleep.pause();
-
         return (false);
     }
 
     error = sensors.scd4x.measureSingleShot(true);
     if (error != 0) {
-        Serial.println("-->[DEEP] Waking up from deep sleep. measureSingleShot() error: " + String(error));
-        delay(50);
+        Serial.println("-->[DEEP][ERROR] Waking up from deep sleep. measureSingleShot() error: " + String(error));
     }
     esp_sleep_enable_timer_wakeup(5 * 1000000);
+    Serial.flush();
     timerLightSleep.resume();
     if (esp_light_sleep_start() == ESP_OK) {
         Serial.println("-->[DEEP] Light sleep OK");
@@ -422,6 +427,7 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
                 return (false);
             }
             esp_sleep_enable_timer_wakeup(0.1 * 1000000);
+            Serial.flush();
             timerLightSleep.resume();
             esp_light_sleep_start();
             timerLightSleep.pause();
@@ -577,6 +583,7 @@ void fromDeepSleepTimer() {
                 initDisplay(true);
                 displayShowValues();
                 esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
+                Serial.flush();
                 timerLightSleep.resume();
                 esp_light_sleep_start();
                 timerLightSleep.pause();
@@ -679,7 +686,7 @@ void deepSleepLoop() {
     // }
 
     if (inMenu) {
-        startTimerToDeepSleep = millis();  // If user enters the menu, reset the timer to go to deep sleep while it's on menu
+        restartTimerToDeepSleep();  // If user enters the menu, reset the timer to go to deep sleep while it's on menu
         // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot)*1000 + "Now: " + String(millis()));

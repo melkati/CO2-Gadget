@@ -247,6 +247,7 @@ bool publishMQTTDiscovery(int qos) {
     // clang-format on
 
     Serial.println("-->[MQTT] Successfully published all MQTT Discovery topics");
+    delay(10);
     return allSendsSuccessed;
 #endif
 }
