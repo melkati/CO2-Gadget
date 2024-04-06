@@ -83,11 +83,12 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_DC 27
 #define EPD_RST 25
 #define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94
-// GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94 V2
+GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEM029T94
+// GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEM029T94 V2 GDEM029T94  128x296, SSD1680, (FPC-7519 rev.b), Waveshare 2.9" V2 variant
 // GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(/*CS=*/5, /*DC=*/27, /*RST=*/25, /*BUSY=*/32));  // GDEM029T94 BS
 // GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
 // GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/* EPD_CS */ 5, /* EPD_MISO */ 17, /* EPD_RST */ 16, /* EPD_BUSY */ 4));  // GDEW029T5
+// GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEW029T5 with special pinout
 #endif
 
 // Define a structure for the locations of elements
@@ -209,7 +210,8 @@ void turnOffDisplay() {
 
 void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issues/715
 {
-    display.hibernate();
+    display.hibernate();  // TODO: Investigate display.hibernate() vs display.powerOff(). Check if this is the correct way to turn off the display. Specially for GDEM029T94
+    // display.powerOff();
     if (value) {
         display.powerOff();  // Send command to put the display to sleep.
         delay(10);           // Delay for shutdown time before another command can be sent.
@@ -293,7 +295,7 @@ void drawHoritzontalCenterText(int16_t y, const String text) {
 // busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
 void busyCallback(const void* p) {
 #ifdef DEBUG_EINK
-    Serial.println("eink busyCallback light sleep");
+    // Serial.println("eink busyCallback light sleep");
 #endif
     esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
     timerLightSleep.resume();
