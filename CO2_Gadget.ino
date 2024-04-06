@@ -765,7 +765,25 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
 }
 
-void loop() {
+void loop() { // Only reached in HIGH PERFORMANCE MODE
+    batteryLoop();
+    utilityLoop();
+    improvLoop();
+    wifiClientLoop();
+    mqttClientLoop();
+    sensorsLoop();
+    outputsLoop();
+    processPendingCommands();
+    readingsLoop();
+    OTALoop();
+    adjustBrightnessLoop();
+    buttonsLoop();
+    menuLoop();
+    BLELoop();    
+    deepSleepLoop();
+}
+
+void loopOLD() { // Old loop function. Not used anymore. Just for reference
     bool showDebug = false;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
