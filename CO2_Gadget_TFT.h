@@ -191,7 +191,7 @@ void setElementLocations() {
 void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     if (actualDisplayBrightness != newBrightness) {
-        Serial.println("\n-->[TFT ] DisplayBrightness value at: " + String(DisplayBrightness));
+        Serial.println("\n-->[TFT ] DisplayBrightness (user setting) value at: " + String(DisplayBrightness));
         Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
         Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
         delay(20);
@@ -270,7 +270,7 @@ void displaySplashScreen() {
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BACKLIGHT, OUTPUT);
-    digitalWrite(TFT_BACKLIGHT, 1);
+    // digitalWrite(TFT_BACKLIGHT, 1); Removed to revert as v.0.12.000 to try to fix #192
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
