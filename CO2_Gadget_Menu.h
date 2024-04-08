@@ -1039,7 +1039,8 @@ result idle(menuOut &o, idleEvent e) {
             Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-            displayShowValues(false);
+            displayShowValues(shouldRedrawDisplay);
+            shouldRedrawDisplay = false;
 #endif
             break;
         case idleEnd:
@@ -1066,7 +1067,8 @@ result idle(menuOut &o, idleEvent e) {
 void menuLoopTFT() {
 #ifdef SUPPORT_TFT
     if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
         return;
     }
 
@@ -1081,7 +1083,8 @@ void menuLoopTFT() {
 
     nav.doInput();
     if (nav.sleepTask) {
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
     } else {
         if (nav.changed(0)) {
             nav.doOutput();
@@ -1093,12 +1096,14 @@ void menuLoopTFT() {
 void menuLoopOLED() {
 #ifdef SUPPORT_OLED
     if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
         return;
     }
 
     if (nav.sleepTask) {
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
     } else {
         if (nav.changed(0)) {
             u8g2.firstPage();

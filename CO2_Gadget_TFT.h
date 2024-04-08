@@ -191,9 +191,10 @@ void setElementLocations() {
 void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     if (actualDisplayBrightness != newBrightness) {
-        // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
-        // Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
-        // Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
+        // Serial.println("\n-->[TFT ] DisplayBrightness (user setting) value at: " + String(DisplayBrightness));
+        // Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
+        // Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
+        // delay(20);
         analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
@@ -279,7 +280,7 @@ void displaySplashScreen() {
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BACKLIGHT, OUTPUT);
-    digitalWrite(TFT_BACKLIGHT, 1);
+    // digitalWrite(TFT_BACKLIGHT, 1); Removed to revert as v.0.12.000 to try to fix #192
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
@@ -346,6 +347,7 @@ bool displayNotification(String notificationText, notificationTypes notification
     tft.drawString(notificationText, tft.width() / 2, tft.height() / 2);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -377,6 +379,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
     tft.drawString(notificationText2, tft.width() / 2 - textWidth2 / 2, tft.height() / 5 * 3 - boxMarging);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -642,7 +645,8 @@ void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {
-        // tft.fillScreen(TFT_BLACK);
+        // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);

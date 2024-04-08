@@ -555,7 +555,8 @@ void initMDNS() {
     // Serial.print("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://");
     // Serial.print(hostName);
     // Serial.println(".local");
-    Serial.printf("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://%s.local\n", hostName.c_str());
+    // Serial.printf("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://%s.local\n", hostName.c_str());
+    Serial.println("-->[WiFi] mDNS responder started. CO2 Gadget web interface at: http://" + hostName + ".local");
     MDNS.addService("http", "tcp", 80);
 #endif
 }
@@ -662,7 +663,8 @@ void initWebServer() {
         if (request->hasParam("MeasurementInterval")) {
             inputString = request->getParam("MeasurementInterval")->value();
             if (checkStringIsNumerical(inputString)) {
-                Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
+                // Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
+                Serial.println("-->[WiFi] Received /settings command MeasurementInterval with parameter " + inputString);
                 measurementInterval = inputString.toInt();
                 request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
             } else {
@@ -673,7 +675,8 @@ void initWebServer() {
         if (request->hasParam("CalibrateCO2")) {
             inputString = request->getParam("CalibrateCO2")->value();
             if (checkStringIsNumerical(inputString)) {
-                Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
+                // Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
+                Serial.println("-->[WiFi] Received /settings command CalibrateCO2 with parameter: " + inputString);
                 if ((inputString.toInt() >= 400) && (inputString.toInt() <= 2000)) {
                     calibrationValue = inputString.toInt();
                     pendingCalibration = true;
@@ -689,7 +692,8 @@ void initWebServer() {
             if (inputString.equalsIgnoreCase("true") || inputString.equalsIgnoreCase("false")) {
                 bool newValue = inputString.equalsIgnoreCase("true");
                 displayShowBatteryVoltage = newValue;
-                Serial.printf("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: %s\n", newValue ? "true" : "false");
+                // Serial.printf("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: %s\n", newValue ? "true" : "false");
+                Serial.println("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: " + inputString);
                 request->send(200, "text/plain", "OK. Setting displayShowBatteryVoltage to " + inputString);
             } else {
                 request->send(400, "text/plain", "Error. Invalid parameter. Use 'true' or 'false'");
@@ -773,8 +777,10 @@ bool connectToWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.setHostname(hostName.c_str());
-    Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
-    Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+    // Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
+    Serial.println("-->[WiFi] Setting hostname: " + hostName);
+    // Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+    Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + ")");
 
     WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -806,7 +812,8 @@ bool connectToWiFi() {
         disableWiFi();
         troubledWIFI = true;
         timeTroubledWIFI = millis();
-        Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+        // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
     }
 
     if (troubledWIFI) {
