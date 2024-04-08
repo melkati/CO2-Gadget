@@ -255,6 +255,42 @@ void drawScreenCenterText(const String text) {
     display.print(text);
 }
 
+void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String text, char h_align = 'C', char v_align = 'C') {
+    int16_t tbx, tby;
+    uint16_t tbw, tbh;
+    uint16_t pos_x, pos_y;
+    // Calculate text bounds
+    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    switch (h_align) {
+        case 'r':  // right
+            pos_x = x + w - tbw;
+            break;
+        case 'c':  // centered
+            pos_x = x + (w / 2) - (tbw / 2);
+            break;
+        case 'l':  // left
+        default:
+            pos_x = x;
+            break;
+    }
+    switch (v_align) {
+        case 'd':  // down
+            pos_y = y + h;
+            break;
+        case 'c':  // centered
+            pos_y = y + (h / 2) + (tbh / 2);
+            break;
+        case 'u':  // upper
+        default:
+            pos_y = y + tbh;
+            break;
+    }
+    // Display text
+    display.setCursor(pos_x, pos_y);
+    display.print(text);
+}
+
 void displaySplashScreenLOGO() {
 #ifdef TIMEDEBUG
     timer.start();
