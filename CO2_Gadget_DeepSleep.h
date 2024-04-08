@@ -210,7 +210,7 @@ void toDeepSleep() {
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
     // #endif
 
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21)  // || defined(EINKBOARDGDEM029T94)
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEM0213B74)
     // Pull up pin 13 to put flash memory into deep sleep
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
@@ -546,12 +546,14 @@ bool handleLowPowerSensors() {
 }
 
 void fromDeepSleepTimer() {
-    --deepSleepData.cyclesToWiFiConnect;
-    --deepSleepData.cyclesToRedrawDisplay;
 #if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
     Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
+#endif
+#if defined(DEEP_SLEEP_DEBUG)
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
 #endif
+    --deepSleepData.cyclesToWiFiConnect;
+    --deepSleepData.cyclesToRedrawDisplay;
     switch (deepSleepData.lowPowerMode) {
         case BASIC_LOWPOWER:
 #ifdef DEEP_SLEEP_DEBUG
