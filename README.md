@@ -209,7 +209,7 @@ I don't want money but I will accept material donations so I can move forward wi
 
 <a href=https://s.click.aliexpress.com/e/_DDtmotn target="_blank"><img src=//ae01.alicdn.com/kf/H056531cd866d4a3c8807b9938a654ce14.jpg_80x80.jpg></a>
 
-# TODO
+# TO DO
 
 - [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
 - [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)

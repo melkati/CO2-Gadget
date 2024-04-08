@@ -1,6 +1,8 @@
 #ifndef CO2_Gadget_Preferences_h
 #define CO2_Gadget_Preferences_h
 
+// #define DEBUG_PREFERENCES
+
 #include <ArduinoJson.h>
 #include <Preferences.h>
 Preferences preferences;
@@ -17,6 +19,7 @@ void upgradePreferences() {
     }
 }
 
+#ifdef DEBUG_PREFERENCES
 void printPreferences() {
     Serial.printf("-->[PREF] \n");
     Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
@@ -80,8 +83,26 @@ void printPreferences() {
     Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
     Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
 
+    // Low power preferences
+    Serial.printf("-->[PREF] lowPowerMode is:\t#%d#\n", deepSleepData.lowPowerMode);
+    Serial.printf("-->[PREF] waitToDeep is:\t#%d#\n", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    Serial.printf("-->[PREF] timeSleeping is:\t#%d#\n", deepSleepData.timeSleeping);
+    Serial.printf("-->[PREF] cyclsWifiConn is:\t#%d#\n", deepSleepData.cyclesToWiFiConnect);
+    Serial.printf("-->[PREF] cycRedrawDis is:\t#%d#\n", deepSleepData.cyclesToRedrawDisplay);
+    Serial.printf("-->[PREF] actBLEOnWake is:\t#%s#\n",
+                  ((deepSleepData.activeBLEOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actWifiOnWake is:\t#%s#\n",
+                  ((deepSleepData.activeWifiOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actMQTTOnWake is:\t#%s#\n",
+                  ((deepSleepData.sendMQTTOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actESPnowWake is:\t#%s#\n",
+                  ((deepSleepData.sendESPNowOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] displayOnWake is:\t#%s#\n",
+                  ((deepSleepData.displayOnWake) ? "Enabled" : "Disabled"));
+
     Serial.printf("-->[PREF] \n");
 }
+#endif
 
 void initPreferences() {
     // preferences.begin("CO2-Gadget", false);
@@ -91,7 +112,8 @@ void initPreferences() {
     //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
     // }
     // preferences.end();
-    // delay(000);
+    // delay(100);
+
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
     prefRevision = preferences.getUInt("prefRevision", 0);
@@ -177,6 +199,26 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
+    // Low power preferences
+    deepSleepData.lowPowerMode = preferences.getUInt("lowPowerMode", 0);
+    deepSleepData.waitToGoDeepSleepOn1stBoot = preferences.getUInt("waitToDeep", 60);
+    deepSleepData.timeSleeping = preferences.getUInt("timeSleeping", 60);
+    deepSleepData.cyclesToWiFiConnect = preferences.getUInt("cyclsWifiConn", 5);
+    deepSleepData.cyclesToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
+    deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
+    deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+    deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+    deepSleepData.sendESPNowOnWake = preferences.getBool("actESPnowWake", false);
+    deepSleepData.displayOnWake = preferences.getBool("displayOnWake", false);
+
+    // Check if the values are within the expected range
+    if ((deepSleepData.waitToGoDeepSleepOn1stBoot < 15) || (deepSleepData.waitToGoDeepSleepOn1stBoot > 900)) {
+        deepSleepData.waitToGoDeepSleepOn1stBoot = 180;
+        preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    }
+
+    preferences.end();
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -186,7 +228,6 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-// #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
     printPreferences();
 #endif
@@ -259,6 +300,18 @@ void putPreferences() {
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
     preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
+    // Low power preferences
+    preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
+    preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    preferences.putUInt("timeSleeping", deepSleepData.timeSleeping);
+    preferences.putUInt("cyclsWifiConn", deepSleepData.cyclesToWiFiConnect);
+    preferences.putUInt("cycRedrawDis", deepSleepData.cyclesToRedrawDisplay);
+    preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
+    preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
+    preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
+    preferences.putBool("actESPnowWake", deepSleepData.sendESPNowOnWake);
+    preferences.putBool("displayOnWake", deepSleepData.displayOnWake);
+
     preferences.end();
 
 #ifdef DEBUG_PREFERENCES
@@ -306,7 +359,7 @@ String getPreferencesAsJson() {
     doc["debugSensors"] = preferences.getBool("debugSensors", false);
     doc["displayReverse"] = preferences.getBool("displayReverse", false);
     doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-    doc["measurementInterval"] = preferences.getInt("measInterval", 10);
+    doc["measurementInterval"] = preferences.getInt("measInterval", 5);
     doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
     doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
     doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
@@ -316,12 +369,23 @@ String getPreferencesAsJson() {
     doc["showBattery"] = preferences.getBool("showBattery", true);
     doc["showCO2"] = preferences.getBool("showCO2", true);
     doc["showPM25"] = preferences.getBool("showPM25", true);
-    doc["measInterval"] = preferences.getInt("measInterval", 10);
+    doc["measInterval"] = preferences.getInt("measInterval", 5);
 
     // Buzzer preferences
     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
     doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
     doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
+
+    // Low power preferences
+    doc["lowPowerMode"] = preferences.getUInt("lowPowerMode", 0);
+    doc["waitToDeep"] = preferences.getUInt("waitToDeep", 60);
+    doc["timeSleeping"] = preferences.getUInt("timeSleeping", 60);
+    doc["cyclsWifiConn"] = preferences.getUInt("cyclsWifiConn", 10);
+    doc["cycrRedrawDis"] = preferences.getUInt("cycRedrawDis", 5);
+    doc["actWifiOnWake"] = preferences.getBool("actWifiOnWake", false);
+    doc["actMQTTOnWake"] = preferences.getBool("actMQTTOnWake", false);
+    doc["actESPnowWake"] = preferences.getBool("actESPnowWake", false);
+    doc["displayOnWake"] = preferences.getBool("displayOnWake", false);
 
     preferences.end();
 
@@ -396,9 +460,21 @@ String getActualSettingsAsJson() {
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    // Low power preferences
+    doc["lowPowerMode"] = deepSleepData.lowPowerMode;
+    doc["waitToDeep"] = deepSleepData.waitToGoDeepSleepOn1stBoot;
+    doc["timeSleeping"] = deepSleepData.timeSleeping;
+    doc["cyclsWifiConn"] = deepSleepData.cyclesToWiFiConnect;
+    doc["cycRedrawDis"] = deepSleepData.cyclesToRedrawDisplay;
+    doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
+    doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
+    doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
+    doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
+    doc["displayOnWake"] = deepSleepData.displayOnWake;
+
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
+    Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
     return preferencesJson;
 }
 
@@ -490,6 +566,18 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
         durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
         timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
+
+        // Low power preferences
+        deepSleepData.lowPowerMode = JsonDocument["lowPowerMode"];
+        deepSleepData.waitToGoDeepSleepOn1stBoot = JsonDocument["waitToDeep"];
+        deepSleepData.timeSleeping = JsonDocument["timeSleeping"];
+        deepSleepData.cyclesToWiFiConnect = JsonDocument["cyclsWifiConn"];
+        deepSleepData.cyclesToRedrawDisplay = JsonDocument["cycRedrawDis"];
+        deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
+        deepSleepData.activeWifiOnWake = JsonDocument["actWifiOnWake"];
+        deepSleepData.sendMQTTOnWake = JsonDocument["actMQTTOnWake"];
+        deepSleepData.sendESPNowOnWake = JsonDocument["actESPnowWake"];
+        deepSleepData.displayOnWake = JsonDocument["displayOnWake"];
 
         // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
         // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();

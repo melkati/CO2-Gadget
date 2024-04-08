@@ -224,6 +224,16 @@ void setDisplayBrightness(uint16_t newBrightness) {
 #endif
 }
 
+void displaySleep(bool value)  // https://github.com/Bodmer/TFT_eSPI/issues/715
+{
+    if (value) {
+        tft.writecommand(0x10);  // Send command to put the display to sleep.
+        delay(150);              // Delay for shutdown time before another command can be sent.
+    } else {
+        tft.init();  // This sends the wake up command and initialises the display
+    }
+}
+
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
 }
@@ -286,8 +296,8 @@ void initBacklight() {
 #endif
 }
 
-void initDisplay() {
-    Serial.printf("-->[TFT ] Initializing display\n");
+void initDisplay(bool fastMode = false) {
+    if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
@@ -299,9 +309,14 @@ void initDisplay() {
     }
     setElementLocations();
     tft.setTextSize(2);
-    initBacklight();
-    displaySplashScreen();  // Display init and splash screen
-    delay(2000);            // Enjoy the splash screen for 2 seconds
+    if (!fastMode) {
+        initBacklight();
+        displaySplashScreen();  // Display init and splash screen
+        delay(2000);            // Enjoy the splash screen for 2 seconds
+    } else {
+        tft.fillScreen(TFT_BLACK);
+        initBacklight();
+    }
     spr.setColorDepth(16);
     spr.setTextWrap(false);
 }

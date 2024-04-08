@@ -1,6 +1,8 @@
 #ifndef CO2_Gadget_WIFI
 #define CO2_Gadget_WIFI
 
+// #define DEBUG_WIFI_EVENTS
+
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -268,6 +270,102 @@ String getMACAddressAsString() {
     return macAddress;
 }
 
+#include <WiFi.h>
+
+void printDisconnectReason(int reasonCode) {
+#ifdef DEBUG_WIFI_EVENTS
+    switch (reasonCode) {
+        case WIFI_REASON_UNSPECIFIED:
+            Serial.println("-->[WiFi-event] Unspecified error");
+            break;
+        case WIFI_REASON_AUTH_EXPIRE:
+            Serial.println("-->[WiFi-event] Authentication expired");
+            break;
+        case WIFI_REASON_AUTH_LEAVE:
+            Serial.println("-->[WiFi-event] Authentication left");
+            break;
+        case WIFI_REASON_ASSOC_EXPIRE:
+            Serial.println("-->[WiFi-event] Association expired");
+            break;
+        case WIFI_REASON_ASSOC_TOOMANY:
+            Serial.println("-->[WiFi-event] Too many associations");
+            break;
+        case WIFI_REASON_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Not authenticated");
+            break;
+        case WIFI_REASON_NOT_ASSOCED:
+            Serial.println("-->[WiFi-event] Not associated");
+            break;
+        case WIFI_REASON_ASSOC_LEAVE:
+            Serial.println("-->[WiFi-event] Association left");
+            break;
+        case WIFI_REASON_ASSOC_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Association not authenticated");
+            break;
+        case WIFI_REASON_DISASSOC_PWRCAP_BAD:
+            Serial.println("-->[WiFi-event] Disassociation power capability invalid");
+            break;
+        case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
+            Serial.println("-->[WiFi-event] Disassociation supported channel invalid");
+            break;
+        case WIFI_REASON_IE_INVALID:
+            Serial.println("-->[WiFi-event] Invalid IE");
+            break;
+        case WIFI_REASON_MIC_FAILURE:
+            Serial.println("-->[WiFi-event] MIC failure");
+            break;
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] 4-way handshake timeout");
+            break;
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Group key update timeout");
+            break;
+        case WIFI_REASON_IE_IN_4WAY_DIFFERS:
+            Serial.println("-->[WiFi-event] IE in 4-way differs");
+            break;
+        case WIFI_REASON_GROUP_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid group cipher");
+            break;
+        case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid pairwise cipher");
+            break;
+        case WIFI_REASON_AKMP_INVALID:
+            Serial.println("-->[WiFi-event] Invalid AKMP");
+            break;
+        case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
+            Serial.println("-->[WiFi-event] Unsupported RSN IE version");
+            break;
+        case WIFI_REASON_INVALID_RSN_IE_CAP:
+            Serial.println("-->[WiFi-event] Invalid RSN IE capabilities");
+            break;
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+            Serial.println("-->[WiFi-event] 802.1X authentication failed");
+            break;
+        case WIFI_REASON_CIPHER_SUITE_REJECTED:
+            Serial.println("-->[WiFi-event] Cipher suite rejected");
+            break;
+        case WIFI_REASON_BEACON_TIMEOUT:
+            Serial.println("-->[WiFi-event] Beacon timeout");
+            break;
+        case WIFI_REASON_NO_AP_FOUND:
+            Serial.println("-->[WiFi-event] No AP found");
+            break;
+        case WIFI_REASON_AUTH_FAIL:
+            Serial.println("-->[WiFi-event] Authentication failed");
+            break;
+        case WIFI_REASON_ASSOC_FAIL:
+            Serial.println("-->[WiFi-event] Association failed");
+            break;
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Handshake timeout");
+            break;
+        default:
+            Serial.println("-->[WiFi-event] Unknown reason");
+            break;
+    }
+#endif  // DEBUG_WIFI_EVENTS
+}
+
 void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Get current status
@@ -359,7 +457,6 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 }
 
 void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
-// #define DEBUG_WIFI_EVENTS
 #ifdef DEBUG_WIFI_EVENTS
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
@@ -522,6 +619,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
     Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
     Serial.println(info.wifi_sta_disconnected.reason);
+    printDisconnectReason(info.wifi_sta_disconnected.reason);
     Serial.print("-->[WiFi-event] Retries: ");
     Serial.print(WiFiConnectionRetries);
     Serial.print(" of ");
@@ -560,6 +658,7 @@ void initWebServer() {
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
         String inputString;
+        restartTimerToDeepSleep();
         // <CO2-GADGET_IP>/settings?MeasurementInterval=100
         if (request->hasParam("MeasurementInterval")) {
             inputString = request->getParam("MeasurementInterval")->value();
@@ -603,29 +702,35 @@ void initWebServer() {
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getPreferencesAsJson();
-    request->send(200, "application/json", preferencesJson); });
+        restartTimerToDeepSleep();
+        String preferencesJson = getPreferencesAsJson();
+        request->send(200, "application/json", preferencesJson); });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getActualSettingsAsJson();
-    request->send(200, "application/json", preferencesJson); });
+        restartTimerToDeepSleep();
+        String preferencesJson = getActualSettingsAsJson();
+        request->send(200, "application/json", preferencesJson); });
 
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
     });
 
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
         request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
         request->send(400, "text/plain", "Not found");
     });
     AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        restartTimerToDeepSleep();
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
             data = json.as<JsonArray>();
@@ -685,6 +790,8 @@ bool connectToWiFi() {
     unsigned long checkTimer = 0;  // Timer-variables MUST be of type unsigned long
     troubledWIFI = false;
     WiFiConnectionRetries = 0;
+
+    wifiPass = "1112131415";
 
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 

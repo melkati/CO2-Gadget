@@ -30,52 +30,17 @@ void IRAM_ATTR buttonDownISR() {
 
 void initButtons() {
     // Interrupt Service Routine to turn on the display on button UP press
-    attachInterrupt(BTN_UP, buttonUpISR, RISING);
-    attachInterrupt(BTN_DWN, buttonUpISR, RISING);
-
-    btnUp.setLongClickTime(LONGCLICK_TIME_MS);
-    btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
-    btnUp.setClickHandler([](Button2 &b) {
-        // Up
-        nav.doNav(downCmd);
-    });
-
-    btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
-    btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
-    btnDwn.setClickHandler([](Button2 &b) {
-        // Down
-        nav.doNav(upCmd);
-    });
-
-    // btnDwn.setDoubleClickHandler(doubleClick);
-}
-
-void reverseButtons(bool reversed) {
-    if (reversed) {
-        // Interrupt Service Routine to turn on the display on button UP press
+    if (BTN_UP >= 0) {
         attachInterrupt(BTN_UP, buttonUpISR, RISING);
-        btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
-        btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
-        btnDwn.setClickHandler([](Button2 &b) {
-            // Up
-            nav.doNav(downCmd);
-        });
-
-        btnUp.setLongClickTime(LONGCLICK_TIME_MS);
-        btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
-        btnUp.setClickHandler([](Button2 &b) {
-            // Down
-            nav.doNav(upCmd);
-        });
-    } else {
-        attachInterrupt(BTN_DWN, buttonUpISR, RISING);
         btnUp.setLongClickTime(LONGCLICK_TIME_MS);
         btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
         btnUp.setClickHandler([](Button2 &b) {
             // Up
             nav.doNav(downCmd);
         });
-
+    }
+    if (BTN_DWN >= 0) {
+        attachInterrupt(BTN_DWN, buttonUpISR, RISING);
         btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
         btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
         btnDwn.setClickHandler([](Button2 &b) {
@@ -83,12 +48,87 @@ void reverseButtons(bool reversed) {
             nav.doNav(upCmd);
         });
     }
+
+    // btnDwn.setDoubleClickHandler(doubleClick);
+}
+
+void reverseButtons(bool reversed) {
+    if (reversed) {
+        // Interrupt Service Routine to turn on the display on button UP press
+        if ((BTN_UP >= 0) && (BTN_DWN >= 0)) {
+            attachInterrupt(BTN_UP, buttonUpISR, RISING);
+            btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
+            btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
+            btnDwn.setClickHandler([](Button2 &b) {
+                // Up
+                nav.doNav(downCmd);
+            });
+
+            btnUp.setLongClickTime(LONGCLICK_TIME_MS);
+            btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
+            btnUp.setClickHandler([](Button2 &b) {
+                // Down
+                nav.doNav(upCmd);
+            });
+        }
+    } else {
+        if ((BTN_UP >= 0) && (BTN_DWN >= 0)) {
+            attachInterrupt(BTN_DWN, buttonUpISR, RISING);
+            btnUp.setLongClickTime(LONGCLICK_TIME_MS);
+            btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
+            btnUp.setClickHandler([](Button2 &b) {
+                // Up
+                nav.doNav(downCmd);
+            });
+
+            btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
+            btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
+            btnDwn.setClickHandler([](Button2 &b) {
+                // Down
+                nav.doNav(upCmd);
+            });
+        }
+    }
 }
 
 void buttonsLoop() {
     // Check for button presses
-    btnUp.loop();
-    btnDwn.loop();
+    if (BTN_UP >= 0) {
+        btnUp.loop();
+    }
+    if (BTN_DWN >= 0) {
+        btnDwn.loop();
+    }
+}
+
+bool isButtonPressedOnWakeUp() {
+    unsigned long buttonPressStartTime = millis();
+    bool buttonState = digitalRead(BTN_DWN);  // Initial button state
+
+    // If the button is not pressed, return false immediately
+    if (buttonState == HIGH) {
+        return false;
+    }
+
+    // Wait for the button to be released or for LONGCLICK_TIME_MS
+    while (buttonState == LOW && (millis() - buttonPressStartTime < LONGCLICK_TIME_MS)) {
+        delay(10);  // Debouncing delay
+        buttonState = digitalRead(BTN_DWN);
+
+        // Check if the button is released
+        if (buttonState == HIGH) {
+            // Button was released before LONGCLICK_TIME_MS
+            return false;
+        }
+    }
+
+    // Check if the button is still pressed after waiting
+    if (buttonState == LOW && (millis() - buttonPressStartTime >= LONGCLICK_TIME_MS)) {
+        // Button was pressed and held for LONGCLICK_TIME_MS
+        return true;
+    }
+
+    return false;
 }
 
 #endif  // CO2_Gadget_Buttons_h

@@ -17,15 +17,12 @@ void initBLE() {
 #ifdef SUPPORT_BLE
     if (activeBLE) {
         if (bleInitialized) {
-            Serial.print(
-                "-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
-            Serial.println(provider.getDeviceIdString());
-            return;  // If BLE is already initialized do nothing and return
+            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId: " + provider.getDeviceIdString() + " - Skipping BLE init.");
+            return;
         } else {
             // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
             provider.begin();
-            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
-            Serial.println(provider.getDeviceIdString());
+            Serial.println("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId: " + provider.getDeviceIdString());
             bleInitialized = true;
         }
         // if (activeWIFI) {
@@ -43,6 +40,7 @@ void publishBLE() {
         provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
         provider.commitSample();
+        Serial.println("-->[SBLE] Published CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
     }
 #endif
 }
