@@ -10,6 +10,15 @@
 	</tr>
 </table>
 
+<table>
+	<tr>
+		<td>
+			<a href="https://github.com/melkati/CO2-Gadget/issues/198">🌟 Calling All Tech Enthusiasts! Join the CO2 Gadget Testing Adventure 🌟</a>
+		</td>
+	</tr>
+</table>
+
+
 # CO2-Gadget
 
 An advanced fimware for CO2 Monitor/Meter. It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99,99% of them).
