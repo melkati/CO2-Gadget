@@ -95,17 +95,25 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=5*
 struct ElementLocations {
     int32_t co2X;
     int32_t co2Y;
+    int32_t co2W;
+    int32_t co2H;
     u_int16_t co2FontDigitsHeight;
     int32_t co2UnitsX;
     int32_t co2UnitsY;
+    int32_t co2UnitsW;
+    int32_t co2UnitsH;
     int32_t tempXUnits;
     int32_t tempYUnits;
     int32_t tempXValue;
     int32_t tempYValue;
+    int32_t tempWValue;
+    int32_t tempHValue;
     int32_t humidityXUnits;
     int32_t humidityYUnits;
     int32_t humidityXValue;
     int32_t humidityYValue;
+    int32_t humidityWValue;
+    int32_t humidityHValue;
     int32_t ppmXUnits;
     int32_t ppmYUnits;
 
@@ -157,19 +165,35 @@ void setElementLocations() {
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
+
+        // widths & heights of main values
+        elementPosition.co2W = display.width() - 24;
+        elementPosition.co2H = display.height() - 48;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.tempW = 72;
+        elementPosition.tempH = 24;
+        elementPosition.humidityWValue = 72;
+        elementPosition.humidityHValue = 24;
     }
 #endif
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     if (displayWidth == 250 && displayHeight == 122) {  // 250x122 DEPG0213BN, GDEM0213B74 and similar
         elementPosition.co2X = -1;
         elementPosition.co2Y = displayHeight - 33;
+        elementPosition.co2W = display.width() - 24;
+        elementPosition.co2H = display.height() - 48;
         elementPosition.co2FontDigitsHeight = 48;  // Digits (0..9) height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
         elementPosition.tempXUnits = 2;
         elementPosition.tempYUnits = 12;
         elementPosition.tempXValue = 14;
         elementPosition.tempYValue = 12;
+        elementPosition.tempWValue = 72;
+        elementPosition.tempHValue = 24;
         elementPosition.humidityXUnits = 60;
         elementPosition.humidityYUnits = 12;
         elementPosition.humidityXValue = 82;
@@ -188,6 +212,16 @@ void setElementLocations() {
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
+
+        // widths & heights of main values
+        elementPosition.co2W = display.width() - 24;
+        elementPosition.co2H = display.height() - 48;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.tempW = 72;
+        elementPosition.tempH = 24;
+        elementPosition.humidityWValue = 72;
+        elementPosition.humidityHValue = 24;
     }
 #endif
 #if defined(EINKBOARDGDEW0213M21)
@@ -219,6 +253,16 @@ void setElementLocations() {
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
+
+        // widths & heights of main values
+        elementPosition.co2W = display.width() - 24;
+        elementPosition.co2H = display.height() - 48;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.tempW = 72;
+        elementPosition.tempH = 24;
+        elementPosition.humidityWValue = 72;
+        elementPosition.humidityHValue = 24;
     }
 #endif
 }
