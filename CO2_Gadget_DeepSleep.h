@@ -66,6 +66,55 @@ String getDeepSleepDataCo2SensorName() {
     }
 }
 
+void printWakeupTouchpad() {
+    touch_pad_t touchPin;
+    touchPin = esp_sleep_get_touchpad_wakeup_status();
+
+#if CONFIG_IDF_TARGET_ESP32
+    switch (touchPin) {
+        case 0:
+            Serial.println("-->[DEEP] Touch detected on GPIO 4");
+            break;
+        case 1:
+            Serial.println("-->[DEEP] Touch detected on GPIO 0");
+            break;
+        case 2:
+            Serial.println("-->[DEEP] Touch detected on GPIO 2");
+            break;
+        case 3:
+            Serial.println("-->[DEEP] Touch detected on GPIO 15");
+            break;
+        case 4:
+            Serial.println("-->[DEEP] Touch detected on GPIO 13");
+            break;
+        case 5:
+            Serial.println("-->[DEEP] Touch detected on GPIO 12");
+            break;
+        case 6:
+            Serial.println("-->[DEEP] Touch detected on GPIO 14");
+            break;
+        case 7:
+            Serial.println("-->[DEEP] Touch detected on GPIO 27");
+            break;
+        case 8:
+            Serial.println("-->[DEEP] Touch detected on GPIO 33");
+            break;
+        case 9:
+            Serial.println("-->[DEEP] Touch detected on GPIO 32");
+            break;
+        default:
+            Serial.println("-->[DEEP] Wakeup not by touchpad");
+            break;
+    }
+#else
+    if (touchPin < TOUCH_PAD_MAX) {
+        Serial.printf("-->[DEEP] Touch detected on GPIO %d\n", touchPin);
+    } else {
+        Serial.println("-->[DEEP] Wakeup not by touchpad");
+    }
+#endif
+}
+
 String getWakeupCause() {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_UNDEFINED:
@@ -130,7 +179,7 @@ String getResetReason() {
 
 void printResetReason() {
 #ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Reason for reset: " + getResetReason());
+    // Serial.println("-->[DEEP] Reason for reset: " + getResetReason());
 #endif
 }
 
@@ -178,16 +227,19 @@ void printRTCMemoryExit() {
 
 void restartTimerToDeepSleep() {
     startTimerToDeepSleep = millis();
-    #ifdef DEEP_SLEEP_DEBUG
+#ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP] Restarting timer to deep sleep.");
-    #endif
+#endif
+}
+
+void callbackTouch() {
+    // placeholder callback function
 }
 
 void toDeepSleep() {
-
-    #ifdef SUPPORT_EINK 
-    // display.hibernate();
-    #endif
+#ifdef SUPPORT_EINK
+// display.hibernate();
+#endif
 
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         sensors.scd30.stopContinuousMeasurement();
@@ -205,6 +257,11 @@ void toDeepSleep() {
     Serial.println("");
     printRTCMemoryEnter();
 
+    // Setup interrupt on Touch Pad 0 (GPIO4)
+    touchAttachInterrupt(T3, callbackTouch, 40);
+
+    esp_sleep_enable_touchpad_wakeup();
+
     // Experimental: Turn off green LED and display on S3 board
     // #if defined(CONFIG_IDF_TARGET_ESP32S3)
     // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
@@ -219,18 +276,20 @@ void toDeepSleep() {
 
 #ifdef TIMEDEBUG
     Serial.println("-->[DEEP] Time awake: " + String(timerAwake.read()) + " ms (in light sleep for " + String(timerLightSleep.read()) + " ms)");
+    Serial.println("");
+    Serial.println("");
 #endif
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
-#ifdef BTN_WAKEUP
-    esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
-#else
-    if (BTN_DWN != -1) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
-    } else if (BTN_UP != -1) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
-    }
-#endif
+    // #ifdef BTN_WAKEUP
+    //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
+    // #else
+    //     if (BTN_DWN != -1) {
+    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+    //     } else if (BTN_UP != -1) {
+    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
+    //     }
+    // #endif
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
     gpio_deep_sleep_hold_en();
@@ -420,14 +479,13 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
             if (currentMillis - previousMillis >= 1000) {
                 previousMillis = currentMillis;
                 Serial.print("+");
-                delay(10);
             }
             if (currentMillis - startTimeoutMillis >= 31000) {
                 Serial.println("-->[DEEP] Timeout waiting for data from sensor SCD40");
                 return (false);
             }
-            esp_sleep_enable_timer_wakeup(0.1 * 1000000);
             Serial.flush();
+            esp_sleep_enable_timer_wakeup(0.3 * 1000000);
             timerLightSleep.resume();
             esp_light_sleep_start();
             timerLightSleep.pause();
@@ -640,16 +698,18 @@ void fromDeepSleep() {
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
 #endif
+            interactiveMode = true;
             break;
         case ESP_SLEEP_WAKEUP_EXT1:
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
-            interactiveMode = true;
 #endif
+            interactiveMode = true;
             break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by touchpad");
+            interactiveMode = true;
 #endif
             break;
         case ESP_SLEEP_WAKEUP_ULP:

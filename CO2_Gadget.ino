@@ -589,12 +589,12 @@ void initHighPerformanceMode() {
 
     if (ESP.getFlashChipSize() > 0) {
         Serial.println("-->[STUP] Flash size: " + String(ESP.getFlashChipSize()));
-        Serial.println("-->[STUP] Flash speed: " + String(ESP.getFlashChipSpeed()));
-        Serial.println("-->[STUP] Flash mode: " + String(ESP.getFlashChipMode()));
+        // Serial.println("-->[STUP] Flash speed: " + String(ESP.getFlashChipSpeed()));
+        // Serial.println("-->[STUP] Flash mode: " + String(ESP.getFlashChipMode()));
     }
     delay(50);
 
-    printResetReason();
+    // printResetReason();
     initImprov();
     initBattery();
     initGPIO();
@@ -625,6 +625,8 @@ void initHighPerformanceMode() {
     timeInitializationCompleted = millis();
     startTimerToDeepSleep = timeInitializationCompleted;
     Serial.println("-->[STUP] Initialization in HIGH PERFORMANCE MODE Ready.");
+    Serial.println("");
+    Serial.flush();
 }
 
 void initGPIOLowPower() {
@@ -662,7 +664,7 @@ void initGPIOLowPower() {
     timeInitializationCompleted = millis();
     restartTimerToDeepSleep();
     Serial.println("-->[STUP] Going to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-    Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + "startTimerToDeepSleep: " + String(startTimerToDeepSleep) + "millis: " + String(millis()));
+    Serial.println("-->[STUP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " millis: " + String(millis()));
     Serial.println("-->**********************************************************");
     Serial.println("-->[STUP]--> INITIALIZING LOW POWER MODE GPIO WAKE UP READY *");
     Serial.println("-->**********************************************************");
@@ -723,14 +725,29 @@ void setup() {
                 fromDeepSleep();
                 break;
             case ESP_SLEEP_WAKEUP_EXT0:
-            case ESP_SLEEP_WAKEUP_EXT1:
-                Serial.println("-->[STUP] Initializing from deep sleep GPIO");
+                Serial.println("-->[STUP] Initializing from deep sleep GPIO (WAKEUP_EXT0)");
                 initGPIOLowPower();
                 fromDeepSleep();
-                Serial.println("-->[STUP] Initialization from deep sleep GPIO completed");
+                Serial.println("-->[STUP] Initialization from deep sleep GPIO (WAKEUP_EXT0) completed");
+                break;
+            case ESP_SLEEP_WAKEUP_EXT1:
+                Serial.println("-->[STUP] Initializing from deep sleep GPIO (WAKEUP_EXT1)");
+                Serial.print("-->[STUP] Wake up caused because of GPIO: ");
+                Serial.println((log(esp_sleep_get_ext1_wakeup_status())) / log(2), 0);
+                initGPIOLowPower();
+                fromDeepSleep();
+                Serial.println("-->[STUP] Initialization from deep sleep GPIO (WAKEUP_EXT1) completed");
+                break;
+            case ESP_SLEEP_WAKEUP_TOUCHPAD:
+                Serial.println("-->[STUP] Initializing from deep sleep touchpad");
+                printWakeupTouchpad();
+                initGPIOLowPower();
+                fromDeepSleep();
+                Serial.println("-->[STUP] Initialization from deep sleep touchpad completed");
                 break;
             default:
-                Serial.println("-->[STUP] Initializing from unknow deep sleep cause: " + String(esp_sleep_get_wakeup_cause()));
+                Serial.print("-->[STUP][ERROR] Initializing from unknown deep sleep cause: ");
+                Serial.println(esp_sleep_get_wakeup_cause());
                 delay(5000);
                 initHighPerformanceMode();
                 break;
@@ -766,7 +783,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
 }
 
-void loop() { // Only reached in HIGH PERFORMANCE MODE
+void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
     batteryLoop();
     utilityLoop();
     improvLoop();
@@ -780,12 +797,12 @@ void loop() { // Only reached in HIGH PERFORMANCE MODE
     adjustBrightnessLoop();
     buttonsLoop();
     menuLoop();
-    BLELoop();    
+    BLELoop();
     deepSleepLoop();
 }
 
-void loopOLD() { // Old loop function. Not used anymore. Just for reference
-    bool showDebug = false;
+void loop() {  // Old loop function. Not used anymore. Just for reference
+    bool showDebug = true;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
@@ -801,7 +818,8 @@ void loopOLD() { // Old loop function. Not used anymore. Just for reference
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
-    if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1)) {
+    // if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)) {
+    if (deepSleepEnabled) {
         if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode. ");
         deepSleepLoop();
         handleLowPowerSensors();
@@ -817,5 +835,5 @@ void loopOLD() { // Old loop function. Not used anymore. Just for reference
     buttonsLoop();
     menuLoop();
     BLELoop();
-    deepSleepLoop();
+    // deepSleepLoop();
 }
