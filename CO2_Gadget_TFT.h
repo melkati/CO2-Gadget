@@ -191,10 +191,10 @@ void setElementLocations() {
 void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     if (actualDisplayBrightness != newBrightness) {
-        Serial.println("\n-->[TFT ] DisplayBrightness (user setting) value at: " + String(DisplayBrightness));
-        Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
-        Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
-        delay(20);
+        // Serial.println("\n-->[TFT ] DisplayBrightness (user setting) value at: " + String(DisplayBrightness));
+        // Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
+        // Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
+        // delay(20);
         analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
