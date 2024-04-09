@@ -396,7 +396,8 @@ void initGPIO() {
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
     digitalWrite(RED_PIN, LOW);
-#ifdef BTN_WAKEUP
+    // If BTN_WAKEUP is defined and BTN_WAKEUP_IS_TOUCHPAD is not defined or set to 0, set it as input
+#if defined(BTN_WAKEUP) && (!defined(BTN_WAKEUP_IS_TOUCHPAD) || BTN_WAKEUP_IS_TOUCHPAD == 0)
     pinMode(BTN_WAKEUP, INPUT_PULLUP);
 #endif
 }
