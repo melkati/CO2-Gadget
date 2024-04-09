@@ -186,8 +186,8 @@ void setElementLocations() {
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
+        elementPosition.bleIconX = 0;
+        elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 26;
         elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
@@ -231,8 +231,8 @@ void setElementLocations() {
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
+        elementPosition.bleIconX = 0;
+        elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 26;
         elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
@@ -272,8 +272,8 @@ void setElementLocations() {
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
+        elementPosition.bleIconX = 0;
+        elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 26;
         elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
@@ -313,8 +313,8 @@ void setElementLocations() {
         elementPosition.batteryIconY = 2;
         elementPosition.batteryVoltageX = displayWidth - 92;
         elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 2;
-        elementPosition.bleIconY = 2;
+        elementPosition.bleIconX = 0;
+        elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 26;
         elementPosition.wifiIconY = 2;
         elementPosition.mqttIconX = 50;
@@ -794,6 +794,18 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     oldTempValue = temp;
 }
 
+void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);
+    //    display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (activeBLE) {
+        display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
+    } else {
+        // if it's not active I think is better not to display it.
+        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+        // display.drawInvertedBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
+    }
+}
+
 void showValues() {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
     RTC_DATA_ATTR static float oldTempValue = 0;
@@ -936,7 +948,7 @@ void displayShowValues(bool forceRedraw = false) {
     // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
     // showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
     // showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    // showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
     // Refresh screen in partial mode
