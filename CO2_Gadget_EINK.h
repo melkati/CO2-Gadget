@@ -94,6 +94,32 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=5*
 // GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEW029T5 with special pinout
 #endif
 
+#ifdef EINKBOARDGDEH0154D67
+#include <NotoSans_Bold42pt7b.h>
+#include <NotoSans_Bold6pt7b.h>
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+int displayWidth = 200;
+int displayHeight = 200;
+
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
+const GFXfont BigFont = NotoSans_Bold42pt7b;
+#define EPD_SCLK SCK
+#define EPD_MISO 17
+#define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_RST 16
+// #define EPD_DC 17
+// #define EPD_BUSY 4
+
+#define EPD_CS SS
+#define EPD_DC 27
+#define EPD_RST 25
+#define EPD_BUSY 32
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY)); // GDEH0154D67 200x200, SSD1681
+#endif
+
 // Define a structure for the locations of elements
 struct ElementLocations {
     int32_t co2X;
@@ -264,6 +290,37 @@ void setElementLocations() {
         elementPosition.tempHValue = 24;
         elementPosition.humidityWValue = 40;
         elementPosition.humidityHValue = 24;
+    }
+#endif
+#if defined(EINKBOARDGDEH0154D67)
+    if (displayWidth == 200 && displayHeight == 200) {  // 200x200 GDEH0154D67 WeAct Studio 1.54" 200x200 E-Ink Display
+        elementPosition.co2X = -1;
+        elementPosition.co2Y = displayHeight - 100;
+        elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2UnitsX = displayWidth - 33;
+        elementPosition.co2UnitsY = displayHeight - 140;
+        elementPosition.tempXUnits = 2;
+        elementPosition.tempYUnits = 12;
+        elementPosition.tempXValue = 14;
+        elementPosition.tempYValue = 12;
+        elementPosition.humidityXUnits = 60;
+        elementPosition.humidityYUnits = 12;
+        elementPosition.humidityXValue = 82;
+        elementPosition.humidityYValue = 12;
+        elementPosition.ppmXUnits = displayHeight / 2 + 20;  // Display is rotated so vertical orientation (swaped width & height)
+        elementPosition.ppmYUnits = displayWidth - 3;
+        elementPosition.batteryIconX = displayWidth - 32;
+        elementPosition.batteryIconY = 2;
+        elementPosition.batteryVoltageX = displayWidth - 92;
+        elementPosition.batteryVoltageY = 2;
+        elementPosition.bleIconX = 2;
+        elementPosition.bleIconY = 2;
+        elementPosition.wifiIconX = 26;
+        elementPosition.wifiIconY = 2;
+        elementPosition.mqttIconX = 50;
+        elementPosition.mqttIconY = 2;
+        elementPosition.espNowIconX = 74;
+        elementPosition.espNowIconY = 1;
     }
 #endif
 }
@@ -854,9 +911,9 @@ void displayShowValues(bool forceRedraw = false) {
 #ifdef TIMEDEBUG
     timer.start();
 #endif
-    if (forceRedraw) {
-        // tft.fillScreen(TFT_BLACK);
-    }
+    // if (forceRedraw) {
+    //     tft.fillScreen(TFT_BLACK);
+    // }
     // drawMainScreen();
 
     // showValues();
