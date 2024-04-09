@@ -524,23 +524,23 @@ void drawMainScreen(bool fullRefresh) {
     Serial.println(__func__);
 #endif
 
-// Draw labels and field rectangles
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
-#endif
-#if defined(EINKBOARDGDEW0213M21)
-    display.drawRoundRect(0, 23, display.width(), display.height() - 28, 6, GxEPD_BLACK);
-#endif
-#if defined(EINKBOARDGDEM029T94)
-    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
-#endif
+    // Draw labels and field rectangles
+    // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
+    //    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    // #endif
+    // #if defined(EINKBOARDGDEW0213M21)
+    //    display.drawRoundRect(0, 23, display.width(), display.height() - 28, 6, GxEPD_BLACK);
+    // #endif
+    // #if defined(EINKBOARDGDEM029T94)
+    //    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
+    // #endif
     display.setRotation(1);
     display.setTextColor(GxEPD_BLACK);
-    display.setCursor(elementPosition.tempXUnits, elementPosition.tempYUnits);
-    display.print("T:");
-#ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn T label at " + String(elementPosition.tempXUnits) + ", " + String(elementPosition.tempYUnits));
-#endif
+    //    display.setCursor(elementPosition.tempXUnits, elementPosition.tempYUnits);
+    //    display.print("T:");
+    // #ifdef DEBUG_EINK
+    //    Serial.println("-->[EINK] Drawn T label at " + String(elementPosition.tempXUnits) + ", " + String(elementPosition.tempYUnits));
+    // #endif
     // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     //     display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
     // #endif
@@ -550,11 +550,11 @@ void drawMainScreen(bool fullRefresh) {
     // #if defined(EINKBOARDGDEM029T94)
     //     display.setCursor((display.width()) - 5 * 9 * 2 - 65, 12);
     // #endif
-    display.setCursor(elementPosition.humidityXUnits, elementPosition.humidityYUnits);
-    display.print("HR:");
-#ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn HR label at " + String(elementPosition.humidityXUnits) + ", " + String(elementPosition.humidityYUnits));
-#endif
+    //    display.setCursor(elementPosition.humidityXUnits, elementPosition.humidityYUnits);
+    //    display.print("HR:");
+    // #ifdef DEBUG_EINK
+    //    Serial.println("-->[EINK] Drawn HR label at " + String(elementPosition.humidityXUnits) + ", " + String(elementPosition.humidityYUnits));
+    // #endif
     display.setRotation(4);
     // display.setCursor((display.width() / 2) - 15, display.height() - 3);
     display.setCursor(elementPosition.ppmXUnits, elementPosition.ppmYUnits);
