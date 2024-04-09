@@ -262,7 +262,7 @@ void setElementLocations() {
         elementPosition.humidityYUnits = 12;
         elementPosition.humidityXValue = 82;
         elementPosition.humidityYValue = 12;
-        elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
+        elementPosition.ppmXUnits = displayHeight / 2 + 20;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
         elementPosition.batteryIconX = displayWidth - 32;
         elementPosition.batteryIconY = 2;
