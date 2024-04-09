@@ -146,13 +146,13 @@ void setElementLocations() {
         elementPosition.co2FontDigitsHeight = 48;
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
-        elementPosition.tempXUnits = 2;
-        elementPosition.tempYUnits = 12;
-        elementPosition.tempXValue = 14;
-        elementPosition.tempYValue = 12;
-        elementPosition.humidityXUnits = display.width() - 72;
-        elementPosition.humidityYUnits = display.height() - 24;
-        elementPosition.humidityXValue = display.width() - 56;
+        elementPosition.tempXUnits = 0;
+        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempXValue = 20;
+        elementPosition.tempYValue = display.height() - 24;
+        elementPosition.humidityXUnits = display.width() - 16;
+        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.humidityXValue = display.width() - 64;
         elementPosition.humidityYValue = display.height() - 24;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 8;
@@ -174,9 +174,9 @@ void setElementLocations() {
         elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
-        elementPosition.tempWValue = 72;
+        elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 24;
-        elementPosition.humidityWValue = 56;
+        elementPosition.humidityWValue = 40;
         elementPosition.humidityHValue = 24;
     }
 #endif
@@ -191,15 +191,13 @@ void setElementLocations() {
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
-        elementPosition.tempXUnits = 2;
-        elementPosition.tempYUnits = 12;
-        elementPosition.tempXValue = 14;
-        elementPosition.tempYValue = 12;
-        elementPosition.tempWValue = 72;
-        elementPosition.tempHValue = 24;
-        elementPosition.humidityXUnits = display.width() - 72;
-        elementPosition.humidityYUnits = display.height() - 24;
-        elementPosition.humidityXValue = display.width() - 56;
+        elementPosition.tempXUnits = 0;
+        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempXValue = 20;
+        elementPosition.tempYValue = display.height() - 24;
+        elementPosition.humidityXUnits = display.width() - 18;
+        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.humidityXValue = display.width() - 64;
         elementPosition.humidityYValue = display.height() - 24;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
@@ -221,9 +219,9 @@ void setElementLocations() {
         elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
-        elementPosition.tempWValue = 72;
+        elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 24;
-        elementPosition.humidityWValue = 56;
+        elementPosition.humidityWValue = 40;
         elementPosition.humidityHValue = 24;
     }
 #endif
@@ -234,13 +232,13 @@ void setElementLocations() {
         elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
-        elementPosition.tempXUnits = 2;
-        elementPosition.tempYUnits = 12;
-        elementPosition.tempXValue = 14;
-        elementPosition.tempYValue = 12;
-        elementPosition.humidityXUnits = display.width() - 72;
-        elementPosition.humidityYUnits = display.height() - 24;
-        elementPosition.humidityXValue = display.width() - 56;
+        elementPosition.tempXUnits = 0;
+        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempXValue = 20;
+        elementPosition.tempYValue = display.height() - 24;
+        elementPosition.humidityXUnits = display.width() - 18;
+        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.humidityXValue = display.width() - 64;
         elementPosition.humidityYValue = display.height() - 24;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
@@ -262,9 +260,9 @@ void setElementLocations() {
         elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
-        elementPosition.tempWValue = 72;
+        elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 24;
-        elementPosition.humidityWValue = 56;
+        elementPosition.humidityWValue = 40;
         elementPosition.humidityHValue = 24;
     }
 #endif
@@ -571,7 +569,6 @@ void drawMainScreen(bool fullRefresh) {
     Serial.println("-->[EINK] Drawn PPM label at " + String(elementPosition.ppmXUnits) + ", " + String(elementPosition.ppmYUnits));
 #endif
     display.setRotation(1);
-    showHumidityIcon(elementPosition.humidityXUnits, elementPosition.humidityYUnits);
 
     if (fullRefresh) {
         display.display();  // Full update
@@ -667,10 +664,6 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     oldCO2Value = co2;
 }
 
-void showHumidityIcon(int32_t posX, int32_t posY) {
-    display.drawBitmap(posX, posY + 4, iconHumidityBW, 16, 16, GxEPD_BLACK);
-}
-
 void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
     String newHumidityStr, oldHumidityStr;
@@ -678,11 +671,11 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!forceRedraw && (hum == oldHumiValue)) return;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
-    showHumidityIcon(elementPosition.humidityXUnits, elementPosition.humidityYUnits);
+    display.drawBitmap(elementPosition.humidityXUnits, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
     // Erase old humidity value
     if (oldHumiValue != -200) {
         display.setFont(&SmallFont);
-        display.fillRect(posX, posY, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
+        display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
 //        display.setTextColor(GxEPD_WHITE);
 //        display.setCursor(posX, posY);
 //        oldHumidityStr = String(int(oldHumiValue)) + "%";
@@ -695,9 +688,9 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     // Show new humidity value
     display.setTextColor(GxEPD_BLACK);
     //    display.setCursor(posX, posY);
-    newHumidityStr = String(int(hum)) + "%";
+    newHumidityStr = String(int(hum));
     //    display.print(newHumidityStr);
-    drawTextAligned(posX, posY, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'l', 'c');
+    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'r', 'c');
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn humidity value: " + String(hum) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
@@ -709,21 +702,24 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!forceRedraw && (temp == oldTempValue)) return;
 
     display.setPartialWindow(0, 0, display.width(), display.height());
+    display.drawBitmap(elementPosition.tempXUnits, elementPosition.tempYUnits, iconTempBW, 16, 16, GxEPD_BLACK);
     // Erase old temperature value
     if (oldTempValue != -200) {
         display.setRotation(1);
         display.setFont(&SmallFont);
-        display.setTextColor(GxEPD_WHITE);
-        display.setCursor(posX, posY);
-        display.print(String(oldTempValue, 1) + "C");
+        display.fillRect(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, GxEPD_WHITE);  // Clear previous humidity value
+//        display.setTextColor(GxEPD_WHITE);
+//        display.setCursor(posX, posY);
+//        display.print(String(oldTempValue, 1) + "C");
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Erased old temperature value: " + String(oldTempValue) + " in: " + __func__);
 #endif
     }
 
     display.setTextColor(GxEPD_BLACK);
-    display.setCursor(posX, posY);
-    display.print(String(temp, 1) + "C");
+    //    display.setCursor(posX, posY);
+    //    display.print(String(temp, 1) + "C");
+    drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, String(temp, 1), 'l', 'c');
 
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn temperature value: " + String(temp) + " in: " + __func__);
