@@ -33,18 +33,18 @@
 #include "bitmaps/Bitmaps128x296.h"  // 2.9"  b/w
 
 #ifdef EINKBOARDDEPG0213BN
-#include <Fonts/FreeMonoBold9pt7b.h>
 #include <NotoSans_Bold48pt7b.h>
-const GFXfont SmallFont = FreeMonoBold9pt7b;
+#include <NotoSans_Bold6pt7b.h>
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
 #ifdef EINKBOARDGDEM0213B74
-#include <Fonts/FreeMonoBold9pt7b.h>
 #include <NotoSans_Bold48pt7b.h>
-const GFXfont SmallFont = FreeMonoBold9pt7b;
+#include <NotoSans_Bold6pt7b.h>
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
@@ -117,7 +117,7 @@ const GFXfont BigFont = NotoSans_Bold42pt7b;
 #define EPD_DC 27
 #define EPD_RST 25
 #define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY)); // GDEH0154D67 200x200, SSD1681
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEH0154D67 200x200, SSD1681
 #endif
 
 // Define a structure for the locations of elements
@@ -173,13 +173,13 @@ void setElementLocations() {
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 24;
+        elementPosition.tempYValue = display.height() - 16;
         elementPosition.humidityXUnits = display.width() - 16;
-        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.humidityYUnits = display.height() - 16;
         elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 24;
+        elementPosition.humidityYValue = display.height() - 16;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 8;
         elementPosition.batteryIconX = displayWidth - 32;
@@ -201,9 +201,9 @@ void setElementLocations() {
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
         elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 24;
+        elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
-        elementPosition.humidityHValue = 24;
+        elementPosition.humidityHValue = 16;
     }
 #endif
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
@@ -218,13 +218,13 @@ void setElementLocations() {
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
         elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 24;
-        elementPosition.humidityXUnits = display.width() - 18;
-        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.tempYValue = display.height() - 16;
+        elementPosition.humidityXUnits = display.width() - 16;
+        elementPosition.humidityYUnits = display.height() - 16;
         elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 24;
+        elementPosition.humidityYValue = display.height() - 16;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
         elementPosition.batteryIconX = displayWidth - 32;
@@ -246,9 +246,9 @@ void setElementLocations() {
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
         elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 24;
+        elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
-        elementPosition.humidityHValue = 24;
+        elementPosition.humidityHValue = 16;
     }
 #endif
 #if defined(EINKBOARDGDEW0213M21)
@@ -259,13 +259,13 @@ void setElementLocations() {
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 50;
         elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 20;
+        elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 24;
-        elementPosition.humidityXUnits = display.width() - 18;
-        elementPosition.humidityYUnits = display.height() - 20;
+        elementPosition.tempYValue = display.height() - 16;
+        elementPosition.humidityXUnits = display.width() - 16;
+        elementPosition.humidityYUnits = display.height() - 16;
         elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 24;
+        elementPosition.humidityYValue = display.height() - 16;
         elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
         elementPosition.batteryIconX = displayWidth - 32;
@@ -287,9 +287,9 @@ void setElementLocations() {
         elementPosition.co2UnitsW = 24;
         elementPosition.co2UnitsH = display.height() - 48;
         elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 24;
+        elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
-        elementPosition.humidityHValue = 24;
+        elementPosition.humidityHValue = 16;
     }
 #endif
 #if defined(EINKBOARDGDEH0154D67)
@@ -299,14 +299,14 @@ void setElementLocations() {
         elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
         elementPosition.co2UnitsX = displayWidth - 33;
         elementPosition.co2UnitsY = displayHeight - 140;
-        elementPosition.tempXUnits = 2;
-        elementPosition.tempYUnits = 12;
-        elementPosition.tempXValue = 14;
-        elementPosition.tempYValue = 12;
-        elementPosition.humidityXUnits = 60;
-        elementPosition.humidityYUnits = 12;
-        elementPosition.humidityXValue = 82;
-        elementPosition.humidityYValue = 12;
+        elementPosition.tempXUnits = 0;
+        elementPosition.tempYUnits = display.height() - 16;
+        elementPosition.tempXValue = 20;
+        elementPosition.tempYValue = display.height() - 16;
+        elementPosition.humidityXUnits = display.width() - 16;
+        elementPosition.humidityYUnits = display.height() - 16;
+        elementPosition.humidityXValue = display.width() - 64;
+        elementPosition.humidityYValue = display.height() - 16;
         elementPosition.ppmXUnits = displayHeight / 2 + 20;  // Display is rotated so vertical orientation (swaped width & height)
         elementPosition.ppmYUnits = displayWidth - 3;
         elementPosition.batteryIconX = displayWidth - 32;
@@ -321,6 +321,16 @@ void setElementLocations() {
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
         elementPosition.espNowIconY = 1;
+
+        // widths & heights of main values
+        elementPosition.co2W = display.width() - 24;
+        elementPosition.co2H = display.height() - 48;
+        elementPosition.co2UnitsW = 24;
+        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.tempWValue = 56;
+        elementPosition.tempHValue = 16;
+        elementPosition.humidityWValue = 40;
+        elementPosition.humidityHValue = 16;
     }
 #endif
 }
