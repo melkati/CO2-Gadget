@@ -402,7 +402,7 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     }
 
     if ((interactiveMode) && (!isDataReadySCD4x())) {
-        return(false);
+        return (false);
     }
 
     Serial.print("-->[DEEP] ");
@@ -664,9 +664,13 @@ void fromDeepSleepTimer() {
                 displayShowValues();
                 esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
                 Serial.flush();
+#ifdef TIMEDEBUG
                 timerLightSleep.resume();
+#endif
                 esp_light_sleep_start();
+#ifdef TIMEDEBUG
                 timerLightSleep.pause();
+#endif
             }
 #endif
             if (deepSleepData.cyclesToWiFiConnect == 0) {
