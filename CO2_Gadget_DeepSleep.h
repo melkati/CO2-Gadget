@@ -257,10 +257,12 @@ void toDeepSleep() {
     Serial.println("");
     printRTCMemoryEnter();
 
-    // Setup interrupt on Touch Pad 0 (GPIO4)
-    touchAttachInterrupt(T3, callbackTouch, 40);
-
+#ifdef BTN_WAKEUP_IS_TOUCHPAD
+    // Setup interrupt on Touch Pad 0 (GPIO15)
+    // touchAttachInterrupt(T3, callbackTouch, 40);
+    touchAttachInterrupt(BTN_WAKEUP, callbackTouch, 40);
     esp_sleep_enable_touchpad_wakeup();
+#endif
 
     // Experimental: Turn off green LED and display on S3 board
     // #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -393,21 +395,31 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     float temperature = 0;
     float humidity = 0;
 
-    Serial.println("-->[DEEP] scd41HandleFromDeepSleep()");
-
     if (!initialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
         initialized = true;
     }
 
-    if ((!blockingMode) && (!isDataReadySCD4x())) {
+    if ((interactiveMode) && (!isDataReadySCD4x())) {
+        return(false);
+    }
+
+    Serial.print("-->[DEEP] ");
+    Serial.print(__func__);
+    Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
+
+    if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
         Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
         Serial.flush();
+#ifdef TIMEDEBUG
         timerLightSleep.resume();
+#endif
         esp_light_sleep_start();
+#ifdef TIMEDEBUG
         timerLightSleep.pause();
+#endif
         return (false);
     }
 
@@ -417,13 +429,17 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     }
     esp_sleep_enable_timer_wakeup(5 * 1000000);
     Serial.flush();
+#ifdef TIMEDEBUG
     timerLightSleep.resume();
+#endif
     if (esp_light_sleep_start() == ESP_OK) {
         Serial.println("-->[DEEP] Light sleep OK");
     } else {
         Serial.println("-->[DEEP] Light sleep failed");
     }
+#ifdef TIMEDEBUG
     timerLightSleep.pause();
+#endif
 
     while (!isDataReadySCD4x()) {
         unsigned long currentMillis = millis();
@@ -486,9 +502,13 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
             }
             Serial.flush();
             esp_sleep_enable_timer_wakeup(0.3 * 1000000);
+#ifdef TIMEDEBUG
             timerLightSleep.resume();
+#endif
             esp_light_sleep_start();
+#ifdef TIMEDEBUG
             timerLightSleep.pause();
+#endif
         }
         Serial.println("");
     }

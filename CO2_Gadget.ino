@@ -396,7 +396,8 @@ void initGPIO() {
     digitalWrite(BLUE_PIN, LOW);
     pinMode(RED_PIN, OUTPUT);
     digitalWrite(RED_PIN, LOW);
-#ifdef BTN_WAKEUP
+    // If BTN_WAKEUP is defined and BTN_WAKEUP_IS_TOUCHPAD is not defined or set to 0, set it as input
+#if defined(BTN_WAKEUP) && (!defined(BTN_WAKEUP_IS_TOUCHPAD) || BTN_WAKEUP_IS_TOUCHPAD == 0)
     pinMode(BTN_WAKEUP, INPUT_PULLUP);
 #endif
 }
@@ -825,9 +826,9 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     mqttClientLoop();
     // if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)) {
     if (deepSleepEnabled) {
-        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode. ");
+        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode ");
         deepSleepLoop();
-        handleLowPowerSensors();
+        if (handleLowPowerSensors()) displayShowValues(false);
     } else {
         if (showDebug) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
         sensorsLoop();
