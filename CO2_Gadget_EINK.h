@@ -188,8 +188,8 @@ void setElementLocations() {
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 0;
         elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
+        elementPosition.wifiIconX = 24;
+        elementPosition.wifiIconY = 0;
         elementPosition.mqttIconX = 50;
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
@@ -233,8 +233,8 @@ void setElementLocations() {
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 0;
         elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
+        elementPosition.wifiIconX = 24;
+        elementPosition.wifiIconY = 0;
         elementPosition.mqttIconX = 50;
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
@@ -274,8 +274,8 @@ void setElementLocations() {
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 0;
         elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
+        elementPosition.wifiIconX = 24;
+        elementPosition.wifiIconY = 0;
         elementPosition.mqttIconX = 50;
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
@@ -315,8 +315,8 @@ void setElementLocations() {
         elementPosition.batteryVoltageY = 2;
         elementPosition.bleIconX = 0;
         elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 26;
-        elementPosition.wifiIconY = 2;
+        elementPosition.wifiIconX = 24;
+        elementPosition.wifiIconY = 0;
         elementPosition.mqttIconX = 50;
         elementPosition.mqttIconY = 2;
         elementPosition.espNowIconX = 74;
@@ -806,6 +806,32 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     }
 }
 
+void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    //    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    int8_t rssi = WiFi.RSSI();
+    if (troubledWIFI) {
+        display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+        return;
+    }
+    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (!activeWIFI) {
+        // if it's not active I think is better to display nothing.
+        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+        // display.drawInvertedBitmap(posX + 3, posY + 3, iconWiFi, 16, 16, GxEPD_BLACK);
+    } else {
+        if (WiFi.status() == WL_CONNECTED) {
+            if (rssi < 60)
+                display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+            else if (rssi < 70)
+                display.drawBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+            else if (rssi < 80)
+                display.drawBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+        } else {
+            display.drawBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
+        }
+    }
+}
+
 void showValues() {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
     RTC_DATA_ATTR static float oldTempValue = 0;
@@ -946,7 +972,7 @@ void displayShowValues(bool forceRedraw = false) {
     showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
     // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
-    // showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
     // showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
