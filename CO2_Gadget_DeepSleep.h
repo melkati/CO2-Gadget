@@ -395,15 +395,21 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     float temperature = 0;
     float humidity = 0;
 
-    Serial.println("-->[DEEP] scd41HandleFromDeepSleep()");
-
     if (!initialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
         initialized = true;
     }
 
-    if ((!blockingMode) && (!isDataReadySCD4x())) {
+    if ((interactiveMode) && (!isDataReadySCD4x())) {
+        return(false);
+    }
+
+    Serial.print("-->[DEEP] ");
+    Serial.print(__func__);
+    Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
+
+    if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
         Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
         Serial.flush();
