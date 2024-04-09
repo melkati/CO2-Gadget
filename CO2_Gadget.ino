@@ -826,9 +826,9 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     mqttClientLoop();
     // if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)) {
     if (deepSleepEnabled) {
-        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode. ");
+        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode ");
         deepSleepLoop();
-        handleLowPowerSensors();
+        if (handleLowPowerSensors()) displayShowValues(false);
     } else {
         if (showDebug) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
         sensorsLoop();
