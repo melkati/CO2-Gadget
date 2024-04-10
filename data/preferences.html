@@ -619,11 +619,10 @@
       if (isConfirmed) {
         // Send a request to the ESP32 endpoint to trigger a reset
         fetch('/restart', {
-          method: 'POST',
+          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ reset: true }),
+            'Content-Type': 'text/plain'
+          }
         })
           .then(response => {
             if (!response.ok) {

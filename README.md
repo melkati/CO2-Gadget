@@ -202,9 +202,19 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description and code is a must
 - Target your pull request to be merged with the `development` branch
 
+# Supporting the project
+
+Do you want to maka e acontribution to support the CO2 Gadget project? If so, **thank you!**
+I don't want money but I will accept material donations so I can move forward with CO2 Gadget development. I always need some development board, some sensor or some tool.
+
+<a href=https://s.click.aliexpress.com/e/_DDtmotn target="_blank"><img src=//ae01.alicdn.com/kf/H056531cd866d4a3c8807b9938a654ce14.jpg_80x80.jpg></a>
+
 # TODO
 
-- [ ] Implement full support for PM 2.5
+- [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
+- [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)
+- [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
+- [ ] [Unify and improve the existing web pages](https://github.com/melkati/CO2-Gadget/issues/166)
 
 # Useful information
 
@@ -218,6 +228,15 @@ When creating a pull request, we recommend that you do the following:
 # Credits
 
 Thanks to all collaborators, contributors and to the [eMariete](https://emariete.com) community for testing and reports.
+
+# Special thanks to:
+
+
+All the [contributors that helped improving CO2 Gadget](https://github.com/melkati/CO2-Gadget/graphs/contributors). You are awesome!
+
+<a href="https://github.com/melkati/CO2-Gadget/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" />
+</a>
 
 ---
 ## License
