@@ -300,6 +300,7 @@ void initDisplay() {
     setElementLocations();
     tft.setTextSize(2);
     initBacklight();
+    setDisplayBrightness(DisplayBrightness);
     displaySplashScreen();  // Display init and splash screen
     delay(2000);            // Enjoy the splash screen for 2 seconds
     spr.setColorDepth(16);
