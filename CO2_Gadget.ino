@@ -808,7 +808,7 @@ void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
 }
 
 void loop() {  // Old loop function. Not used anymore. Just for reference
-    bool showDebug = true;
+    bool showDebug = false;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
@@ -824,13 +824,12 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
-    // if (deepSleepEnabled && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1 || esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)) {
     if (deepSleepEnabled) {
-        if (showDebug) Serial.println("-->[MAIN] Reading sensors in low power mode ");
+        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in interactive mode (will go into low power mode)");
+        sensorsLoop();
         deepSleepLoop();
-        if (handleLowPowerSensors()) displayShowValues(false);
     } else {
-        if (showDebug) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
+        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
         sensorsLoop();
     }
     outputsLoop();
