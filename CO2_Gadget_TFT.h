@@ -191,21 +191,26 @@ void setElementLocations() {
 void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     if (actualDisplayBrightness != newBrightness) {
-        // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
-        // Serial.printf("-->[TFT ] actualDisplayBrightness value at %d\n", actualDisplayBrightness);
-        // Serial.printf("-->[TFT ] New display brightness value at %d\n", newBrightness);
+        // Serial.println("\n-->[TFT ] DisplayBrightness (user setting) value at: " + String(DisplayBrightness));
+        // Serial.println("-->[TFT ] actualDisplayBrightness value at: " + String(actualDisplayBrightness));
+        // Serial.println("-->[TFT ] New display brightness value at: " + String(newBrightness));
+        // delay(20);
         analogWrite(TFT_BACKLIGHT, newBrightness);
         actualDisplayBrightness = newBrightness;
     }
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     if (actualDisplayBrightness != newBrightness) {
-        // Serial.printf("\n-->[TFT ] DisplayBrightness value at %d\n", DisplayBrightness);
-        // Serial.printf("-->[TFT ] Old actualDisplayBrightness value at %d\n", actualDisplayBrightness);
-        // Serial.printf("-->[TFT ] New actualDisplayBrightness value at %d\n", newBrightness);
-        if (newBrightness == 0) {
+        uint16_t dif, i;
+        if (newBrightness > actualDisplayBrightness)
+            dif = 16 - (newBrightness - actualDisplayBrightness);
+        else
+            dif = actualDisplayBrightness - newBrightness;
+
+        // Serial.printf("-->[TFT ] Change brightness %d levels", dif);
+        for (i = 1; i <= dif; i++) {
             digitalWrite(TFT_BACKLIGHT, LOW);
-        } else {
+            delayMicroseconds(20);
             digitalWrite(TFT_BACKLIGHT, HIGH);
         }
         actualDisplayBrightness = newBrightness;
@@ -265,7 +270,7 @@ void displaySplashScreen() {
 void initBacklight() {
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
     pinMode(TFT_BACKLIGHT, OUTPUT);
-    digitalWrite(TFT_BACKLIGHT, 1);
+    // digitalWrite(TFT_BACKLIGHT, 1); Removed to revert as v.0.12.000 to try to fix #192
     setDisplayBrightness(DisplayBrightness);
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
@@ -274,6 +279,10 @@ void initBacklight() {
     delay(20);
     digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
+    actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
+    if (DisplayBrightness > 16)    // Prevent malfunction if upper values are stored in preferences
+        DisplayBrightness = 16;
+    setDisplayBrightness(DisplayBrightness);
 #endif
 }
 
@@ -291,6 +300,7 @@ void initDisplay() {
     setElementLocations();
     tft.setTextSize(2);
     initBacklight();
+    setDisplayBrightness(DisplayBrightness);
     displaySplashScreen();  // Display init and splash screen
     delay(2000);            // Enjoy the splash screen for 2 seconds
     spr.setColorDepth(16);
@@ -323,6 +333,7 @@ bool displayNotification(String notificationText, notificationTypes notification
     tft.drawString(notificationText, tft.width() / 2, tft.height() / 2);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -354,6 +365,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
     tft.drawString(notificationText2, tft.width() / 2 - textWidth2 / 2, tft.height() / 5 * 3 - boxMarging);
     tft.unloadFont();
     tft.resetViewport();
+    shouldRedrawDisplay = true;  // Must redraw display to clear the notification
     return true;
 }
 
@@ -619,7 +631,8 @@ void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {
-        // tft.fillScreen(TFT_BLACK);
+        // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
