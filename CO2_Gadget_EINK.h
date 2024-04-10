@@ -191,19 +191,19 @@ void setElementLocations() {
         elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 24;
         elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 1;
+        elementPosition.mqttIconX = 48;
+        elementPosition.mqttIconY = 0;
+        elementPosition.espNowIconX = 72;
+        elementPosition.espNowIconY = 0;
 
         // widths & heights of main values
-        elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2UnitsH = 16;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
         elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 40;
+        elementPosition.humidityWValue = 48;
         elementPosition.humidityHValue = 16;
     }
 #endif
@@ -232,19 +232,19 @@ void setElementLocations() {
         elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 24;
         elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 1;
+        elementPosition.mqttIconX = 48;
+        elementPosition.mqttIconY = 0;
+        elementPosition.espNowIconX = 72;
+        elementPosition.espNowIconY = 0;
 
         // widths & heights of main values
-        elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2UnitsH = 16;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
         elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 40;
+        elementPosition.humidityWValue = 48;
         elementPosition.humidityHValue = 16;
     }
 #endif
@@ -273,19 +273,19 @@ void setElementLocations() {
         elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 24;
         elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 1;
+        elementPosition.mqttIconX = 48;
+        elementPosition.mqttIconY = 0;
+        elementPosition.espNowIconX = 72;
+        elementPosition.espNowIconY = 0;
 
         // widths & heights of main values
-        elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2UnitsH = 16;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
         elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 40;
+        elementPosition.humidityWValue = 48;
         elementPosition.humidityHValue = 16;
     }
 #endif
@@ -314,19 +314,18 @@ void setElementLocations() {
         elementPosition.bleIconY = 0;
         elementPosition.wifiIconX = 24;
         elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 50;
-        elementPosition.mqttIconY = 2;
-        elementPosition.espNowIconX = 74;
-        elementPosition.espNowIconY = 1;
+        elementPosition.mqttIconX = 48;
+        elementPosition.mqttIconY = 0;
+        elementPosition.espNowIconX = 72;
+        elementPosition.espNowIconY = 0;
 
         // widths & heights of main values
-        elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
-        elementPosition.co2H = (display.height() - 32);
+        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2UnitsH = 16;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 40;
+        elementPosition.humidityWValue = 48;
         elementPosition.humidityHValue = 16;
     }
 #endif
@@ -807,29 +806,62 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
-    // display.fillRect(posX, posY, 16, 16, GxEPD_BLACK);
+    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
-        display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+        display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
         return;
     }
     // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
     if (!activeWIFI) {
-        // if it's not active I think is better to display nothing.
-        // display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
     } else {
         if (WiFi.status() == WL_CONNECTED) {
             if (rssi < 60)
-                display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+                display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
             else if (rssi < 70)
-                display.drawBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
             else if (rssi < 80)
-                display.drawBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
         } else {
-            display.drawBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
+            display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
         }
     }
+}
+
+void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    if (troubledMQTT) {
+        // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+        display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+        return;
+    }
+    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (!activeMQTT) {
+        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+        display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+    } else {
+        display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+    }
+}
+
+void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+#ifdef SUPPORT_ESPNOW
+    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    if (troubledESPNOW) {
+        // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+        display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+        return;
+    }
+    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (!activeESPNOW) {
+        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+        display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+    } else {
+        display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+    }
+#endif
 }
 
 void showValues() {
@@ -974,9 +1006,9 @@ void displayShowValues(bool forceRedraw = false) {
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
     // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    // showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-    // showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
     // Refresh screen in partial mode
     display.displayWindow(0, 0, display.width(), display.height());
