@@ -174,7 +174,7 @@ void setElementLocations() {
     elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2UnitsX = display.width() - 16;                               // Right screen - height of PPM text
     elementPosition.co2UnitsY = elementPosition.co2Y;
-    elementPosition.co2W = display.width() - 24;
+    elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.ppmXUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
     elementPosition.ppmYUnits = display.width() - 16;
