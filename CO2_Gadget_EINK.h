@@ -766,25 +766,11 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldTempValue = -200;
     if (!forceRedraw && (temp == oldTempValue)) return;
-
-    display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.tempXUnits, elementPosition.tempYUnits, iconTempBW, 16, 16, GxEPD_BLACK);
-    // Erase old temperature value
-    if (oldTempValue != -200) {
-        display.setRotation(1);
-        display.setFont(&SmallFont);
-        display.fillRect(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, GxEPD_WHITE);  // Clear previous humidity value
-//        display.setTextColor(GxEPD_WHITE);
-//        display.setCursor(posX, posY);
-//        display.print(String(oldTempValue, 1) + "C");
-#ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Erased old temperature value: " + String(oldTempValue) + " in: " + __func__);
-#endif
-    }
-
+    display.setRotation(1);
+    display.setFont(&SmallFont);
+    display.fillRect(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, GxEPD_WHITE);  // Clear previous temperature value
     display.setTextColor(GxEPD_BLACK);
-    //    display.setCursor(posX, posY);
-    //    display.print(String(temp, 1) + "C");
     drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, String(temp, 1), 'l', 'c');
 
 #ifdef DEBUG_EINK
