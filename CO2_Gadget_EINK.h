@@ -129,8 +129,6 @@ struct ElementLocations {
     u_int16_t co2FontDigitsHeight;
     int32_t co2UnitsX;
     int32_t co2UnitsY;
-    int32_t co2UnitsW;
-    int32_t co2UnitsH;
     int32_t tempXUnits;
     int32_t tempYUnits;
     int32_t tempXValue;
@@ -176,12 +174,10 @@ void setElementLocations() {
     elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2UnitsX = display.width() - 16;                               // Right screen - height of PPM text
     elementPosition.co2UnitsY = elementPosition.co2Y;
-    elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
-    elementPosition.co2UnitsH = 24;  // height of PPM text
-    elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
-    elementPosition.co2H = (display.height() - 32);      // 32 is the size of 16 + 16 pixels of upper and down icon lines
-    elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
-    elementPosition.ppmYUnits = displayWidth - 8;
+    elementPosition.co2W = display.width() - 24;
+    elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.ppmXUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
+    elementPosition.ppmYUnits = display.width() - 16;
 
     elementPosition.tempXUnits = 0;  // down left corner
     elementPosition.tempYUnits = display.height() - 16;
@@ -212,8 +208,7 @@ void setElementLocations() {
     elementPosition.espNowIconY = 0;
 }
 
-void drawMainScreen(bool force = false);            // Forward declaration
-void showHumidityIcon(int32_t posX, int32_t posY);  // Forward declaration
+void drawMainScreen(bool force = false);  // Forward declaration
 
 void turnOffDisplay() {
     // Ignore for eInk displays
@@ -227,22 +222,6 @@ void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issu
         display.powerOff();  // Send command to put the display to sleep.
         delay(10);           // Delay for shutdown time before another command can be sent.
     }
-}
-
-void drawScreenCenterText(const String text) {
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-
-    // Calculate text bounds
-    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
-
-    // Center bounding box by transposition of origin
-    uint16_t x = ((display.width() - tbw) / 2) - tbx;
-    uint16_t y = ((display.height() - tbh) / 2) - tby;
-
-    // Display text
-    display.setCursor(x, y);
-    display.print(text);
 }
 
 void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String text, char h_align = 'C', char v_align = 'C') {
@@ -303,7 +282,7 @@ void displaySplashScreen() {
     display.firstPage();      // Clear screen
     do {
         // Show program name & version
-        drawScreenCenterText("eMariete CO2 Gadget Monitor");
+        drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
     } while (display.nextPage());  // Do full refresh
 }
 
@@ -322,21 +301,6 @@ bool displayNotification(String notificationText, notificationTypes notification
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {
     uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
     return true;
-}
-
-void drawHoritzontalCenterText(int16_t y, const String text) {
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-
-    // Calculate text bounds
-    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
-
-    // Center bounding box by transposition of origin
-    uint16_t x = ((display.width() - tbw) / 2) - tbx;
-
-    // Display text
-    display.setCursor(x, y);
-    display.print(text);
 }
 
 // busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
@@ -474,41 +438,9 @@ void drawMainScreen(bool fullRefresh) {
     Serial.println(__func__);
 #endif
 
-    // Draw labels and field rectangles
-    // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    //    display.drawRoundRect(0, 20, display.width(), display.height() - 30, 6, GxEPD_BLACK);
-    // #endif
-    // #if defined(EINKBOARDGDEW0213M21)
-    //    display.drawRoundRect(0, 23, display.width(), display.height() - 28, 6, GxEPD_BLACK);
-    // #endif
-    // #if defined(EINKBOARDGDEM029T94)
-    //    display.drawRoundRect(0, 23, display.width(), display.height() - 30, 6, GxEPD_BLACK);
-    // #endif
-    display.setRotation(1);
-    display.setTextColor(GxEPD_BLACK);
-    //    display.setCursor(elementPosition.tempXUnits, elementPosition.tempYUnits);
-    //    display.print("T:");
-    // #ifdef DEBUG_EINK
-    //    Serial.println("-->[EINK] Drawn T label at " + String(elementPosition.tempXUnits) + ", " + String(elementPosition.tempYUnits));
-    // #endif
-    // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    //     display.setCursor((display.width()) - 5 * 9 * 2 - 35, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEW0213M21)
-    //     display.setCursor((display.width()) - 5 * 6 * 2 - 55, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEM029T94)
-    //     display.setCursor((display.width()) - 5 * 9 * 2 - 65, 12);
-    // #endif
-    //    display.setCursor(elementPosition.humidityXUnits, elementPosition.humidityYUnits);
-    //    display.print("HR:");
-    // #ifdef DEBUG_EINK
-    //    Serial.println("-->[EINK] Drawn HR label at " + String(elementPosition.humidityXUnits) + ", " + String(elementPosition.humidityYUnits));
-    // #endif
     display.setRotation(4);
-    // display.setCursor((display.width() / 2) - 15, display.height() - 3);
-    display.setCursor(elementPosition.ppmXUnits, elementPosition.ppmYUnits);
-    display.print("PPM");
+    display.setFont(&SmallFont);
+    drawTextAligned(elementPosition.ppmXUnits, elementPosition.ppmYUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn PPM label at " + String(elementPosition.ppmXUnits) + ", " + String(elementPosition.ppmYUnits));
 #endif
@@ -560,8 +492,6 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
-    RTC_DATA_ATTR static int32_t oldPosX = -1;
-    RTC_DATA_ATTR static int32_t oldPosY = -1;
     int16_t tbx, tby;
     uint16_t tbw, tbh;
 
@@ -572,42 +502,15 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setPartialWindow(0, 0, display.width(), display.height());
     // Erase old CO2 value
     display.fillRect(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, GxEPD_WHITE);  // Clear previous co2 value
-    if (oldCO2Value != 0) {
-//        display.setFont(&BigFont);
-//        display.setTextColor(GxEPD_WHITE);
-
-//        display.setCursor(oldPosX, oldPosY);
-//        display.print(String(oldCO2Value));
-#ifdef DEBUG_EINK
-//        Serial.println("-->[EINK] Erased old CO2 value: " + String(oldCO2Value) + " at: " + String(oldPosX) + ", " + String(oldPosY) + " in: " + __func__);
-#endif
-    }
 
     // Show new CO2 value
     display.setFont(&BigFont);
     display.setTextColor(GxEPD_BLACK);
     drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, String(co2), 'c', 'c');
 
-    //    if (posX == -1) {
-    //        display.getTextBounds(String(co2), posX, 0, &tbx, &tby, &tbw, &tbh);
-    // #ifdef DEBUG_EINK
-    //        Serial.println("-->[EINK] Text Bounds for CO2: " + String(tbx) + ", " + String(tby) + ", " + String(tbw) + ", " + String(tbh) + " in: " + __func__);
-    // #endif
-    // posX equals to the center of the screen minus half of the text width
-    //        posX = ((display.width() - tbw) / 2) - tbx - 5;
-
-    // posX = ((display.width() - tbw) / 2) + 40 - tbx;
-//        display.setCursor(posX, posY);
-//        display.print(String(co2));
-//    } else {
-//        display.setCursor(posX, posY);
-//        display.print(String(co2));
-//    }
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn CO2 value: " + String(co2) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
-    oldPosX = posX;
-    oldPosY = posY;
     oldCO2Value = co2;
 }
 
@@ -718,99 +621,6 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #endif
 }
 
-void showValues() {
-    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
-    RTC_DATA_ATTR static float oldTempValue = 0;
-    RTC_DATA_ATTR static float oldHumiValue = 0;
-    RTC_DATA_ATTR static bool firstTime = true;
-
-    if (oldCO2Value == co2 && oldTempValue == temp && oldHumiValue == hum) {
-        return;
-    }
-
-#ifdef DEBUG_EINK
-    Serial.print("-->[EINK] Erasing values: CO2=" + String(oldCO2Value) + ", Temp=" + String(oldTempValue) + ", Hum=" + String(oldHumiValue) + "in: ");
-    Serial.println(__func__);
-    Serial.print("-->[EINK] Showing values: CO2=" + String(co2) + ", Temp=" + String(temp) + ", Hum=" + String(hum) + "in: ");
-    Serial.println(__func__);
-#endif
-
-    //    display.displayWindow(0, 0, display.width(), display.height());
-
-    // Erase old values
-    //    display.setTextColor(GxEPD_WHITE);
-    //    display.setFont(&BigFont);
-    //    display.setTextSize(1);
-    //    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
-    //    display.setFont(&SmallFont);
-    // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    //     display.setCursor(55, 12);
-    //     display.printf("%.1fºC", oldTempValue);
-    //     display.setCursor((display.width()) - 5 * 9 - 35, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEW0213M21)
-    //     display.setCursor(40, 12);
-    //     display.printf("%.1fºC", oldTempValue);
-    //     display.setCursor((display.width()) - 5 * 6 - 50, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEM029T94)
-    //     display.setCursor(55, 12);
-    //     display.printf("%.1fºC", oldTempValue);
-    //     display.setCursor((display.width()) - 5 * 9 - 65, 12);
-    // #endif
-    //     display.printf("%.0f%%", oldHumiValue);
-
-    // if (firstTime) {
-    //     display.displayWindow(0, 0, display.width(), display.height());
-    //     firstTime = false;
-    // }
-
-    // Show values
-    display.setTextColor(GxEPD_BLACK);
-    display.setFont(&BigFont);
-    display.setTextSize(1);
-    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, String(co2), 'r', 'c');
-    //  drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
-    oldCO2Value = co2;
-    display.setFont(&SmallFont);
-
-    // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    //     display.setCursor(55, 12);
-    //     display.printf("%.1fºC", temp);
-    //     display.setCursor((display.width()) - 5 * 9 - 35, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEW0213M21)
-    //     display.setCursor(40, 12);
-    //     display.printf("%.1fºC", temp);
-    //     display.setCursor((display.width()) - 5 * 6 - 50, 12);
-    // #endif
-    // #if defined(EINKBOARDGDEM029T94)
-    //     display.setCursor(55, 12);
-    //     display.printf("%.1fºC", temp);
-    //     display.setCursor((display.width()) - 5 * 9 - 65, 12);
-    // #endif
-    //     display.printf("%.0f%%", hum);
-    //     oldTempValue = temp;
-    //     oldHumiValue = hum;
-
-    // Refresh screen in partial mode
-    // display.displayWindow(0, 0, display.width(), display.height());
-
-    // showBattery();
-
-    // display.setTextColor(GxEPD_BLACK);
-    // display.setCursor(240, 12);
-    // display.print(readBattery());
-
-    // if (firstTime) {
-    //     display.display();
-    //     firstTime = false;
-    // } else {
-    //     display.displayWindow(0, 0, display.width(), display.height());
-    // }
-    // display.displayWindow(0, 0, display.width(), display.height());
-}
-
 void testRedrawValues(bool randomNumbers = false) {
     static String textToDraw = "1234";
     static String textDrawn = "1234";
@@ -825,7 +635,6 @@ void testRedrawValues(bool randomNumbers = false) {
     display.setTextColor(GxEPD_WHITE);
     display.setFont(&BigFont);
     display.setTextSize(1);
-    // drawHoritzontalCenterText((display.height() / 2) + 40, textDrawn);
     display.setCursor(10, 100);
     display.print(textDrawn);
     display.setFont(&SmallFont);
@@ -834,7 +643,6 @@ void testRedrawValues(bool randomNumbers = false) {
     display.setTextColor(GxEPD_BLACK);
     display.setFont(&BigFont);
     display.setTextSize(1);
-    // drawHoritzontalCenterText((display.height() / 2) + 40, textToDraw);
     display.setCursor(0, 100);
     display.print(textToDraw);
     display.setFont(&SmallFont);
@@ -851,7 +659,6 @@ void displayShowValues(bool forceRedraw = false) {
     // }
     // drawMainScreen();
 
-    // showValues();
     // testRedrawValues(true);
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
     // showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);
