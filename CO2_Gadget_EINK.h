@@ -33,19 +33,19 @@
 #include "bitmaps/Bitmaps128x296.h"  // 2.9"  b/w
 
 #ifdef EINKBOARDDEPG0213BN
-#include <NotoSans_Bold48pt7b.h>
-#include <NotoSans_Bold6pt7b.h>
-const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
+#include <NotoSans_Bold46pt7b.h>
+#include <NotoSans_SemiCondensed_Bold10pt7b.h>
+const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
 #endif
 #ifdef EINKBOARDGDEM0213B74
-#include <NotoSans_Bold48pt7b.h>
-#include <NotoSans_Bold6pt7b.h>
-const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
+#include <NotoSans_Bold46pt7b.h>
+#include <NotoSans_SemiCondensed_Bold10pt7b.h>
+const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(/* EPD_CS */ EPD_CS, /* EPD_MISO */ EPD_DC, /* EPD_RST */ EPD_RST, /* EPD_BUSY */ EPD_BUSY));  // GDEM0213B74
@@ -167,11 +167,12 @@ ElementLocations elementPosition;
 void setElementLocations() {
 #ifdef EINKBOARDGDEM029T94
     if (displayWidth == 296 && displayHeight == 128) {  // 296x128 GDEM029T94 and similar
-        elementPosition.co2X = -1;
-        elementPosition.co2Y = displayHeight - 25;
         elementPosition.co2FontDigitsHeight = 48;
-        elementPosition.co2UnitsX = displayWidth - 33;
-        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.co2X = 0;
+        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
+        elementPosition.co2UnitsX = display.width() - 24;
+        elementPosition.co2UnitsY = elementPosition.co2Y;
+
         elementPosition.tempXUnits = 0;
         elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
@@ -196,10 +197,10 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
 
         // widths & heights of main values
-        elementPosition.co2W = display.width() - 24;
-        elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
@@ -208,15 +209,11 @@ void setElementLocations() {
 #endif
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     if (displayWidth == 250 && displayHeight == 122) {  // 250x122 DEPG0213BN, GDEM0213B74 and similar
-        elementPosition.co2X = -1;
-        elementPosition.co2Y = displayHeight - 33;
-        elementPosition.co2W = display.width() - 24;
-        elementPosition.co2H = display.height() - 48;
-        elementPosition.co2FontDigitsHeight = 48;  // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2UnitsX = displayWidth - 33;
-        elementPosition.co2UnitsY = displayHeight - 50;
-        elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.co2FontDigitsHeight = 48;       // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2X = 0;
+        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
+        elementPosition.co2UnitsX = display.width() - 24;
+        elementPosition.co2UnitsY = elementPosition.co2Y;
         elementPosition.tempXUnits = 0;
         elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
@@ -241,10 +238,10 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
 
         // widths & heights of main values
-        elementPosition.co2W = display.width() - 24;
-        elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
@@ -253,11 +250,11 @@ void setElementLocations() {
 #endif
 #if defined(EINKBOARDGDEW0213M21)
     if (displayWidth == 212 && displayHeight == 104) {  // 212x104 GDEW0213M21 and similar
-        elementPosition.co2X = -1;
-        elementPosition.co2Y = displayHeight - 14;
-        elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2UnitsX = displayWidth - 33;
-        elementPosition.co2UnitsY = displayHeight - 50;
+        elementPosition.co2FontDigitsHeight = 42;       // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2X = 0;
+        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
+        elementPosition.co2UnitsX = display.width() - 24;
+        elementPosition.co2UnitsY = elementPosition.co2Y;
         elementPosition.tempXUnits = 0;
         elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
@@ -282,10 +279,10 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
 
         // widths & heights of main values
-        elementPosition.co2W = display.width() - 24;
-        elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
@@ -294,11 +291,11 @@ void setElementLocations() {
 #endif
 #if defined(EINKBOARDGDEH0154D67)
     if (displayWidth == 200 && displayHeight == 200) {  // 200x200 GDEH0154D67 WeAct Studio 1.54" 200x200 E-Ink Display
-        elementPosition.co2X = -1;
-        elementPosition.co2Y = displayHeight - 100;
-        elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2UnitsX = displayWidth - 33;
-        elementPosition.co2UnitsY = displayHeight - 140;
+        elementPosition.co2FontDigitsHeight = 42;       // Digits (0..9) height for the font used (not the same as whole font height)
+        elementPosition.co2X = 0;
+        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
+        elementPosition.co2UnitsX = display.width() - 24;
+        elementPosition.co2UnitsY = elementPosition.co2Y;
         elementPosition.tempXUnits = 0;
         elementPosition.tempYUnits = display.height() - 16;
         elementPosition.tempXValue = 20;
@@ -323,10 +320,10 @@ void setElementLocations() {
         elementPosition.espNowIconY = 1;
 
         // widths & heights of main values
-        elementPosition.co2W = display.width() - 24;
-        elementPosition.co2H = display.height() - 48;
         elementPosition.co2UnitsW = 24;
-        elementPosition.co2UnitsH = display.height() - 48;
+        elementPosition.co2UnitsH = elementPosition.co2FontDigitsHeight;
+        elementPosition.co2W = display.width() - elementPosition.co2UnitsW;
+        elementPosition.co2H = (display.height() - 32);
         elementPosition.tempWValue = 56;
         elementPosition.tempHValue = 16;
         elementPosition.humidityWValue = 40;
@@ -694,35 +691,38 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     // Erase old CO2 value
+    display.fillRect(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, GxEPD_WHITE);  // Clear previous co2 value
     if (oldCO2Value != 0) {
-        display.setFont(&BigFont);
-        display.setTextColor(GxEPD_WHITE);
+//        display.setFont(&BigFont);
+//        display.setTextColor(GxEPD_WHITE);
 
-        display.setCursor(oldPosX, oldPosY);
-        display.print(String(oldCO2Value));
+//        display.setCursor(oldPosX, oldPosY);
+//        display.print(String(oldCO2Value));
 #ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Erased old CO2 value: " + String(oldCO2Value) + " at: " + String(oldPosX) + ", " + String(oldPosY) + " in: " + __func__);
+//        Serial.println("-->[EINK] Erased old CO2 value: " + String(oldCO2Value) + " at: " + String(oldPosX) + ", " + String(oldPosY) + " in: " + __func__);
 #endif
     }
 
     // Show new CO2 value
     display.setFont(&BigFont);
     display.setTextColor(GxEPD_BLACK);
-    if (posX == -1) {
-        display.getTextBounds(String(co2), posX, 0, &tbx, &tby, &tbw, &tbh);
-#ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Text Bounds for CO2: " + String(tbx) + ", " + String(tby) + ", " + String(tbw) + ", " + String(tbh) + " in: " + __func__);
-#endif
-        // posX equals to the center of the screen minus half of the text width
-        posX = ((display.width() - tbw) / 2) - tbx - 5;
+    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, String(co2), 'c', 'c');
 
-        // posX = ((display.width() - tbw) / 2) + 40 - tbx;
-        display.setCursor(posX, posY);
-        display.print(String(co2));
-    } else {
-        display.setCursor(posX, posY);
-        display.print(String(co2));
-    }
+    //    if (posX == -1) {
+    //        display.getTextBounds(String(co2), posX, 0, &tbx, &tby, &tbw, &tbh);
+    // #ifdef DEBUG_EINK
+    //        Serial.println("-->[EINK] Text Bounds for CO2: " + String(tbx) + ", " + String(tby) + ", " + String(tbw) + ", " + String(tbh) + " in: " + __func__);
+    // #endif
+    // posX equals to the center of the screen minus half of the text width
+    //        posX = ((display.width() - tbw) / 2) - tbx - 5;
+
+    // posX = ((display.width() - tbw) / 2) + 40 - tbx;
+//        display.setCursor(posX, posY);
+//        display.print(String(co2));
+//    } else {
+//        display.setCursor(posX, posY);
+//        display.print(String(co2));
+//    }
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn CO2 value: " + String(co2) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
@@ -807,7 +807,7 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
-    //    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    // display.fillRect(posX, posY, 16, 16, GxEPD_BLACK);
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
@@ -816,8 +816,8 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
     if (!activeWIFI) {
         // if it's not active I think is better to display nothing.
-        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-        // display.drawInvertedBitmap(posX + 3, posY + 3, iconWiFi, 16, 16, GxEPD_BLACK);
+        // display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+        display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
     } else {
         if (WiFi.status() == WL_CONNECTED) {
             if (rssi < 60)
@@ -849,14 +849,14 @@ void showValues() {
     Serial.println(__func__);
 #endif
 
-    display.displayWindow(0, 0, display.width(), display.height());
+    //    display.displayWindow(0, 0, display.width(), display.height());
 
     // Erase old values
-    display.setTextColor(GxEPD_WHITE);
-    display.setFont(&BigFont);
-    display.setTextSize(1);
-    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
-    display.setFont(&SmallFont);
+    //    display.setTextColor(GxEPD_WHITE);
+    //    display.setFont(&BigFont);
+    //    display.setTextSize(1);
+    //    drawHoritzontalCenterText((display.height() / 2) + 40, String(oldCO2Value));
+    //    display.setFont(&SmallFont);
     // #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
     //     display.setCursor(55, 12);
     //     display.printf("%.1fºC", oldTempValue);
@@ -883,7 +883,8 @@ void showValues() {
     display.setTextColor(GxEPD_BLACK);
     display.setFont(&BigFont);
     display.setTextSize(1);
-    drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
+    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, String(co2), 'r', 'c');
+    //  drawHoritzontalCenterText((display.height() / 2) + 40, String(co2));
     oldCO2Value = co2;
     display.setFont(&SmallFont);
 
