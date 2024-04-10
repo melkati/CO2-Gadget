@@ -257,12 +257,11 @@ void sensorsLoopLowPower() {
 void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
     if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
-        // // if (millis() - lastDotPrintTime >= 100) {
-        // //     Serial.print("[-]");        // Print a - every loop to show that the device is alive
-        // //     lastDotPrintTime = millis();
-        // // }
-        // sensorsLoopLowPower();
-        // return;
+        if (millis() - lastDotPrintTime >= 100) {
+            Serial.print("[-]");        // Print a - every loop to show that the device is alive
+            lastDotPrintTime = millis();
+        }
+        sensorsLoopLowPower();
     } else if (!buzzerBeeping) {  // Avoid affecting beep sound
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
