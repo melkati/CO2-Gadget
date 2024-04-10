@@ -165,170 +165,51 @@ ElementLocations elementPosition;
 
 // Function to set element locations based on screen resolution
 void setElementLocations() {
-#ifdef EINKBOARDGDEM029T94
-    if (displayWidth == 296 && displayHeight == 128) {  // 296x128 GDEM029T94 and similar
-        elementPosition.co2FontDigitsHeight = 48;
-        elementPosition.co2X = 0;
-        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
-        elementPosition.co2UnitsX = display.width() - 24;
-        elementPosition.co2UnitsY = elementPosition.co2Y;
-
-        elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 16;
-        elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 16;
-        elementPosition.humidityXUnits = display.width() - 16;
-        elementPosition.humidityYUnits = display.height() - 16;
-        elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 16;
-        elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
-        elementPosition.ppmYUnits = displayWidth - 8;
-        elementPosition.batteryIconX = displayWidth - 32;
-        elementPosition.batteryIconY = 2;
-        elementPosition.batteryVoltageX = displayWidth - 92;
-        elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 0;
-        elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 24;
-        elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 48;
-        elementPosition.mqttIconY = 0;
-        elementPosition.espNowIconX = 72;
-        elementPosition.espNowIconY = 0;
-
-        // widths & heights of main values
-        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2UnitsH = 16;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
-        elementPosition.co2H = (display.height() - 32);
-        elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 48;
-        elementPosition.humidityHValue = 16;
-    }
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEM029T94)
+    elementPosition.co2FontDigitsHeight = 48;
 #endif
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74)
-    if (displayWidth == 250 && displayHeight == 122) {  // 250x122 DEPG0213BN, GDEM0213B74 and similar
-        elementPosition.co2FontDigitsHeight = 48;       // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2X = 0;
-        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
-        elementPosition.co2UnitsX = display.width() - 24;
-        elementPosition.co2UnitsY = elementPosition.co2Y;
-        elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 16;
-        elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 16;
-        elementPosition.humidityXUnits = display.width() - 16;
-        elementPosition.humidityYUnits = display.height() - 16;
-        elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 16;
-        elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
-        elementPosition.ppmYUnits = displayWidth - 3;
-        elementPosition.batteryIconX = displayWidth - 32;
-        elementPosition.batteryIconY = 2;
-        elementPosition.batteryVoltageX = displayWidth - 92;
-        elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 0;
-        elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 24;
-        elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 48;
-        elementPosition.mqttIconY = 0;
-        elementPosition.espNowIconX = 72;
-        elementPosition.espNowIconY = 0;
-
-        // widths & heights of main values
-        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2UnitsH = 16;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
-        elementPosition.co2H = (display.height() - 32);
-        elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 48;
-        elementPosition.humidityHValue = 16;
-    }
+#if defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEH0154D67)
+    elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
 #endif
-#if defined(EINKBOARDGDEW0213M21)
-    if (displayWidth == 212 && displayHeight == 104) {  // 212x104 GDEW0213M21 and similar
-        elementPosition.co2FontDigitsHeight = 42;       // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2X = 0;
-        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
-        elementPosition.co2UnitsX = display.width() - 24;
-        elementPosition.co2UnitsY = elementPosition.co2Y;
-        elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 16;
-        elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 16;
-        elementPosition.humidityXUnits = display.width() - 16;
-        elementPosition.humidityYUnits = display.height() - 16;
-        elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 16;
-        elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
-        elementPosition.ppmYUnits = displayWidth - 3;
-        elementPosition.batteryIconX = displayWidth - 32;
-        elementPosition.batteryIconY = 2;
-        elementPosition.batteryVoltageX = displayWidth - 92;
-        elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 0;
-        elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 24;
-        elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 48;
-        elementPosition.mqttIconY = 0;
-        elementPosition.espNowIconX = 72;
-        elementPosition.espNowIconY = 0;
+    // All displays share the same configuration
+    elementPosition.co2X = 0;                                                       // Left screen
+    elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.co2UnitsX = display.width() - 16;                               // Right screen - height of PPM text
+    elementPosition.co2UnitsY = elementPosition.co2Y;
+    elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
+    elementPosition.co2UnitsH = 24;  // height of PPM text
+    elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
+    elementPosition.co2H = (display.height() - 32);      // 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.ppmXUnits = displayHeight / 2 - 21;  // Display is rotated so vertical orientation (swaped width & height)
+    elementPosition.ppmYUnits = displayWidth - 8;
 
-        // widths & heights of main values
-        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2UnitsH = 16;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
-        elementPosition.co2H = (display.height() - 32);
-        elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 48;
-        elementPosition.humidityHValue = 16;
-    }
-#endif
-#if defined(EINKBOARDGDEH0154D67)
-    if (displayWidth == 200 && displayHeight == 200) {  // 200x200 GDEH0154D67 WeAct Studio 1.54" 200x200 E-Ink Display
-        elementPosition.co2FontDigitsHeight = 42;       // Digits (0..9) height for the font used (not the same as whole font height)
-        elementPosition.co2X = 0;
-        elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);
-        elementPosition.co2UnitsX = display.width() - 24;
-        elementPosition.co2UnitsY = elementPosition.co2Y;
-        elementPosition.tempXUnits = 0;
-        elementPosition.tempYUnits = display.height() - 16;
-        elementPosition.tempXValue = 20;
-        elementPosition.tempYValue = display.height() - 16;
-        elementPosition.humidityXUnits = display.width() - 16;
-        elementPosition.humidityYUnits = display.height() - 16;
-        elementPosition.humidityXValue = display.width() - 64;
-        elementPosition.humidityYValue = display.height() - 16;
-        elementPosition.ppmXUnits = displayHeight / 2 + 20;  // Display is rotated so vertical orientation (swaped width & height)
-        elementPosition.ppmYUnits = displayWidth - 3;
-        elementPosition.batteryIconX = displayWidth - 32;
-        elementPosition.batteryIconY = 2;
-        elementPosition.batteryVoltageX = displayWidth - 92;
-        elementPosition.batteryVoltageY = 2;
-        elementPosition.bleIconX = 0;
-        elementPosition.bleIconY = 0;
-        elementPosition.wifiIconX = 24;
-        elementPosition.wifiIconY = 0;
-        elementPosition.mqttIconX = 48;
-        elementPosition.mqttIconY = 0;
-        elementPosition.espNowIconX = 72;
-        elementPosition.espNowIconY = 0;
+    elementPosition.tempXUnits = 0;  // down left corner
+    elementPosition.tempYUnits = display.height() - 16;
+    elementPosition.tempXValue = 16 + 4;  // down left corner iconTemp + 4px
+    elementPosition.tempYValue = elementPosition.tempYUnits;
+    elementPosition.tempWValue = 48;  // width of temp value box
+    elementPosition.tempHValue = 16;
 
-        // widths & heights of main values
-        elementPosition.co2UnitsW = elementPosition.co2FontDigitsHeight;
-        elementPosition.co2UnitsH = 16;
-        elementPosition.co2W = display.width() - elementPosition.co2UnitsH;
-        elementPosition.tempWValue = 56;
-        elementPosition.tempHValue = 16;
-        elementPosition.humidityWValue = 48;
-        elementPosition.humidityHValue = 16;
-    }
-#endif
+    elementPosition.humidityXUnits = display.width() - 16;  // down right corner
+    elementPosition.humidityYUnits = display.height() - 16;
+    elementPosition.humidityWValue = 48;
+    elementPosition.humidityHValue = 16;
+    elementPosition.humidityXValue = display.width() - elementPosition.humidityWValue - 16 - 4;  // 4 pixels between humidity and iconHumidity
+    elementPosition.humidityYValue = elementPosition.humidityYUnits;
+
+    elementPosition.batteryIconX = display.width() - 32;
+    elementPosition.batteryIconY = 2;
+    elementPosition.batteryVoltageX = display.width() - 92;
+    elementPosition.batteryVoltageY = 0;
+
+    elementPosition.bleIconX = 0;
+    elementPosition.bleIconY = 0;
+    elementPosition.wifiIconX = 24;  // 16 pixels bleIcon + 8 pixels between icons
+    elementPosition.wifiIconY = 0;
+    elementPosition.mqttIconX = 48;  // 16 + 8 + 16 pixels wifiIcon + 8 pixels between icons
+    elementPosition.mqttIconY = 0;
+    elementPosition.espNowIconX = 72;  // 16 + 8 + 16 + 8 + 16 pixels mqttIcon + 8 pixels between icons
+    elementPosition.espNowIconY = 0;
 }
 
 void drawMainScreen(bool force = false);            // Forward declaration
