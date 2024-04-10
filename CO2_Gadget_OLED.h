@@ -79,6 +79,7 @@ void initDisplay() {
   } else {
     u8g2.setDisplayRotation(U8G2_R0);
   }
+  setDisplayBrightness(DisplayBrightness);
   displaySplashScreen();
   delay(1000);
 }
