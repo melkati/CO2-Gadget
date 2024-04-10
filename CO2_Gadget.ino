@@ -808,7 +808,7 @@ void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
 }
 
 void loop() {  // Old loop function. Not used anymore. Just for reference
-    bool showDebug = true;
+    bool showDebug = false;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
