@@ -286,9 +286,11 @@ void toDeepSleep() {
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
-    if (BTN_DWN != -1) {
+    
+    // Only GPIOs which are have RTC functionality can be used: 0,2,4,12-15,25-27,32-39
+    if ((BTN_DWN != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_DWN))) {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
-    } else if (BTN_UP != -1) {
+    } else if ((BTN_UP != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_UP))) {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
     }
     // #endif
