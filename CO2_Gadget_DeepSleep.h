@@ -237,10 +237,6 @@ void callbackTouch() {
 }
 
 void toDeepSleep() {
-    Serial.println("-->[DEEP] Display off before going to deep sleep *");
-    Serial.flush();
-    delay(5000);
-
 #ifdef SUPPORT_EINK
 // display.hibernate();
 #endif
