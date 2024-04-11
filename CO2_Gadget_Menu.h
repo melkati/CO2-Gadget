@@ -1121,6 +1121,7 @@ void menuLoopEINK() {
         return;
     }
 
+    nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(false);
     } else {
@@ -1133,7 +1134,7 @@ void menuLoopEINK() {
 
 void menuLoop() {
     // Time to wait for Improv-WiFi to connect on startup. 0x2A is the '*' character.
-    uint16_t timeToWaitForImprov = 5;
+    // uint16_t timeToWaitForImprov = 5; // Already defined in CO2_Gadget.ino
     if (Serial.available() && Serial.peek() == 0x2A) {
         nav.doInput();  // Do input, even if no display, as serial menu needs this
     }
