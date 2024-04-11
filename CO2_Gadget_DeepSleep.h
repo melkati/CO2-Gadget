@@ -707,7 +707,7 @@ void fromDeepSleep() {
 #endif
             fromDeepSleepTimer();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)  // #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-            Serial.println("-->[DEEP] Display off before going to deep sleep *");
+            Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
             // turnOffDisplay();
             // Serial.println("-->[DEEP] Display off *");
             delay(10);
