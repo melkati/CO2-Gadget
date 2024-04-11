@@ -269,7 +269,7 @@ void displaySplashScreenLOGO() {
     do {
         // Draw bitmap
         display.fillScreen(GxEPD_WHITE);
-        display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
+        //        display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
     } while (display.nextPage());
 #ifdef TIMEDEBUG
     Serial.print("time used to displaySplashScreenLOGO: ");
@@ -351,7 +351,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         display.fillScreen(GxEPD_WHITE);
         display.display();
         drawMainScreen(false);
-        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+        //        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with partial refresh from: ");
@@ -379,7 +379,7 @@ void initDisplay(bool fastMode = false) {
     // display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
     display.init(115200, !fastMode, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 
-    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+    //    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
 
     // Set default options to draw
     display.setRotation(1);
