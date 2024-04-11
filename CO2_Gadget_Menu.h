@@ -680,7 +680,12 @@ TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wr
   ,VALUE("Show", true, doDisplayReverse, enterEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+  ,FIELD(DisplayBrightness, "Brightness:", "", 1, 16, 1, 1, doSetDisplayBrightness, anyEvent, wrapStyle)
+#endif  
+#if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
   ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetDisplayBrightness, anyEvent, wrapStyle)
+#endif  
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,SUBMENU(activeDisplayReverse)
@@ -1025,7 +1030,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
             Serial.println("-->[MENU] Event idleStart");
 #endif
-            //       setInMenu(false);
+            setInMenu(false);
             //       nav.poll();
 
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
@@ -1037,7 +1042,8 @@ result idle(menuOut &o, idleEvent e) {
             Serial.println("-->[MENU] Event iddling");
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-            displayShowValues(false);
+            displayShowValues(shouldRedrawDisplay);
+            shouldRedrawDisplay = false;
 #endif
             break;
         case idleEnd:
@@ -1064,7 +1070,8 @@ result idle(menuOut &o, idleEvent e) {
 void menuLoopTFT() {
 #ifdef SUPPORT_TFT
     if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
         return;
     }
 
@@ -1079,7 +1086,8 @@ void menuLoopTFT() {
 
     nav.doInput();
     if (nav.sleepTask) {
-        displayShowValues(false);
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
     } else {
         if (nav.changed(0)) {
             nav.doOutput();
@@ -1091,6 +1099,27 @@ void menuLoopTFT() {
 void menuLoopOLED() {
 #ifdef SUPPORT_OLED
     if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
+        return;
+    }
+
+    if (nav.sleepTask) {
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
+    } else {
+        if (nav.changed(0)) {
+            u8g2.firstPage();
+            do nav.doOutput();
+            while (u8g2.nextPage());
+        }
+    }
+#endif
+}
+
+void menuLoopEINK() {
+#ifdef SUPPORT_EINK
+    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
         displayShowValues(false);
         return;
     }
@@ -1099,9 +1128,7 @@ void menuLoopOLED() {
         displayShowValues(false);
     } else {
         if (nav.changed(0)) {
-            u8g2.firstPage();
-            do nav.doOutput();
-            while (u8g2.nextPage());
+            nav.doOutput();
         }
     }
 #endif
@@ -1131,6 +1158,8 @@ void menuLoop() {
     menuLoopTFT();
 #elif defined(SUPPORT_OLED)
     menuLoopOLED();
+#elif defined(SUPPORT_EINK)
+    menuLoopEINK();
 #else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {

@@ -56,7 +56,7 @@ bool activeESPNOW = false;
 bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
 bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
-bool  troubledESPNOW = false;            // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+bool troubledESPNOW = false;             // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
 uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
@@ -79,6 +79,7 @@ bool displayShowPM25 = true;
 bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
+bool shouldRedrawDisplay = false;
 uint16_t measurementInterval = 10;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
@@ -168,7 +169,7 @@ enum notificationTypes { notifyNothing,
                          notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#if (!SUPPORT_OLED && !SUPPORT_TFT && !SUPPORT_EINK)
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
@@ -243,6 +244,15 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*****************************************************************************************************/
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               INCLUDE EINK DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#if defined SUPPORT_EINK
+#include <CO2_Gadget_EINK.h>
 #endif
 
 /*****************************************************************************************************/
@@ -442,7 +452,7 @@ void adjustBrightnessLoop() {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
             setDisplayBrightness(DisplayBrightness);
         }
-        if (timeToDisplayOff==0) {
+        if (timeToDisplayOff == 0) {
             setDisplayBrightness(DisplayBrightness);
         }
         return;
@@ -539,8 +549,8 @@ void setup() {
     initGPIO();
     initNeopixel();
     initBuzzer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    initDisplay();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    initDisplay(false);
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
