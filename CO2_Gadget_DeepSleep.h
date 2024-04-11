@@ -286,11 +286,11 @@ void toDeepSleep() {
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
-    //     if (BTN_DWN != -1) {
-    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
-    //     } else if (BTN_UP != -1) {
-    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
-    //     }
+    if (BTN_DWN != -1) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+    } else if (BTN_UP != -1) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
+    }
     // #endif
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
