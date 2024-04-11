@@ -88,8 +88,8 @@ uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we co
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
-bool workingOnExternalPower = true;      // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 0;    // To know if it's on or off
+bool workingOnExternalPower = true;    // True if working on external power (USB connected)
+uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
@@ -808,7 +808,7 @@ void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
 }
 
 void loop() {  // Old loop function. Not used anymore. Just for reference
-    bool showDebug = false;
+    bool showDebug = true;
     static unsigned long lastDotPrintTime = 0;
     if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
@@ -825,7 +825,7 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     wifiClientLoop();
     mqttClientLoop();
     if (deepSleepEnabled) {
-        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in interactive mode (will go into low power mode)");
+        // if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in interactive mode (will go into low power mode)");
         sensorsLoop();
         deepSleepLoop();
     } else {
@@ -840,5 +840,4 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     buttonsLoop();
     menuLoop();
     BLELoop();
-    // deepSleepLoop();
 }

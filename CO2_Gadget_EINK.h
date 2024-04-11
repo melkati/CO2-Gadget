@@ -105,16 +105,11 @@ const GFXfont BigFont = NotoSans_Bold42pt7b;
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_RST 16
-// #define EPD_DC 17
-// #define EPD_BUSY 4
-
 #define EPD_CS SS
 #define EPD_DC 27
 #define EPD_RST 25
 #define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY)); // GDEH0154D67 200x200, SSD1681
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/EPD_DC, /*RST=*/EPD_RST, /*BUSY=*/EPD_BUSY));  // GDEH0154D67 200x200, SSD1681
 #endif
 
 // Define a structure for the locations of elements
