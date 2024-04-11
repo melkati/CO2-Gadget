@@ -228,7 +228,7 @@ void printRTCMemoryExit() {
 void restartTimerToDeepSleep() {
     startTimerToDeepSleep = millis();
 #ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Restarting timer to deep sleep.");
+    // Serial.println("-->[DEEP] Restarting timer to deep sleep.");
 #endif
 }
 
@@ -242,7 +242,7 @@ void toDeepSleep() {
 #endif
 
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
-        sensors.scd30.stopContinuousMeasurement();
+        // sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
         sensors.scd4x.stopPeriodicMeasurement();
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
@@ -472,7 +472,7 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     float temperature = 0;
     float humidity = 0;
 
-    // Serial.println("-->[DEEP] scd40HandleFromDeepSleep()");
+    // Serial.println("-->[DEEP] " + __func__ + "() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode));
 
     if (!initialized) {
         reInitI2C();
@@ -526,42 +526,48 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     return (true);
 }
 
-bool scd30HandleFromDeepSleep() {
-    unsigned long previousMillis = 0;
+bool scd30HandleFromDeepSleep(bool blockingMode = true) {
+    bool initialized = false;
+    unsigned long previousMillis = 0, startTimeoutMillis = millis();
 
-    reInitI2C();
-
-    // sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
-    // sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
-    // sensors.setDebugMode(true);
-    // sensors.setSampleTime(2);
-    // sensors.detectI2COnly(true);
-
-    if (!sensors.scd30.begin() && !sensors.scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire1, SCD30_CHIP_ID)) {
-        Serial.println("-->[DEEP][SCD30][ERROR] Failed to find SCD30 sensor");
-        return (false);
+    if (!initialized) {
+        Serial.println("-->[DEEP] " + String(__func__) + "() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode));
+        reInitI2C();
+        sensors.setDebugMode(debugSensors);
+        sensors.detectI2COnly(true);
+        // sensors.setSampleTime(2);
+        sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
+        sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
+        sensors.initCO2LowPowerMode(SENSORS::SSCD30, MEDIUM_LOWPOWER);
+        initialized = true;
     }
 
-    if ((interactiveMode) && (!sensors.scd30.dataReady())) {
-        Serial.println("-->[DEEP][SCD30] Data not ready");
-        return (false);
-    } else Serial.println("-->[DEEP][SCD30] Data ready");
-    
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP][SCD30] SCD30 is not fully supported in Low Power Mode (yet)");
 #endif
 
-    // Drop first measurement
-    while (!sensors.scd30.dataReady()) {
-        delay(10);
-        sensors.scd30.read();
-    }
-
-    if (!sensors.scd30.dataReady()) {
+    if (!sensors.isDataReady()) {
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP][SCD30] Waiting for data from sensor");
 #endif
-        while (!sensors.scd30.dataReady()) {
+        while (!sensors.isDataReady()) {
+            if (millis() - startTimeoutMillis >= (sensors.getSampleTime() + 1) * 1000) {  // If one second more than sample time then timeout
+                Serial.println("-->[DEEP][SCD30][ERROR] Timeout waiting for data from sensor");
+                return (false);
+            }
+            sensors.loop();
+            if ((!sensors.isDataReady()) && (!interactiveMode)) {
+                esp_sleep_enable_timer_wakeup(1 * 1000000);  // 1 second
+                Serial.println("-->[DEEP] Light sleep for 1 second");
+                Serial.flush();
+#ifdef TIMEDEBUG
+                timerLightSleep.resume();
+#endif
+                esp_light_sleep_start();
+#ifdef TIMEDEBUG
+                timerLightSleep.pause();
+#endif
+            }
             unsigned long currentMillis = millis();
             if (currentMillis - previousMillis >= 1000) {
                 previousMillis = currentMillis;
@@ -576,25 +582,7 @@ bool scd30HandleFromDeepSleep() {
 #endif
     }
 
-    if (!sensors.scd30.read()) {
-        Serial.println("-->[DEEP][SCD30][ERROR] Error reading data from sensor");
-        return (false);
-    } else {
-        Serial.println("-->[DEEP][SCD30] Data read from sensor");
-        uint16_t tCO2 = int(sensors.scd30.CO2);  // we need temp var, without it override CO2
-        if (tCO2 > 0) {
-            co2 = tCO2;
-            hum = sensors.scd30.relative_humidity;
-            temp = sensors.scd30.temperature;
-            deepSleepData.lastCO2Value = co2;
-            deepSleepData.lastTemperatureValue = temp;
-            deepSleepData.lastHumidityValue = hum;
-        }
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP][SCD30] Data: CO2: " + String(tCO2) + " ppm, Temp: " + String(sensors.scd30.temperature) + " °C, Hum: " + String(sensors.scd30.relative_humidity) + " %");
-#endif
-        return (true);
-    }
+    return (true);
 }
 
 bool handleLowPowerSensors() {
@@ -605,7 +593,7 @@ bool handleLowPowerSensors() {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
 #endif
-        readOK = scd30HandleFromDeepSleep();
+        readOK = scd30HandleFromDeepSleep(true);
 
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
 #ifdef DEEP_SLEEP_DEBUG
@@ -650,7 +638,9 @@ void fromDeepSleepTimer() {
 #endif
             initBattery();
             batteryLoop();
-            if (handleLowPowerSensors()) displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
+            if (handleLowPowerSensors()) {
+                displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
+            }
 #ifdef SUPPORT_BLE
             if (deepSleepData.activeBLEOnWake) {
                 initBLE();
@@ -664,7 +654,7 @@ void fromDeepSleepTimer() {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
             if (deepSleepData.displayOnWake) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP] Displaying values momentarily.");
+                Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
 #endif
                 initDisplay(true);
                 displayShowValues();
@@ -673,7 +663,8 @@ void fromDeepSleepTimer() {
 #ifdef TIMEDEBUG
                 timerLightSleep.resume();
 #endif
-                esp_light_sleep_start();
+                // esp_light_sleep_start();
+                delay(deepSleepData.timeToDisplayOnWake * 1000);
 #ifdef TIMEDEBUG
                 timerLightSleep.pause();
 #endif
@@ -715,7 +706,7 @@ void fromDeepSleep() {
             Serial.println("-->[DEEP] Wakeup caused by timer");
 #endif
             fromDeepSleepTimer();
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+#if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)  // #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Display off before going to deep sleep *");
             // turnOffDisplay();
             // Serial.println("-->[DEEP] Display off *");
@@ -761,8 +752,11 @@ void deepSleepLoop() {
     // if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) return;
     if (!deepSleepEnabled) return;
 
-    // Serial.println("-->[DEEP] inMenu: " + String(inMenu));
+#ifdef DEEP_SLEEP_DEBUG
+        // Serial.println("-->[DEEP] inMenu: " + String(inMenu));
+#endif
 
+#ifdef DEEP_SLEEP_DEBUG
     if (millis() - lastSerialPrintTime >= 5000) {  // Check if some time has passed since the last print
         // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
         // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
@@ -776,9 +770,11 @@ void deepSleepLoop() {
     //     Serial.print(".");            // Print a dot from time to time to show that the device is alive
     //     lastDotPrintTime = millis();  // Update last print time
     // }
+#endif
 
     if (inMenu) {
         restartTimerToDeepSleep();  // If user enters the menu, reset the timer to go to deep sleep while it's on menu
+#ifdef DEEP_SLEEP_DEBUG
         // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot)*1000 + "Now: " + String(millis()));
@@ -794,12 +790,15 @@ void deepSleepLoop() {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + "Now: " + String(millis()));
             Serial.println("-->[DEEP] (inMenu=FALSE) Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 5000) + " seconds");
             lastSerialPrintTime = millis();  // Update last print time
+#endif
         }
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-            // turnOffDisplay();
-            // Serial.println("-->[DEEP] Display off");
+#if defined(SUPPORT_TFT)
+            turnOffDisplay();
+            Serial.println("-->[DEEP] Display off");
+#endif
             Serial.println("-->[DEEP] Display off before going to deep sleep");
             delay(20);
             displaySleep(false);

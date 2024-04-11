@@ -108,11 +108,6 @@ const GFXfont BigFont = NotoSans_Bold42pt7b;
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_RST 16
-// #define EPD_DC 17
-// #define EPD_BUSY 4
-
 #define EPD_CS SS
 #define EPD_DC 27
 #define EPD_RST 25

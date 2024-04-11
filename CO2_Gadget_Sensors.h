@@ -62,7 +62,9 @@ void onSensorDataOk() {
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
 }
 
-void onSensorDataError(const char *msg) { Serial.println(msg); }
+void onSensorDataError(const char *msg) {
+    Serial.println("-->[SENS] " + String(msg));
+}
 
 void storeSensorSelectedInRTC() {
     if (!sensorsGetMainDeviceSelected().isEmpty()) {
@@ -130,9 +132,15 @@ void initSensorsLowPower() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
-
-               deepSleepData.measurementsStarted = false;
-        sensors.initCO2LowPowerMode(static_cast<LowPowerMode>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+        deepSleepData.measurementsStarted = false;
+        sensors.initCO2LowPowerMode(SENSORS::Auto, static_cast<LowPowerModes>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+    } else {
+        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+        displayNotification("-->[SENS][ERROR] Init sensors", "Low Power Mode not supported for this sensor", notifyError);
+        while (1) {
+            Serial.println("-->[SENS][ERROR] Low Power Mode not supported for this sensor " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+            delay(10000);
+        }
     }
 }
 
@@ -208,9 +216,11 @@ void initSensors() {
 }
 
 void sensorSCD30LoopLowPower() {
+    Serial.println("-->[DEEP] " + String(__func__) + "()");
 }
 
 void sensorCM1106SL_NSLoopLowPower() {
+    Serial.println("-->[DEEP] " + String(__func__) + "()");
 }
 
 void sensorSCD4XLoopLowPower() {
@@ -219,6 +229,8 @@ void sensorSCD4XLoopLowPower() {
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
+
+    Serial.println("-->[DEEP] " + String(__func__) + "() " + sensors.getSCD4xModel());
 
     // Serial.println("-->[SENS] sensorSCD4XLoopLowPower() " + (sensors.getSCD4xModel() == "SCD40" ? "SCD40" : "SCD41"));
 
@@ -258,7 +270,7 @@ void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
     if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
         if (millis() - lastDotPrintTime >= 100) {
-            Serial.print("[-]");        // Print a - every loop to show that the device is alive
+            Serial.print("[-]");  // Print a - every loop to show that the device is alive
             lastDotPrintTime = millis();
         }
         sensorsLoopLowPower();
