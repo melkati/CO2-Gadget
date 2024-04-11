@@ -725,6 +725,7 @@ void setup() {
     Serial.println("-->[STUP] lowPowerMode mode (from RTC memory): (" + String(deepSleepData.lowPowerMode) + ") " + getLowPowerModeName(deepSleepData.lowPowerMode));
 
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
+        timeToWaitForImprov = 0;
         switch (esp_sleep_get_wakeup_cause()) {
             case ESP_SLEEP_WAKEUP_TIMER:
                 Serial.println("-->[STUP] Initializing from deep sleep timer");
@@ -810,7 +811,7 @@ void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
 void loop() {  // Old loop function. Not used anymore. Just for reference
     bool showDebug = true;
     static unsigned long lastDotPrintTime = 0;
-    if ((showDebug) && (millis() - lastDotPrintTime > 3000)) {
+    if (!inMenu && (showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
         Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
         Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
