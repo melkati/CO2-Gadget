@@ -228,7 +228,7 @@ void printRTCMemoryExit() {
 void restartTimerToDeepSleep() {
     startTimerToDeepSleep = millis();
 #ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Restarting timer to deep sleep.");
+    // Serial.println("-->[DEEP] Restarting timer to deep sleep.");
 #endif
 }
 
