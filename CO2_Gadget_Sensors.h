@@ -128,19 +128,35 @@ void storeSensorSelectedInRTC() {
     }
 }
 
+void initSCD30SensorLowPower() {
+#ifndef Wire1
+    if (!sensors.scd30.begin()) return;
+#else
+    if (!sensors.scd30.begin() && !sensors.scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire1, SCD30_CHIP_ID)) return;
+#endif
+}
+
 void initSensorsLowPower() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
+    if (deepSleepData.lowPowerMode == SENSORS::SSCD30) {
+        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: SCD30");
+        initSCD30SensorLowPower();
+        return;
+    }
+
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
         deepSleepData.measurementsStarted = false;
         sensors.initCO2LowPowerMode(SENSORS::Auto, static_cast<LowPowerModes>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
-    } else {
-        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
-        displayNotification("-->[SENS][ERROR] Init sensors", "Low Power Mode not supported for this sensor", notifyError);
-        while (1) {
-            Serial.println("-->[SENS][ERROR] Low Power Mode not supported for this sensor " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
-            delay(10000);
-        }
+        return;
+    }
+
+
+    Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+    displayNotification("-->[SENS][ERROR] Init sensors", "Low Power Mode not supported for this sensor", notifyError);
+    while (1) {
+        Serial.println("-->[SENS][ERROR] Low Power Mode not supported for this sensor " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+        delay(10000);
     }
 }
 

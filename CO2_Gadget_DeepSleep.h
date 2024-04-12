@@ -191,8 +191,8 @@ void printRTCMemoryEnter() {
     Serial.println("-->[DEEP][ENTER] timeSleeping: " + String(deepSleepData.timeSleeping));
     Serial.println("-->[DEEP][ENTER] gpioConfig: " + String(deepSleepData.gpioConfig));
     Serial.println("-->[DEEP][ENTER] waitingForDataReady: " + String(deepSleepData.waitingForDataReady));
-    Serial.println("-->[DEEP][ENTER] cyclesToWiFiConnect: " + String(deepSleepData.cyclesToWiFiConnect));
-    Serial.println("-->[DEEP][ENTER] cyclesToRedrawDisplay: " + String(deepSleepData.cyclesToRedrawDisplay));
+    Serial.println("-->[DEEP][ENTER] cyclesToWiFiConnect: " + String(deepSleepData.cyclesLeftToWiFiConnect));
+    Serial.println("-->[DEEP][ENTER] redrawDisplayEveryCycles: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
     Serial.println("-->[DEEP][ENTER] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][ENTER] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][ENTER] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
@@ -212,8 +212,8 @@ void printRTCMemoryExit() {
     Serial.println("-->[DEEP][EXIT] timeSleeping: " + String(deepSleepData.timeSleeping));
     Serial.println("-->[DEEP][EXIT] gpioConfig: " + String(deepSleepData.gpioConfig));
     Serial.println("-->[DEEP][EXIT] waitingForDataReady: " + String(deepSleepData.waitingForDataReady));
-    Serial.println("-->[DEEP][EXIT] cyclesToWiFiConnect: " + String(deepSleepData.cyclesToWiFiConnect));
-    Serial.println("-->[DEEP][EXIT] cyclesToRedrawDisplay: " + String(deepSleepData.cyclesToRedrawDisplay));
+    Serial.println("-->[DEEP][EXIT] cyclesToWiFiConnect: " + String(deepSleepData.cyclesLeftToWiFiConnect));
+    Serial.println("-->[DEEP][EXIT] redrawDisplayEveryCycles: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
     Serial.println("-->[DEEP][EXIT] lastCO2Value: " + String(deepSleepData.lastCO2Value));
     Serial.println("-->[DEEP][EXIT] lastTemperatureValue: " + String(deepSleepData.lastTemperatureValue));
     Serial.println("-->[DEEP][EXIT] lastHumidityValue: " + String(deepSleepData.lastHumidityValue));
@@ -286,11 +286,13 @@ void toDeepSleep() {
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
-    //     if (BTN_DWN != -1) {
-    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
-    //     } else if (BTN_UP != -1) {
-    //         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
-    //     }
+
+    // Only GPIOs which are have RTC functionality can be used: 0,2,4,12-15,25-27,32-39
+    if ((BTN_DWN != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_DWN))) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+    } else if ((BTN_UP != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_UP))) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
+    }
     // #endif
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
@@ -341,7 +343,7 @@ void doDeepSleepWiFiConnect() {
         doDeepSleepMQTTConnect();
     }
 #endif
-    deepSleepData.cyclesToWiFiConnect = deepSleepWiFiConnectEach;
+    deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
 }
 
 void displayFromDeepSleep(bool forceRedraw = false) {
@@ -411,8 +413,8 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
 
     if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
-        Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
-        Serial.flush();
+                                                       // Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
+                                                       // Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
@@ -535,7 +537,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         reInitI2C();
         sensors.setDebugMode(debugSensors);
         sensors.detectI2COnly(true);
-        // sensors.setSampleTime(2);
+        sensors.setSampleTime(measurementInterval);
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
         sensors.initCO2LowPowerMode(SENSORS::SSCD30, MEDIUM_LOWPOWER);
@@ -558,8 +560,8 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
             sensors.loop();
             if ((!sensors.isDataReady()) && (!interactiveMode)) {
                 esp_sleep_enable_timer_wakeup(1 * 1000000);  // 1 second
-                Serial.println("-->[DEEP] Light sleep for 1 second");
-                Serial.flush();
+                                                             // Serial.println("-->[DEEP] Light sleep for 1 second");
+                                                             // Serial.flush();
 #ifdef TIMEDEBUG
                 timerLightSleep.resume();
 #endif
@@ -618,14 +620,17 @@ bool handleLowPowerSensors() {
 }
 
 void fromDeepSleepTimer() {
-#if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
-    Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesToRedrawDisplay));
-#endif
+    --deepSleepData.cyclesLeftToWiFiConnect;
+    --deepSleepData.cyclesLeftToRedrawDisplay;
+
 #if defined(DEEP_SLEEP_DEBUG)
-    Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesToWiFiConnect));
+    Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesLeftToWiFiConnect));
 #endif
-    --deepSleepData.cyclesToWiFiConnect;
-    --deepSleepData.cyclesToRedrawDisplay;
+
+#if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
+    Serial.println("-->[DEEP] Cycles left to redraw display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
+#endif
+
     switch (deepSleepData.lowPowerMode) {
         case BASIC_LOWPOWER:
 #ifdef DEEP_SLEEP_DEBUG
@@ -639,7 +644,7 @@ void fromDeepSleepTimer() {
             initBattery();
             batteryLoop();
             if (handleLowPowerSensors()) {
-                displayFromDeepSleep(deepSleepData.cyclesToRedrawDisplay == 0);
+                displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
             }
 #ifdef SUPPORT_BLE
             if (deepSleepData.activeBLEOnWake) {
@@ -670,7 +675,7 @@ void fromDeepSleepTimer() {
 #endif
             }
 #endif
-            if (deepSleepData.cyclesToWiFiConnect == 0) {
+            if (deepSleepData.cyclesLeftToWiFiConnect == 0) {
                 doDeepSleepWiFiConnect();
             }
 #ifdef DEEP_SLEEP_DEBUG
@@ -680,6 +685,7 @@ void fromDeepSleepTimer() {
             if ((deepSleepData.sendMQTTOnWake) && (WiFi.status() == WL_CONNECTED)) {
                 Serial.println("-->[DEEP] MQTT connected. Publishing measurements.");
                 publishMQTT(true);
+                delay(10);
             }
 #endif
             break;
@@ -707,7 +713,7 @@ void fromDeepSleep() {
 #endif
             fromDeepSleepTimer();
 #if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)  // #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-            Serial.println("-->[DEEP] Display off before going to deep sleep *");
+            Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
             // turnOffDisplay();
             // Serial.println("-->[DEEP] Display off *");
             delay(10);
@@ -758,12 +764,14 @@ void deepSleepLoop() {
 
 #ifdef DEEP_SLEEP_DEBUG
     if (millis() - lastSerialPrintTime >= 5000) {  // Check if some time has passed since the last print
-        // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
-        // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
+        if (!inMenu) {
+            // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
+            // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
 
-        Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-        // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
-        lastSerialPrintTime = millis();  // Update last print time
+            Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+            // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
+            lastSerialPrintTime = millis();  // Update last print time
+        }
     }
 
     // if ((millis() - lastDotPrintTime >= 1000)) {

@@ -337,7 +337,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     // Serial.println("-->[EINK] Width: " + String(display.width()) + ", Height: " + String(display.height()));
 #endif
 
-    // Each cyclesToRedrawDisplay boots do a full screen refresh
+    // Each deepSleepData.redrawDisplayEveryCycles boots do a full screen refresh
     if (forceRedraw) {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with full refresh from: ");
@@ -346,7 +346,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         display.fillScreen(GxEPD_WHITE);
         display.display();
         drawMainScreen(false);
-        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
     } else {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with partial refresh from: ");
@@ -374,7 +374,7 @@ void initDisplay(bool fastMode = false) {
     // display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
     display.init(115200, !fastMode, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 
-    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+    deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
 
     // Set default options to draw
     display.setRotation(1);
