@@ -537,7 +537,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         reInitI2C();
         sensors.setDebugMode(debugSensors);
         sensors.detectI2COnly(true);
-        // sensors.setSampleTime(2);
+        sensors.setSampleTime(measurementInterval);
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
         sensors.initCO2LowPowerMode(SENSORS::SSCD30, MEDIUM_LOWPOWER);
