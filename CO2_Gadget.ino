@@ -830,7 +830,7 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
         sensorsLoop();
         deepSleepLoop();
     } else {
-        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
+        // if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
         sensorsLoop();
     }
     outputsLoop();
