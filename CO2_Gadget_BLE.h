@@ -40,7 +40,9 @@ void publishBLE() {
         provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
         provider.commitSample();
-        Serial.println("-->[SBLE] Published CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        if (!inMenu) {
+            Serial.println("-->[SBLE] Published CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        }
     }
 #endif
 }

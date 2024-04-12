@@ -116,8 +116,6 @@ bool interactiveMode = false;
 bool deepSleepEnabled = false;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
-uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
 
 // Define enum for sensors
 typedef enum {
@@ -142,8 +140,10 @@ typedef struct {
     uint16_t timeSleeping;
     uint32_t gpioConfig;
     bool waitingForDataReady;
-    uint16_t cyclesToWiFiConnect;
-    uint16_t cyclesToRedrawDisplay;
+    uint16_t activateWiFiEvery;         // Connect to WiFi every X deep sleep cycles (0 to disable)
+    uint16_t redrawDisplayEveryCycles;  // Redraw display every X deep sleep cycles (0 to disable)
+    uint16_t cyclesLeftToWiFiConnect;
+    uint16_t cyclesLeftToRedrawDisplay;
     uint16_t lastCO2Value;
     float lastTemperatureValue;
     float lastHumidityValue;
@@ -809,17 +809,18 @@ void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
 }
 
 void loop() {  // Old loop function. Not used anymore. Just for reference
-    bool showDebug = true;
+    bool showDebug = false;
     static unsigned long lastDotPrintTime = 0;
     if (!inMenu && (showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
-        Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
-        Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
-        Serial.print("Deep sleep enabled: " + String(deepSleepEnabled) + ". ");
-        Serial.print("Time to go into low power mode: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " secs. ");
-        Serial.println("...");
+        if (!inMenu) {
+            Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
+            Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
+            Serial.print("Deep sleep enabled: " + String(deepSleepEnabled) + ". ");
+            Serial.print("Time to go into low power mode: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " secs. ");
+            Serial.println("...");
+        }
     }
-
     batteryLoop();
     utilityLoop();
     improvLoop();
@@ -830,7 +831,7 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
         sensorsLoop();
         deepSleepLoop();
     } else {
-        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors in high performance mode. ");
+        // if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors with CO2 Gadget in high performance mode. ");
         sensorsLoop();
     }
     outputsLoop();
