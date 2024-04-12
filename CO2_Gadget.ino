@@ -821,7 +821,6 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
             Serial.println("...");
         }
     }
-
     batteryLoop();
     utilityLoop();
     improvLoop();
@@ -832,7 +831,7 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
         sensorsLoop();
         deepSleepLoop();
     } else {
-        if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors with CO2 Gadget in high performance mode. ");
+        // if ((showDebug) && (!inMenu)) Serial.println("-->[MAIN] Reading sensors with CO2 Gadget in high performance mode. ");
         sensorsLoop();
     }
     outputsLoop();
