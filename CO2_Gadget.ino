@@ -116,8 +116,6 @@ bool interactiveMode = false;
 bool deepSleepEnabled = false;
 uint64_t startTimerToDeepSleep = 0;
 uint64_t lastTimeDeepSleep = 0;
-uint16_t deepSleepWiFiConnectEach = 5;  // Connect to WiFi each X deep sleep cycles (0 to disable)
-uint16_t cyclesToRedrawDisplay = 5;     // Redraw display each X deep sleep cycles (0 to disable)
 
 // Define enum for sensors
 typedef enum {
@@ -142,8 +140,10 @@ typedef struct {
     uint16_t timeSleeping;
     uint32_t gpioConfig;
     bool waitingForDataReady;
-    uint16_t cyclesToWiFiConnect;
-    uint16_t cyclesToRedrawDisplay;
+    uint16_t activateWiFiEvery;         // Connect to WiFi every X deep sleep cycles (0 to disable)
+    uint16_t redrawDisplayEveryCycles;  // Redraw display every X deep sleep cycles (0 to disable)
+    uint16_t cyclesLeftToWiFiConnect;
+    uint16_t cyclesLeftToRedrawDisplay;
     uint16_t lastCO2Value;
     float lastTemperatureValue;
     float lastHumidityValue;
