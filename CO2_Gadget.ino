@@ -813,11 +813,13 @@ void loop() {  // Old loop function. Not used anymore. Just for reference
     static unsigned long lastDotPrintTime = 0;
     if (!inMenu && (showDebug) && (millis() - lastDotPrintTime > 3000)) {
         lastDotPrintTime = millis();
-        Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
-        Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
-        Serial.print("Deep sleep enabled: " + String(deepSleepEnabled) + ". ");
-        Serial.print("Time to go into low power mode: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " secs. ");
-        Serial.println("...");
+        if (!inMenu) {
+            Serial.print("-->[MAIN] Looping (interactive mode: " + String(interactiveMode) + "). ");
+            Serial.print("Low power mode: " + getLowPowerModeName(deepSleepData.lowPowerMode) + ". ");
+            Serial.print("Deep sleep enabled: " + String(deepSleepEnabled) + ". ");
+            Serial.print("Time to go into low power mode: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " secs. ");
+            Serial.println("...");
+        }
     }
 
     batteryLoop();

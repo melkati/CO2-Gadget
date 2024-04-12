@@ -286,7 +286,7 @@ void toDeepSleep() {
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
-    
+
     // Only GPIOs which are have RTC functionality can be used: 0,2,4,12-15,25-27,32-39
     if ((BTN_DWN != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_DWN))) {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
@@ -413,8 +413,8 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
 
     if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
-        Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
-        Serial.flush();
+                                                       // Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
+                                                       // Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
@@ -560,8 +560,8 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
             sensors.loop();
             if ((!sensors.isDataReady()) && (!interactiveMode)) {
                 esp_sleep_enable_timer_wakeup(1 * 1000000);  // 1 second
-                Serial.println("-->[DEEP] Light sleep for 1 second");
-                Serial.flush();
+                                                             // Serial.println("-->[DEEP] Light sleep for 1 second");
+                                                             // Serial.flush();
 #ifdef TIMEDEBUG
                 timerLightSleep.resume();
 #endif
@@ -760,12 +760,14 @@ void deepSleepLoop() {
 
 #ifdef DEEP_SLEEP_DEBUG
     if (millis() - lastSerialPrintTime >= 5000) {  // Check if some time has passed since the last print
-        // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
-        // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
+        if (!inMenu) {
+            // Serial.println("-->[DEEP] deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000));
+            // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep));
 
-        Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
-        // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
-        lastSerialPrintTime = millis();  // Update last print time
+            Serial.println("-->[DEEP] Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 1000) + " seconds");
+            // Serial.println("-->[DEEP] startTimerToDeepSleep (ms): " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot (ms): " + String(deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) + " Now: " + String(millis()));
+            lastSerialPrintTime = millis();  // Update last print time
+        }
     }
 
     // if ((millis() - lastDotPrintTime >= 1000)) {
