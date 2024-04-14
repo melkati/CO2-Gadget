@@ -63,14 +63,14 @@ GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(/* EPD
 #ifdef EINKBOARDGDEM029T94
 #include <NotoSans_Bold48pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
-
-#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
-#include "icons.h"
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
+const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 296;
 int displayHeight = 128;
 
-const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
@@ -89,14 +89,14 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(/*CS=5*
 #ifdef EINKBOARDGDEH0154D67
 #include <NotoSans_Bold42pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
-
-#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
-#include "icons.h"
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
+const GFXfont BigFont = NotoSans_Bold42pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 
-const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold42pt7b;
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
