@@ -190,7 +190,9 @@ void setElementLocations() {
     elementPosition.co2FontDigitsHeight = 42;
 #endif
 #if defined(EINKBOARDGDEH0154D67)
+    elementPosition.co2FontDigitsHeight = 42;
     elementPosition.co2Y = ((display.height() / 2) - ((display.height() - 32) / 2)) - (display.height() / 4);  // Center in upper half of display.
+    elementPosition.co2XUnits = ((display.width() / 4) + (elementPosition.co2FontDigitsHeight / 2) - 8);       // Display is rotated so vertical orientation (swaped width & height)
 #endif
 }
 
