@@ -29,9 +29,6 @@
 #define EPD_RST 16
 #define EPD_BUSY 4
 
-#include "bitmaps/Bitmaps104x212.h"  // 2.13" b/w flexible GDEW0213I5F
-#include "bitmaps/Bitmaps128x296.h"  // 2.9"  b/w
-
 #ifdef EINKBOARDDEPG0213BN
 #include <NotoSans_Bold46pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
