@@ -126,8 +126,8 @@ struct ElementLocations {
     int32_t humidityYValue;
     int32_t humidityWValue;
     int32_t humidityHValue;
-    int32_t ppmXUnits;
-    int32_t ppmYUnits;
+    int32_t co2XUnits;
+    int32_t co2YUnits;
 
     int32_t batteryIconX;
     int32_t batteryIconY;
@@ -153,8 +153,8 @@ void setElementLocations() {
     elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
-    elementPosition.ppmXUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
-    elementPosition.ppmYUnits = display.width() - 16;
+    elementPosition.co2XUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
+    elementPosition.co2YUnits = display.width() - 16;
 
     elementPosition.tempXUnits = 0;  // down left corner
     elementPosition.tempYUnits = display.height() - 16;
@@ -426,9 +426,9 @@ void drawMainScreen(bool fullRefresh) {
 
     display.setRotation(4);
     display.setFont(&SmallFont);
-    drawTextAligned(elementPosition.ppmXUnits, elementPosition.ppmYUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
+    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
 #ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn PPM label at " + String(elementPosition.ppmXUnits) + ", " + String(elementPosition.ppmYUnits));
+    Serial.println("-->[EINK] Drawn PPM label at " + String(elementPosition.co2XUnits) + ", " + String(elementPosition.co2YUnits));
 #endif
     display.setRotation(1);
 
