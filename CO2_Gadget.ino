@@ -104,7 +104,7 @@ uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is
 
 // Variables to control automatic display off to save power
 bool workingOnExternalPower = true;      // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 100;  // To know if it's on or off
+uint32_t actualDisplayBrightness = 0;    // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
@@ -304,7 +304,8 @@ void wakeUpDisplay() {
     if (actualDisplayBrightness == 0) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
         setDisplayBrightness(DisplayBrightness);
-        publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
+        // publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
+        // Serial.println("-->[MAIN] Display woken up. Setting display brightness to " + String(DisplayBrightness));
 #endif
         lastTimeButtonPressed = millis();
     }
@@ -468,7 +469,9 @@ void adjustBrightnessLoop() {
     if ((workingOnExternalPower) && (!displayOffOnExternalPower)) {
         if (actualDisplayBrightness == 0) {
             setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
-            publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+            // publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+            // Serial.println("-->[MAIN] Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+            // delay(10);
         }
         return;
     }
@@ -479,12 +482,13 @@ void adjustBrightnessLoop() {
         if ((workingOnExternalPower) && (displayOffOnExternalPower)) {
             Serial.println("-->[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
             turnOffDisplay();
-            publishMQTTLogData("[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
+            // publishMQTTLogData("[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
         }
         if (!workingOnExternalPower) {
-            Serial.println("-->[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+            // Serial.println("-->[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
             turnOffDisplay();
-            publishMQTTLogData("[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+            // publishMQTTLogData("[MAIN] Turning off display on battery to save power. Actual brightness: " + String(actualDisplayBrightness));
+            delay(10);
         }
     }
 #endif

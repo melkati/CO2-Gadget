@@ -10,6 +10,15 @@
 	</tr>
 </table>
 
+<table>
+	<tr>
+		<td>
+			<a href="https://github.com/melkati/CO2-Gadget/issues/198">🌟 Calling All Tech Enthusiasts! Join the CO2 Gadget Testing Adventure 🌟</a>
+		</td>
+	</tr>
+</table>
+
+
 # CO2-Gadget
 
 An advanced fimware for CO2 Monitor/Meter. It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99,99% of them).
@@ -193,22 +202,41 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description and code is a must
 - Target your pull request to be merged with the `development` branch
 
+# Supporting the project
+
+Do you want to maka e acontribution to support the CO2 Gadget project? If so, **thank you!**
+I don't want money but I will accept material donations so I can move forward with CO2 Gadget development. I always need some development board, some sensor or some tool.
+
+<a href=https://s.click.aliexpress.com/e/_DDtmotn target="_blank"><img src=//ae01.alicdn.com/kf/H056531cd866d4a3c8807b9938a654ce14.jpg_80x80.jpg></a>
+
 # TODO
 
-- [ ] Implement full support for PM 2.5
+- [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
+- [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)
+- [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
+- [ ] [Unify and improve the existing web pages](https://github.com/melkati/CO2-Gadget/issues/166)
 
 # Useful information
 
-- [Everything about the Sensirion SCD30 NDIR dual-channel CO2 sensor](https://emariete.com/en/sensirion-scd30-co2-sensor-ndir-dual-channel/)
-- [Everything about the Sensirion SCD40 and the SCD41 RPAS CO2 sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41-2/)
+- [Everything about the Sensirion SCD30 NDIR dual-channel CO2 sensor](https://emariete.com/en/sensor-co2-ndir-sensirion-scd30-dual-channel/)
+- [Everything about the Sensirion SCD40 and the SCD41 RPAS CO2 sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41/)
 - [Everything about the Winsen MH-Z19 NDIR CO2 sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
 - [Everything about the Winsen Low Consumption CO2 Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
-- [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparison-co2-sensors-mh-z19b-vs-senseair-s8/)
+- [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparative-co2-sensors-mh-z19b-vs-senseair-s8/)
 - [Tutorial to build a CO2 Monitor with a TTGO T-Display board](https://emariete.com/en/co2-meter-co2-display-tft-colour-ttgo-t-display-sensirion-scd30/)
 
 # Credits
 
 Thanks to all collaborators, contributors and to the [eMariete](https://emariete.com) community for testing and reports.
+
+# Special thanks to:
+
+
+All the [contributors that helped improving CO2 Gadget](https://github.com/melkati/CO2-Gadget/graphs/contributors). You are awesome!
+
+<a href="https://github.com/melkati/CO2-Gadget/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" />
+</a>
 
 ---
 ## License
