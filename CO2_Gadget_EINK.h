@@ -74,11 +74,6 @@ const GFXfont BigFont = NotoSans_Bold48pt7b;
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_RST 16
-// #define EPD_DC 17
-// #define EPD_BUSY 4
-
 #define EPD_CS SS
 #define EPD_DC 27
 #define EPD_RST 25
@@ -105,11 +100,6 @@ const GFXfont BigFont = NotoSans_Bold42pt7b;
 #define EPD_SCLK SCK
 #define EPD_MISO 17
 #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_RST 16
-// #define EPD_DC 17
-// #define EPD_BUSY 4
-
 #define EPD_CS SS
 #define EPD_DC 27
 #define EPD_RST 25
@@ -160,13 +150,7 @@ ElementLocations elementPosition;
 
 // Function to set element locations based on screen resolution
 void setElementLocations() {
-#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEM029T94)
-    elementPosition.co2FontDigitsHeight = 48;
-#endif
-#if defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEH0154D67)
-    elementPosition.co2FontDigitsHeight = 42;  // Digits (0..9) height for the font used (not the same as whole font height)
-#endif
-    // All displays share the same configuration
+    // Common positions for most displays
     elementPosition.co2X = 0;                                                       // Left screen
     elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2UnitsX = display.width() - 16;                               // Right screen - height of PPM text
@@ -203,6 +187,12 @@ void setElementLocations() {
     elementPosition.mqttIconY = 0;
     elementPosition.espNowIconX = 72;  // 16 + 8 + 16 + 8 + 16 pixels mqttIcon + 8 pixels between icons
     elementPosition.espNowIconY = 0;
+#if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEM029T94)
+    elementPosition.co2FontDigitsHeight = 48;
+#endif
+#if defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEH0154D67)
+    elementPosition.co2FontDigitsHeight = 42;
+#endif
 }
 
 void drawMainScreen(bool force = false);  // Forward declaration
