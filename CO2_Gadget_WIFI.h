@@ -359,67 +359,67 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 }
 
 String getWiFiDisconnectReason(uint8_t reason) {
-  switch (reason) {
-    case WIFI_REASON_AUTH_EXPIRE:
-      return "Auth Expired";
-    case WIFI_REASON_AUTH_LEAVE:
-      return "Auth Leave";
-    case WIFI_REASON_ASSOC_EXPIRE:
-      return "Association Expired";
-    case WIFI_REASON_ASSOC_TOOMANY:
-      return "Too Many Associations";
-    case WIFI_REASON_NOT_AUTHED:
-      return "Not Authenticated";
-    case WIFI_REASON_NOT_ASSOCED:
-      return "Not Associated";
-    case WIFI_REASON_ASSOC_LEAVE:
-      return "Association Leave";
-    case WIFI_REASON_ASSOC_NOT_AUTHED:
-      return "Association not Authenticated";
-    case WIFI_REASON_DISASSOC_PWRCAP_BAD:
-      return "Disassociate Power Cap Bad";
-    case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
-      return "Disassociate Supported Channel Bad";
-    case WIFI_REASON_IE_INVALID:
-      return "IE Invalid";
-    case WIFI_REASON_MIC_FAILURE:
-      return "Mic Failure";
-    case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-      return "4-Way Handshake Timeout";
-    case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
-      return "Group Key Update Timeout";
-    case WIFI_REASON_IE_IN_4WAY_DIFFERS:
-      return "IE In 4-Way Handshake Differs";
-    case WIFI_REASON_GROUP_CIPHER_INVALID:
-      return "Group Cipher Invalid";
-    case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
-      return "Pairwise Cipher Invalid";
-    case WIFI_REASON_AKMP_INVALID:
-      return "AKMP Invalid";
-    case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
-      return "Unsupported RSN IE version";
-    case WIFI_REASON_INVALID_RSN_IE_CAP:
-      return "Invalid RSN IE Cap";
-    case WIFI_REASON_802_1X_AUTH_FAILED:
-      return "802.1x Authentication Failed";
-    case WIFI_REASON_CIPHER_SUITE_REJECTED:
-      return "Cipher Suite Rejected";
-    case WIFI_REASON_BEACON_TIMEOUT:
-      return "Beacon Timeout";
-    case WIFI_REASON_NO_AP_FOUND:
-      return "AP Not Found";
-    case WIFI_REASON_AUTH_FAIL:
-      return "Authentication Failed";
-    case WIFI_REASON_ASSOC_FAIL:
-      return "Association Failed";
-    case WIFI_REASON_HANDSHAKE_TIMEOUT:
-      return "Handshake Failed";
-    case WIFI_REASON_CONNECTION_FAIL:
-      return "Connection Failed";
-    case WIFI_REASON_UNSPECIFIED:
-    default:
-      return "Unspecified";
-  }
+    switch (reason) {
+        case WIFI_REASON_AUTH_EXPIRE:
+            return "Auth Expired";
+        case WIFI_REASON_AUTH_LEAVE:
+            return "Auth Leave";
+        case WIFI_REASON_ASSOC_EXPIRE:
+            return "Association Expired";
+        case WIFI_REASON_ASSOC_TOOMANY:
+            return "Too Many Associations";
+        case WIFI_REASON_NOT_AUTHED:
+            return "Not Authenticated";
+        case WIFI_REASON_NOT_ASSOCED:
+            return "Not Associated";
+        case WIFI_REASON_ASSOC_LEAVE:
+            return "Association Leave";
+        case WIFI_REASON_ASSOC_NOT_AUTHED:
+            return "Association not Authenticated";
+        case WIFI_REASON_DISASSOC_PWRCAP_BAD:
+            return "Disassociate Power Cap Bad";
+        case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
+            return "Disassociate Supported Channel Bad";
+        case WIFI_REASON_IE_INVALID:
+            return "IE Invalid";
+        case WIFI_REASON_MIC_FAILURE:
+            return "Mic Failure";
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+            return "4-Way Handshake Timeout";
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            return "Group Key Update Timeout";
+        case WIFI_REASON_IE_IN_4WAY_DIFFERS:
+            return "IE In 4-Way Handshake Differs";
+        case WIFI_REASON_GROUP_CIPHER_INVALID:
+            return "Group Cipher Invalid";
+        case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
+            return "Pairwise Cipher Invalid";
+        case WIFI_REASON_AKMP_INVALID:
+            return "AKMP Invalid";
+        case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
+            return "Unsupported RSN IE version";
+        case WIFI_REASON_INVALID_RSN_IE_CAP:
+            return "Invalid RSN IE Cap";
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+            return "802.1x Authentication Failed";
+        case WIFI_REASON_CIPHER_SUITE_REJECTED:
+            return "Cipher Suite Rejected";
+        case WIFI_REASON_BEACON_TIMEOUT:
+            return "Beacon Timeout";
+        case WIFI_REASON_NO_AP_FOUND:
+            return "AP Not Found";
+        case WIFI_REASON_AUTH_FAIL:
+            return "Authentication Failed";
+        case WIFI_REASON_ASSOC_FAIL:
+            return "Association Failed";
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+            return "Handshake Failed";
+        case WIFI_REASON_CONNECTION_FAIL:
+            return "Connection Failed";
+        case WIFI_REASON_UNSPECIFIED:
+        default:
+            return "Unspecified";
+    }
 }
 
 void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -566,6 +566,23 @@ bool checkStringIsNumerical(String myString) {
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+    static bool firstConnect = true;
+#ifdef WIFI_PRIVACY
+        Serial.println("-->[WiFi] Connected to WiFi access point (SSID: " + WiFi.SSID() + ")");
+#else
+        Serial.println("-->[WiFi] Connected to WiFi access point (SSID: " + wifiSSID + "    Password: " + wifiPass + ")");
+#endif
+    if (firstConnect) {
+        firstConnect = false;
+        delay(150); // Wait for the IP to be assigned
+        Serial.print("");
+        printLargeASCII(WiFi.localIP().toString().c_str());
+        Serial.print("");
+    } else {
+        Serial.print("-->[WiFi] IP address: ");
+        Serial.println(WiFi.localIP());
+    }
+    Serial.flush();
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -581,24 +598,19 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     ++WiFiConnectionRetries;
-    Serial.println("-->[WiFi] Disconnected. Reason for disconnection: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason));
+    Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
-    Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
-    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
-    Serial.println(info.wifi_sta_disconnected.reason);
-    Serial.print("-->[WiFi-event] Retries: ");
-    Serial.print(WiFiConnectionRetries);
-    Serial.print(" of ");
-    Serial.println(maxWiFiConnectionRetries);
+    // Serial.print("-->[WiFi-event] Retries: ");
+    // Serial.print(WiFiConnectionRetries);
+    // Serial.print(" of ");
+    // Serial.println(maxWiFiConnectionRetries);
 #endif
 
     if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
         disableWiFi();
         troubledWIFI = true;
         timeTroubledWIFI = millis();
-#ifdef DEBUG_WIFI_EVENTS
-        Serial.printf("-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
-#endif
+        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " retries. Will try again in " + String(timeToRetryTroubledWIFI) + " seconds.");
     }
 }
 
@@ -752,38 +764,39 @@ bool connectToWiFi() {
 
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
-    // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
-    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
-        if (TimePeriodIsOver(checkTimer, 500)) {  // Once every 500 miliseconds
-            Serial.print(".");
-            WiFiConnectionRetries++;
-            if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
-                Serial.println();
-                Serial.print("not connected ");
-            }
-        }
-        yield();
-    }
+    // // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
+    // while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+    //     if (TimePeriodIsOver(checkTimer, 1000)) {  // Once every 1000 miliseconds
+    //         Serial.print(".");
+    //         WiFiConnectionRetries++;
+    //         if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
+    //             Serial.println();
+    //             Serial.print("not connected ");
+    //         }
+    //     }
+    //     yield();
+    // }
 
-    if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
-        disableWiFi();
-        troubledWIFI = true;
-        timeTroubledWIFI = millis();
-        // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
-        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
-    }
+    // if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+    //     disableWiFi();
+    //     troubledWIFI = true;
+    //     timeTroubledWIFI = millis();
+    //     // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+    //     Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
+    // }
 
-    if (troubledWIFI) {
-        Serial.println("");
-        return false;
-    } else {
-        Serial.println("");
-        Serial.print("-->[WiFi] MAC: ");
-        Serial.println(MACAddress);
-        Serial.print("-->[WiFi] WiFi connected - IP = ");
-        Serial.println(WiFi.localIP());
-        return true;
-    }
+    // if (troubledWIFI) {
+    //     Serial.println("");
+    //     return false;
+    // } else {
+    //     Serial.println("");
+    //     Serial.print("-->[WiFi] MAC: ");
+    //     Serial.println(MACAddress);
+    //     Serial.print("-->[WiFi] WiFi connected - IP = ");
+    //     Serial.println(WiFi.localIP());
+    //     return true;
+    // }
+    return (WiFi.status() == WL_CONNECTED);
 }
 
 void initOTA() {
@@ -820,6 +833,9 @@ void initWifi() {
 
 void wifiClientLoop() {
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
+        if (timeToRetryTroubledWIFI < maxTimeToRetryTroubledWIFI) {
+            timeToRetryTroubledWIFI = timeToRetryTroubledWIFI + timeToRetryIncrementTroubledWIFI;  // Everytime we retry, we add 15 seconds to the retry time (until 900 seconds = 15 minutes)
+        }
         initWifi();
     }
 
