@@ -17,6 +17,9 @@
 // clang-format on
 #include <GxEPD2_BW.h>
 
+uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
+uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
+
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
 #include "bootlogo.h"
@@ -384,10 +387,10 @@ void initDisplay(bool fastMode = false) {
 
     // Show splash screen the first time
     // if (bootCount == 1) {
-    // displaySplashScreenLOGO();
-    // delay(1000);
-    // displaySplashScreen();
-    // delay(1000);
+    displaySplashScreenLOGO();
+    delay(1000);
+    displaySplashScreen();
+    delay(1000);
     drawMainScreen();
     // }
 
@@ -639,13 +642,31 @@ void testRedrawValues(bool randomNumbers = false) {
 }
 
 void displayShowValues(bool forceRedraw = false) {
+    static uint32_t lastDisplayUpdate = 0;
+    // Resurn if last update less than 15 seconds ago
+    if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
+        return;
+    }
+    lastDisplayUpdate = millis();
+
 #ifdef TIMEDEBUG
     timer.start();
 #endif
-    // if (forceRedraw) {
-    //     tft.fillScreen(TFT_BLACK);
-    // }
-    // drawMainScreen();
+
+    if (cyclesLeftToRedrawDisplay > 0) {
+        cyclesLeftToRedrawDisplay--;
+        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
+    } else {
+        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        forceRedraw = true;
+        Serial.println("-->[EINK] Forcing full refresh of display");
+    }
+
+    if (forceRedraw) {
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
+        drawMainScreen();
+    }
 
     // testRedrawValues(true);
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
@@ -658,15 +679,18 @@ void displayShowValues(bool forceRedraw = false) {
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
-    // Refresh screen in partial mode
-    display.displayWindow(0, 0, display.width(), display.height());
+
+    if (forceRedraw) {
+        display.display();  // Full update
+    } else {
+        display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
+    }
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
     if (elapsed > 10) {
         Serial.println("-->[EINK] Time used to showValues: " + String(elapsed));
     }
 #endif
-    forceRedraw = false;
 }
 
 #endif  // SUPPORT_EINK
