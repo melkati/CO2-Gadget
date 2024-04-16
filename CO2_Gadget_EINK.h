@@ -464,6 +464,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
+    if (!displayShowHumidity) return;
     String humidityStr;
     if (!forceRedraw && (hum == oldHumiValue)) return;
     if ((hum == 0) && (temp == 0)) return;
@@ -483,7 +484,8 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
-    RTC_DATA_ATTR static float oldTempValue = -200;
+    RTC_DATA_ATTR static float oldTempValue = -200;    
+    if (!displayShowTemperature) return;
     String tempStr;
     if (!forceRedraw && (temp == oldTempValue)) return;
     if ((temp == 0) && (hum == 0)) return;
