@@ -123,7 +123,7 @@ struct ElementLocations {
     int32_t tempYValue;
     int32_t tempWValue;
     int32_t tempHValue;
-    int32_t humidityXUnits;
+    int32_t humidityXIcon;
     int32_t humidityYUnits;
     int32_t humidityXValue;
     int32_t humidityYValue;
@@ -166,11 +166,11 @@ void setElementLocations() {
     elementPosition.tempWValue = 48;  // width of temp value box
     elementPosition.tempHValue = 16;
 
-    elementPosition.humidityXUnits = display.width() - 16;  // down right corner
+    elementPosition.humidityWValue = 40;
+    elementPosition.humidityXIcon = display.width() - 16 - elementPosition.humidityWValue - 4;  // 4 pixels between iconHumidity and humidity
     elementPosition.humidityYUnits = display.height() - 16;
-    elementPosition.humidityWValue = 48;
     elementPosition.humidityHValue = 16;
-    elementPosition.humidityXValue = display.width() - elementPosition.humidityWValue - 16 - 4;  // 4 pixels between humidity and iconHumidity
+    elementPosition.humidityXValue = elementPosition.humidityXIcon + 16 + 4;  // 4 pixels between iconHumidity and humidity
     elementPosition.humidityYValue = elementPosition.humidityYUnits;
 
     elementPosition.batteryIconX = display.width() - 32;
@@ -469,14 +469,15 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     if ((hum == 0) && (temp == 0)) return;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
-    display.drawBitmap(elementPosition.humidityXUnits, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
+    display.drawBitmap(elementPosition.humidityXIcon, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
     display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     humidityStr = String(int(hum)) + "%";
-    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, humidityStr, 'r', 'c');
+    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, humidityStr, 'l', 'c');
+    Serial.println("-->[EINK] Drawn humidity value: " + humidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn humidity value: " + String(hum) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
+    Serial.println("-->[EINK] Drawn humidity value: " + humidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #endif
     oldHumiValue = hum;
 }
@@ -499,7 +500,7 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     }
     drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, tempStr, 'l', 'c');
 #ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn temperature value: " + String(temp) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
+    Serial.println("-->[EINK] Drawn temperature value: " + tempStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #endif
     oldTempValue = temp;
 }
