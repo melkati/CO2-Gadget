@@ -500,6 +500,7 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showTemperatureIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowTemperature) return;
     tft.setSwapBytes(true);
     tft.pushImage(posX, posY, 16, 16, iconTemperature);
 }
@@ -519,7 +520,7 @@ uint16_t getTemperatureColor(float temp) {
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowTemperature) return;
     showTemperatureIcon(posX, posY, forceRedraw);
-    String temperatureString = (showFahrenheit ? String(tempFahrenheit, 1) : String(temp, 1)) + "° ";
+    String temperatureString = (showFahrenheit ? String(tempFahrenheit, 1) + "°F" : String(temp, 1)) + "°C";
     tft.setCursor(posX + 18, posY);
     spr.loadFont(SMALL_FONT);
     spr.setTextColor(getTemperatureColor(temp), TFT_BLACK);
@@ -528,6 +529,7 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showHumidityIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowHumidity) return;
     tft.setSwapBytes(true);
     tft.pushImage(posX, posY, 16, 16, iconHumidity);
 }
