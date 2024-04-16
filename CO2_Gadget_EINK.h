@@ -51,10 +51,10 @@ int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74
 #endif
 #ifdef EINKBOARDGDEW0213M21
-#include <NotoSans_Bold42pt7b.h>
+#include <NotoSans_Bold38pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold42pt7b;
+const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
@@ -90,10 +90,10 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(EPD_CS,
 #endif
 
 #ifdef EINKBOARDGDEH0154D67
-#include <NotoSans_Bold42pt7b.h>
+#include <NotoSans_Bold38pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold42pt7b;
+const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 
@@ -112,11 +112,12 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS,
 
 // Define a structure for the locations of elements
 struct ElementLocations {
+    u_int16_t bifFontDigitsHeight;
+    u_int16_t smallFontDigitsHeight;
     int32_t co2X;
     int32_t co2Y;
     int32_t co2W;
     int32_t co2H;
-    u_int16_t co2FontDigitsHeight;
     int32_t tempXUnits;
     int32_t tempYUnits;
     int32_t tempXValue;
@@ -151,13 +152,16 @@ ElementLocations elementPosition;
 
 // Function to set element locations based on screen resolution
 void setElementLocations() {
+    int16_t tbx, tby;
+    uint16_t tbw, tbh;
+
     // Common positions for most displays
-    elementPosition.co2X = 0;                                                       // Left screen
-    elementPosition.co2Y = (display.height() / 2) - ((display.height() - 32) / 2);  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.co2X = 2;       // Left screen
+    elementPosition.co2Y = 16 + 4;  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2XUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
-    elementPosition.co2YUnits = display.width() - 16;
+    elementPosition.co2YUnits = display.width() - 18;
 
     elementPosition.tempXUnits = 0;  // down left corner
     elementPosition.tempYUnits = display.height() - 16;
@@ -187,16 +191,21 @@ void setElementLocations() {
     elementPosition.espNowIconX = 72;  // 16 + 8 + 16 + 8 + 16 pixels mqttIcon + 8 pixels between icons
     elementPosition.espNowIconY = 0;
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEM029T94)
-    elementPosition.co2FontDigitsHeight = 48;
+    ;
 #endif
-#if defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEH0154D67)
-    elementPosition.co2FontDigitsHeight = 42;
+#if defined(EINKBOARDGDEW0213M21)
+    ;
 #endif
 #if defined(EINKBOARDGDEH0154D67)
-    elementPosition.co2FontDigitsHeight = 42;
-    elementPosition.co2Y = ((display.height() / 2) - ((display.height() - 32) / 2)) - (display.height() / 4);  // Center in upper half of display.
-    elementPosition.co2XUnits = ((display.width() / 4) + (elementPosition.co2FontDigitsHeight / 2) - 8);       // Display is rotated so vertical orientation (swaped width & height)
+    elementPosition.co2Y = 16 + 4;                                                                        // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.co2XUnits = ((display.width() / 4) + (elementPosition.bifFontDigitsHeight / 2) - 8);  // Display is rotated so vertical orientation (swaped width & height)
 #endif
+    display.setFont(&BigFont);
+    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
+    elementPosition.bifFontDigitsHeight = tbh;
+    display.setFont(&SmallFont);
+    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);
+    elementPosition.smallFontDigitsHeight = tbh;
 }
 
 void turnOffDisplay() {
@@ -436,28 +445,59 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
+    if (!forceRedraw && (co2 == oldCO2Value)) return;
+    if ((co2 == 0) || (co2 > 9999)) return;
+
+    display.setRotation(1);
+    display.setPartialWindow(0, 0, display.width(), display.height());
+
+    display.fillRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);  // 10 = 2px for top and bottom rectangle borders + 8px for top and bottom margin
+    display.drawRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_BLACK);
+
+    display.setRotation(4);
+    display.setFont(&SmallFont);
+    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H - 5, elementPosition.smallFontDigitsHeight + 3, "PPM", 'c', 'b');
+
+    display.setRotation(1);
+    display.setFont(&BigFont);
+    display.setTextColor(GxEPD_BLACK);
+    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
+#ifdef DEBUG_EINK
+    Serial.println("-->[EINK] CO2 value width: " + String(elementPosition.co2W) + " and height: " + String(elementPosition.co2H) + " in: " + __func__);
+#endif
+    oldCO2Value = co2;
+}
+
+void showCO2OLD(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
+    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
     int16_t tbx, tby;
+    uint16_t tbw, tbh;
 
     if (!forceRedraw && (co2 == oldCO2Value)) return;
     if ((co2 == 0) || (co2 > 9999)) return;
 
-    display.setRotation(4);
-    display.setFont(&SmallFont);
-    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
-
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
-    // Erase old CO2 value
-    display.fillRect(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, GxEPD_WHITE);  // Clear previous co2 value
+
+    // // Erase old CO2 value
+    // display.fillRect(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.bifFontDigitsHeight, GxEPD_WHITE);  // Clear previous co2 value
+
+    display.fillRoundRect(0, elementPosition.bleIconY + 16 + 4, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);
+    display.drawRoundRect(0, elementPosition.bleIconY + 16 + 4, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_BLACK);
+
+    display.setRotation(4);
+    display.setFont(&SmallFont);
+    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'b');
 
     // Show new CO2 value
+    display.setRotation(1);
     display.setFont(&BigFont);
     display.setTextColor(GxEPD_BLACK);
-    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.co2H, String(co2), 'c', 'c');
-
-#ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn CO2 value: " + String(co2) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
-#endif
+    // #ifdef DEBUG_EINK
+    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
+    Serial.println("-->[EINK] CO2 value width: " + String(elementPosition.co2W) + " and height: " + String(elementPosition.co2H) + " Text bound x: " + String(tbw) + " y: " + String(tbh) + " w: " + String(tbw) + " h: " + String(tbh) + " in: " + __func__ + "()");
+    // #endif
+    drawTextAligned(elementPosition.co2X, elementPosition.co2Y + 5, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
     oldCO2Value = co2;
 }
 
@@ -482,7 +522,7 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
-    RTC_DATA_ATTR static float oldTempValue = -200;    
+    RTC_DATA_ATTR static float oldTempValue = -200;
     if (!displayShowTemperature) return;
     String tempStr;
     if (!forceRedraw && (temp == oldTempValue)) return;
