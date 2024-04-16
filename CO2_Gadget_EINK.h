@@ -268,7 +268,7 @@ void displaySplashScreenLOGO() {
 
 void displaySplashScreen(bool fullRefresh = false) {
     uint16_t eMarieteLogoWidth = 250;
-    uint16_t eMarieteLogoHeight = 128;    
+    uint16_t eMarieteLogoHeight = 128;
     uint16_t eMarieteLogoX = (display.width() - 250) / 2;
     uint16_t eMarieteLogoY = (display.height() - 128) / 2;
     if (fullRefresh) {
@@ -464,8 +464,8 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
-    String newHumidityStr, oldHumidityStr;
-    if (!forceRedraw && (hum == oldHumiValue)) return;    
+    String humidityStr;
+    if (!forceRedraw && (hum == oldHumiValue)) return;
     if ((hum == 0) && (temp == 0)) return;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
@@ -473,8 +473,8 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    newHumidityStr = String(int(hum));
-    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'r', 'c');
+    humidityStr = String(int(hum)) + "%";
+    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, humidityStr, 'r', 'c');
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn humidity value: " + String(hum) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
@@ -483,6 +483,7 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldTempValue = -200;
+    String tempStr;
     if (!forceRedraw && (temp == oldTempValue)) return;
     if ((temp == 0) && (hum == 0)) return;
     display.setRotation(1);
@@ -491,9 +492,14 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, GxEPD_WHITE);  // Clear previous temperature value
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, String(temp, 1), 'l', 'c');
+    if (showFahrenheit) {
+        tempStr = String(tempFahrenheit, 1) + "F";
+    } else {
+        tempStr = String(temp, 1) + "C";
+    }
+    drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, tempStr, 'l', 'c');
 #ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn temperature value: " + String(temp) + " in: " + __func__);
+    Serial.println("-->[EINK] Drawn temperature value: " + String(temp) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
     oldTempValue = temp;
 }
