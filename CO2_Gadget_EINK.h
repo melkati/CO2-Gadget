@@ -437,7 +437,6 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
     int16_t tbx, tby;
-    uint16_t tbw, tbh;
 
     if (!forceRedraw && (co2 == oldCO2Value)) return;
     if ((co2 == 0) || (co2 > 9999)) return;
@@ -476,7 +475,6 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setTextColor(GxEPD_BLACK);
     humidityStr = String(int(hum)) + "%";
     drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, humidityStr, 'l', 'c');
-    Serial.println("-->[EINK] Drawn humidity value: " + humidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn humidity value: " + humidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #endif
