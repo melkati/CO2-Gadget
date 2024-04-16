@@ -199,8 +199,6 @@ void setElementLocations() {
 #endif
 }
 
-void drawMainScreen(bool force = false);  // Forward declaration
-
 void turnOffDisplay() {
     // Ignore for eInk displays
 }
@@ -268,13 +266,27 @@ void displaySplashScreenLOGO() {
 #endif
 }
 
-void displaySplashScreen() {
-    display.setFullWindow();  // Activate full screen refresh
-    display.firstPage();      // Clear screen
-    do {
-        // Show program name & version
-        drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
-    } while (display.nextPage());  // Do full refresh
+void displaySplashScreen(bool fullRefresh = false) {
+    uint16_t eMarieteLogoWidth = 250;
+    uint16_t eMarieteLogoHeight = 128;    
+    uint16_t eMarieteLogoX = (display.width() - 250) / 2;
+    uint16_t eMarieteLogoY = (display.height() - 128) / 2;
+    if (fullRefresh) {
+        display.setFullWindow();  // Activate full screen refresh
+        display.firstPage();      // Clear screen
+        do {
+            // Draw Logo250x128 bitmap at the center of the screen
+            display.fillScreen(GxEPD_WHITE);
+            display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
+            // drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
+        } while (display.nextPage());  // Do full refresh
+    } else {
+        display.setPartialWindow(0, 0, display.width(), display.height());  // Enable partial refresh
+        display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
+        display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
+        // drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
+        display.displayWindow(0, 0, display.width(), display.height());  // Partial update
+    }
 }
 
 /***************************************************************************************
@@ -341,7 +353,6 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 #endif
         display.fillScreen(GxEPD_WHITE);
         display.display();
-        drawMainScreen(false);
         //        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
 #ifdef DEBUG_EINK
@@ -352,7 +363,6 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
         // display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         // display.displayWindow(0, 0, display.width(), display.height());
-        drawMainScreen(false);
     }
 }
 
@@ -367,8 +377,8 @@ void initDisplay(bool fastMode = false) {
     }
 #endif
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
-    // display.init(115200, true, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-    display.init(115200, !fastMode, 2, false);  // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+    // display.init(115200, true, 2, false);
+    display.init(115200, !fastMode, 2, false);
 
     //    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
 
@@ -385,68 +395,11 @@ void initDisplay(bool fastMode = false) {
 
     setElementLocations();
 
-    // Show splash screen the first time
-    // if (bootCount == 1) {
-    displaySplashScreenLOGO();
-    delay(1000);
     displaySplashScreen();
-    delay(1000);
-    drawMainScreen();
-    // }
+    delay(2000);
 
-    // // Each 25 boots do a full screen refresh
-    // if (bootCount > 1 && (bootCount % bootsToFullUpdate == 0)) {
-    //     display.fillScreen(GxEPD_WHITE);
-    //     display.display();
-    //     drawMainScreen();
-    // }
     // DisplayInititialized = true;
-    display.hibernate();
-}
-
-void drawMainScreen(bool fullRefresh) {
-    RTC_DATA_ATTR static uint16_t drawTimes = 0;
-    if ((!fullRefresh) && (drawTimes > 0)) {
-        return;
-    }
-#ifdef TIMEDEBUG
-    timer.start();
-#endif
-    // drawTimes++;
-
-    if (fullRefresh) {
-        display.setFullWindow();  // Enable full refresh
-        display.fillScreen(GxEPD_WHITE);
-    } else {
-        display.setPartialWindow(0, 0, display.width(), display.height());  // Enable partial refresh
-        display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
-    }
-
-    // Enable partial refresh
-    // display.setPartialWindow(0, 0, display.width(), display.height());
-#ifdef DEBUG_EINK
-    Serial.print("-->[EINK] Drawing main screen at " + String(display.width()) + "x" + String(display.height()) + " in " + (fullRefresh ? "full" : "partial") + " mode from: ");
-    Serial.println(__func__);
-#endif
-
-    display.setRotation(4);
-    display.setFont(&SmallFont);
-    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
-#ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn PPM label at " + String(elementPosition.co2XUnits) + ", " + String(elementPosition.co2YUnits));
-#endif
-    display.setRotation(1);
-
-    if (fullRefresh) {
-        display.display();  // Full update
-    } else {
-        display.displayWindow(0, 0, display.width(), display.height());  // Partial update
-    }
-
-#ifdef TIMEDEBUG
-    Serial.print("-->[EINK] Time used to drawMainScreen: \t");
-    Serial.println(timer.read());
-#endif
+    // display.hibernate();
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
@@ -489,6 +442,10 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!forceRedraw && (co2 == oldCO2Value)) return;
     if ((co2 == 0) || (co2 > 9999)) return;
 
+    display.setRotation(4);
+    display.setFont(&SmallFont);
+    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'c');
+
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     // Erase old CO2 value
@@ -508,7 +465,8 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
 void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
     String newHumidityStr, oldHumidityStr;
-    if (!forceRedraw && (hum == oldHumiValue)) return;
+    if (!forceRedraw && (hum == oldHumiValue)) return;    
+    if ((hum == 0) && (temp == 0)) return;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.humidityXUnits, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
@@ -517,7 +475,6 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setTextColor(GxEPD_BLACK);
     newHumidityStr = String(int(hum));
     drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'r', 'c');
-
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn humidity value: " + String(hum) + " at: " + String(posX) + ", " + String(posY) + " in: " + __func__);
 #endif
@@ -527,6 +484,7 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
 void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldTempValue = -200;
     if (!forceRedraw && (temp == oldTempValue)) return;
+    if ((temp == 0) && (hum == 0)) return;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.tempXUnits, elementPosition.tempYUnits, iconTempBW, 16, 16, GxEPD_BLACK);
@@ -534,7 +492,6 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     drawTextAligned(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, String(temp, 1), 'l', 'c');
-
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn temperature value: " + String(temp) + " in: " + __func__);
 #endif
@@ -665,7 +622,6 @@ void displayShowValues(bool forceRedraw = false) {
     if (forceRedraw) {
         display.setFullWindow();
         display.fillScreen(GxEPD_WHITE);
-        drawMainScreen();
     }
 
     // testRedrawValues(true);
