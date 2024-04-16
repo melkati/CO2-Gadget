@@ -286,7 +286,7 @@ void initBacklight() {
 #endif
 }
 
-void initDisplay() {
+void initDisplay(bool fastMode = false) {
     Serial.printf("-->[TFT ] Initializing display\n");
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
