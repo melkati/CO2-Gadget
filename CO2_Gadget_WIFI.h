@@ -359,7 +359,6 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 }
 
 void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
-// #define DEBUG_WIFI_EVENTS
 #ifdef DEBUG_WIFI_EVENTS
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
