@@ -39,7 +39,7 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_Aadykl
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
 #include <NotoSans_Bold46pt7b.h>
@@ -48,7 +48,7 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74
+GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
 #include <NotoSans_Bold38pt7b.h>
@@ -59,8 +59,29 @@ int displayWidth = 212;
 int displayHeight = 104;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 // GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
-GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW)
+GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
+#endif
+
+#ifdef EINKBOARD_WEACT_DEPG0213BN
+#include <NotoSans_Bold46pt7b.h>
+#include <NotoSans_SemiCondensed_Bold10pt7b.h>
+const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
+int displayWidth = 250;
+int displayHeight = 122;
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+
+#define EPD_SCLK SCK
+#define EPD_MISO 17
+#define EPD_MOSI MOSI
+#define EPD_CS SS
+#define EPD_DC 27
+#define EPD_RST 25
+#define EPD_BUSY 32
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 
 #ifdef EINKBOARDGDEM029T94
@@ -194,6 +215,9 @@ void setElementLocations() {
     ;
 #endif
 #if defined(EINKBOARDGDEW0213M21)
+    ;
+#endif
+#if defined(EINKBOARDEINKBOARD_WEACT_DEPG0213BN)
     ;
 #endif
 #if defined(EINKBOARDGDEH0154D67)
