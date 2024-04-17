@@ -31,7 +31,9 @@ uint32_t green = strip.Color(0, 255, 0);
 uint32_t yellow = strip.Color(255, 100, 0);
 
 void setNeopixelBrightness(uint8_t newBrightness) {
+#ifdef DEBUG_NEOPIXEL
     Serial.println("-->[NPIX] Setting neopixel brightness value at: " + String(newBrightness));
+#endif
     strip.setBrightness(newBrightness);
     strip.show();
 }
@@ -39,26 +41,28 @@ void setNeopixelBrightness(uint8_t newBrightness) {
 void initNeopixel() {
     strip.begin();
     setNeopixelBrightness(neopixelBrightness);
-    strip.show(); // Initialize all pixels to 'off'
+    strip.show();  // Initialize all pixels to 'off'
 }
 
 void neopixelLoop() {
-  if (co2 > 0) {  // Don't turn on led until there is CO2 Data
-    if (co2 >= co2RedRange) {
-      strip.fill(red);
-    } else if (co2 >= co2OrangeRange) {
-      strip.fill(yellow);
-    } else {
-      strip.fill(green);
+    if (co2 > 0) {  // Don't turn on led until there is CO2 Data
+        if (co2 >= co2RedRange) {
+            strip.fill(red);
+        } else if (co2 >= co2OrangeRange) {
+            strip.fill(yellow);
+        } else {
+            strip.fill(green);
+        }
+        strip.show();
     }
-    strip.show();
-  }
 }
 
 void setNeopixelType(neoPixelType newType) {
-  Serial.printf("-->[NPIX] Setting neopixel type value at %d\n", newType);
-  strip.updateType(newType);
-  strip.clear();
+#ifdef DEBUG_NEOPIXEL
+    Serial.printf("-->[NPIX] Setting neopixel type value at %d\n", newType);
+#endif
+    strip.updateType(newType);
+    strip.clear();
 }
 
 #endif  // CO2_Gadget_Neopixel_h
