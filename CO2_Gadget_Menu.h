@@ -1153,7 +1153,7 @@ void menuLoop() {
         activeMQTTMenu[0].disable();
     }
 
-#ifdef SUPPORT_TFT
+#ifdef defined(SUPPORT_TFT)
     menuLoopTFT();
 #elif defined(SUPPORT_OLED)
     menuLoopOLED();
