@@ -1,25 +1,9 @@
-/*****************************************************************************************************/
-/*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
-/*****************************************************************************************************/
-/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
-/* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
-/*  THIS SECTION IS OUTDATED, IF YOU WANT TO USE ARDUINO YOU WILL HAVE TO SHORT IT OUT BY YOURSELF   */
-/*            I WILL PREPARE THE CODE AND WRITE NEW INSTRUCTIONS AS TIME PERMITS.                    */
-/*                                                                                                   */
-#ifndef PLATFORMIO
-#define SUPPORT_OTA
-#define SUPPORT_TFT
-#define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
-// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
-#endif
-/*****************************************************************************************************/
-
 // Functions and enum definitions
-void reverseButtons(bool reversed);
-void outputsLoop();
-void publishMQTTLogData(String logData);
-void putPreferences();
+void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                       // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                          // Defined in CO2_Gadget_Menu.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -103,8 +87,8 @@ uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we co
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
-bool workingOnExternalPower = true;      // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 0;    // To know if it's on or off
+bool workingOnExternalPower = true;    // True if working on external power (USB connected)
+uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
