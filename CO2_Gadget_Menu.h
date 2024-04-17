@@ -1174,7 +1174,7 @@ void menu_init() {
 #endif
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);     // start the menu in idle state
-    nav.timeOut = 10;
+    nav.timeOut = 20;
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
