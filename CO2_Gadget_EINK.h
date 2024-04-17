@@ -318,7 +318,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
 // busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
 void busyCallback(const void* p) {
 #ifdef DEBUG_EINK
-    // Serial.println("eink busyCallback light sleep");
+    // Serial.println("Serial.println("[EINK] busyCallback light sleep");
 #endif
     esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
     Serial.flush();
@@ -329,6 +329,13 @@ void busyCallback(const void* p) {
 #ifdef TIMEDEBUG
     timerLightSleep.pause();
 #endif
+}
+
+void busyHighPerformanceCallback(const void* p) {
+#ifdef DEBUG_EINK
+    // Serial.println("[EINK] busyHighPerformanceCallback light sleep");
+#endif
+    menuLoop();
 }
 
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
@@ -385,6 +392,7 @@ void initDisplay(bool fastMode = false) {
         Serial.println(__func__);
     }
 #endif
+    display.epd2.setBusyCallback(busyHighPerformanceCallback);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     // display.init(115200, true, 2, false);
     display.init(115200, !fastMode, 2, false);
@@ -405,7 +413,7 @@ void initDisplay(bool fastMode = false) {
     setElementLocations();
 
     displaySplashScreen();
-    delay(2000);
+    delay(2000);  // Enjoy the splash screen 2 seconds
 
     // DisplayInititialized = true;
     // display.hibernate();
