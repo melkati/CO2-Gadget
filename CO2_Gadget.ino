@@ -511,6 +511,9 @@ void utilityLoop() {
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    Serial.setDebugOutput(true);
+    Serial.setTxBufferSize(1024);
+    Serial.setRxBufferSize(512);
     Serial.begin(115200);
     delay(50);
 #ifdef AUTO_VERSION
