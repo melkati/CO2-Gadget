@@ -24,13 +24,13 @@ uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
 
 #include "bootlogo.h"
 #include "icons.h"
-#define EPD_SCLK SCK
-#define EPD_MISO 17
-#define EPD_DC 17
-#define EPD_MOSI MOSI
-#define EPD_CS SS
-#define EPD_RST 16
-#define EPD_BUSY 4
+// #define EPD_SCLK SCK
+// #define EPD_MISO 17
+// #define EPD_DC 17
+// #define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_RST 16
+// #define EPD_BUSY 4
 
 #ifdef EINKBOARDDEPG0213BN
 #include <NotoSans_Bold46pt7b.h>
@@ -74,14 +74,14 @@ int displayHeight = 122;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-#define EPD_SCLK SCK
-#define EPD_MISO 17
-#define EPD_MOSI MOSI
-#define EPD_CS SS
-#define EPD_DC 27
-#define EPD_RST 25
-#define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
+// #define EPD_SCLK SCK
+// #define EPD_MISO 17
+// #define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_DC 27
+// #define EPD_RST 25
+// #define EPD_BUSY 32
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDvVZ4N
 #endif
 
 #ifdef EINKBOARDGDEM029T94
@@ -95,13 +95,13 @@ int displayHeight = 128;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-#define EPD_SCLK SCK
-#define EPD_MISO 17
-#define EPD_MOSI MOSI
-#define EPD_CS SS
-#define EPD_DC 27
-#define EPD_RST 25
-#define EPD_BUSY 32
+// #define EPD_SCLK SCK
+// #define EPD_MISO 17
+// #define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_DC 27
+// #define EPD_RST 25
+// #define EPD_BUSY 32
 GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94
 // GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94 V2 GDEM029T94  128x296, SSD1680, (FPC-7519 rev.b), Waveshare 2.9" V2 variant
 // GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94 BS
@@ -121,14 +121,14 @@ int displayHeight = 200;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-#define EPD_SCLK SCK
-#define EPD_MISO 17
-#define EPD_MOSI MOSI
-#define EPD_CS SS
-#define EPD_DC 27
-#define EPD_RST 25
-#define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEH0154D67 200x200, SSD1681
+// #define EPD_SCLK SCK
+// #define EPD_MISO 17
+// #define EPD_MOSI MOSI
+// #define EPD_CS SS
+// #define EPD_DC 27
+// #define EPD_RST 25
+// #define EPD_BUSY 32
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEH0154D67 200x200, SSD1681 https://s.click.aliexpress.com/e/_DDvVZ4N
 #endif
 
 // Define a structure for the locations of elements
@@ -427,7 +427,7 @@ void initDisplay(bool fastMode = false) {
     display.setRotation(1);
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    display.setFullWindow();
+    // display.setFullWindow();
     display.setPartialWindow(0, 0, display.width(), display.height());
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
@@ -438,9 +438,6 @@ void initDisplay(bool fastMode = false) {
 
     displaySplashScreen();
     delay(2000);  // Enjoy the splash screen 2 seconds
-
-    // DisplayInititialized = true;
-    // display.hibernate();
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
