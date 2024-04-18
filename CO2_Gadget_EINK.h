@@ -612,19 +612,25 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+#ifdef SUPPORT_MQTT
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-    if (troubledMQTT) {
-        // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-        display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
-        return;
-    }
-    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
     if (!activeMQTT) {
-        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
-        display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
-    } else {
-        display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+        if (troubledMQTT) {
+            // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+            display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+            return;
+        } else {
+            display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+        }
+        // // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+        // if (!activeMQTT) {
+        //     // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+        //     display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+        // } else {
+        //     display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+        // }
     }
+#endif
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
