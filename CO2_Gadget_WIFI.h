@@ -601,6 +601,9 @@ bool checkStringIsNumerical(String myString) {
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+#ifdef DEBUG_WIFI_EVENTS
+    Serial.println("-->[WiFi-event] Connected to WiFi access point");
+#endif
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -608,7 +611,7 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     timeTroubledWIFI = 0;
     troubledMQTT = false;
 #ifdef DEBUG_WIFI_EVENTS
-    Serial.println("-->[WiFi-event] WiFi connected");
+    Serial.println("-->[WiFi-event] WiFi got IP)");
     Serial.print("-->[WiFi-event] IP address: ");
     Serial.println(WiFi.localIP());
 #endif
@@ -618,8 +621,9 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     ++WiFiConnectionRetries;
 #ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
-    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
-    Serial.println(info.wifi_sta_disconnected.reason);
+    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: (");
+    Serial.print(info.wifi_sta_disconnected.reason);
+    Serial.print(") ");
     printDisconnectReason(info.wifi_sta_disconnected.reason);
     Serial.print("-->[WiFi-event] Retries: ");
     Serial.print(WiFiConnectionRetries);
