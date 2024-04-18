@@ -17,8 +17,12 @@ void onImprovWiFiErrorCb(ImprovTypes::Error err) {
     Serial.println("-->[IMPR] Error: " + String(err));
 }
 
-void onImprovWiFiConnectedCb(const char *ssid, const char *password) {    
+void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
+    #ifdef WIFI_PRIVACY
     Serial.println("-->[IMPR] Connected to: " + String(ssid));
+    #else
+    Serial.println("-->[IMPR] Connected to: " + String(ssid) + " with password: " + String(password));
+    #endif
     wifiChanged = true;
     activeWIFI = true;
     wifiSSID = ssid;
