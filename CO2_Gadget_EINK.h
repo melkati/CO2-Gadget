@@ -178,7 +178,7 @@ void setElementLocations() {
 
     // Common positions for most displays
     elementPosition.co2X = 2;       // Left screen
-    elementPosition.co2Y = 16 + 4;  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
+    elementPosition.co2Y = 16 + 8;  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2XUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
@@ -215,7 +215,7 @@ void setElementLocations() {
     ;
 #endif
 #if defined(EINKBOARDGDEW0213M21)
-    ;
+    elementPosition.co2Y = 16 + 6;
 #endif
 #if defined(EINKBOARDEINKBOARD_WEACT_DEPG0213BN)
     ;
@@ -490,7 +490,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     display.setRotation(1);
     display.setFont(&BigFont);
     display.setTextColor(GxEPD_BLACK);
-    drawTextAligned(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
+    drawTextAligned(elementPosition.co2X, elementPosition.co2Y + 2, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] CO2 value width: " + String(elementPosition.co2W) + " and height: " + String(elementPosition.co2H) + " in: " + __func__);
 #endif
@@ -630,17 +630,21 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_ESPNOW
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-    if (troubledESPNOW) {
-        // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-        display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-        return;
-    }
-    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (!activeESPNOW) {
-        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
-        display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-    } else {
-        display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+    if (activeESPNOW) {
+        if (troubledESPNOW) {
+            // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+            display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+            return;
+        } else {
+            display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+        }
+        // // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+        // if (!activeESPNOW) {
+        //     // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+        //     display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+        // } else {
+        //     display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+        // }
     }
 #endif
 }
