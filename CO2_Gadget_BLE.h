@@ -52,6 +52,15 @@ void BLELoop() {
     if (activeBLE) {
         provider.handleDownload();
         delay(3);
+        if (provider.wifiChanged()) {
+            Serial.print("[BLE] Wifi SSID changed to: ");
+            Serial.println(provider.getWifiSSID());
+            Serial.print("[BLE] Wifi password changed to: ");
+            Serial.println(provider.getWifiPassword());
+            wifiSSID = provider.getWifiSSID();
+            wifiPass = provider.getWifiPassword();
+            connectToWiFi();
+        }
     }
 #endif
 }
