@@ -245,11 +245,16 @@ void printLargeASCII(const char *text) {
 }
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-    Serial.print("-->[WiFi] WifiSetup: SSID = ");
+#ifdef WIFI_PRIVACY
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
     Serial.print(ssid.c_str());
-#ifndef WIFI_PRIVACY
-    Serial.print(", Password = ");
-    Serial.println(password.c_str());
+    Serial.println(")");
+#else
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
+    Serial.print(ssid.c_str());
+    Serial.print(", Password: ");
+    Serial.print(password.c_str());
+    Serial.println(")");
 #endif
     WiFi.begin(ssid.c_str(), password.c_str());
 }
@@ -766,10 +771,12 @@ bool connectToWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.setHostname(hostName.c_str());
-    // Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
     Serial.println("-->[WiFi] Setting hostname: " + hostName);
-    // Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+#ifdef WIFI_PRIVACY
     Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + ")");
+#else
+    Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + " with password: " + wifiPass + ")");
+#endif
 
     WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
