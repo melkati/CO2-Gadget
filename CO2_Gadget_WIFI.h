@@ -610,6 +610,7 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     WiFiConnectionRetries = 0;
     timeTroubledWIFI = 0;
     troubledMQTT = false;
+    troubledWIFI = false;
 #ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] WiFi got IP)");
     Serial.print("-->[WiFi-event] IP address: ");
@@ -634,9 +635,11 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
         disableWiFi();
         troubledWIFI = true;
+        Serial.println("-->[WiFi-event] WiFi troubled");
+
         timeTroubledWIFI = millis();
 #ifdef DEBUG_WIFI_EVENTS
-        Serial.printf("-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+        Serial.println("-->[WiFi-event] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
 #endif
     }
 }
@@ -811,14 +814,15 @@ bool connectToWiFi() {
         troubledWIFI = true;
         timeTroubledWIFI = millis();
         // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
-        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
+        Serial.println("-->[WiFi] Troubled. Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
     }
 
-    if (troubledWIFI) {
+    if ((troubledWIFI) || (WiFi.status() != WL_CONNECTED)) {
         Serial.println("");
         return false;
     } else {
         Serial.println("");
+        saveWifiCredentials();
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
@@ -852,10 +856,7 @@ void initWifi() {
         Serial.println("-->[WiFi] HTTP server started");
         printWiFiStatus();
 
-        // Try to connect to MQTT broker on next loop if needed
-        troubledMQTT = false;
-
-        wifiChanged = true;
+        troubledMQTT = false; // Try to connect to MQTT broker on next loop if needed
     }
 }
 
@@ -864,19 +865,19 @@ void wifiClientLoop() {
         initWifi();
     }
 
-    // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
-    // Only checks for SSID changed (not password)
-    if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
-        Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
-        Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
-        Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
-        wifiSSID = WiFi.SSID();
-        activeWIFI = true;
-        if (wifiSSID != "") {
-            putPreferences();
-            wifiChanged = true;
-        }
-    }
+    // // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
+    // // Only checks for SSID changed (not password)
+    // if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
+    //     Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+    //     Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
+    //     Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
+    //     wifiSSID = WiFi.SSID();
+    //     activeWIFI = true;
+    //     if (wifiSSID != "") {
+    //         putPreferences();
+    //         wifiChanged = true;
+    //     }
+    // }
 
     if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
