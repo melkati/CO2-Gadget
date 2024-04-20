@@ -9,8 +9,7 @@
 
 NimBLELibraryWrapper lib;
 WifiMultiLibraryWrapper wifi;
-DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, false, false, &wifi);
-// DataProvider provider(lib, DataType::T_RH_CO2_ALT);
+DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, false, &wifi);
 #endif
 
 void initBLE() {
@@ -20,23 +19,23 @@ void initBLE() {
             Serial.print(
                 "-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
-            return;  // If BLE is already initialized do nothing and return
+            return;
         } else {
             // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
             provider.begin();
             Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
+            // Set initial battery level
+            provider.setBatteryLevel(batteryLevel);
             bleInitialized = true;
         }
-        // if (activeWIFI) {
-        //   gadgetBle.enableWifiSetupSettings(onWifiSettingsChanged);
-        //   gadgetBle.setCurrentWifiSsid(WIFI_SSID_CREDENTIALS);
-        // }
     }
 #endif
 }
 
 void publishBLE() {
+    static int64_t lastBatteryLevelUpdateMs = 0;
+    static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
     if ((activeBLE) && (co2 > 0)) {
         provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
@@ -44,24 +43,39 @@ void publishBLE() {
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
         provider.commitSample();
     }
+    if (millis() - lastBatteryLevelUpdateMs >= batteryLevelUpdateIntervalMs) {
+        lastBatteryLevelUpdateMs = millis();
+        provider.setBatteryLevel(batteryLevel);
+        // Serial.println("-->[BLE ] Battery Level: " + String(batteryLevel) + "%");
+        if (batteryLevel == 0) {
+            batteryLevel = 100;
+        }
+    }
+#endif
+}
+
+void handleBLEwifiChanged() {
+    wifiSSID = provider.getWifiSSID();
+    wifiPass = provider.getWifiPassword();
+    wifiSSID.trim();
+    wifiPass.trim();
+    wifiChanged = true;
+    activeWIFI = true;
+    Serial.println("-->[BLE ] Wifi SSID changed to: #" + wifiSSID + "#");
+#ifndef WIFI_PRIVACY
+    Serial.println("-->[BLE ] Wifi password changed to: #" + wifiPass + "#");
 #endif
 }
 
 void BLELoop() {
 #ifdef SUPPORT_BLE
-    if (activeBLE) {
-        provider.handleDownload();
-        delay(3);
-        if (provider.wifiChanged()) {
-            Serial.print("[BLE] Wifi SSID changed to: ");
-            Serial.println(provider.getWifiSSID());
-            Serial.print("[BLE] Wifi password changed to: ");
-            Serial.println(provider.getWifiPassword());
-            wifiSSID = provider.getWifiSSID();
-            wifiPass = provider.getWifiPassword();
-            connectToWiFi();
-        }
+    int connectTries = 0;
+    if (!activeBLE) {
+        return;
     }
+    provider.handleDownload();
+    delay(3);
+    if (provider.wifiChanged()) handleBLEwifiChanged();
 #endif
 }
 
