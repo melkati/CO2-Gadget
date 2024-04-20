@@ -148,25 +148,6 @@ void initPreferences() {
     uint8_t buffer[key_size];
     preferences.getBytes("peerESPNow", buffer, key_size);
 
-    // Serial.println("-->[PREF] Current size of \"peerESPNow\": " + String(key_size));
-    // if (key_size > 0) {
-    //   Serial.print("    Data: ");
-    //   uint8_t existingData[key_size];
-    //   size_t count = preferences.getBytes("peerESPNow", existingData, key_size);
-    //   Serial.print("-->[PREF] [");
-    //   Serial.print(count);
-    //   Serial.print("]: ");
-    //   for (size_t i = 0; i < count; i++) {
-    //     Serial.print(existingData[i], HEX);
-    //     Serial.print(" ");
-    //   }
-    //   Serial.println();
-    // }
-    // Serial.print("key_size = ");
-    // Serial.print(key_size);
-    // Serial.print(" sizeof(peerESPNowAddress) = ");
-    // Serial.println(sizeof(peerESPNowAddress));
-
     if (key_size = sizeof(peerESPNowAddress)) {
         memcpy(peerESPNowAddress, buffer, sizeof(peerESPNowAddress));
     }
