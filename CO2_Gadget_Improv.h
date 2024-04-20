@@ -27,7 +27,7 @@ void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
     activeWIFI = true;
     wifiSSID = ssid;
     wifiPass = password;
-    putPreferences();
+    saveWifiCredentials();
 }
 
 void initImprov() {
