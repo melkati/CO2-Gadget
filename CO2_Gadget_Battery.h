@@ -49,10 +49,10 @@ void readBatteryVoltage() {
         // than 1V (no battery connected to sense pin), then assume that the device is working on external power.
         const float workingOnExternalPowerThreshold = batteryFullyChargedMillivolts * 1.06 / 1000;
         workingOnExternalPower = ((batteryVoltageNow) > workingOnExternalPowerThreshold) || (batteryVoltageNow < 1);
-        if (!inMenu) {
-            Serial.println("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
-            delay(20);
-        }
+        // if (!inMenu) {
+        //     Serial.println("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
+        //     delay(20);
+        // }
         //     publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
     }
 }
