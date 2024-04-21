@@ -34,7 +34,7 @@ void initBattery() {
 
 void readBatteryVoltage() {
     float batteryVoltageNow = 0;
-    float workingOnExternalPowerThreshold = batteryFullyChargedMillivolts * 6 / 100;
+
     if ((millis() - lastTimeBatteryRead >= timeBetweenBatteryRead * 1000) || (lastTimeBatteryRead == 0)) {
         for (uint8_t i = 0; i < batterySamples; i++) {
             batteryVoltageNow += float(battery.voltage(20)) / 1000;
@@ -45,14 +45,15 @@ void readBatteryVoltage() {
         batteryLevel = battery.level(batteryVoltage * 1000);
         lastTimeBatteryRead = millis();
 
-        // If battery voltage is more than 6% of the fully charged battery voltage (~4.58V) or if battery voltage is less
+        // If battery voltage is more than 6% of the fully charged battery voltage (~4.45V) or if battery voltage is less
         // than 1V (no battery connected to sense pin), then assume that the device is working on external power.
-        workingOnExternalPower = ((batteryVoltageNow * 1000) > workingOnExternalPowerThreshold) || (batteryVoltageNow < 1);
-        // if (!inMenu) {
-        //     Serial.println("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V  External power: " + String(workingOnExternalPower));
-        //     delay(20);
-        // }
-        //     publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower));
+        const float workingOnExternalPowerThreshold = batteryFullyChargedMillivolts * 1.06 / 1000;
+        workingOnExternalPower = ((batteryVoltageNow) > workingOnExternalPowerThreshold) || (batteryVoltageNow < 1);
+        if (!inMenu) {
+            Serial.println("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
+            delay(20);
+        }
+        //     publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
     }
 }
 

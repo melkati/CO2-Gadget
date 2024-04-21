@@ -47,7 +47,7 @@ void initImprov() {
 
 void improvLoop() {
     if (!inMenu) {
-        if (Serial.available() && Serial.peek() != 0x2A) {
+        if (Serial.available() && Serial.peek() != 0x2A) { // 0x2A = '*'
             improvSerial.handleSerial();
         }
     }
