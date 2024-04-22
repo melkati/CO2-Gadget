@@ -33,15 +33,28 @@ void initBLE() {
 #endif
 }
 
+/**
+ * @brief Publishes sensor data over BLE (Bluetooth Low Energy).
+ *
+ * This function is responsible for publishing sensor data over BLE if the BLE support is enabled and the sensor readings are within the valid range.
+ * The sensor data includes CO2 level, temperature, and humidity.
+ *
+ * @note This function should be called periodically to publish the sensor data.
+ */
 void publishBLE() {
     static int64_t lastBatteryLevelUpdateMs = 0;
     static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
-    if ((activeBLE) && (co2 > 0)) {
+    if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100)) {
         provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
         provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
         provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
         provider.commitSample();
+#ifdef DEBUG_BLE
+        Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        publishMQTTLogData("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        delay(20);
+#endif
     }
     if (millis() - lastBatteryLevelUpdateMs >= batteryLevelUpdateIntervalMs) {
         lastBatteryLevelUpdateMs = millis();
