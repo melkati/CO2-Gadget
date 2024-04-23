@@ -179,7 +179,7 @@ void setElementLocations() {
     uint16_t tbw, tbh;
 
     // Common positions for most displays
-    elementPosition.co2X = 2;       // Left screen
+    elementPosition.co2X = 0;       // Left screen
     elementPosition.co2Y = 16 + 8;  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
@@ -505,8 +505,9 @@ bool showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
 
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
+    display.fillRect(posX, posY, display.width(), elementPosition.co2H, GxEPD_WHITE);  // clear previous values
 
-    display.fillRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);  // 10 = 2px for top and bottom rectangle borders + 8px for top and bottom margin
+    //    display.fillRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);  // 10 = 2px for top and bottom rectangle borders + 8px for top and bottom margin
     display.drawRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_BLACK);
 
     display.setRotation(4);
@@ -797,6 +798,7 @@ void displayShowValues(bool forceRedraw = false) {
         cyclesLeftToRedrawDisplay++;
         Serial.println("-->[EINK] No changes -> no refresh");
     } else {
+#ifdef DEBUG_EINK
         Serial.print("-->[EINK] changeCo2 = " + String(changeCo2));
         Serial.print(" - changeTemp = " + String(changeTemp));
         Serial.print(" - changeHumidity = " + String(changeHumidity));
@@ -805,40 +807,58 @@ void displayShowValues(bool forceRedraw = false) {
         Serial.print(" - changeMQTT = " + String(changeMQTT));
         Serial.print(" - changeBLE = " + String(changeBLE));
         Serial.println(" - changeESP = " + String(changeESP));
+#endif
 
-        if (forceRedraw) {
+        if (forceRedraw) {  // when CO2 changes for the first time update full refresh
+#ifdef DEBUG_EINK
             Serial.println("-->[EINK] Full refresh");
+#endif
             display.setFullWindow();  // Enable full refresh
             display.display();
         } else {
+#ifdef DEBUG_EINK
             Serial.println("-->[EINK] Partial refresh. Full in : " + String(cyclesLeftToRedrawDisplay));
+#endif
 
             if (!changeCo2 && !changeBatt && !changeBLE && !changeWiFi && !changeMQTT && !changeESP) {
                 // ONLY CHANGE TEMP OR HUM.
                 if (!changeTemp) {  // only change hum
-                    Serial.println("-->[EINK] Refresh Humidity");
+#ifdef DEBUG_EINK
+                    Serial.println("-->[EINK] Refresh Humidity box: x1: " + String(elementPosition.humidityXValue) + ", y1: " + String(elementPosition.humidityYValue) + ", x2: " + String(elementPosition.humidityXValue + elementPosition.humidityWValue) + ", y2: " + String(elementPosition.humidityYValue + elementPosition.humidityHValue));
+#endif
                     display.setPartialWindow(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityXValue + elementPosition.humidityWValue, elementPosition.humidityYValue + elementPosition.humidityHValue);
                     display.displayWindow(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityXValue + elementPosition.humidityWValue, elementPosition.humidityYValue + elementPosition.humidityHValue);
                 } else if (!changeHumidity) {  // only change temp
-                    Serial.println("-->[EINK] Refresh Temp");
+#ifdef DEBUG_EINK
+                    Serial.println("-->[EINK] Refresh Temp box: x1: " + String(elementPosition.tempXValue) + ", y1: " + String(elementPosition.tempYValue) + ", x2: " + String(elementPosition.tempXValue + elementPosition.tempWValue) + ", y2: " + String(elementPosition.tempYValue + elementPosition.tempHValue));
+#endif
                     display.setPartialWindow(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempXValue + elementPosition.tempWValue, elementPosition.tempYValue + elementPosition.tempHValue);
                     display.displayWindow(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempXValue + elementPosition.tempWValue, elementPosition.tempYValue + elementPosition.tempHValue);
                 } else {  // only change temp & hum
-                    Serial.println("-->[EINK] Refresh Temp + Humidity");
+#ifdef DEBUG_EINK
+                    Serial.println("-->[EINK] Refresh Temp + Humidity box: x1: 0, y1: " + String(elementPosition.tempYValue) + ", x2: " + String(display.width()) + ", y2: " + String(display.height()));
+#endif
                     display.setPartialWindow(0, elementPosition.tempYValue, display.width(), display.height());
                     display.displayWindow(0, elementPosition.tempYValue, display.width(), display.height());
                 }
             } else {
                 if (changeCo2 || ((changeBLE || changeWiFi || changeMQTT || changeESP || changeBatt) && (changeTemp || changeHumidity))) {
-                    Serial.println("-->[EINK] Refresh CO2 - all display");
+#ifdef DEBUG_EINK
+                    Serial.println("-->[EINK] Refresh CO2 - Full display");
+#endif
+                    display.setPartialWindow(0, 0, display.width(), display.height());
                     display.displayWindow(0, 0, display.width(), display.height());
                 } else {
                     if (changeBLE || changeWiFi || changeMQTT || changeESP || changeBatt) {
-                        Serial.println("-->[EINK] Refresh Icons + Battery");
-                        display.setPartialWindow(elementPosition.bleIconX, elementPosition.bleIconY, elementPosition.espNowIconX + 16, elementPosition.bleIconY + 16);
+#ifdef DEBUG_EINK
+                        Serial.println("-->[EINK] Refresh Icons + Battery box: x1: 0, y1: 0, x2: " + String(display.width()) + ", y2: 16");
+#endif
+                        display.setPartialWindow(0, 0, display.width(), 16);
                         display.displayWindow(0, 0, display.width(), 16);
                     } else {
-                        Serial.println("-->[EINK] Refresh Temp + Humidity");
+#ifdef DEBUG_EINK
+                        Serial.println("-->[EINK] Refresh Temp + Humidity box: x1: 0, y1: " + String(elementPosition.tempYValue) + ", x2: " + String(display.width()) + ", y2: " + String(display.height()));
+#endif
                         display.setPartialWindow(0, elementPosition.tempYValue, display.width(), display.height());
                         display.displayWindow(0, elementPosition.tempYValue, display.width(), display.height());
                     }
