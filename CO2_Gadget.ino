@@ -499,12 +499,18 @@ void utilityLoop() {
     const int16_t lowCpuFrequency = 80;
 
     if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
-        setCpuFrequencyAndReinitSerial(highCpuFrequency);
+        setCpuFrequencyMhz(highCpuFrequency);
     } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
-        setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+        setCpuFrequencyMhz(lowCpuFrequency);
     }
+
+    // if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(highCpuFrequency);
+    // } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+    // }
 }
 
 // application entry point
