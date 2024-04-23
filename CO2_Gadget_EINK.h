@@ -18,12 +18,9 @@
 #include <GxEPD2_BW.h>
 
 // Variables for e-ink functionality -> move to platformio.ini or CO2_Gadget.ino in a future for menu config
-uint16_t co2_HYSTERESIS = 15;        // Minimum change in CO2 value to refresh display
-uint16_t numPartialUpdates = 5;      // Maximun number o partial updates until next Full screen refresh
-int16_t timeBetweenEinkUpdates = 5;  // 5 seconds between refresh display
-
-uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
-uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
+uint16_t co2_HYSTERESIS = 10;           // Minimum change in CO2 value to refresh display
+int16_t timeBetweenEinkUpdates = 10;    // 10 seconds between refresh display
+uint16_t redrawDisplayEveryCycles = 5;  // Redraw display every X partial updates
 
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
@@ -564,7 +561,7 @@ bool showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
     String newHumidityStr, oldHumidityStr;
 
-    if (round(hum) == oldHumiValue || hum == 0 || !displayShowHumidity)
+    if ((!forceRedraw && round(hum) == oldHumiValue) || hum == 0 || !displayShowHumidity)
         return false;
     else
         oldHumiValue = round(hum);
@@ -577,7 +574,7 @@ bool showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    newHumidityStr = String(int(round(hum)));
+    newHumidityStr = String(int(round(hum))) + "%";
     drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'l', 'c');
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn humidity value: " + newHumidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
@@ -614,7 +611,7 @@ bool showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static bool oldBLEstatus = false;
     //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);
     //    display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (activeBLE == oldBLEstatus)
+    if (activeBLE == oldBLEstatus && !forceRedraw)
         return false;
     else
         oldBLEstatus = activeBLE;
@@ -691,6 +688,7 @@ bool showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     }
     return true;
 #endif
+    return false;
 }
 
 bool showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
@@ -725,6 +723,7 @@ bool showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     }
     return true;
 #endif
+    return false;
 }
 
 void testRedrawValues(bool randomNumbers = false) {
@@ -757,29 +756,14 @@ void testRedrawValues(bool randomNumbers = false) {
 }
 
 void displayShowValues(bool forceRedraw = false) {
+    static uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
     static uint32_t lastDisplayUpdate = 0;
-    // Resurn if last update less than 15 seconds ago
-    if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
+    bool changeCo2 = false, changeTemp = false, changeHumidity = false, changeBatt = false, changeWiFi = false, changeMQTT = false, changeBLE = false, changeESP = false;
+    // Return if last update less than timeBetweenEinkUpdates seconds ago
+    if (!forceRedraw && ((millis() - lastDisplayUpdate) < (timeBetweenEinkUpdates * 1000))) {
         return;
     }
     lastDisplayUpdate = millis();
-
-    static uint16_t nPartialToFull = 0;  // First loop full refresh
-    static uint64_t timeNextRefresh = 0;
-    bool changeCo2 = false, changeTemp = false, changeHumidity = false, changeBatt = false, changeWiFi = false, changeMQTT = false, changeBLE = false, changeESP = false, fullRedraw = false;
-    /*    if (millis() > timeNextRefresh) {
-            timeNextRefresh = millis() + timeBetweenEinkUpdates * 1000;
-            if (nPartialToFull == 0) {
-                fullRedraw = true;
-                nPartialToFull = numPartialUpdates;
-            } else {
-                fullRedraw = false;
-                --nPartialToFull;
-            }
-
-        } else if (!forceRedraw)
-            return;  // NO REFRESH DISPLAY UNTIL timeBetweenEinkUpdates SECONDS
-    */
 
 #ifdef TIMEDEBUG
     timer.start();
@@ -790,20 +774,17 @@ void displayShowValues(bool forceRedraw = false) {
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
     } else {
         cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        Serial.println("-->[EINK] Forcing full refresh of display.");
         forceRedraw = true;
-        Serial.println("-->[EINK] Forcing full refresh of display");
-    }
-
-    if (forceRedraw) {
         display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        display.fillScreen(GxEPD_WHITE);  // CLEAR ALL DISPLAY
     }
 
     // testRedrawValues(true);
     changeCo2 = showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
     changeTemp = showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
     changeHumidity = showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
-    changeBatt = showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    changeBatt = showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
     // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
     changeWiFi = showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
     changeMQTT = showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
@@ -811,17 +792,10 @@ void displayShowValues(bool forceRedraw = false) {
     changeESP = showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
 
-    if (forceRedraw) {
-        display.display();  // Full update
-    } else {
-        display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
-    }
-    /*
     if (!changeCo2 && !changeTemp && !changeHumidity && !changeBatt && !changeWiFi && !changeMQTT && !changeBLE && !changeESP) {
         // IS NOT NECESSARY TO REFRESH DISPLAY
-        nPartialToFull++;
+        cyclesLeftToRedrawDisplay++;
         Serial.println("-->[EINK] No changes -> no refresh");
-
     } else {
         Serial.print("-->[EINK] changeCo2 = " + String(changeCo2));
         Serial.print(" - changeTemp = " + String(changeTemp));
@@ -832,12 +806,12 @@ void displayShowValues(bool forceRedraw = false) {
         Serial.print(" - changeBLE = " + String(changeBLE));
         Serial.println(" - changeESP = " + String(changeESP));
 
-        if (fullRedraw) {
+        if (forceRedraw) {
             Serial.println("-->[EINK] Full refresh");
             display.setFullWindow();  // Enable full refresh
             display.display();
         } else {
-            Serial.println("-->[EINK] Partial refresh. Full in : " + String(nPartialToFull));
+            Serial.println("-->[EINK] Partial refresh. Full in : " + String(cyclesLeftToRedrawDisplay));
 
             if (!changeCo2 && !changeBatt && !changeBLE && !changeWiFi && !changeMQTT && !changeESP) {
                 // ONLY CHANGE TEMP OR HUM.
@@ -873,7 +847,6 @@ void displayShowValues(bool forceRedraw = false) {
         }
         // display.hibernate();
     }
-    */
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
     if (elapsed > 10) {
