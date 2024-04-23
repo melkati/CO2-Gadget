@@ -302,8 +302,8 @@ void displaySplashScreenLOGO() {
 void displaySplashScreen(bool fullRefresh = false) {
     uint16_t eMarieteLogoWidth = 250;
     uint16_t eMarieteLogoHeight = 128;
-    uint16_t eMarieteLogoX = (display.width() - 250) / 2;
-    uint16_t eMarieteLogoY = (display.height() - 128) / 2;
+    uint16_t eMarieteLogoX = (display.width() - eMarieteLogoWidth) / 2;
+    uint16_t eMarieteLogoY = (display.height() - eMarieteLogoHeight) / 2;
     if (fullRefresh) {
         display.setFullWindow();  // Activate full screen refresh
         display.firstPage();      // Clear screen
