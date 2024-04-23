@@ -443,31 +443,24 @@ void initDisplay(bool fastMode = false) {
 void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     publishMQTTLogData("-->[EINK] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
     // Serial.println("-->[EINK] Drawn battery icon at " + String(posX) + ", " + String(posY) + " with level " + String(batteryLevel) + "% and voltage " + String(batteryVoltage) + "V");
+    display.fillRect(posX, posY, display.width() - posX, 16, GxEPD_WHITE);
     if (workingOnExternalPower) {
         // display.drawRoundRect(posX + 8, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-        // Serial.println("-->[EINK] Drawn round rect at " + String(posX + 8) + ", " + String(posY) + " with size 16x16");
-        //    display.setSwapBytes(true);
         display.drawBitmap(posX + 16, posY, iconUSB, 16, 16, GxEPD_WHITE, GxEPD_BLACK);
-        // Serial.println("-->[EINK] Drawn USB icon at " + String(posX + 12) + ", " + String(posY) + " with size 16x16");
     } else {
         display.fillRect(posX, posY + 4, 2, 6, GxEPD_BLACK);
         display.drawRoundRect(posX + 2, posY, 27, 14, 3, GxEPD_BLACK);  // Battery outter rectangle
-        // Serial.println("-->[EINK] Drawn round rect at " + String(posX + 2) + ", " + String(posY) + " with size 27x14");
         if (batteryLevel > 20) {
             display.fillRect(posX + 6, posY + 2, 4, 10, GxEPD_BLACK);
-            // Serial.println("-->[EINK] Drawn rect at " + String(posX + 8) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 40) {
             display.fillRect(posX + 11, posY + 2, 4, 10, GxEPD_BLACK);
-            // Serial.println("-->[EINK] Drawn rect at " + String(posX + 14) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 60) {
             display.fillRect(posX + 16, posY + 2, 4, 10, GxEPD_BLACK);
-            // Serial.println("-->[EINK] Drawn rect at " + String(posX + 20) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 80) {
             display.fillRect(posX + 21, posY + 2, 4, 10, GxEPD_BLACK);
-            // Serial.println("-->[EINK] Drawn rect at " + String(posX + 26) + ", " + String(posY + 2) + " with size 4x10");
         }
     }
 }
