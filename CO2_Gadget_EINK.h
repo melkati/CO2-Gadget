@@ -54,8 +54,8 @@ GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS,
 #endif
 #ifdef EINKBOARDGDEW0213M21
 #include <NotoSans_Bold38pt7b.h>
-#include <NotoSans_SemiCondensed_Bold10pt7b.h>
-const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+#include <NotoSans_Bold6pt7b.h>
+const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
@@ -183,13 +183,21 @@ void setElementLocations() {
     int16_t tbx, tby;
     uint16_t tbw, tbh;
 
+    // Get font sizes for text bounds
+    display.setFont(&BigFont);
+    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
+    elementPosition.bifFontDigitsHeight = tbh;
+    display.setFont(&SmallFont);
+    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);
+    elementPosition.smallFontDigitsHeight = tbh;
+
     // Common positions for most displays
     elementPosition.co2X = 2;       // Left screen
     elementPosition.co2Y = 16 + 8;  // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2W = display.width() - 16;
     elementPosition.co2H = (display.height() - 32);  // 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2XUnits = 16;                  // Display is rotated so vertical orientation (swaped width & height)
-    elementPosition.co2YUnits = display.width() - 18;
+    elementPosition.co2YUnits = display.width() - elementPosition.smallFontDigitsHeight - 4;
 
     elementPosition.tempXUnits = 0;  // down left corner
     elementPosition.tempYUnits = display.height() - 16;
@@ -234,12 +242,6 @@ void setElementLocations() {
 #if defined(EINKBOARD_WEACT_GxEPD2_290_BS)
     ;
 #endif
-    display.setFont(&BigFont);
-    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
-    elementPosition.bifFontDigitsHeight = tbh;
-    display.setFont(&SmallFont);
-    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);
-    elementPosition.smallFontDigitsHeight = tbh;
 }
 
 void turnOffDisplay() {
@@ -256,6 +258,17 @@ void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issu
     }
 }
 
+/**
+ * Draws text on the display with alignment options.
+ *
+ * @param x The x-coordinate of the top-left corner of the bounding box.
+ * @param y The y-coordinate of the top-left corner of the bounding box.
+ * @param w The width of the bounding box.
+ * @param h The height of the bounding box.
+ * @param text The text to be displayed.
+ * @param h_align The horizontal alignment of the text. Options: 'l' (left), 'c' (centered), 'r' (right). Default: 'C'.
+ * @param v_align The vertical alignment of the text. Options: 'u' (upper), 'c' (centered), 'd' (down). Default: 'C'.
+ */
 void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String text, char h_align = 'C', char v_align = 'C') {
     int16_t tbx, tby;
     uint16_t tbw, tbh;
@@ -292,28 +305,12 @@ void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String te
     display.print(text);
 }
 
-void displaySplashScreenLOGO() {
-#ifdef TIMEDEBUG
-    timer.start();
-#endif
-    display.setFullWindow();
-    display.firstPage();
-    do {
-        // Draw bitmap
-        display.fillScreen(GxEPD_WHITE);
-        //        display.drawInvertedBitmap((display.width() - 250) / 2, (display.height() - 128) / 2, Logo250x128, 250, 128, GxEPD_BLACK);
-    } while (display.nextPage());
-#ifdef TIMEDEBUG
-    Serial.print("time used to displaySplashScreenLOGO: ");
-    Serial.println(timer.read());
-#endif
-}
-
 void displaySplashScreen(bool fullRefresh = false) {
     uint16_t eMarieteLogoWidth = 250;
     uint16_t eMarieteLogoHeight = 128;
     uint16_t eMarieteLogoX = (display.width() - eMarieteLogoWidth) / 2;
     uint16_t eMarieteLogoY = (display.height() - eMarieteLogoHeight) / 2;
+    // String ver = "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV);
     if (fullRefresh) {
         display.setFullWindow();  // Activate full screen refresh
         display.firstPage();      // Clear screen
@@ -321,13 +318,15 @@ void displaySplashScreen(bool fullRefresh = false) {
             // Draw Logo250x128 bitmap at the center of the screen
             display.fillScreen(GxEPD_WHITE);
             display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
-            // drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
         } while (display.nextPage());  // Do full refresh
     } else {
         display.setPartialWindow(0, 0, display.width(), display.height());  // Enable partial refresh
         display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
-        // drawTextAligned(0, 0, display.width(), display.height(), "eMariete CO2 Gadget Monitor", 'c', 'c');
+#ifdef DEBUG_EINK
+        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 8, display.width(), elementPosition.smallFontDigitsHeight + 8, "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV), 'r', 'd');
+        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 8, display.width(), elementPosition.smallFontDigitsHeight + 8, String(FLAVOUR), 'l', 'd');
+#endif
         display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
 }
@@ -431,7 +430,10 @@ void initDisplay(bool fastMode = false) {
     // display.init(115200, true, resetDuration, false);
     display.init(115200, !fastMode, resetDuration, false);
 
-    //    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+#ifdef DEBUG_EINK
+    Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
+    Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
+#endif
 
     // Set default options to draw
     display.setRotation(1);
@@ -439,15 +441,8 @@ void initDisplay(bool fastMode = false) {
     display.setTextColor(GxEPD_BLACK);
     // display.setFullWindow();
     // display.setPartialWindow(0, 0, display.width(), display.height());
-#ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
-    Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
-#endif
-
     setElementLocations();
-
     displaySplashScreen();
-    delay(2000);  // Enjoy the splash screen 2 seconds
 }
 
 void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
@@ -684,6 +679,11 @@ void displayShowValues(bool forceRedraw = false) {
     if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
         return;
     }
+
+    if ((!forceRedraw) && (co2 == 0)) {
+        return;
+    }
+
     lastDisplayUpdate = millis();
 
 #ifdef TIMEDEBUG
