@@ -39,6 +39,7 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
+uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
@@ -48,6 +49,7 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
+uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
@@ -57,31 +59,11 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
+uint16_t resetDuration = 2;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 // GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
-#endif
-
-#ifdef EINKBOARD_WEACT_DEPG0213BN
-#include <NotoSans_Bold46pt7b.h>
-#include <NotoSans_SemiCondensed_Bold10pt7b.h>
-const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold46pt7b;
-int displayWidth = 250;
-int displayHeight = 122;
-
-#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
-#include "icons.h"
-
-// #define EPD_SCLK SCK
-// #define EPD_MISO 17
-// #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_DC 27
-// #define EPD_RST 25
-// #define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDvVZ4N
 #endif
 
 #ifdef EINKBOARDGDEM029T94
@@ -91,6 +73,7 @@ const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 296;
 int displayHeight = 128;
+uint16_t resetDuration = 2;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -110,25 +93,49 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(EPD_CS,
 // GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW029T5 with special pinout
 #endif
 
-#ifdef EINKBOARDGDEH0154D67
+#ifdef EINKBOARD_WEACT_DEPG0213BN
+#include <NotoSans_Bold46pt7b.h>
+#include <NotoSans_SemiCondensed_Bold10pt7b.h>
+const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+const GFXfont BigFont = NotoSans_Bold46pt7b;
+int displayWidth = 250;
+int displayHeight = 122;
+uint16_t resetDuration = 50;
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDvVZ4N
+#endif
+
+#ifdef EINKBOARD_WEACT_GDEH0154D67
 #include <NotoSans_Bold38pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
+uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-// #define EPD_SCLK SCK
-// #define EPD_MISO 17
-// #define EPD_MOSI MOSI
-// #define EPD_CS SS
-// #define EPD_DC 27
-// #define EPD_RST 25
-// #define EPD_BUSY 32
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEH0154D67 200x200, SSD1681 https://s.click.aliexpress.com/e/_DDvVZ4N
+#endif
+
+#ifdef EINKBOARD_WEACT_GxEPD2_290_BS
+#include <NotoSans_Bold38pt7b.h>
+#include <NotoSans_SemiCondensed_Bold10pt7b.h>
+const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
+const GFXfont BigFont = NotoSans_Bold38pt7b;
+int displayWidth = 200;
+int displayHeight = 200;
+uint16_t resetDuration = 50;
+
+#include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
+#include "icons.h"
+
+GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029C90 As WeAct Studio 2.9" 296x128 E-Ink Display
 #endif
 
 // Define a structure for the locations of elements
@@ -220,9 +227,12 @@ void setElementLocations() {
 #if defined(EINKBOARDEINKBOARD_WEACT_DEPG0213BN)
     ;
 #endif
-#if defined(EINKBOARDGDEH0154D67)
+#if defined(EINKBOARD_WEACT_GDEH0154D67)
     elementPosition.co2Y = 16 + 4;                                                                        // Center text in screen. 32 is the size of 16 + 16 pixels of upper and down icon lines
     elementPosition.co2XUnits = ((display.width() / 4) + (elementPosition.bifFontDigitsHeight / 2) - 8);  // Display is rotated so vertical orientation (swaped width & height)
+#endif
+#if defined(EINKBOARD_WEACT_GxEPD2_290_BS)
+    ;
 #endif
     display.setFont(&BigFont);
     display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
@@ -369,10 +379,10 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     setElementLocations();
     if (firstBoot) {
         forceRedraw = true;
-        display.init(115200, true, 2, false);
+        display.init(115200, true, resetDuration, false);
         firstBoot = false;
     } else {
-        display.init(115200, false, 2, false);
+        display.init(115200, false, resetDuration, false);
     }
 
     // Set default options to draw
@@ -418,8 +428,8 @@ void initDisplay(bool fastMode = false) {
 #endif
     display.epd2.setBusyCallback(busyHighPerformanceCallback);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
-    // display.init(115200, true, 2, false);
-    display.init(115200, !fastMode, 2, false);
+    // display.init(115200, true, resetDuration, false);
+    display.init(115200, !fastMode, resetDuration, false);
 
     //    deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
 
@@ -428,7 +438,7 @@ void initDisplay(bool fastMode = false) {
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     // display.setFullWindow();
-    display.setPartialWindow(0, 0, display.width(), display.height());
+    // display.setPartialWindow(0, 0, display.width(), display.height());
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
     Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
