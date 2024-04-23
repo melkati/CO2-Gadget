@@ -6,7 +6,7 @@
 #define CO2_Gadget_EINK_h
 
 #ifdef SUPPORT_EINK
-// #define DEBUG_EINK
+#define DEBUG_EINK
 
 // clang-format off
 /*****************************************************************************************************/
@@ -16,6 +16,11 @@
 /*****************************************************************************************************/
 // clang-format on
 #include <GxEPD2_BW.h>
+
+// Variables for e-ink functionality -> move to platformio.ini or CO2_Gadget.ino in a future for menu config
+uint16_t co2_HYSTERESIS = 15;        // Minimum change in CO2 value to refresh display
+uint16_t numPartialUpdates = 5;      // Maximun number o partial updates until next Full screen refresh
+int16_t timeBetweenEinkUpdates = 5;  // 5 seconds between refresh display
 
 uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
 uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
@@ -232,6 +237,15 @@ void setElementLocations() {
     elementPosition.smallFontDigitsHeight = tbh;
 }
 
+bool showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw);
+bool showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw);
+bool showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw);
+bool showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw);
+bool showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw);
+bool showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw);
+bool showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw);
+bool showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw);
+
 void turnOffDisplay() {
     // Ignore for eInk displays
 }
@@ -440,10 +454,15 @@ void initDisplay(bool fastMode = false) {
     delay(2000);  // Enjoy the splash screen 2 seconds
 }
 
-void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+bool showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    RTC_DATA_ATTR static int16_t oldBatteryValue = -1;
+    int16_t newBatteryValue;
+    display.fillRect(posX, posY, 32, 16, GxEPD_WHITE);  // clear previous icon
+
     publishMQTTLogData("-->[EINK] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
     // Serial.println("-->[EINK] Drawn battery icon at " + String(posX) + ", " + String(posY) + " with level " + String(batteryLevel) + "% and voltage " + String(batteryVoltage) + "V");
     if (workingOnExternalPower) {
+        newBatteryValue = 0;
         // display.drawRoundRect(posX + 8, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
         // Serial.println("-->[EINK] Drawn round rect at " + String(posX + 8) + ", " + String(posY) + " with size 16x16");
         //    display.setSwapBytes(true);
@@ -453,29 +472,39 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         display.fillRect(posX, posY + 4, 2, 6, GxEPD_BLACK);
         display.drawRoundRect(posX + 2, posY, 27, 14, 3, GxEPD_BLACK);  // Battery outter rectangle
         // Serial.println("-->[EINK] Drawn round rect at " + String(posX + 2) + ", " + String(posY) + " with size 27x14");
+        newBatteryValue = 10;
         if (batteryLevel > 20) {
+            newBatteryValue = 20;
             display.fillRect(posX + 6, posY + 2, 4, 10, GxEPD_BLACK);
             // Serial.println("-->[EINK] Drawn rect at " + String(posX + 8) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 40) {
+            newBatteryValue = 40;
             display.fillRect(posX + 11, posY + 2, 4, 10, GxEPD_BLACK);
             // Serial.println("-->[EINK] Drawn rect at " + String(posX + 14) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 60) {
+            newBatteryValue = 60;
             display.fillRect(posX + 16, posY + 2, 4, 10, GxEPD_BLACK);
             // Serial.println("-->[EINK] Drawn rect at " + String(posX + 20) + ", " + String(posY + 2) + " with size 4x10");
         }
         if (batteryLevel > 80) {
+            newBatteryValue = 80;
             display.fillRect(posX + 21, posY + 2, 4, 10, GxEPD_BLACK);
             // Serial.println("-->[EINK] Drawn rect at " + String(posX + 26) + ", " + String(posY + 2) + " with size 4x10");
         }
     }
+    if (oldBatteryValue == newBatteryValue)
+        return false;
+    else
+        oldBatteryValue = newBatteryValue;
+    return true;
 }
 
-void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
+bool showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
-    if (!forceRedraw && (co2 == oldCO2Value)) return;
-    if ((co2 == 0) || (co2 > 9999)) return;
+    if (!forceRedraw && (co2 <= (oldCO2Value + co2_HYSTERESIS)) && (co2 >= (oldCO2Value - co2_HYSTERESIS))) return false;  // don't update screen CO2 value
+    if ((co2 == 0) || (co2 > 9999)) return false;
 
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
@@ -495,6 +524,7 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     Serial.println("-->[EINK] CO2 value width: " + String(elementPosition.co2W) + " and height: " + String(elementPosition.co2H) + " in: " + __func__);
 #endif
     oldCO2Value = co2;
+    return true;
 }
 
 void showCO2OLD(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
@@ -530,32 +560,38 @@ void showCO2OLD(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     oldCO2Value = co2;
 }
 
-void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
+bool showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
-    if (!displayShowHumidity) return;
+    String newHumidityStr, oldHumidityStr;
+
+    if (round(hum) == oldHumiValue || hum == 0 || !displayShowHumidity)
+        return false;
+    else
+        oldHumiValue = round(hum);
     String humidityStr;
-    if (!forceRedraw && (hum == oldHumiValue)) return;
-    if ((hum == 0) && (temp == 0)) return;
+    if (!forceRedraw && (hum == oldHumiValue)) return false;
+    if ((hum == 0) && (temp == 0)) return false;
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.humidityXIcon, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
     display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
-    humidityStr = String(int(hum)) + "%";
-    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, humidityStr, 'l', 'c');
+    newHumidityStr = String(int(round(hum)));
+    drawTextAligned(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, newHumidityStr, 'l', 'c');
 #ifdef DEBUG_EINK
-    Serial.println("-->[EINK] Drawn humidity value: " + humidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
+    Serial.println("-->[EINK] Drawn humidity value: " + newHumidityStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #endif
-    oldHumiValue = hum;
+    return true;
 }
 
-void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
+bool showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldTempValue = -200;
-    if (!displayShowTemperature) return;
     String tempStr;
-    if (!forceRedraw && (temp == oldTempValue)) return;
-    if ((temp == 0) && (hum == 0)) return;
+    if ((!forceRedraw && round(temp * 10) == oldTempValue) || ((temp == 0) && (hum == 0)) || !displayShowTemperature)
+        return false;
+    else
+        oldTempValue = round(temp * 10);
     display.setRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.tempXUnits, elementPosition.tempYUnits, iconTempBW, 16, 16, GxEPD_BLACK);
@@ -571,12 +607,17 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef DEBUG_EINK
     Serial.println("-->[EINK] Drawn temperature value: " + tempStr + " at: " + String(posX) + ", " + String(posY) + " with width: " + String(elementPosition.humidityWValue) + " and height: " + String(elementPosition.humidityHValue) + " in: " + __func__);
 #endif
-    oldTempValue = temp;
+    return true;
 }
 
-void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+bool showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    RTC_DATA_ATTR static bool oldBLEstatus = false;
     //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);
     //    display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (activeBLE == oldBLEstatus)
+        return false;
+    else
+        oldBLEstatus = activeBLE;
     if (activeBLE) {
         display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
     } else {
@@ -584,35 +625,62 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
         // display.drawInvertedBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
     }
+    return true;
 }
 
-void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+bool showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    RTC_DATA_ATTR static float oldWiFiState = -200;
+    static float newWiFiState = 0;
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
-        display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-        return;
-    }
-    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (!activeWIFI) {
-        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+        newWiFiState = -1;  // troubled
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
     } else {
-        if (WiFi.status() == WL_CONNECTED) {
-            if (rssi < 60)
-                display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-            else if (rssi < 70)
-                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
-            else if (rssi < 80)
-                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+        // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+        if (!activeWIFI) {
+            newWiFiState = -2;  // inactive
+            // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
+            display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
         } else {
-            display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
+            if (WiFi.status() == WL_CONNECTED) {
+                newWiFiState = 100;  // active signal strengh 80
+                if (rssi < 60) {
+                    newWiFiState = 60;  // active signal strengh 60
+                    display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+                } else if (rssi < 70) {
+                    newWiFiState = 70;  // active signal strengh 70
+                    display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+                } else if (rssi < 80) {
+                    newWiFiState = 80;  // active signal strengh 80
+                    display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+                }
+            } else {
+                newWiFiState = 10;  // active signal strengh 80
+                display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
+            }
         }
     }
+    if (oldWiFiState == newWiFiState)
+        return false;
+    else
+        oldWiFiState = newWiFiState;
+    return true;
 }
 
-void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+bool showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_MQTT
+    RTC_DATA_ATTR static uint16_t oldMQTTState = -999;
+    uint16_t newMQTTState;
+    if (troubledMQTT)
+        newMQTTState = -1;
+    else
+        newMQTTState = activeMQTT;
+
+    if (oldMQTTState == newMQTTState)
+        return false;
+    else
+        oldMQTTState = newMQTTState;
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
     if (activeMQTT) {
         if (troubledMQTT) {
@@ -621,11 +689,23 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
             display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
         }
     }
+    return true;
 #endif
 }
 
-void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+bool showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_ESPNOW
+    RTC_DATA_ATTR static uint16_t oldESPState = -999;
+    uint16_t newESPState;
+    if (troubledESPNOW)
+        newESPState = -1;
+    else
+        newESPState = activeESPNOW;
+
+    if (oldESPState == newESPState)
+        return false;
+    else
+        oldESPState = newESPState;
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
     if (activeESPNOW) {
         if (troubledESPNOW) {
@@ -643,6 +723,7 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         //     display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
         // }
     }
+    return true;
 #endif
 }
 
@@ -683,6 +764,23 @@ void displayShowValues(bool forceRedraw = false) {
     }
     lastDisplayUpdate = millis();
 
+    static uint16_t nPartialToFull = 0;  // First loop full refresh
+    static uint64_t timeNextRefresh = 0;
+    bool changeCo2 = false, changeTemp = false, changeHumidity = false, changeBatt = false, changeWiFi = false, changeMQTT = false, changeBLE = false, changeESP = false, fullRedraw = false;
+    /*    if (millis() > timeNextRefresh) {
+            timeNextRefresh = millis() + timeBetweenEinkUpdates * 1000;
+            if (nPartialToFull == 0) {
+                fullRedraw = true;
+                nPartialToFull = numPartialUpdates;
+            } else {
+                fullRedraw = false;
+                --nPartialToFull;
+            }
+
+        } else if (!forceRedraw)
+            return;  // NO REFRESH DISPLAY UNTIL timeBetweenEinkUpdates SECONDS
+    */
+
 #ifdef TIMEDEBUG
     timer.start();
 #endif
@@ -702,15 +800,15 @@ void displayShowValues(bool forceRedraw = false) {
     }
 
     // testRedrawValues(true);
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
-    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
-    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
-    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    changeCo2 = showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
+    changeTemp = showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
+    changeHumidity = showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+    changeBatt = showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
     // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
-    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    changeWiFi = showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    changeMQTT = showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    changeBLE = showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    changeESP = showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     // display.hibernate();
 
     if (forceRedraw) {
@@ -718,6 +816,64 @@ void displayShowValues(bool forceRedraw = false) {
     } else {
         display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
     }
+    /*
+    if (!changeCo2 && !changeTemp && !changeHumidity && !changeBatt && !changeWiFi && !changeMQTT && !changeBLE && !changeESP) {
+        // IS NOT NECESSARY TO REFRESH DISPLAY
+        nPartialToFull++;
+        Serial.println("-->[EINK] No changes -> no refresh");
+
+    } else {
+        Serial.print("-->[EINK] changeCo2 = " + String(changeCo2));
+        Serial.print(" - changeTemp = " + String(changeTemp));
+        Serial.print(" - changeHumidity = " + String(changeHumidity));
+        Serial.print(" - changeBatt = " + String(changeBatt));
+        Serial.print(" - changeWiFi = " + String(changeWiFi));
+        Serial.print(" - changeMQTT = " + String(changeMQTT));
+        Serial.print(" - changeBLE = " + String(changeBLE));
+        Serial.println(" - changeESP = " + String(changeESP));
+
+        if (fullRedraw) {
+            Serial.println("-->[EINK] Full refresh");
+            display.setFullWindow();  // Enable full refresh
+            display.display();
+        } else {
+            Serial.println("-->[EINK] Partial refresh. Full in : " + String(nPartialToFull));
+
+            if (!changeCo2 && !changeBatt && !changeBLE && !changeWiFi && !changeMQTT && !changeESP) {
+                // ONLY CHANGE TEMP OR HUM.
+                if (!changeTemp) {  // only change hum
+                    Serial.println("-->[EINK] Refresh Humidity");
+                    display.setPartialWindow(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityXValue + elementPosition.humidityWValue, elementPosition.humidityYValue + elementPosition.humidityHValue);
+                    display.displayWindow(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityXValue + elementPosition.humidityWValue, elementPosition.humidityYValue + elementPosition.humidityHValue);
+                } else if (!changeHumidity) {  // only change temp
+                    Serial.println("-->[EINK] Refresh Temp");
+                    display.setPartialWindow(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempXValue + elementPosition.tempWValue, elementPosition.tempYValue + elementPosition.tempHValue);
+                    display.displayWindow(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempXValue + elementPosition.tempWValue, elementPosition.tempYValue + elementPosition.tempHValue);
+                } else {  // only change temp & hum
+                    Serial.println("-->[EINK] Refresh Temp + Humidity");
+                    display.setPartialWindow(0, elementPosition.tempYValue, display.width(), display.height());
+                    display.displayWindow(0, elementPosition.tempYValue, display.width(), display.height());
+                }
+            } else {
+                if (changeCo2 || ((changeBLE || changeWiFi || changeMQTT || changeESP || changeBatt) && (changeTemp || changeHumidity))) {
+                    Serial.println("-->[EINK] Refresh CO2 - all display");
+                    display.displayWindow(0, 0, display.width(), display.height());
+                } else {
+                    if (changeBLE || changeWiFi || changeMQTT || changeESP || changeBatt) {
+                        Serial.println("-->[EINK] Refresh Icons + Battery");
+                        display.setPartialWindow(elementPosition.bleIconX, elementPosition.bleIconY, elementPosition.espNowIconX + 16, elementPosition.bleIconY + 16);
+                        display.displayWindow(0, 0, display.width(), 16);
+                    } else {
+                        Serial.println("-->[EINK] Refresh Temp + Humidity");
+                        display.setPartialWindow(0, elementPosition.tempYValue, display.width(), display.height());
+                        display.displayWindow(0, elementPosition.tempYValue, display.width(), display.height());
+                    }
+                }
+            }
+        }
+        // display.hibernate();
+    }
+    */
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
     if (elapsed > 10) {
