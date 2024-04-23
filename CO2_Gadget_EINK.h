@@ -759,6 +759,8 @@ void testRedrawValues(bool randomNumbers = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
     static uint32_t lastDisplayUpdate = 0;
+    static bool first_co2_measure = true;
+
     bool changeCo2 = false, changeTemp = false, changeHumidity = false, changeBatt = false, changeWiFi = false, changeMQTT = false, changeBLE = false, changeESP = false;
     // Return if last update less than timeBetweenEinkUpdates seconds ago
     if (!forceRedraw && ((millis() - lastDisplayUpdate) < (timeBetweenEinkUpdates * 1000))) {
@@ -779,6 +781,10 @@ void displayShowValues(bool forceRedraw = false) {
         forceRedraw = true;
         display.setFullWindow();
         display.fillScreen(GxEPD_WHITE);  // CLEAR ALL DISPLAY
+    }
+    if (co2 > 0 && first_co2_measure) {  // FULL REFRESH at first CO2 measure
+        first_co2_measure = false;
+        forceRedraw = true;
     }
 
     // testRedrawValues(true);
