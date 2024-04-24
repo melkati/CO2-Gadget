@@ -269,6 +269,27 @@ button:hover {
   white-space: pre-wrap;
 }
 
+.tooltip-icon {
+  cursor: pointer;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 150px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 8px;
+  position: absolute;
+  z-index: 1;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+.tooltip-icon:hover + .tooltip-text {
+  visibility: visible;
+}
+
 /* Add a fade animation effect */
 @keyframes fadeInOut {
   0% {
