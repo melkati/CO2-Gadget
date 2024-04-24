@@ -644,6 +644,46 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     }
 }
 
+String getCO2GadgetStatusAsJson() {
+    StaticJsonDocument<512> doc;
+    doc["CO2"] = co2;
+    doc["Temperature"] = temp;
+    doc["Humidity"] = hum;
+    doc["WiFi"] = WiFi.status();
+    doc["SSID"] = WiFi.SSID();
+#ifndef WIFI_PRIVACY
+    doc["wifiPass"] = wifiPass;
+#endif
+    doc["IP"] = WiFi.localIP().toString();
+    doc["RSSI"] = WiFi.RSSI();
+    doc["MACAddress"] = MACAddress;
+    doc["hostName"] = hostName;
+    doc["rootTopic"] = rootTopic;
+    doc["discoveryTopic"] = discoveryTopic;
+    doc["mqttClientId"] = mqttClientId;
+    doc["mqttBroker"] = mqttBroker;
+    doc["mqttUser"] = mqttUser;
+#ifndef WIFI_PRIVACY
+    doc["mqttPass"] = mqttPass;
+#endif
+    doc["peerESPNowAddress"] = peerESPNowAddress;
+    doc["activeWIFI"] = activeWIFI;
+    doc["activeMQTT"] = activeMQTT;
+    doc["activeBLE"] = activeBLE;
+    doc["activeOTA"] = activeOTA;
+    doc["TroubledWiFi"] = troubledWIFI;
+    doc["TroubledMQTT"] = troubledMQTT;
+    doc["TroubledESPNOW"] = troubledESPNOW;
+    doc["MeasurementInterval"] = measurementInterval;
+    doc["CalibrationValue"] = calibrationValue;
+    doc["PendingCalibration"] = pendingCalibration;
+    doc["Free heap"] = ESP.getFreeHeap();
+    doc["Uptime"] = millis();
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
 const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
 
@@ -719,6 +759,10 @@ void initWebServer() {
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
     String versionJson = getCO2GadgetVersionAsJson();
     request->send(200, "application/json", versionJson); });
+
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String statusJson = getCO2GadgetStatusAsJson();
+    request->send(200, "application/json", statusJson); });
 
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -860,7 +904,7 @@ void initWifi() {
         Serial.println("-->[WiFi] HTTP server started");
         printWiFiStatus();
 
-        troubledMQTT = false; // Try to connect to MQTT broker on next loop if needed
+        troubledMQTT = false;  // Try to connect to MQTT broker on next loop if needed
     }
 }
 
