@@ -716,6 +716,10 @@ void initWebServer() {
     String preferencesJson = getActualSettingsAsJson();
     request->send(200, "application/json", preferencesJson); });
 
+    server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String versionJson = getCO2GadgetVersionAsJson();
+    request->send(200, "application/json", versionJson); });
+
     // Serve the preferences page
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/preferences.html", String(), false, processor);
