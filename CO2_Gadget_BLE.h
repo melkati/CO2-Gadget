@@ -9,7 +9,7 @@
 
 NimBLELibraryWrapper lib;
 WifiMultiLibraryWrapper wifi;
-DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, false, &wifi);
+DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, true, &wifi);
 #endif
 
 void initBLE() {
@@ -80,6 +80,20 @@ void handleBLEwifiChanged() {
 #endif
 }
 
+void handleFrcRequest() {
+    if (!provider.isFRCRequested()) {
+        return;
+    }
+
+    calibrationValue = provider.getReferenceCO2Level();
+    pendingCalibration = true;
+
+    Serial.print("[BLE ] Received FRC request (calibration) with reference CO2 level: ");
+    Serial.println(calibrationValue);
+    delay(5);
+    provider.completeFRCRequest();
+}
+
 void BLELoop() {
 #ifdef SUPPORT_BLE
     int connectTries = 0;
@@ -89,6 +103,7 @@ void BLELoop() {
     provider.handleDownload();
     delay(3);
     if (provider.wifiChanged()) handleBLEwifiChanged();
+    handleFrcRequest();
 #endif
 }
 
