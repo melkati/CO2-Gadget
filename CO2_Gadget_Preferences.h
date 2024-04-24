@@ -7,6 +7,133 @@ Preferences preferences;
 
 uint8_t prefVersion = 0;
 uint8_t prefRevision = 0;
+uint8_t firmVersionMajor = 0;
+uint8_t firmVersionMinor = 0;
+uint8_t firmRevision = 0;
+String firmBranch = "";
+String firmFlavour = "";
+
+// Function to extract the major version number as an integer
+int getCO2GadgetMajorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Create a temporary buffer to hold the major version substring
+    char majorVersion[dotIndex + 1];
+    // Copy the characters until the dot into the buffer
+    strncpy(majorVersion, CO2_GADGET_VERSION, dotIndex);
+    // Null-terminate the string
+    majorVersion[dotIndex] = '\0';
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Major version: " + String(majorVersion));
+#endif
+    // Convert the substring to an integer
+    return atoi(majorVersion);
+#else
+    return false;
+#endif
+}
+
+// Function to extract the minor version number as an integer
+int getCO2GadgetMinorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Check if a dot was found
+    if (CO2_GADGET_VERSION[dotIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version not found.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Find the position of the second dot
+    int minorIndex = dotIndex + 1;
+    while (CO2_GADGET_VERSION[minorIndex] != '.' && CO2_GADGET_VERSION[minorIndex] != '\0') {
+        minorIndex++;
+    }
+    // Check if a second dot was found
+    if (CO2_GADGET_VERSION[minorIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version format error.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Extract the substring between the first and second dots and convert it to an integer
+    char minorVersionStr[minorIndex - dotIndex];
+    strncpy(minorVersionStr, CO2_GADGET_VERSION + dotIndex + 1, minorIndex - dotIndex - 1);
+    minorVersionStr[minorIndex - dotIndex - 1] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Minor version: " + String(minorVersionStr));
+#endif
+    return atoi(minorVersionStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision number as an integer
+int getCO2GadgetRevisionNumber() {
+#ifdef CO2_GADGET_REV
+    // Find the position of the first dash
+    int dashIndex = 0;
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0' && dashIndex < strlen(CO2_GADGET_REV)) {
+        dashIndex++;
+    }
+    // Check if no dash was found or if the string is empty
+    if (CO2_GADGET_REV[dashIndex] == '\0' || dashIndex == 0) {
+        return -1;  // Sentinel value indicating error
+    }
+    // Extract the substring before the first dash and convert it to an integer
+    char revNumberStr[dashIndex + 1];  // Add 1 for the null terminator
+    strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
+    revNumberStr[dashIndex] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
+#endif
+    return atoi(revNumberStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision branch as a String
+String getCO2GadgetRevisionBranch() {
+#ifdef CO2_GADGET_REV
+    // Find the position of the first dash
+    int dashIndex = 0;
+    // Search for the dash character '-'
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0') {
+        dashIndex++;
+    }
+    // If a dash is found, extract the substring after the dash
+    if (CO2_GADGET_REV[dashIndex] == '-') {
+        int branchIndex = dashIndex + 1;
+        // Create a new String to hold the branch name
+        String branchName = "";
+        // Copy characters after the dash to the branchName string
+        while (CO2_GADGET_REV[branchIndex] != '\0') {
+            branchName += CO2_GADGET_REV[branchIndex];
+            branchIndex++;
+        }
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Revision branch: " + branchName);
+#endif
+        return branchName;
+    } else {
+        // If no dash is found, return an empty string
+        return "";
+    }
+#else
+    // If CO2_GADGET_REV is not defined, return an empty string
+    return "";
+#endif
+}
 
 void upgradePreferences() {
     if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
@@ -22,6 +149,11 @@ void printPreferences() {
     Serial.println("-->[PREF] LOADED PREFERENCES FROM NVR:");
     Serial.println("-->[PREF] prefVersion:\t #" + String(prefVersion) + "#");
     Serial.println("-->[PREF] prefRevision:\t #" + String(prefRevision) + "#");
+    Serial.println("-->[PREF] firmVersionMajor:\t #" + String(firmVersionMajor) + "#");
+    Serial.println("-->[PREF] firmVersionMinor:\t #" + String(firmVersionMinor) + "#");
+    Serial.println("-->[PREF] firmRevision:\t #" + String(firmRevision) + "#");
+    Serial.println("-->[PREF] firmBranch:\t #" + firmBranch + "#");
+    Serial.println("-->[PREF] firmFlavour:\t #" + firmFlavour + "#");
     Serial.println("-->[PREF] customCalValue: #" + String(customCalibrationValue) + "#");
     Serial.println("-->[PREF] tempOffset:\t #" + String(tempOffset, 1) + "#");
     Serial.println("-->[PREF] altitudeMeters:\t #" + String(altitudeMeters) + "#");
@@ -92,9 +224,22 @@ void initPreferences() {
     // }
     // preferences.end();
     // delay(000);
+
+    firmVersionMajor = getCO2GadgetMajorVersion();
+    firmVersionMinor = getCO2GadgetMinorVersion();
+    firmRevision = getCO2GadgetRevisionNumber();
+    firmBranch = getCO2GadgetRevisionBranch();
+    firmFlavour = FLAVOUR;
+    
+
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
     prefRevision = preferences.getUInt("prefRevision", 0);
+    firmVersionMajor = preferences.getUInt("firmVerMajor", 0);
+    firmVersionMinor = preferences.getUInt("firmVerMinor", 0);
+    firmRevision = preferences.getUInt("firmRevision", 0);
+    firmBranch = preferences.getString("firmBranch", "");
+    firmFlavour = preferences.getString("firmFlavour", "");
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
@@ -200,6 +345,13 @@ void putPreferences() {
     hostName.trim();
     // preferences.end();
     preferences.begin("CO2-Gadget", false);
+    preferences.putUInt("prefVersion", prefVersion);
+    preferences.putUInt("prefRevision", prefRevision);
+    preferences.putUInt("firmVerMajor", firmVersionMajor);
+    preferences.putUInt("firmVerMinor", firmVersionMinor);
+    preferences.putUInt("firmRevision", firmRevision);
+    preferences.putString("firmBranch", firmBranch);
+    preferences.putString("firmFlavour", firmFlavour);
     preferences.putUInt("customCalValue", customCalibrationValue);
     preferences.putFloat("tempOffset", tempOffset);
     preferences.putUInt("altitudeMeters", altitudeMeters);
@@ -260,11 +412,32 @@ void putPreferences() {
 #endif
 }
 
+String getCO2GadgetVersionAsJson() {
+    String versionJson;
+    DynamicJsonDocument doc(256);
+    doc["firmVerMajor"] = getCO2GadgetMajorVersion();
+    doc["firmVerMinor"] = getCO2GadgetMinorVersion();
+    doc["firmRevision"] = getCO2GadgetRevisionNumber();
+    doc["firmBranch"] = getCO2GadgetRevisionBranch();
+    doc["firmFlavour"] = FLAVOUR;
+    serializeJson(doc, versionJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] CO2 Gadget Version JSON: " + versionJson);
+#endif
+    return versionJson;
+}
+
 String getPreferencesAsJson() {
     preferences.begin("CO2-Gadget", false);
 
     DynamicJsonDocument doc(1024);
 
+    doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
+    doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
+    doc["firmVerMajor"] = preferences.getUInt("firmVerMajor", 0);
+    doc["firmRevision"] = preferences.getUInt("firmRevision", 0);
+    doc["firmBranch"] = preferences.getString("firmBranch", "");
+    doc["firmFlavour"] = preferences.getString("firmFlavour", "");
     doc["customCalValue"] = preferences.getInt("customCalValue", 415);
     doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
     doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
@@ -328,6 +501,13 @@ String getPreferencesAsJson() {
 String getActualSettingsAsJson() {
     JsonDocument doc;
 
+    doc["prefVersion"] = prefVersion;
+    doc["prefRevision"] = prefRevision;
+    doc["firmVerMajor"] = firmVersionMajor;
+    doc["firmVerMinor"] = firmVersionMinor;
+    doc["firmRevision"] = firmRevision;
+    doc["firmBranch"] = firmBranch;
+    doc["firmFlavour"] = firmFlavour;
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = tempOffset;
     doc["altitudeMeters"] = altitudeMeters;
