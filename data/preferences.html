@@ -352,13 +352,31 @@
         <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
       </div>
     </form>
+
     <!-- Popup to display a message -->
     <div id="popup">
       <p>Saving preferences...</p>
     </div>
+
+    <!-- Status line to display CO2 Gadget version -->
+    <div id="statusLineContainer">
+      <span id="co2GadgetVersion"></span>
+    </div>
+
   </div>
 
   <script>
+
+    // Function to fetch version information from the server
+    function fetchVersion() {
+      fetch('/getVersion')
+        .then(response => response.json())
+        .then(versionInfo => {
+          // Update CO2 Gadget version in the status line
+          document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: v" + versionInfo.firmVerMajor + "." + versionInfo.firmVerMinor + "." + versionInfo.firmRevision + "-" + versionInfo.firmBranch + " (Flavour: " + versionInfo.firmFlavour + ")";
+        })
+        .catch(error => console.error('Error fetching version information:', error));
+    }
 
     // Function to load preferences from the server and populate the form
     function loadPreferencesFromServer() {
@@ -610,7 +628,6 @@
       };
     }
 
-
     function restartESP32() {
       // Show a confirmation dialog
       var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
@@ -642,9 +659,8 @@
 
     // Set initial values when the page loads
     document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
+    document.addEventListener("DOMContentLoaded", fetchVersion);
   </script>
-
-
 
 </body>
 
