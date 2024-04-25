@@ -711,6 +711,10 @@ void initWebServer() {
 
     server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/style.css", "text/css");
+    });
+
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(co2));
     });
@@ -793,6 +797,10 @@ void initWebServer() {
         request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
+    });
+
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/favicon.png", "image/png");
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
