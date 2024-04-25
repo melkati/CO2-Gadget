@@ -414,7 +414,7 @@ void putPreferences() {
 
 String getCO2GadgetVersionAsJson() {
     String versionJson;
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     doc["firmVerMajor"] = getCO2GadgetMajorVersion();
     doc["firmVerMinor"] = getCO2GadgetMinorVersion();
     doc["firmRevision"] = getCO2GadgetRevisionNumber();
@@ -430,7 +430,7 @@ String getCO2GadgetVersionAsJson() {
 String getPreferencesAsJson() {
     preferences.begin("CO2-Gadget", false);
 
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
 
     doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
     doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
