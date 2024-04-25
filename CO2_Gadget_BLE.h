@@ -68,6 +68,7 @@ void publishBLE() {
 }
 
 void handleBLEwifiChanged() {
+#ifdef SUPPORT_BLE
     wifiSSID = provider.getWifiSSID();
     wifiPass = provider.getWifiPassword();
     wifiSSID.trim();
@@ -78,9 +79,12 @@ void handleBLEwifiChanged() {
 #ifndef WIFI_PRIVACY
     Serial.println("-->[BLE ] Wifi password changed to: #" + wifiPass + "#");
 #endif
+    delay(5);
+#endif
 }
 
 void handleFrcRequest() {
+#ifdef SUPPORT_BLE
     if (!provider.isFRCRequested()) {
         return;
     }
@@ -92,6 +96,7 @@ void handleFrcRequest() {
     Serial.println(calibrationValue);
     delay(5);
     provider.completeFRCRequest();
+#endif
 }
 
 void BLELoop() {
