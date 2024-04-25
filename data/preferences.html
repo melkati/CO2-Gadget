@@ -9,7 +9,14 @@
 </head>
 
 <body>
-    <div class="container">
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="preferences.html" class="active">Preferences</a>
+        <a href="status.html">Status</a>
+    </div>
+
+    <div class="content">
 
         <h1>CO2 Gadget Preferences</h1>
 
@@ -309,7 +316,8 @@
                 <div>
                     <label for="mqttPass">MQTT Password:
                         <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The password for the MQTT connection. Leave empty if not used. Disabled for security reasons.</span>
+                        <span class="tooltip-text">The password for the MQTT connection. Leave empty if not used.
+                            Disabled for security reasons.</span>
                         <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
                     </label>
                 </div>
@@ -541,7 +549,6 @@
     </div>
 
     <script>
-
         // Function to fetch version information from the server
         function fetchVersion() {
             fetch('/getVersion')
