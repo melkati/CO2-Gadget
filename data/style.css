@@ -133,9 +133,8 @@ button:hover {
   background-color: #45a049;
 }
 
-.container {
-  max-width: 600px;
-  /* Ajusta el ancho máximo según tus preferencias */
+.content {
+  max-width: 600px; /* Adjust the value according to your content width */
   margin: 0 auto;
 }
 
@@ -288,6 +287,41 @@ button:hover {
 
 .tooltip-icon:hover + .tooltip-text {
   visibility: visible;
+}
+
+/* Sticky navigation bar */
+.navbar {
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #f2f2f2;
+  padding: 10px 0;
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.navbar a {
+  padding: 14px 20px;
+  text-decoration: none;
+  color: #333;
+}
+
+.navbar a.active {
+  color: #999;
+  pointer-events: none; /* Disable pointer events for the active link */
+}
+
+/* Adjust content area to prevent overlap with navbar */
+.content {
+  margin-top: 60px; /* Adjust the value according to your navbar height */
+}
+
+.status-item {
+  margin-bottom: 10px;
+}
+
+.status-label {
+  font-weight: bold;
 }
 
 /* Add a fade animation effect */

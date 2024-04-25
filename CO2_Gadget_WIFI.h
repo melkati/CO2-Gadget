@@ -649,7 +649,7 @@ String getCO2GadgetStatusAsJson() {
     doc["CO2"] = co2;
     doc["Temperature"] = temp;
     doc["Humidity"] = hum;
-    doc["WiFi"] = WiFi.status();
+    doc["WiFiStatus"] = WiFi.status();
     doc["SSID"] = WiFi.SSID();
 #ifndef WIFI_PRIVACY
     doc["wifiPass"] = wifiPass;
@@ -658,6 +658,7 @@ String getCO2GadgetStatusAsJson() {
     doc["RSSI"] = WiFi.RSSI();
     doc["MACAddress"] = MACAddress;
     doc["hostName"] = hostName;
+#ifdef SUPPORT_MQTT
     doc["rootTopic"] = rootTopic;
     doc["discoveryTopic"] = discoveryTopic;
     doc["mqttClientId"] = mqttClientId;
@@ -666,19 +667,37 @@ String getCO2GadgetStatusAsJson() {
 #ifndef WIFI_PRIVACY
     doc["mqttPass"] = mqttPass;
 #endif
-    doc["peerESPNowAddress"] = peerESPNowAddress;
+#ifdef SUPPORT_ESPNOW
+    char peerAddressString[18];
+    snprintf(peerAddressString, sizeof(peerAddressString),
+             "%02X:%02X:%02X:%02X:%02X:%02X",
+             peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+             peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    doc["peerESPNowAddress"] = peerAddressString;
+#endif
+#endif
     doc["activeWIFI"] = activeWIFI;
+#ifdef SUPPORT_MQTT
     doc["activeMQTT"] = activeMQTT;
+#endif
+#ifdef SUPPORT_BLE
     doc["activeBLE"] = activeBLE;
+#endif
+#ifdef SUPPORT_OTA
     doc["activeOTA"] = activeOTA;
-    doc["TroubledWiFi"] = troubledWIFI;
-    doc["TroubledMQTT"] = troubledMQTT;
-    doc["TroubledESPNOW"] = troubledESPNOW;
-    doc["MeasurementInterval"] = measurementInterval;
-    doc["CalibrationValue"] = calibrationValue;
-    doc["PendingCalibration"] = pendingCalibration;
-    doc["Free heap"] = ESP.getFreeHeap();
-    doc["Uptime"] = millis();
+#endif
+    doc["troubledWiFi"] = troubledWIFI;
+#ifdef SUPPORT_MQTT
+    doc["troubledMQTT"] = troubledMQTT;
+#endif
+#ifdef SUPPORT_ESPNOW
+    doc["troubledESPNOW"] = troubledESPNOW;
+#endif
+    doc["measurementInterval"] = measurementInterval;
+    doc["calibrationValue"] = calibrationValue;
+    doc["pendingCalibration"] = pendingCalibration;
+    doc["freeheap"] = ESP.getFreeHeap();
+    doc["uptime"] = millis();
     String output;
     serializeJson(doc, output);
     return output;
@@ -779,6 +798,7 @@ void initWebServer() {
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
+
     AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
