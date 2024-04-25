@@ -709,10 +709,70 @@ const char *PARAM_INPUT_2 = "CalibrateCO2";
 void initWebServer() {
     SPIFFS.begin();
 
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // server.serveStatic("/", SPIFFS, "/index.html");
+    // server.serveStatic("/index.html", SPIFFS, "/index.html");
+    // server.serveStatic("/preferences.html", SPIFFS, "/preferences.html");
+    // server.serveStatic("/status.html", SPIFFS, "/status.html");
+    // server.serveStatic("favicon.ico", SPIFFS, "/favicon.png");
+    // server.serveStatic("main.js", SPIFFS, "/main.js");
+    // server.serveStatic("style.css", SPIFFS, "/style.css");
+    // server.serveStatic("preferences.js", SPIFFS, "/preferences.js");
+
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/preferences.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
 
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/style.css", "text/css");
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/style.css.gz", "text/css");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/favicon.png.gz", "image/png");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -777,6 +837,7 @@ void initWebServer() {
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
     String preferencesJson = getActualSettingsAsJson();
+    Serial.println(preferencesJson);
     request->send(200, "application/json", preferencesJson); });
 
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -786,21 +847,12 @@ void initWebServer() {
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
     String statusJson = getCO2GadgetStatusAsJson();
     request->send(200, "application/json", statusJson); });
-
-    // Serve the preferences page
-    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/preferences.html", String(), false, processor);
-    });
-
+    
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
-    });
-
-    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/favicon.png", "image/png");
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
