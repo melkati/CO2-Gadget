@@ -1056,9 +1056,6 @@ void initWifi() {
 
 void wifiClientLoop() {
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
-        if (timeToRetryTroubledWIFI < maxTimeToRetryTroubledWIFI) {
-            timeToRetryTroubledWIFI = timeToRetryTroubledWIFI + timeToRetryIncrementTroubledWIFI;  // Everytime we retry, we add 15 seconds to the retry time (until 900 seconds = 15 minutes)
-        }
         initWifi();
     }
 
