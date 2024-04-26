@@ -1,3 +1,5 @@
+// https://www.zickty.com/filetogzip
+
 // Function to fetch version information from the server
 function fetchVersion() {
     fetch('/getVersion')
