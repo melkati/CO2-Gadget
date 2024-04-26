@@ -63,7 +63,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
   return true;
 }
 
-void initDisplay() {
+void initDisplay(bool fastMode = false) { // fastMode not used in OLED display. Just for compatibility with TFT and other displays.
   Serial.printf("-->[OLED] Initialized: \t#%s#\n",
                 ((u8g2.begin()) ? "OK" : "Failed"));
   u8g2.firstPage();
