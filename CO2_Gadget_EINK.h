@@ -266,10 +266,10 @@ void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issu
  * @param w The width of the bounding box.
  * @param h The height of the bounding box.
  * @param text The text to be displayed.
- * @param h_align The horizontal alignment of the text. Options: 'l' (left), 'c' (centered), 'r' (right). Default: 'C'.
- * @param v_align The vertical alignment of the text. Options: 'u' (upper), 'c' (centered), 'd' (down). Default: 'C'.
+ * @param h_align The horizontal alignment of the text. Options: 'l' (left), 'c' (centered), 'r' (right). Default: 'c'.
+ * @param v_align The vertical alignment of the text. Options: 'u' (upper), 'c' (centered), 'd' (down). Default: 'c'.
  */
-void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String text, char h_align = 'C', char v_align = 'C') {
+void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String text, char h_align = 'c', char v_align = 'c') {
     int16_t tbx, tby;
     uint16_t tbw, tbh;
     uint16_t pos_x, pos_y;
@@ -306,27 +306,28 @@ void drawTextAligned(int16_t x, int16_t y, int16_t w, int16_t h, const String te
 }
 
 void displaySplashScreen(bool fullRefresh = false) {
-    uint16_t eMarieteLogoWidth = 250;
-    uint16_t eMarieteLogoHeight = 128;
-    uint16_t eMarieteLogoX = (display.width() - eMarieteLogoWidth) / 2;
-    uint16_t eMarieteLogoY = (display.height() - eMarieteLogoHeight) / 2;
-    // String ver = "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV);
+    uint16_t LogoWidth = 180;
+    uint16_t LogoHeight = 45;
+    uint16_t LogoX = (display.width() - LogoWidth) / 2;
+    uint16_t LogoY = (display.height() - LogoHeight) / 2;
     if (fullRefresh) {
         display.setFullWindow();  // Activate full screen refresh
         display.firstPage();      // Clear screen
         do {
-            // Draw Logo250x128 bitmap at the center of the screen
             display.fillScreen(GxEPD_WHITE);
-            display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
+            display.drawInvertedBitmap(LogoX + 4, LogoY, Logo180x45, LogoWidth, LogoHeight, GxEPD_BLACK);
         } while (display.nextPage());  // Do full refresh
     } else {
         display.setPartialWindow(0, 0, display.width(), display.height());  // Enable partial refresh
         display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
-        display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
+        display.drawInvertedBitmap(LogoX + 4, LogoY, Logo180x45, LogoWidth, LogoHeight, GxEPD_BLACK);
 #ifdef DEBUG_EINK
-        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 16, display.width(), elementPosition.smallFontDigitsHeight + 8, "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV), 'r', 'd');
-        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 16, display.width(), elementPosition.smallFontDigitsHeight + 8, String(FLAVOUR), 'l', 'd');
+        drawTextAligned(0, 0, display.width(), elementPosition.smallFontDigitsHeight + 8, "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV), 'c', 'u');
+        Serial.println("-->[EINK] Text drawn at: " + String(0) + ", " + String(LogoY + LogoHeight / 2 + 8) + " with width: " + String(display.width()) + " and height: " + String(elementPosition.smallFontDigitsHeight + 8) + " in: " + __func__ + "()");
+        drawTextAligned(0, elementPosition.smallFontDigitsHeight + 8, display.width(), elementPosition.smallFontDigitsHeight + 8, String(FLAVOUR), 'c', 'u');
+        Serial.println("-->[EINK] Text drawn at: " + String(0) + ", " + String(LogoY - LogoHeight / 2 - 8) + " with width: " + String(display.width()) + " and height: " + String(elementPosition.smallFontDigitsHeight + 8) + " in: " + __func__ + "()");
 #endif
+        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 8, display.width(), elementPosition.smallFontDigitsHeight + 8, String("https://emariete.com/co2"), 'c', 'u');
         display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
 }
