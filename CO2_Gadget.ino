@@ -1,25 +1,9 @@
-/*****************************************************************************************************/
-/*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
-/*****************************************************************************************************/
-/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
-/* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
-/*  THIS SECTION IS OUTDATED, IF YOU WANT TO USE ARDUINO YOU WILL HAVE TO SHORT IT OUT BY YOURSELF   */
-/*            I WILL PREPARE THE CODE AND WRITE NEW INSTRUCTIONS AS TIME PERMITS.                    */
-/*                                                                                                   */
-#ifndef PLATFORMIO
-#define SUPPORT_OTA
-#define SUPPORT_TFT
-#define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
-// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
-#endif
-/*****************************************************************************************************/
-
 // Functions and enum definitions
-void reverseButtons(bool reversed);
-void outputsLoop();
-void publishMQTTLogData(String logData);
-void putPreferences();
+void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                       // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                          // Defined in CO2_Gadget_Menu.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -53,13 +37,20 @@ bool activeBLE = true;
 
 // WIFI options
 bool activeWIFI = true;
-bool troubledWIFI = false;                       // There are problems connecting to WIFI. Temporary suspend WIFI
-uint64_t timeTroubledWIFI = 0;                   // Time since WIFI is troubled
-uint64_t timeToRetryTroubledWIFI = 60;           // Time in seconds to retry WIFI connection after it is troubled (will increase as it keeps retrying)
-uint64_t timeToRetryIncrementTroubledWIFI = 15;  // Time in seconds to increment the time to retry WIFI connection after it is troubled
-uint64_t maxTimeToRetryTroubledWIFI = 90;        // Maximum time in seconds to retry WIFI connection after it is troubled
+bool activeMQTT = true;
+bool activeESPNOW = false;
+bool activeOTA = false;
+bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
+bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
+bool troubledESPNOW = false;             // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
+uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
+uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
+uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
-uint16_t maxWiFiConnectionRetries = 20;
+uint16_t maxWiFiConnectionRetries = 10;
+bool mqttDiscoverySent = false;
+
 bool wifiChanged = false;
 
 // MQTT options
@@ -175,7 +166,7 @@ enum notificationTypes { notifyNothing,
                          notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#if (!SUPPORT_OLED && !SUPPORT_TFT && !SUPPORT_EINK)
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
@@ -250,6 +241,15 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*****************************************************************************************************/
 #ifdef SUPPORT_OTA
 #include <AsyncElegantOTA.h>
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
+/*********               INCLUDE EINK DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#if defined SUPPORT_EINK
+#include <CO2_Gadget_EINK.h>
 #endif
 
 /*****************************************************************************************************/
@@ -512,18 +512,27 @@ void utilityLoop() {
     const int16_t lowCpuFrequency = 80;
 
     if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
-        setCpuFrequencyAndReinitSerial(highCpuFrequency);
+        setCpuFrequencyMhz(highCpuFrequency);
     } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
-        setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+        setCpuFrequencyMhz(lowCpuFrequency);
     }
+
+    // if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(highCpuFrequency);
+    // } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+    // }
 }
 
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    Serial.setDebugOutput(true);
+    Serial.setTxBufferSize(1024);
+    Serial.setRxBufferSize(512);
     Serial.begin(115200);
     delay(50);
 #ifdef AUTO_VERSION
@@ -550,8 +559,8 @@ void setup() {
     initGPIO();
     initNeopixel();
     initBuzzer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    initDisplay();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    initDisplay(false);
 #endif
 #ifdef SUPPORT_BLE
     initBLE();

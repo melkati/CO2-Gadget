@@ -7,94 +7,239 @@ Preferences preferences;
 
 uint8_t prefVersion = 0;
 uint8_t prefRevision = 0;
+uint8_t firmVersionMajor = 0;
+uint8_t firmVersionMinor = 0;
+uint8_t firmRevision = 0;
+String firmBranch = "";
+String firmFlavour = "";
+
+// Function to extract the major version number as an integer
+int getCO2GadgetMajorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Create a temporary buffer to hold the major version substring
+    char majorVersion[dotIndex + 1];
+    // Copy the characters until the dot into the buffer
+    strncpy(majorVersion, CO2_GADGET_VERSION, dotIndex);
+    // Null-terminate the string
+    majorVersion[dotIndex] = '\0';
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Major version: " + String(majorVersion));
+#endif
+    // Convert the substring to an integer
+    return atoi(majorVersion);
+#else
+    return false;
+#endif
+}
+
+// Function to extract the minor version number as an integer
+int getCO2GadgetMinorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Check if a dot was found
+    if (CO2_GADGET_VERSION[dotIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version not found.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Find the position of the second dot
+    int minorIndex = dotIndex + 1;
+    while (CO2_GADGET_VERSION[minorIndex] != '.' && CO2_GADGET_VERSION[minorIndex] != '\0') {
+        minorIndex++;
+    }
+    // Check if a second dot was found
+    if (CO2_GADGET_VERSION[minorIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version format error.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Extract the substring between the first and second dots and convert it to an integer
+    char minorVersionStr[minorIndex - dotIndex];
+    strncpy(minorVersionStr, CO2_GADGET_VERSION + dotIndex + 1, minorIndex - dotIndex - 1);
+    minorVersionStr[minorIndex - dotIndex - 1] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Minor version: " + String(minorVersionStr));
+#endif
+    return atoi(minorVersionStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision number as an integer
+int getCO2GadgetRevisionNumber() {
+#ifdef CO2_GADGET_REV
+    // Find the position of the first dash
+    int dashIndex = 0;
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0' && dashIndex < strlen(CO2_GADGET_REV)) {
+        dashIndex++;
+    }
+    // Check if no dash was found or if the string is empty
+    if (CO2_GADGET_REV[dashIndex] == '\0' || dashIndex == 0) {
+        return -1;  // Sentinel value indicating error
+    }
+    // Extract the substring before the first dash and convert it to an integer
+    char revNumberStr[dashIndex + 1];  // Add 1 for the null terminator
+    strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
+    revNumberStr[dashIndex] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
+#endif
+    return atoi(revNumberStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision branch as a String
+String getCO2GadgetRevisionBranch() {
+#ifdef CO2_GADGET_REV
+    // Find the position of the first dash
+    int dashIndex = 0;
+    // Search for the dash character '-'
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0') {
+        dashIndex++;
+    }
+    // If a dash is found, extract the substring after the dash
+    if (CO2_GADGET_REV[dashIndex] == '-') {
+        int branchIndex = dashIndex + 1;
+        // Create a new String to hold the branch name
+        String branchName = "";
+        // Copy characters after the dash to the branchName string
+        while (CO2_GADGET_REV[branchIndex] != '\0') {
+            branchName += CO2_GADGET_REV[branchIndex];
+            branchIndex++;
+        }
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Revision branch: " + branchName);
+#endif
+        return branchName;
+    } else {
+        // If no dash is found, return an empty string
+        return "";
+    }
+#else
+    // If CO2_GADGET_REV is not defined, return an empty string
+    return "";
+#endif
+}
 
 void upgradePreferences() {
     if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
         batteryDischargedMillivolts = 3200;
-        Serial.printf("-->[PREF] Upgrading preferences batteryDischargedMillivolts to %d\n", batteryDischargedMillivolts);
+        Serial.println("-->[PREF] Upgrading preferences batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
         prefRevision = 1;
         putPreferences();
     }
 }
 
 void printPreferences() {
-    Serial.printf("-->[PREF] \n");
-    Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
-    Serial.printf("-->[PREF] prefVersion:\t #%d#\n", prefVersion);
-    Serial.printf("-->[PREF] prefRevision:\t #%d#\n", prefRevision);
-    Serial.printf("-->[PREF] customCalValue: #%d#\n", customCalibrationValue);
-    Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
-    Serial.printf("-->[PREF] altitudeMeters:\t #%d#\n", altitudeMeters);
-    Serial.printf("-->[PREF] autoSelfCalibration:\t #%s#\n",
-                  ((autoSelfCalibration) ? "Enabled" : "Disabled"));
-    Serial.printf("-->[PREF] co2OrangeRange:\t #%d#\n", co2OrangeRange);
-    Serial.printf("-->[PREF] co2RedRange:\t #%d#\n", co2RedRange);
-    Serial.printf("-->[PREF] DisplayBrightness:\t #%d#\n", DisplayBrightness);
-    Serial.printf("-->[PREF] neopixBright:\t #%d#\n", neopixelBrightness);
-    Serial.printf("-->[PREF] selNeopxType:\t #%d#\n", selectedNeopixelType);
-    Serial.printf("-->[PREF] activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
-    Serial.printf("-->[PREF] activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
-    Serial.printf("-->[PREF] activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
-    Serial.printf("-->[PREF] activeESPNOW is:\t#%s# (%d)\n", ((activeESPNOW) ? "Enabled" : "Disabled"), activeESPNOW);
-    Serial.printf("-->[PREF] activeOTA is:\t#%s# (%d)\n", ((activeOTA) ? "Enabled" : "Disabled"), activeOTA);
-    Serial.printf("-->[PREF] rootTopic:\t#%s#\n", rootTopic.c_str());
-    Serial.printf("-->[PREF] batDischgd:\t #%d#\n", batteryDischargedMillivolts);
-    Serial.printf("-->[PREF] batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
-    Serial.printf("-->[PREF] vRef:\t #%d#\n", vRef);
-    Serial.printf("-->[PREF] mqttClientId:\t#%s#\n", mqttClientId.c_str());
-    Serial.printf("-->[PREF] mqttBroker:\t#%s#\n", mqttBroker.c_str());
-    Serial.printf("-->[PREF] mqttUser:\t#%s#\n", mqttUser.c_str());
+    Serial.println("-->[PREF]");
+    Serial.println("-->[PREF] LOADED PREFERENCES FROM NVR:");
+    Serial.println("-->[PREF] prefVersion:\t #" + String(prefVersion) + "#");
+    Serial.println("-->[PREF] prefRevision:\t #" + String(prefRevision) + "#");
+    Serial.println("-->[PREF] firmVersionMajor:\t #" + String(firmVersionMajor) + "#");
+    Serial.println("-->[PREF] firmVersionMinor:\t #" + String(firmVersionMinor) + "#");
+    Serial.println("-->[PREF] firmRevision:\t #" + String(firmRevision) + "#");
+    Serial.println("-->[PREF] firmBranch:\t #" + firmBranch + "#");
+    Serial.println("-->[PREF] firmFlavour:\t #" + firmFlavour + "#");
+    Serial.println("-->[PREF] customCalValue: #" + String(customCalibrationValue) + "#");
+    Serial.println("-->[PREF] tempOffset:\t #" + String(tempOffset, 1) + "#");
+    Serial.println("-->[PREF] altitudeMeters:\t #" + String(altitudeMeters) + "#");
+    Serial.println("-->[PREF] autoSelfCalibration:\t #" + String(autoSelfCalibration ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] co2OrangeRange:\t #" + String(co2OrangeRange) + "#");
+    Serial.println("-->[PREF] co2RedRange:\t #" + String(co2RedRange) + "#");
+    Serial.println("-->[PREF] DisplayBrightness:\t #" + String(DisplayBrightness) + "#");
+    Serial.println("-->[PREF] neopixBright:\t #" + String(neopixelBrightness) + "#");
+    Serial.println("-->[PREF] selNeopxType:\t #" + String(selectedNeopixelType) + "#");
+    Serial.println("-->[PREF] activeBLE is:\t#" + String(activeBLE ? "Enabled" : "Disabled") + "# (" + String(activeBLE) + ")");
+    Serial.println("-->[PREF] activeWIFI is:\t#" + String(activeWIFI ? "Enabled" : "Disabled") + "# (" + String(activeWIFI) + ")");
+    Serial.println("-->[PREF] activeMQTT is:\t#" + String(activeMQTT ? "Enabled" : "Disabled") + "# (" + String(activeMQTT) + ")");
+    Serial.println("-->[PREF] activeESPNOW is:\t#" + String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(activeESPNOW) + ")");
+    Serial.println("-->[PREF] activeOTA is:\t#" + String(activeOTA ? "Enabled" : "Disabled") + "# (" + String(activeOTA) + ")");
+    Serial.println("-->[PREF] rootTopic:\t#" + rootTopic + "#");
+    Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
+    Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
+    Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
+    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");
+    Serial.println("-->[PREF] mqttBroker:\t#" + mqttBroker + "#");
+    Serial.println("-->[PREF] mqttUser:\t#" + mqttUser + "#");
 #ifndef WIFI_PRIVACY
-    Serial.printf("-->[PREF] mqttPass:\t#%s#\n", mqttPass.c_str());
+    Serial.println("-->[PREF] mqttPass:\t#" + mqttPass + "#");
 #endif
-    Serial.printf("-->[PREF] tToDispOff:\t #%d#\n", timeToDisplayOff);
-    Serial.printf("-->[PREF] tToPubMQTT:\t #%d#\n", timeBetweenMQTTPublish);
-    Serial.printf("-->[PREF] tToPubESPNow:\t #%d#\n", timeBetweenESPNowPublish);
-    Serial.printf("-->[PREF] tKeepAlMQTT:\t #%d#\n", timeToKeepAliveMQTT);
-    Serial.printf("-->[PREF] tKeepAlESPNow:\t #%d#\n", timeToKeepAliveESPNow);
-    Serial.printf("-->[PREF] dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
-    Serial.printf("-->[PREF] wifiSSID:\t#%s#\n", wifiSSID.c_str());
+    Serial.println("-->[PREF] tToDispOff:\t #" + String(timeToDisplayOff) + "#");
+    Serial.println("-->[PREF] tToPubMQTT:\t #" + String(timeBetweenMQTTPublish) + "#");
+    Serial.println("-->[PREF] tToPubESPNow:\t #" + String(timeBetweenESPNowPublish) + "#");
+    Serial.println("-->[PREF] tKeepAlMQTT:\t #" + String(timeToKeepAliveMQTT) + "#");
+    Serial.println("-->[PREF] tKeepAlESPNow:\t #" + String(timeToKeepAliveESPNow) + "#");
+    Serial.println("-->[PREF] dispOffOnExP:\t#" + String(displayOffOnExternalPower ? "Enabled" : "Disabled") + "# (" + String(displayOffOnExternalPower) + ")");
+    Serial.println("-->[PREF] wifiSSID:\t#" + wifiSSID + "#");
 #ifndef WIFI_PRIVACY
-    Serial.printf("-->[PREF] wifiPass:\t#%s#\n", wifiPass.c_str());
+    Serial.println("-->[PREF] wifiPass:\t#" + wifiPass + "#");
 #endif
-    Serial.printf("-->[PREF] hostName:\t#%s#\n", hostName.c_str());
-    Serial.printf("-->[PREF] selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
-    Serial.printf("-->[PREF] debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
-    Serial.printf("-->[PREF] displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);
-    Serial.printf("-->[PREF] showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Fahrenheit" : "Celsius"));
-    Serial.printf("-->[PREF] measInterval:\t #%d#\n", measurementInterval);
-    Serial.printf("-->[PREF] outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));
-    Serial.printf("-->[PREF] channelESPNow:\t #%d#\n", channelESPNow);
-    Serial.printf("-->[PREF] boardIdESPNow:\t #%d#\n", boardIdESPNow);
-    Serial.printf("-->[PREF] peerESPNow:\t #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    Serial.println("-->[PREF] hostName:\t#" + hostName + "#");
+    Serial.println("-->[PREF] selCO2Sensor:\t #" + String(selectedCO2Sensor) + "#");
+    Serial.println("-->[PREF] debugSensors is:\t#" + String(debugSensors ? "Enabled" : "Disabled") + "# (" + String(debugSensors) + ")");
+    Serial.println("-->[PREF] displayReverse is:\t#" + String(displayReverse ? "Reversed" : "Normal") + "# (" + String(displayReverse) + ")");
+    Serial.println("-->[PREF] showFahrenheit is:\t#" + String(showFahrenheit ? "Fahrenheit" : "Celsius") + "#");
+    Serial.println("-->[PREF] measInterval:\t #" + String(measurementInterval) + "#");
+    Serial.println("-->[PREF] outModeRelay is:\t#" + String(outputsModeRelay ? "Relay" : "RGB LED") + "#");
+    Serial.println("-->[PREF] channelESPNow:\t #" + String(channelESPNow) + "#");
+    Serial.println("-->[PREF] boardIdESPNow:\t #" + String(boardIdESPNow) + "#");
+    Serial.println("-->[PREF] peerESPNow:\t #" + String(peerESPNowAddress[0], HEX) + ":" + String(peerESPNowAddress[1], HEX) + ":" + String(peerESPNowAddress[2], HEX) + ":" + String(peerESPNowAddress[3], HEX) + ":" + String(peerESPNowAddress[4], HEX) + ":" + String(peerESPNowAddress[5], HEX) + "#");
 
-    Serial.printf("-->[PREF] showTemp:\t #%s#\n", ((displayShowTemperature) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showHumidity:\t #%s#\n", ((displayShowHumidity) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showBattery:\t #%s#\n", ((displayShowBattery) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showBatteryVolt:\t #%s#\n", ((displayShowBatteryVoltage) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showCO2:\t #%s#\n", ((displayShowCO2) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showPM25:\t #%s#\n", ((displayShowPM25) ? "Show" : "Hide"));
+    Serial.println("-->[PREF] showTemp:\t #" + String(displayShowTemperature ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showHumidity:\t #" + String(displayShowHumidity ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showBattery:\t #" + String(displayShowBattery ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showBatteryVolt:\t #" + String(displayShowBatteryVoltage ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showCO2:\t #" + String(displayShowCO2 ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showPM25:\t #" + String(displayShowPM25 ? "Show" : "Hide") + "#");
 
     // Buzzer preferences
-    Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
-    Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
-    Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
+    Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
+    Serial.println("-->[PREF] durationBuzzerBeep is:\t#" + String(durationBuzzerBeep) + "#");
+    Serial.println("-->[PREF] timeBetweenBuzzerBeeps is:\t#" + String(timeBetweenBuzzerBeeps) + "#");
 
-    Serial.printf("-->[PREF] \n");
+    Serial.println();
+    delay(50);
 }
 
 void initPreferences() {
     // preferences.begin("CO2-Gadget", false);
     // if (preferences.clear()) {
-    //     Serial.printf("-->[PREF] Preferences cleared\n");
+    //     Serial.println("-->[PREF] Preferences cleared");
     // } else {
-    //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
+    //     Serial.println("-->[PREF] Preferences NOT cleared");
     // }
     // preferences.end();
     // delay(000);
+
+    firmVersionMajor = getCO2GadgetMajorVersion();
+    firmVersionMinor = getCO2GadgetMinorVersion();
+    firmRevision = getCO2GadgetRevisionNumber();
+    firmBranch = getCO2GadgetRevisionBranch();
+    firmFlavour = FLAVOUR;
+    
+
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
     prefRevision = preferences.getUInt("prefRevision", 0);
+    firmVersionMajor = preferences.getUInt("firmVerMajor", 0);
+    firmVersionMinor = preferences.getUInt("firmVerMinor", 0);
+    firmRevision = preferences.getUInt("firmRevision", 0);
+    firmBranch = preferences.getString("firmBranch", "");
+    firmFlavour = preferences.getString("firmFlavour", "");
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
@@ -148,19 +293,6 @@ void initPreferences() {
     uint8_t buffer[key_size];
     preferences.getBytes("peerESPNow", buffer, key_size);
 
-    // Serial.printf("-->[PREF] Current size of \"%s\": %d\n", "peerESPNow", key_size);
-    // if (key_size > 0) {
-    //   Serial.print("    Data");
-    //   uint8_t existingData[key_size];
-    //   size_t count = preferences.getBytes("peerESPNow", existingData, key_size);
-    //   Serial.printf("-->[PREF] [%d]:", count);
-    //   for (size_t i = 0; i < count; i++) {
-    //     Serial.printf("-->[PREF]  %02x", existingData[i]);
-    //   }
-    //   Serial.printf("\n");
-    // }
-    // Serial.printf("key_size = %d sizeof(peerESPNowAddress) = %d\n", key_size, sizeof(peerESPNowAddress));
-
     if (key_size = sizeof(peerESPNowAddress)) {
         memcpy(peerESPNowAddress, buffer, sizeof(peerESPNowAddress));
     }
@@ -193,9 +325,16 @@ void initPreferences() {
     upgradePreferences();
 }
 
+void saveWifiCredentials() {
+    Serial.println("-->[PREF] Saving WiFi credentials to NVR");
+    preferences.begin("CO2-Gadget", false);
+    preferences.putString("wifiSSID", wifiSSID);
+    preferences.putString("wifiPass", wifiPass);
+    preferences.end();
+}
+
 void putPreferences() {
-    Serial.printf("-->[PREF] \n");
-    Serial.printf("-->[PREF] Saving preferences to NVR\n");
+    Serial.println("-->[PREF] \n Saving preferences to NVR");
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -204,8 +343,15 @@ void putPreferences() {
     wifiSSID.trim();
     wifiPass.trim();
     hostName.trim();
-    preferences.end();
+    // preferences.end();
     preferences.begin("CO2-Gadget", false);
+    preferences.putUInt("prefVersion", prefVersion);
+    preferences.putUInt("prefRevision", prefRevision);
+    preferences.putUInt("firmVerMajor", firmVersionMajor);
+    preferences.putUInt("firmVerMinor", firmVersionMinor);
+    preferences.putUInt("firmRevision", firmRevision);
+    preferences.putString("firmBranch", firmBranch);
+    preferences.putString("firmFlavour", firmFlavour);
     preferences.putUInt("customCalValue", customCalibrationValue);
     preferences.putFloat("tempOffset", tempOffset);
     preferences.putUInt("altitudeMeters", altitudeMeters);
@@ -266,11 +412,32 @@ void putPreferences() {
 #endif
 }
 
+String getCO2GadgetVersionAsJson() {
+    String versionJson;
+    JsonDocument doc;
+    doc["firmVerMajor"] = getCO2GadgetMajorVersion();
+    doc["firmVerMinor"] = getCO2GadgetMinorVersion();
+    doc["firmRevision"] = getCO2GadgetRevisionNumber();
+    doc["firmBranch"] = getCO2GadgetRevisionBranch();
+    doc["firmFlavour"] = FLAVOUR;
+    serializeJson(doc, versionJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] CO2 Gadget Version JSON: " + versionJson);
+#endif
+    return versionJson;
+}
+
 String getPreferencesAsJson() {
     preferences.begin("CO2-Gadget", false);
 
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
 
+    doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
+    doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
+    doc["firmVerMajor"] = preferences.getUInt("firmVerMajor", 0);
+    doc["firmRevision"] = preferences.getUInt("firmRevision", 0);
+    doc["firmBranch"] = preferences.getString("firmBranch", "");
+    doc["firmFlavour"] = preferences.getString("firmFlavour", "");
     doc["customCalValue"] = preferences.getInt("customCalValue", 415);
     doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
     doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
@@ -327,13 +494,20 @@ String getPreferencesAsJson() {
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
+    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
     return preferencesJson;
 }
 
 String getActualSettingsAsJson() {
     JsonDocument doc;
 
+    doc["prefVersion"] = prefVersion;
+    doc["prefRevision"] = prefRevision;
+    doc["firmVerMajor"] = firmVersionMajor;
+    doc["firmVerMinor"] = firmVersionMinor;
+    doc["firmRevision"] = firmRevision;
+    doc["firmBranch"] = firmBranch;
+    doc["firmFlavour"] = firmFlavour;
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = tempOffset;
     doc["altitudeMeters"] = altitudeMeters;
@@ -398,7 +572,7 @@ String getActualSettingsAsJson() {
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
+    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
     return preferencesJson;
 }
 
