@@ -37,20 +37,11 @@ bool activeBLE = true;
 
 // WIFI options
 bool activeWIFI = true;
-bool activeMQTT = true;
-bool activeESPNOW = false;
-bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
-bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
-bool troubledESPNOW = false;             // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
-uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
-uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 10;
-bool mqttDiscoverySent = false;
-
 bool wifiChanged = false;
 
 // MQTT options
