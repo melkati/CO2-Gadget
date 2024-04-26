@@ -836,8 +836,8 @@ void initWebServer() {
     request->send(200, "application/json", preferencesJson); });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // String preferencesJson = getActualSettingsAsJson();
-    Serial.println(preferencesJson);
+    String preferencesJson = getActualSettingsAsJson();
+    // Serial.println(preferencesJson);
     request->send(200, "application/json", preferencesJson); });
 
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
