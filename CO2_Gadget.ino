@@ -32,8 +32,10 @@ String wifiPass = WIFI_PW_CREDENTIALS;
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
-// Communication options
+// BLE options
 bool activeBLE = true;
+
+// WIFI options
 bool activeWIFI = true;
 bool activeMQTT = true;
 bool activeESPNOW = false;
@@ -48,7 +50,30 @@ uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connec
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 10;
 bool mqttDiscoverySent = false;
+
 bool wifiChanged = false;
+
+// MQTT options
+bool activeMQTT = true;
+bool troubledMQTT = false;                       // There are problems connecting to MQTT. Temporary suspend MQTT
+uint64_t timeTroubledMQTT = 0;                   // Time since MQTT is troubled
+uint64_t timeToRetryTroubledMQTT = 900;          // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically everytime WiFi is connected)
+bool mqttDiscoverySent = false;
+uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
+uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
+
+// ESP-NOW options
+bool activeESPNOW = false;
+bool troubledESPNOW = false;                     // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+uint8_t channelESPNow = 1;
+uint16_t boardIdESPNow = 0;
+uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
+uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
+
+// OTA options
+bool activeOTA = false;
 
 // Display and menu options
 uint16_t DisplayBrightness = 100;
@@ -75,8 +100,6 @@ uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
 uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
 int16_t timeBetweenBuzzerBeeps = -1;
 
-uint8_t channelESPNow = 1;
-uint16_t boardIdESPNow = 0;
 uint64_t timeInitializationCompleted = 0;
 
 // Variables for Battery reading
@@ -92,16 +115,6 @@ uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
-
-// Variables for MQTT timming
-uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
-uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
-
-// Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
-uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 // Variables for color and output ranges
 uint16_t co2OrangeRange = 700;

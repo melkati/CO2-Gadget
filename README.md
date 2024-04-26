@@ -187,7 +187,11 @@ Currently Arduino IDE is not supported. If you want to compile with the Arduino 
 
 I recommend that you use VS Code with PlatformIO. You have many tutorials on the internet, and it is not as difficult at all as it seems.
 
-# Supporting the project
+# Getting Involved
+
+Everyone is welcome to contribute to CO2 Gadget, regardless of their skill level or background. Whether you're tech-savvy, passionate about community development, or simply want to make a difference, there’s a role for you.
+
+Contribute: See our Issues section to find current tasks or share your project ideas. Join us in creating the world's more advanced firmware for CO2 Meter/Monitor.
 
 If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
 
@@ -202,14 +206,17 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description and code is a must
 - Target your pull request to be merged with the `development` branch
 
+There are also private groups for committed and dedicated Alpha and Beta Testers
+
 # Supporting the project
 
 Do you want to maka e acontribution to support the CO2 Gadget project? If so, **thank you!**
 I don't want money but I will accept material donations so I can move forward with CO2 Gadget development. I always need some development board, some sensor or some tool.
 
-<a href=https://s.click.aliexpress.com/e/_DDtmotn target="_blank"><img src=//ae01.alicdn.com/kf/H056531cd866d4a3c8807b9938a654ce14.jpg_80x80.jpg></a>
+<a href=https://s.click.aliexpress.com/e/_DmqesWN target="_blank"><img src=//ae01.alicdn.com/kf/Sd1a317e7b72f425b92032c780d79d89a2.jpg_140x140.jpg /></a>
+<a href=https://s.click.aliexpress.com/e/_DmJQ1VX target="_blank"><img src=//ae01.alicdn.com/kf/H308d07827d0e44d9a9609f47092b8885V.jpg_140x140.jpg /></a>
 
-# TODO
+# TO DO
 
 - [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
 - [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)
