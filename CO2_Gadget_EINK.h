@@ -324,8 +324,8 @@ void displaySplashScreen(bool fullRefresh = false) {
         display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         display.drawInvertedBitmap(eMarieteLogoX + 4, eMarieteLogoY, Logo250x128, eMarieteLogoWidth, eMarieteLogoHeight, GxEPD_BLACK);
 #ifdef DEBUG_EINK
-        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 8, display.width(), elementPosition.smallFontDigitsHeight + 8, "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV), 'r', 'd');
-        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 8, display.width(), elementPosition.smallFontDigitsHeight + 8, String(FLAVOUR), 'l', 'd');
+        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 16, display.width(), elementPosition.smallFontDigitsHeight + 8, "v" + String(CO2_GADGET_VERSION) + "." + String(CO2_GADGET_REV), 'r', 'd');
+        drawTextAligned(0, display.height() - elementPosition.smallFontDigitsHeight - 16, display.width(), elementPosition.smallFontDigitsHeight + 8, String(FLAVOUR), 'l', 'd');
 #endif
         display.displayWindow(0, 0, display.width(), display.height());  // Partial update
     }
