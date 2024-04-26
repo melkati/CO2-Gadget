@@ -17,17 +17,21 @@ void onImprovWiFiErrorCb(ImprovTypes::Error err) {
     Serial.println("-->[IMPR] Error: " + String(err));
 }
 
-void onImprovWiFiConnectedCb(const char *ssid, const char *password) {    
+void onImprovWiFiConnectedCb(const char *ssid, const char *password) {
+    #ifdef WIFI_PRIVACY
     Serial.println("-->[IMPR] Connected to: " + String(ssid));
+    #else
+    Serial.println("-->[IMPR] Connected to: " + String(ssid) + " with password: " + String(password));
+    #endif
     wifiChanged = true;
     activeWIFI = true;
     wifiSSID = ssid;
     wifiPass = password;
-    putPreferences();
+    saveWifiCredentials();
 }
 
 void initImprov() {
-    char version[100];  // Ajusta el tamaño según tus necesidades
+    char version[120];  // Ajusta el tamaño según tus necesidades
     sprintf(version, "CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
     Serial.println("-->[IMPR] Init Improv");
     #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -43,7 +47,7 @@ void initImprov() {
 
 void improvLoop() {
     if (!inMenu) {
-        if (Serial.available() && Serial.peek() != 0x2A) {
+        if (Serial.available() && Serial.peek() != 0x2A) { // 0x2A = '*'
             improvSerial.handleSerial();
         }
     }

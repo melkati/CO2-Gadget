@@ -34,37 +34,31 @@ void initBattery() {
 
 void readBatteryVoltage() {
     float batteryVoltageNow = 0;
+
     if ((millis() - lastTimeBatteryRead >= timeBetweenBatteryRead * 1000) || (lastTimeBatteryRead == 0)) {
         for (uint8_t i = 0; i < batterySamples; i++) {
-            batteryVoltageNow += float(battery.voltage()) / 1000;
-            delay(10);
+            batteryVoltageNow += float(battery.voltage(20)) / 1000;
+            delay(5);
         }
         batteryVoltageNow /= 3;
         batteryVoltage = batteryVoltageNow;
         batteryLevel = battery.level(batteryVoltage * 1000);
         lastTimeBatteryRead = millis();
 
-        // If battery voltage is more than 6% of the fully charged battery voltage (~4.45V) or if battery voltage is less than 1V (no battery connected to sense pin), then assume that the device is working on external power.
-        workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 6 / 100)) || (batteryVoltageNow < 1);
-        publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower));
+        // If battery voltage is more than 6% of the fully charged battery voltage (~4.45V) or if battery voltage is less
+        // than 1V (no battery connected to sense pin), then assume that the device is working on external power.
+        const float workingOnExternalPowerThreshold = batteryFullyChargedMillivolts * 1.06 / 1000;
+        workingOnExternalPower = ((batteryVoltageNow) > workingOnExternalPowerThreshold) || (batteryVoltageNow < 1);
 
-        // publishMQTTLogData("Battery Level: " + String(batteryLevel) + "%   Battery voltage changed from: " + String(lastBatteryVoltage) + "V to " + String(batteryVoltage) + "V");
+        // workingOnExternalPower = (batteryVoltageNow * 1000 > batteryFullyChargedMillivolts + (batteryFullyChargedMillivolts * 6 / 100)) || (batteryVoltageNow < 1);
+        // publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower));
+        // if (!inMenu) {
+        //     Serial.println("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
+        //     delay(20);
+        // }
+        //     publishMQTTLogData("-->[TFT ] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltageNow) + "V  External power: " + String(workingOnExternalPower) + " workingOnExternalPowerThreshold: " + String(workingOnExternalPowerThreshold));
     }
 }
-
-// #include <esp_adc_cal.h>
-
-// void readEfuse() {
-//     esp_adc_cal_characteristics_t chars;
-//     auto val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &chars);
-//     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-//         Serial.println("eFuse Vref");
-//     } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-//         Serial.println("Two Point");
-//     } else {
-//         Serial.println("Default");
-//     }
-// }
 
 void batteryLoop() {
     readBatteryVoltage();

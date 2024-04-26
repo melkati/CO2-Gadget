@@ -245,11 +245,16 @@ void printLargeASCII(const char *text) {
 }
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-    Serial.print("-->[WiFi] WifiSetup: SSID = ");
+#ifdef WIFI_PRIVACY
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
     Serial.print(ssid.c_str());
-#ifndef WIFI_PRIVACY
-    Serial.print(", Password = ");
-    Serial.println(password.c_str());
+    Serial.println(")");
+#else
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
+    Serial.print(ssid.c_str());
+    Serial.print(", Password: ");
+    Serial.print(password.c_str());
+    Serial.println(")");
 #endif
     WiFi.begin(ssid.c_str(), password.c_str());
 }
@@ -266,6 +271,100 @@ String getMACAddressAsString() {
                         String(mac[0], HEX);
 
     return macAddress;
+}
+
+void printDisconnectReason(int reasonCode) {
+#ifdef DEBUG_WIFI_EVENTS
+    switch (reasonCode) {
+        case WIFI_REASON_UNSPECIFIED:
+            Serial.println("-->[WiFi-event] Unspecified error");
+            break;
+        case WIFI_REASON_AUTH_EXPIRE:
+            Serial.println("-->[WiFi-event] Authentication expired");
+            break;
+        case WIFI_REASON_AUTH_LEAVE:
+            Serial.println("-->[WiFi-event] Authentication left");
+            break;
+        case WIFI_REASON_ASSOC_EXPIRE:
+            Serial.println("-->[WiFi-event] Association expired");
+            break;
+        case WIFI_REASON_ASSOC_TOOMANY:
+            Serial.println("-->[WiFi-event] Too many associations");
+            break;
+        case WIFI_REASON_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Not authenticated");
+            break;
+        case WIFI_REASON_NOT_ASSOCED:
+            Serial.println("-->[WiFi-event] Not associated");
+            break;
+        case WIFI_REASON_ASSOC_LEAVE:
+            Serial.println("-->[WiFi-event] Association left");
+            break;
+        case WIFI_REASON_ASSOC_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Association not authenticated");
+            break;
+        case WIFI_REASON_DISASSOC_PWRCAP_BAD:
+            Serial.println("-->[WiFi-event] Disassociation power capability invalid");
+            break;
+        case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
+            Serial.println("-->[WiFi-event] Disassociation supported channel invalid");
+            break;
+        case WIFI_REASON_IE_INVALID:
+            Serial.println("-->[WiFi-event] Invalid IE");
+            break;
+        case WIFI_REASON_MIC_FAILURE:
+            Serial.println("-->[WiFi-event] MIC failure");
+            break;
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] 4-way handshake timeout");
+            break;
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Group key update timeout");
+            break;
+        case WIFI_REASON_IE_IN_4WAY_DIFFERS:
+            Serial.println("-->[WiFi-event] IE in 4-way differs");
+            break;
+        case WIFI_REASON_GROUP_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid group cipher");
+            break;
+        case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid pairwise cipher");
+            break;
+        case WIFI_REASON_AKMP_INVALID:
+            Serial.println("-->[WiFi-event] Invalid AKMP");
+            break;
+        case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
+            Serial.println("-->[WiFi-event] Unsupported RSN IE version");
+            break;
+        case WIFI_REASON_INVALID_RSN_IE_CAP:
+            Serial.println("-->[WiFi-event] Invalid RSN IE capabilities");
+            break;
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+            Serial.println("-->[WiFi-event] 802.1X authentication failed");
+            break;
+        case WIFI_REASON_CIPHER_SUITE_REJECTED:
+            Serial.println("-->[WiFi-event] Cipher suite rejected");
+            break;
+        case WIFI_REASON_BEACON_TIMEOUT:
+            Serial.println("-->[WiFi-event] Beacon timeout");
+            break;
+        case WIFI_REASON_NO_AP_FOUND:
+            Serial.println("-->[WiFi-event] No AP found");
+            break;
+        case WIFI_REASON_AUTH_FAIL:
+            Serial.println("-->[WiFi-event] Authentication failed");
+            break;
+        case WIFI_REASON_ASSOC_FAIL:
+            Serial.println("-->[WiFi-event] Association failed");
+            break;
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Handshake timeout");
+            break;
+        default:
+            Serial.println("-->[WiFi-event] Unknown reason");
+            break;
+    }
+#endif  // DEBUG_WIFI_EVENTS
 }
 
 void printWiFiStatus() {  // Print wifi status on serial monitor
@@ -566,31 +665,19 @@ bool checkStringIsNumerical(String myString) {
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
-    static bool firstConnect = true;
-#ifdef WIFI_PRIVACY
-        Serial.println("-->[WiFi] Connected to WiFi access point (SSID: " + WiFi.SSID() + ")");
-#else
-        Serial.println("-->[WiFi] Connected to WiFi access point (SSID: " + wifiSSID + "    Password: " + wifiPass + ")");
+#ifdef DEBUG_WIFI_EVENTS
+    Serial.println("-->[WiFi-event] Connected to WiFi access point");
 #endif
-    if (firstConnect) {
-        firstConnect = false;
-        delay(150); // Wait for the IP to be assigned
-        Serial.print("");
-        printLargeASCII(WiFi.localIP().toString().c_str());
-        Serial.print("");
-    } else {
-        Serial.print("-->[WiFi] IP address: ");
-        Serial.println(WiFi.localIP());
-    }
-    Serial.flush();
+
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     WiFiConnectionRetries = 0;
     timeTroubledWIFI = 0;
     troubledMQTT = false;
+    troubledWIFI = false;
 #ifdef DEBUG_WIFI_EVENTS
-    Serial.println("-->[WiFi-event] WiFi connected");
+    Serial.println("-->[WiFi-event] WiFi got IP)");
     Serial.print("-->[WiFi-event] IP address: ");
     Serial.println(WiFi.localIP());
 #endif
@@ -600,18 +687,86 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     ++WiFiConnectionRetries;
     Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
-    // Serial.print("-->[WiFi-event] Retries: ");
-    // Serial.print(WiFiConnectionRetries);
-    // Serial.print(" of ");
-    // Serial.println(maxWiFiConnectionRetries);
+    Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
+    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: (");
+    Serial.print(info.wifi_sta_disconnected.reason);
+    Serial.print(") ");
+    printDisconnectReason(info.wifi_sta_disconnected.reason);
+    Serial.print("-->[WiFi-event] Retries: ");
+    Serial.print(WiFiConnectionRetries);
+    Serial.print(" of ");
+    Serial.println(maxWiFiConnectionRetries);
 #endif
 
     if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
         disableWiFi();
         troubledWIFI = true;
+        Serial.println("-->[WiFi-event] WiFi troubled");
+
         timeTroubledWIFI = millis();
-        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " retries. Will try again in " + String(timeToRetryTroubledWIFI) + " seconds.");
+#ifdef DEBUG_WIFI_EVENTS
+        Serial.println("-->[WiFi-event] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
+#endif
     }
+}
+
+String getCO2GadgetStatusAsJson() {
+    StaticJsonDocument<512> doc;
+    doc["CO2"] = co2;
+    doc["Temperature"] = temp;
+    doc["Humidity"] = hum;
+    doc["WiFiStatus"] = WiFi.status();
+    doc["SSID"] = WiFi.SSID();
+#ifndef WIFI_PRIVACY
+    doc["wifiPass"] = wifiPass;
+#endif
+    doc["IP"] = WiFi.localIP().toString();
+    doc["RSSI"] = WiFi.RSSI();
+    doc["MACAddress"] = MACAddress;
+    doc["hostName"] = hostName;
+#ifdef SUPPORT_MQTT
+    doc["rootTopic"] = rootTopic;
+    doc["discoveryTopic"] = discoveryTopic;
+    doc["mqttClientId"] = mqttClientId;
+    doc["mqttBroker"] = mqttBroker;
+    doc["mqttUser"] = mqttUser;
+#ifndef WIFI_PRIVACY
+    doc["mqttPass"] = mqttPass;
+#endif
+#ifdef SUPPORT_ESPNOW
+    char peerAddressString[18];
+    snprintf(peerAddressString, sizeof(peerAddressString),
+             "%02X:%02X:%02X:%02X:%02X:%02X",
+             peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+             peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    doc["peerESPNowAddress"] = peerAddressString;
+#endif
+#endif
+    doc["activeWIFI"] = activeWIFI;
+#ifdef SUPPORT_MQTT
+    doc["activeMQTT"] = activeMQTT;
+#endif
+#ifdef SUPPORT_BLE
+    doc["activeBLE"] = activeBLE;
+#endif
+#ifdef SUPPORT_OTA
+    doc["activeOTA"] = activeOTA;
+#endif
+    doc["troubledWiFi"] = troubledWIFI;
+#ifdef SUPPORT_MQTT
+    doc["troubledMQTT"] = troubledMQTT;
+#endif
+#ifdef SUPPORT_ESPNOW
+    doc["troubledESPNOW"] = troubledESPNOW;
+#endif
+    doc["measurementInterval"] = measurementInterval;
+    doc["calibrationValue"] = calibrationValue;
+    doc["pendingCalibration"] = pendingCalibration;
+    doc["freeheap"] = ESP.getFreeHeap();
+    doc["uptime"] = millis();
+    String output;
+    serializeJson(doc, output);
+    return output;
 }
 
 const char *PARAM_INPUT_1 = "MeasurementInterval";
@@ -620,7 +775,71 @@ const char *PARAM_INPUT_2 = "CalibrateCO2";
 void initWebServer() {
     SPIFFS.begin();
 
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // server.serveStatic("/", SPIFFS, "/index.html");
+    // server.serveStatic("/index.html", SPIFFS, "/index.html");
+    // server.serveStatic("/preferences.html", SPIFFS, "/preferences.html");
+    // server.serveStatic("/status.html", SPIFFS, "/status.html");
+    // server.serveStatic("favicon.ico", SPIFFS, "/favicon.png");
+    // server.serveStatic("main.js", SPIFFS, "/main.js");
+    // server.serveStatic("style.css", SPIFFS, "/style.css");
+    // server.serveStatic("preferences.js", SPIFFS, "/preferences.js");
+
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/preferences.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/style.css.gz", "text/css");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/favicon.png.gz", "image/png");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
 
     server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(co2));
@@ -684,13 +903,17 @@ void initWebServer() {
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
     String preferencesJson = getActualSettingsAsJson();
+    // Serial.println(preferencesJson);
     request->send(200, "application/json", preferencesJson); });
 
-    // Serve the preferences page
-    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/preferences.html", String(), false, processor);
-    });
+    server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String versionJson = getCO2GadgetVersionAsJson();
+    request->send(200, "application/json", versionJson); });
 
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String statusJson = getCO2GadgetStatusAsJson();
+    request->send(200, "application/json", statusJson); });
+    
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "ESP32 restart initiated");
@@ -701,6 +924,7 @@ void initWebServer() {
     server.onNotFound([](AsyncWebServerRequest *request) {
         request->send(400, "text/plain", "Not found");
     });
+
     AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
@@ -748,10 +972,12 @@ bool connectToWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.setHostname(hostName.c_str());
-    // Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
     Serial.println("-->[WiFi] Setting hostname: " + hostName);
-    // Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+#ifdef WIFI_PRIVACY
     Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + ")");
+#else
+    Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + " with password: " + wifiPass + ")");
+#endif
 
     WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -764,39 +990,39 @@ bool connectToWiFi() {
 
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
-    // // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
-    // while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
-    //     if (TimePeriodIsOver(checkTimer, 1000)) {  // Once every 1000 miliseconds
-    //         Serial.print(".");
-    //         WiFiConnectionRetries++;
-    //         if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
-    //             Serial.println();
-    //             Serial.print("not connected ");
-    //         }
-    //     }
-    //     yield();
-    // }
+    // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
+    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+        if (TimePeriodIsOver(checkTimer, 500)) {  // Once every 500 miliseconds
+            Serial.print(".");
+            WiFiConnectionRetries++;
+            if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
+                Serial.println();
+                Serial.print("not connected ");
+            }
+        }
+        yield();
+    }
 
-    // if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
-    //     disableWiFi();
-    //     troubledWIFI = true;
-    //     timeTroubledWIFI = millis();
-    //     // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
-    //     Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
-    // }
+    if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+        disableWiFi();
+        troubledWIFI = true;
+        timeTroubledWIFI = millis();
+        // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+        Serial.println("-->[WiFi] Troubled. Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
+    }
 
-    // if (troubledWIFI) {
-    //     Serial.println("");
-    //     return false;
-    // } else {
-    //     Serial.println("");
-    //     Serial.print("-->[WiFi] MAC: ");
-    //     Serial.println(MACAddress);
-    //     Serial.print("-->[WiFi] WiFi connected - IP = ");
-    //     Serial.println(WiFi.localIP());
-    //     return true;
-    // }
-    return (WiFi.status() == WL_CONNECTED);
+    if ((troubledWIFI) || (WiFi.status() != WL_CONNECTED)) {
+        Serial.println("");
+        return false;
+    } else {
+        Serial.println("");
+        saveWifiCredentials();
+        Serial.print("-->[WiFi] MAC: ");
+        Serial.println(MACAddress);
+        Serial.print("-->[WiFi] WiFi connected - IP = ");
+        Serial.println(WiFi.localIP());
+        return true;
+    }
 }
 
 void initOTA() {
@@ -824,10 +1050,7 @@ void initWifi() {
         Serial.println("-->[WiFi] HTTP server started");
         printWiFiStatus();
 
-        // Try to connect to MQTT broker on next loop if needed
-        troubledMQTT = false;
-
-        wifiChanged = true;
+        troubledMQTT = false;  // Try to connect to MQTT broker on next loop if needed
     }
 }
 
@@ -839,19 +1062,19 @@ void wifiClientLoop() {
         initWifi();
     }
 
-    // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
-    // Only checks for SSID changed (not password)
-    if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
-        Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
-        Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
-        Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
-        wifiSSID = WiFi.SSID();
-        activeWIFI = true;
-        if (wifiSSID != "") {
-            putPreferences();
-            wifiChanged = true;
-        }
-    }
+    // // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
+    // // Only checks for SSID changed (not password)
+    // if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
+    //     Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+    //     Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
+    //     Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
+    //     wifiSSID = WiFi.SSID();
+    //     activeWIFI = true;
+    //     if (wifiSSID != "") {
+    //         putPreferences();
+    //         wifiChanged = true;
+    //     }
+    // }
 
     if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
