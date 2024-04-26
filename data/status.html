@@ -1,0 +1,320 @@
+<!-- https://www.zickty.com/filetogzip -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Page</title>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+
+<body>
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="preferences.html">Preferences</a>
+        <a href="status.html" class="active">Status</a>
+    </div>
+
+    <div class="content">
+        <h1>Status Information</h1>
+        <div class="status-item" id="co2Item">
+            <span class="status-label">CO2:</span> <span id="co2"></span>
+        </div>
+        <div class="status-item" id="temperatureItem">
+            <span class="status-label">Temperature:</span> <span id="temperature"></span>
+        </div>
+        <div class="status-item" id="humidityItem">
+            <span class="status-label">Humidity:</span> <span id="humidity"></span>
+        </div>
+        <div class="status-item" id="wifiStatusItem">
+            <span class="status-label">WiFi Status:</span> <span id="wifiStatus"></span>
+        </div>
+        <div class="status-item" id="ssidItem">
+            <span class="status-label">SSID:</span> <span id="ssid"></span>
+        </div>
+        <div class="status-item" id="wifiPassItem">
+            <span class="status-label">WiFi Password:</span> <span id="wifiPass"></span>
+        </div>
+        <div class="status-item" id="ipItem">
+            <span class="status-label">IP Address:</span> <span id="ip"></span>
+        </div>
+        <div class="status-item" id="rssiItem">
+            <span class="status-label">RSSI:</span> <span id="rssi"></span>
+        </div>
+        <div class="status-item" id="macAddressItem">
+            <span class="status-label">MAC Address:</span> <span id="macAddress"></span>
+        </div>
+        <div class="status-item" id="hostNameItem">
+            <span class="status-label">Host Name:</span> <span id="hostName"></span>
+        </div>
+        <div class="status-item" id="rootTopicItem">
+            <span class="status-label">Root Topic:</span> <span id="rootTopic"></span>
+        </div>
+        <div class="status-item" id="discoveryTopicItem">
+            <span class="status-label">Discovery Topic:</span> <span id="discoveryTopic"></span>
+        </div>
+        <div class="status-item" id="mqttClientIdItem">
+            <span class="status-label">MQTT Client ID:</span> <span id="mqttClientId"></span>
+        </div>
+        <div class="status-item" id="mqttBrokerItem">
+            <span class="status-label">MQTT Broker:</span> <span id="mqttBroker"></span>
+        </div>
+        <div class="status-item" id="mqttUserItem">
+            <span class="status-label">MQTT User:</span> <span id="mqttUser"></span>
+        </div>
+        <div class="status-item" id="mqttPassItem">
+            <span class="status-label">MQTT Password:</span> <span id="mqttPass"></span>
+        </div>
+        <div class="status-item" id="peerESPNowAddressItem">
+            <span class="status-label">Peer ESPNow Address:</span> <span id="peerESPNowAddress"></span>
+        </div>
+        <div class="status-item" id="activeWiFiItem">
+            <span class="status-label">Active WiFi:</span> <span id="activeWiFi"></span>
+        </div>
+        <div class="status-item" id="activeMQTTItem">
+            <span class="status-label">Active MQTT:</span> <span id="activeMQTT"></span>
+        </div>
+        <div class="status-item" id="activeBLEItem">
+            <span class="status-label">Active BLE:</span> <span id="activeBLE"></span>
+        </div>
+        <div class="status-item" id="activeOTAItem">
+            <span class="status-label">Active OTA:</span> <span id="activeOTA"></span>
+        </div>
+        <div class="status-item" id="troubledWiFiItem">
+            <span class="status-label">Troubled WiFi:</span> <span id="troubledWiFi"></span>
+        </div>
+        <div class="status-item" id="troubledMQTTItem">
+            <span class="status-label">Troubled MQTT:</span> <span id="troubledMQTT"></span>
+        </div>
+        <div class="status-item" id="troubledESPNowItem">
+            <span class="status-label">Troubled ESPNow:</span> <span id="troubledESPNow"></span>
+        </div>
+        <div class="status-item" id="measurementIntervalItem">
+            <span class="status-label">Measurement Interval:</span> <span id="measurementInterval"></span>
+        </div>
+        <div class="status-item" id="calibrationValueItem">
+            <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span>
+        </div>
+        <div class="status-item" id="pendingCalibrationItem">
+            <span class="status-label">Pending Calibration:</span> <span id="pendingCalibration"></span>
+        </div>
+        <div class="status-item" id="freeHeapItem">
+            <span class="status-label">Free Heap:</span> <span id="freeHeap"></span>
+        </div>
+        <div class="status-item" id="uptimeItem">
+            <span class="status-label">Uptime:</span> <span id="uptime"></span>
+        </div>
+
+        <!-- Status line to display CO2 Gadget version -->
+        <div id="statusLineContainer">
+            <span id="co2GadgetVersion"></span>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch version information from the server
+        function fetchVersion() {
+            fetch('/getVersion')
+                .then(response => response.json())
+                .then(versionInfo => {
+                    // Update CO2 Gadget version in the status line
+                    document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: v" + versionInfo.firmVerMajor + "." + versionInfo.firmVerMinor + "." + versionInfo.firmRevision + "-" + versionInfo.firmBranch + " (Flavour: " + versionInfo.firmFlavour + ")";
+                })
+                .catch(error => console.error('Error fetching version information:', error));
+        }
+
+        // Function to Fetch status data from /status endpoint and populate the form
+        function loadStatusFromServer() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Fetching data successful!');
+                    // Update DOM with status data
+                    if (data.CO2 !== undefined) {
+                        document.getElementById('co2').textContent = data.CO2;
+                    } else {
+                        document.getElementById('co2Item').style.display = 'none';
+                    }
+
+                    if (data.Temperature !== undefined) {
+                        document.getElementById('temperature').textContent = data.Temperature;
+                    } else {
+                        document.getElementById('temperatureItem').style.display = 'none';
+                    }
+
+                    if (data.Humidity !== undefined) {
+                        document.getElementById('humidity').textContent = data.Humidity;
+                    } else {
+                        document.getElementById('humidityItem').style.display = 'none';
+                    }
+
+                    if (data.WiFiStatus !== undefined) {
+                        document.getElementById('wifiStatus').textContent = data.WiFiStatus;
+                    } else {
+                        document.getElementById('wifiStatusItem').style.display = 'none';
+                    }
+
+                    if (data.SSID !== undefined) {
+                        document.getElementById('ssid').textContent = data.SSID;
+                    } else {
+                        document.getElementById('ssidItem').style.display = 'none';
+                    }
+
+                    if (data.WiFiPassword !== undefined) {
+                        document.getElementById('wifiPass').textContent = data.WiFiPassword;
+                    } else {
+                        document.getElementById('wifiPassItem').style.display = 'none';
+                    }
+
+                    if (data.IP !== undefined) {
+                        document.getElementById('ip').textContent = data.IP;
+                    } else {
+                        document.getElementById('ipItem').style.display = 'none';
+                    }
+
+                    if (data.RSSI !== undefined) {
+                        document.getElementById('rssi').textContent = data.RSSI;
+                    } else {
+                        document.getElementById('rssiItem').style.display = 'none';
+                    }
+
+                    if (data.MACAddress !== undefined) {
+                        document.getElementById('macAddress').textContent = data.MACAddress;
+                    } else {
+                        document.getElementById('macAddressItem').style.display = 'none';
+                    }
+
+                    if (data.hostName !== undefined) {
+                        document.getElementById('hostName').textContent = data.hostName;
+                    } else {
+                        document.getElementById('hostNameItem').style.display = 'none';
+                    }
+
+                    if (data.rootTopic !== undefined) {
+                        document.getElementById('rootTopic').textContent = data.rootTopic;
+                    } else {
+                        document.getElementById('rootTopicItem').style.display = 'none';
+                    }
+
+                    if (data.discoveryTopic !== undefined) {
+                        document.getElementById('discoveryTopic').textContent = data.discoveryTopic;
+                    } else {
+                        document.getElementById('discoveryTopicItem').style.display = 'none';
+                    }
+
+                    if (data.mqttClientId !== undefined) {
+                        document.getElementById('mqttClientId').textContent = data.mqttClientId;
+                    } else {
+                        document.getElementById('mqttClientIdItem').style.display = 'none';
+                    }
+
+                    if (data.mqttBroker !== undefined) {
+                        document.getElementById('mqttBroker').textContent = data.mqttBroker;
+                    } else {
+                        document.getElementById('mqttBrokerItem').style.display = 'none';
+                    }
+
+                    if (data.mqttUser !== undefined) {
+                        document.getElementById('mqttUser').textContent = data.mqttUser;
+                    } else {
+                        document.getElementById('mqttUserItem').style.display = 'none';
+                    }
+
+                    if (data.mqttPassword !== undefined) {
+                        document.getElementById('mqttPass').textContent = data.mqttPassword;
+                    } else {
+                        document.getElementById('mqttPassItem').style.display = 'none';
+                    }
+
+                    if (data.peerESPNowAddress !== undefined) {
+                        document.getElementById('peerESPNowAddress').textContent = data.peerESPNowAddress;
+                    } else {
+                        document.getElementById('peerESPNowAddressItem').style.display = 'none';
+                    }
+
+                    if (data.activeWiFi !== undefined) {
+                        document.getElementById('activeWiFi').textContent = data.activeWiFi;
+                    } else {
+                        document.getElementById('activeWiFiItem').style.display = 'none';
+                    }
+
+                    if (data.activeMQTT !== undefined) {
+                        document.getElementById('activeMQTT').textContent = data.activeMQTT;
+                    } else {
+                        document.getElementById('activeMQTTItem').style.display = 'none';
+                    }
+
+                    if (data.activeBLE !== undefined) {
+                        document.getElementById('activeBLE').textContent = data.activeBLE;
+                    } else {
+                        document.getElementById('activeBLEItem').style.display = 'none';
+                    }
+
+                    if (data.activeOTA !== undefined) {
+                        document.getElementById('activeOTA').textContent = data.activeOTA;
+                    } else {
+                        document.getElementById('activeOTAItem').style.display = 'none';
+                    }
+
+                    if (data.troubledWiFi !== undefined) {
+                        document.getElementById('troubledWiFi').textContent = data.troubledWiFi;
+                    } else {
+                        document.getElementById('troubledWiFiItem').style.display = 'none';
+                    }
+
+                    if (data.troubledMQTT !== undefined) {
+                        document.getElementById('troubledMQTT').textContent = data.troubledMQTT;
+                    } else {
+                        document.getElementById('troubledMQTTItem').style.display = 'none';
+                    }
+
+                    if (data.troubledESPNow !== undefined) {
+                        document.getElementById('troubledESPNow').textContent = data.troubledESPNow;
+                    } else {
+                        document.getElementById('troubledESPNowItem').style.display = 'none';
+                    }
+
+                    if (data.measurementInterval !== undefined) {
+                        document.getElementById('measurementInterval').textContent = data.measurementInterval;
+                    } else {
+                        document.getElementById('measurementIntervalItem').style.display = 'none';
+                    }
+
+                    if (data.calibrationValue !== undefined) {
+                        document.getElementById('calibrationValue').textContent = data.calibrationValue;
+                    } else {
+                        document.getElementById('calibrationValueItem').style.display = 'none';
+                    }
+
+                    if (data.pendingCalibration !== undefined) {
+                        document.getElementById('pendingCalibration').textContent = data.pendingCalibration;
+                    } else {
+                        document.getElementById('pendingCalibrationItem').style.display = 'none';
+                    }
+
+                    if (data.freeHeap !== undefined) {
+                        document.getElementById('freeHeap').textContent = data.freeHeap;
+                    } else {
+                        document.getElementById('freeHeapItem').style.display = 'none';
+                    }
+
+                    if (data.uptime !== undefined) {
+                        document.getElementById('uptime').textContent = data.uptime;
+                    } else {
+                        document.getElementById('uptimeItem').style.display = 'none';
+                    }
+
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+
+        // Set initial values when the page loads
+        document.addEventListener("DOMContentLoaded", loadStatusFromServer);
+        document.addEventListener("DOMContentLoaded", fetchVersion);
+    </script>
+</body>
+
+</html>

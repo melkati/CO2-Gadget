@@ -1117,9 +1117,25 @@ void menuLoopOLED() {
 #endif
 }
 
+void menuLoopEINK() {
+#ifdef SUPPORT_EINK
+    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
+        displayShowValues(false);
+        return;
+    }
+
+    nav.doInput();
+    if (nav.sleepTask) {
+        displayShowValues(false);
+    } else {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
+#endif
+}
+
 void menuLoop() {
-    // Time to wait for Improv-WiFi to connect on startup. 0x2A is the '*' character.
-    uint16_t timeToWaitForImprov = 5;
     if (Serial.available() && Serial.peek() == 0x2A) {
         nav.doInput();  // Do input, even if no display, as serial menu needs this
     }
@@ -1137,10 +1153,12 @@ void menuLoop() {
         activeMQTTMenu[0].disable();
     }
 
-#ifdef SUPPORT_TFT
+#if defined(SUPPORT_TFT)
     menuLoopTFT();
 #elif defined(SUPPORT_OLED)
     menuLoopOLED();
+#elif defined(SUPPORT_EINK)
+    menuLoopEINK();
 #else  // For serial only output
     if (!nav.sleepTask) {
         if (nav.changed(0)) {
@@ -1156,7 +1174,7 @@ void menu_init() {
 #endif
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);     // start the menu in idle state
-    nav.timeOut = 10;
+    nav.timeOut = 20;
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
