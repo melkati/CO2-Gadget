@@ -1136,8 +1136,8 @@ void menuLoopEINK() {
 }
 
 void menuLoop() {
-    if (Serial.available() && Serial.peek() == 0x2A) {
-        nav.doInput();  // Do input, even if no display, as serial menu needs this
+    if (Serial.available() && Serial.peek() == 0x2A) {  // If the first byte is '*', then it's a command from the serial menu
+        nav.doInput();                                  // Do input, even if no display, as serial menu needs this
     }
 
     // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
@@ -1159,7 +1159,7 @@ void menuLoop() {
     menuLoopOLED();
 #elif defined(SUPPORT_EINK)
     menuLoopEINK();
-#else  // For serial only output
+#else  // For serial only output with display connected
     if (!nav.sleepTask) {
         if (nav.changed(0)) {
             nav.doOutput();
@@ -1198,8 +1198,10 @@ void menu_init() {
 
     loadTempArraysWithActualValues();
     Serial.println("");
+    Serial.println("**********************************************************************");
     Serial.println("-->[MENU] Use keys + - * /");
     Serial.println("-->[MENU] to control the menu navigation");
+    Serial.println("**********************************************************************");
     Serial.println("");
 }
 
