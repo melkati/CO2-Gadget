@@ -693,11 +693,15 @@ void displayShowValues(bool forceRedraw = false) {
 
     if (cyclesLeftToRedrawDisplay > 0) {
         cyclesLeftToRedrawDisplay--;
+#ifdef DEBUG_EINK
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
+#endif
     } else {
         cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
         forceRedraw = true;
+#ifdef DEBUG_EINK
         Serial.println("-->[EINK] Forcing full refresh of display");
+#endif
     }
 
     if (forceRedraw) {
