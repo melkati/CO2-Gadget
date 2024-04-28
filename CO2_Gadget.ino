@@ -46,9 +46,9 @@ bool wifiChanged = false;
 
 // MQTT options
 bool activeMQTT = true;
-bool troubledMQTT = false;                       // There are problems connecting to MQTT. Temporary suspend MQTT
-uint64_t timeTroubledMQTT = 0;                   // Time since MQTT is troubled
-uint64_t timeToRetryTroubledMQTT = 900;          // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically everytime WiFi is connected)
+bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
+uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
+uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically everytime WiFi is connected)
 bool mqttDiscoverySent = false;
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
 uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
@@ -56,7 +56,7 @@ uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
 
 // ESP-NOW options
 bool activeESPNOW = false;
-bool troubledESPNOW = false;                     // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+bool troubledESPNOW = false;  // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
 uint8_t channelESPNow = 1;
 uint16_t boardIdESPNow = 0;
 uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
@@ -67,6 +67,8 @@ uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 bool activeOTA = false;
 
 // Display and menu options
+bool mustInitMenu = false;
+bool menuInitialized = false;
 uint16_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
@@ -112,7 +114,8 @@ uint16_t co2OrangeRange = 700;
 uint16_t co2RedRange = 1000;
 
 // Variables for Improv-Serial
-uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
+bool waitingForImprov = true;
+uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -544,7 +547,6 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
-    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
@@ -565,15 +567,21 @@ void setup() {
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif
-    menu_init();
     initButtons();
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
     }
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+    initImprov();
+    if (timeToWaitForImprov > 0) {
+        Serial.println("-->[STUP] Waiting for Improv Serial " + String(timeToWaitForImprov) + " seconds...");
+    } else {
+        Serial.println("-->[STUP] Improv Serial enabled");
+    }
     Serial.println("-->[STUP] Ready.");
+    Serial.flush();
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     timeInitializationCompleted = millis();
 }
 

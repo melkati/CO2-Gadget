@@ -1069,12 +1069,6 @@ result idle(menuOut &o, idleEvent e) {
 
 void menuLoopTFT() {
 #ifdef SUPPORT_TFT
-    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(shouldRedrawDisplay);
-        shouldRedrawDisplay = false;
-        return;
-    }
-
     if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
         displayNotification("To clear display", notifyInfo);
@@ -1098,12 +1092,6 @@ void menuLoopTFT() {
 
 void menuLoopOLED() {
 #ifdef SUPPORT_OLED
-    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(shouldRedrawDisplay);
-        shouldRedrawDisplay = false;
-        return;
-    }
-
     if (nav.sleepTask) {
         displayShowValues(shouldRedrawDisplay);
         shouldRedrawDisplay = false;
@@ -1119,11 +1107,6 @@ void menuLoopOLED() {
 
 void menuLoopEINK() {
 #ifdef SUPPORT_EINK
-    if (millis() < (timeInitializationCompleted + timeToWaitForImprov * 1000)) {  // Wait before starting the menu to avoid issues with Improv-WiFi
-        displayShowValues(false);
-        return;
-    }
-
     nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(false);
@@ -1135,40 +1118,14 @@ void menuLoopEINK() {
 #endif
 }
 
-void menuLoop() {
-    if (Serial.available() && Serial.peek() == 0x2A) {  // If the first byte is '*', then it's a command from the serial menu
-        nav.doInput();                                  // Do input, even if no display, as serial menu needs this
-    }
-
-    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
-    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
-        Serial.end();
-        delay(10);
-        Serial.begin(115200);
-    }
-
-    if (activeWIFI) {
-        activeMQTTMenu[0].enable();
-    } else {
-        activeMQTTMenu[0].disable();
-    }
-
-#if defined(SUPPORT_TFT)
-    menuLoopTFT();
-#elif defined(SUPPORT_OLED)
-    menuLoopOLED();
-#elif defined(SUPPORT_EINK)
-    menuLoopEINK();
-#else  // For serial only output with display connected
-    if (!nav.sleepTask) {
-        if (nav.changed(0)) {
-            nav.doOutput();
-        }
-    }
+void initMenu() {
+#ifdef DEBUG_ARDUINOMENU
+    Serial.println("-->[MENU] Initializing menu...");
 #endif
-}
-
-void menu_init() {
+    menuInitialized = true;
+    mustInitMenu = false;
+    waitingForImprov = false;
+    publishMQTTLogData("-->[MENU] Initializing menu...");
 #ifdef SUPPORT_TFT
     tft.loadFont(SMALL_FONT);
 #endif
@@ -1203,6 +1160,92 @@ void menu_init() {
     Serial.println("-->[MENU] to control the menu navigation");
     Serial.println("**********************************************************************");
     Serial.println("");
+}
+
+bool menuEntryCharacterReceived() {
+    // If the first byte is '*', then it's a command from the serial menu
+    if (Serial.available() && Serial.peek() == 0x2A) {
+#ifdef DEBUG_ARDUINOMENU
+        Serial.println("-->[MENU] Serial command detected.");
+#endif
+        return true;
+    }
+return false;
+}
+
+void menuLoop() {
+    if (mustInitMenu) {
+        initMenu();        
+#ifdef DEBUG_ARDUINOMENU
+        Serial.println("-->[MENU] Initializing menu by mustInitMenu = true...");
+#endif
+    }
+
+    // While we are waiting for Improv-WiFi to start, check if user is trying to access the menu to disable Improv-WiFi
+    if ((waitingForImprov) && (menuEntryCharacterReceived())) {
+        waitingForImprov = false;
+#ifdef DEBUG_ARDUINOMENU
+        Serial.println("-->[MENU] Serial command detected. Improv-WiFi disabled.");
+        publishMQTTLogData("-->[MENU] Serial command detected. Improv-WiFi disabled.");
+#endif
+        if (!menuInitialized) initMenu();
+    }
+
+    if (!menuInitialized) {
+        displayShowValues(shouldRedrawDisplay);
+        shouldRedrawDisplay = false;
+#ifdef DEBUG_ARDUINOMENU
+        static unsigned long lastPrintTime2 = 0;
+        if (millis() - lastPrintTime2 >= 1000) {
+            Serial.println("-->[MENU] Waiting for Improv-WiFi to start...");
+            lastPrintTime2 = millis();
+        }
+#endif
+        return;
+    }
+
+#ifdef DEBUG_ARDUINOMENU
+    if (Serial.available()) {
+        Serial.print("-->[MENU] Received unknow byte: ");
+        Serial.println(Serial.peek(), HEX);
+    }
+#endif
+
+#ifdef DEBUG_ARDUINOMENU
+    static unsigned long lastPrintTime = 0;
+    if (millis() - lastPrintTime >= 1000) {
+        Serial.println("-->[MENU] menuLoop");
+        lastPrintTime = millis();
+    }
+#endif
+
+    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
+    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
+        Serial.println("[MENU] Serial TX buffer full or not connected to a receiving device. Restarting Serial...");
+        Serial.end();
+        delay(10);
+        Serial.begin(115200);
+    }
+
+    if (activeWIFI) {
+        activeMQTTMenu[0].enable();
+    } else {
+        activeMQTTMenu[0].disable();
+    }
+
+#if defined(SUPPORT_TFT)
+    menuLoopTFT();
+#elif defined(SUPPORT_OLED)
+    menuLoopOLED();
+#elif defined(SUPPORT_EINK)
+    menuLoopEINK();
+#else  // For serial only output with display connected
+    if (!nav.sleepTask) {
+        if (nav.changed(0)) {
+            nav.doOutput();
+        }
+    }
+#endif
 }
 
 #endif  // CO2_Gadget_Menu_h
