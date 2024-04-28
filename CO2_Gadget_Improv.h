@@ -35,9 +35,9 @@ void initImprov() {
     sprintf(version, "CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
     Serial.println("-->[IMPR] Init Improv");
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CO2-Gadget-Beta-Desarrollo", version, "CO2-Gadget", "http://{LOCAL_IPV4}/");
+    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CO2-Gadget", version, "CO2-Gadget", "http://{LOCAL_IPV4}/");
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32_S3, "CO2-Gadget-Beta-Desarrollo", version, "CO2-Gadget", "http://{LOCAL_IPV4}/");
+    improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32_S3, "CO2-Gadget", version, "CO2-Gadget", "http://{LOCAL_IPV4}/");
 #endif
 
     improvSerial.onImprovError(onImprovWiFiErrorCb);

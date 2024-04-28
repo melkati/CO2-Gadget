@@ -1170,12 +1170,12 @@ bool menuEntryCharacterReceived() {
 #endif
         return true;
     }
-return false;
+    return false;
 }
 
 void menuLoop() {
     if (mustInitMenu) {
-        initMenu();        
+        initMenu();
 #ifdef DEBUG_ARDUINOMENU
         Serial.println("-->[MENU] Initializing menu by mustInitMenu = true...");
 #endif
@@ -1192,7 +1192,9 @@ void menuLoop() {
     }
 
     if (!menuInitialized) {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
         displayShowValues(shouldRedrawDisplay);
+#endif
         shouldRedrawDisplay = false;
 #ifdef DEBUG_ARDUINOMENU
         static unsigned long lastPrintTime2 = 0;
