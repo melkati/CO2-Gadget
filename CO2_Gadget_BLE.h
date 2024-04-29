@@ -12,6 +12,12 @@ WifiMultiLibraryWrapper wifi;
 DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, true, &wifi);
 #endif
 
+void setBLEHistoryInterval(uint64_t interval) {
+#ifdef SUPPORT_BLE
+    provider.setHistoryInterval(interval * 1000);
+#endif
+}
+
 void initBLE() {
 #ifdef SUPPORT_BLE
     if (activeBLE) {
@@ -22,9 +28,13 @@ void initBLE() {
             return;
         } else {
             // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
+            setBLEHistoryInterval(60);
             provider.begin();
             Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
+            Serial.print("-->[SBLE] History interval set to: ");
+            Serial.print(provider.getHistoryInterval() / 1000);
+            Serial.println(" seconds");
             // Set initial battery level
             provider.setBatteryLevel(batteryLevel);
             bleInitialized = true;
@@ -108,6 +118,11 @@ void BLELoop() {
     provider.handleDownload();
     delay(3);
     if (provider.wifiChanged()) handleBLEwifiChanged();
+    if (provider.historyIntervalChanged()) {
+        Serial.print("-->[BLE ] History interval changed to: ");
+        Serial.print(provider.getHistoryInterval() / 1000);
+        Serial.println(" seconds");
+    }
     handleFrcRequest();
 #endif
 }
