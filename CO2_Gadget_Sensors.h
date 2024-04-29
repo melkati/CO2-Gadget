@@ -183,6 +183,7 @@ void initSensors() {
 
     Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
     Serial.println("-->[SENS] Measurement Interval: " + String(sensors.getSampleTime()));
+    setBLEHistoryInterval(60);
 
     if ((deepSleepData.lowPowerMode) && (!interactiveMode)) {
         displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
