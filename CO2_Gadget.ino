@@ -1,9 +1,10 @@
 // Functions and enum definitions
-void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
-void outputsLoop();                       // Defined in CO2_Gadget_Main.h
-void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
-void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
-void menuLoop();                          // Defined in CO2_Gadget_Menu.h
+void reverseButtons(bool reversed);             // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                             // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);        // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                          // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                                // Defined in CO2_Gadget_Menu.h
+void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
