@@ -1,6 +1,8 @@
 #ifndef CO2_Gadget_WIFI
 #define CO2_Gadget_WIFI
 
+// #define DEBUG_WIFI_EVENTS
+
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -272,6 +274,8 @@ String getMACAddressAsString() {
 
     return macAddress;
 }
+
+#include <WiFi.h>
 
 void printDisconnectReason(int reasonCode) {
 #ifdef DEBUG_WIFI_EVENTS
@@ -668,7 +672,6 @@ void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 #ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] Connected to WiFi access point");
 #endif
-
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -855,6 +858,7 @@ void initWebServer() {
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
         String inputString;
+        restartTimerToDeepSleep();
         // <CO2-GADGET_IP>/settings?MeasurementInterval=100
         if (request->hasParam("MeasurementInterval")) {
             inputString = request->getParam("MeasurementInterval")->value();
@@ -898,34 +902,45 @@ void initWebServer() {
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getPreferencesAsJson();
-    request->send(200, "application/json", preferencesJson); });
+        restartTimerToDeepSleep();
+        String preferencesJson = getPreferencesAsJson();
+        request->send(200, "application/json", preferencesJson);
+    });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getActualSettingsAsJson();
-    // Serial.println(preferencesJson);
-    request->send(200, "application/json", preferencesJson); });
+        restartTimerToDeepSleep();
+        String preferencesJson = getActualSettingsAsJson();
+        // Serial.println(preferencesJson);
+        request->send(200, "application/json", preferencesJson);
+    });
 
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String versionJson = getCO2GadgetVersionAsJson();
-    request->send(200, "application/json", versionJson); });
+        restartTimerToDeepSleep();
+        String versionJson = getCO2GadgetVersionAsJson();
+        request->send(200, "application/json", versionJson);
+    });
 
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String statusJson = getCO2GadgetStatusAsJson();
-    request->send(200, "application/json", statusJson); });
-    
+        restartTimerToDeepSleep();
+        String statusJson = getCO2GadgetStatusAsJson();
+        request->send(200, "application/json", statusJson);
+    });
+
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
         request->send(200, "text/plain", "ESP32 restart initiated");
         delay(100);
         ESP.restart();
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
         request->send(400, "text/plain", "Not found");
     });
 
     AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        restartTimerToDeepSleep();
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
             data = json.as<JsonArray>();

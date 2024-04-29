@@ -6,12 +6,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="./style.css" />    
+    <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./preferences.js"></script>
     <title>CO2 Gadget Configuration</title>
 </head>
 
 <body>
+
     <!-- Navigation bar -->
     <div class="navbar">
         <a href="index.html">Home</a>
@@ -24,6 +25,67 @@
         <h1>CO2 Gadget Preferences</h1>
 
         <form id="preferencesForm">
+
+            <!-- Low Power Options Group -->
+            <fieldset>
+                <legend>Low Power Options</legend>
+
+                <div>
+                    <label for="lowPowerMode">Initial Low Power Mode:</label>
+                    <select id="lowPowerMode" name="lowPowerMode">
+                        <option value="0">No Low Power</option>
+                        <!-- <option value="2">Basic Low Power (Not implemented)</option> -->
+                        <option value="2">Medium Low Power</option>
+                        <!-- <option value="2">Maximum Low Power (Not implemented)</option> -->
+                    </select>
+                </div>
+
+                <div>
+                    <label for="waitToDeep">Wait Time Before Low Power Mode (secs):</label>
+                    <input type="number" id="waitToDeep" name="waitToDeep" value="" min="15" max="900">
+                </div>
+
+                <div>
+                    <label for="timeSleeping">Time to be in Low Power Mode (secs):</label>
+                    <input type="number" id="timeSleeping" name="timeSleeping" value="">
+                </div>
+
+                <div>
+                    <label for="cyclsWifiConn">Connect to WiFi Every (Cycles):</label>
+                    <input type="number" id="cyclsWifiConn" name="cyclsWifiConn" value="">
+                </div>
+
+                <div>
+                    <label for="cycRedrawDis">Redraw Display Every (Cycles):</label>
+                    <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
+                </div>
+
+                <div>
+                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+                </div>
+
+                <div>
+                    <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
+                    <input type="checkbox" id="actWifiOnWake" name="actWifiOnWake">
+                </div>
+
+                <div>
+                    <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
+                    <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
+                </div>
+
+                <div>
+                    <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
+                    <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
+                </div>
+
+                <div>
+                    <label for="deepSleepData.displayOnWake">Momentary Display on Wakeup:</label>
+                    <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
+                </div>
+
+            </fieldset>
 
             <!-- Networking Group -->
             <fieldset>
@@ -551,4 +613,5 @@
 
     </div>
 </body>
+
 </html>

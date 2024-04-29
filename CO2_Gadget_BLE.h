@@ -16,9 +16,8 @@ void initBLE() {
 #ifdef SUPPORT_BLE
     if (activeBLE) {
         if (bleInitialized) {
-            Serial.print(
-                "-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
-            Serial.println(provider.getDeviceIdString());
+            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
+            Serial.println(provider.getDeviceIdString() + " - Skipping BLE init.");
             return;
         } else {
             // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604

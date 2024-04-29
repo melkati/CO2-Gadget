@@ -3,7 +3,6 @@
 
 #include <Sensors.hpp>
 
-bool firstCO2SensorInit = true;
 volatile bool pendingCalibration = false;
 volatile bool newReadingsAvailable = false;
 uint16_t calibrationValue = 415;
@@ -26,9 +25,9 @@ String sensorsGetMainDeviceSelected() {
 void printSensorsDetected() {
     uint16_t sensors_count = sensors.getSensorsRegisteredCount();
     uint16_t units_count = sensors.getUnitsRegisteredCount();
-    Serial.println("-->[SENS]  Sensors detected count\t: " + String(sensors_count));
-    Serial.println("-->[SENS]  Sensors units count  \t: " + String(units_count));
-    Serial.print("-->[SENS]  Sensors devices names\t: ");
+    Serial.println("-->[SENS] Sensors detected count\t: " + String(sensors_count));
+    Serial.println("-->[SENS] Sensors units count  \t: " + String(units_count));
+    Serial.print("-->[SENS] Sensors devices names\t: ");
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
         Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
@@ -36,6 +35,13 @@ void printSensorsDetected() {
         Serial.print(",");
     }
     Serial.println();
+    if (mainDeviceSelected == "SCD4X") {
+        Serial.print("-->[SENS] SCD4X model detected\t: ");
+        sensors.scd4x.stopPeriodicMeasurement();
+        mainDeviceSelected = sensors.getSCD4xModel();
+        sensors.scd4x.startPeriodicMeasurement();
+        Serial.println(mainDeviceSelected);
+    }
 }
 
 void onSensorDataOk() {
@@ -46,6 +52,9 @@ void onSensorDataOk() {
     temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TO-DO: temp could be 0.0
     tempFahrenheit = (temp * 1.8 + 32);
+    deepSleepData.lastCO2Value = co2;
+    deepSleepData.lastTemperatureValue = temp;
+    deepSleepData.lastHumidityValue = hum;
     if (!inMenu) {
         Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2temp(), sensors.getCO2humi(), sensors.getHumidity(), sensors.getTemperature());
     }
@@ -53,40 +62,108 @@ void onSensorDataOk() {
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
 }
 
-void onSensorDataError(const char *msg) { Serial.println(msg); }
+void onSensorDataError(const char *msg) {
+    Serial.println("-->[SENS] " + String(msg));
+}
 
-// To move into the sensorlib
-uint16_t getSCD4xFeatureSet() {
-    uint16_t featureSet = 0;
-    uint16_t error = 0;
-    error = sensors.scd4x.stopPeriodicMeasurement();
-    error = sensors.scd4x.getFeatures(featureSet);
-    if (error != 0) {
-        Serial.println("-->[SENS] SCD4x getFeatures error: " + String(error));
-    } else {
-        uint8_t typeOfSensor = ((featureSet & 0x1000) >> 12);
-        Serial.println("-->[SENS] SCD4x Sensor Type: SCD4" + String(typeOfSensor));
+void storeSensorSelectedInRTC() {
+    if (!sensorsGetMainDeviceSelected().isEmpty()) {
+        Serial.println("-->[SENS] Storing main device selected to RTC Memory: [" + sensorsGetMainDeviceSelected() + "]");
+        if (sensorsGetMainDeviceSelected() == "SCD40") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD40;
+            Serial.println("-->[SENS][SCD4X] Sensor stored: CO2Sensor_SCD40");
+            return;
+        }
+
+        if (sensorsGetMainDeviceSelected() == "SCD41") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD41;
+            Serial.println("-->[SENS][SCD4X] Sensor stored: CO2Sensor_SCD41");
+            return;
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "CM1106") {
+            char softver[CM1106_LEN_SOFTVER];
+            sensors.cm1106->get_software_version(softver);
+            String softverStr(softver);
+            Serial.println("-->[SENS][CM1106] Sensor stored: CO2Sensor_CM1106");
+            // Serial.println("-->[SENS-CM1106] CM1106 version detected 1\t: " + softverStr);
+
+            if (softverStr.length() >= 10 && softverStr.endsWith("SL-NS")) {
+                deepSleepData.co2Sensor = CO2Sensor_CM1106SL_NS;
+                Serial.println("-->[SENS][CM1106] Sensor stored: CO2Sensor_CM1106SL_NS");
+            } else if (softverStr.endsWith("CM")) {
+                deepSleepData.co2Sensor = CO2Sensor_CM1106;
+                Serial.println("-->[SENS][CM1106] Sensor stored: CO2Sensor_CM1106");
+            } else {
+                deepSleepData.co2Sensor = CO2Sensor_NONE;
+                Serial.println("-->[SENS][CM1106] Sensor stored: CO2Sensor_NONE");
+            }
+            return;
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "SCD30") {
+            deepSleepData.co2Sensor = CO2Sensor_SCD30;
+            Serial.println("-->[SENS][SCD30] Sensor stored: CO2Sensor_SCD30");
+            return;
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "MHZ19") {
+            deepSleepData.co2Sensor = CO2Sensor_MHZ19;
+            Serial.println("-->[SENS][MHZ19] Sensor stored: CO2Sensor_MHZ19");
+            return;
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "SENSEAIRS8") {
+            deepSleepData.co2Sensor = CO2Sensor_SENSEAIRS8;
+            Serial.println("-->[SENS][SENSEAIRS8] Sensor stored: CO2Sensor_SENSEAIRS8");
+            return;
+        }
+
+        if ((sensorsGetMainDeviceSelected()) == "NONE") {
+            deepSleepData.co2Sensor = CO2Sensor_NONE;
+            Serial.println("-->[SENS][NONE][ERROR] Sensor stored: CO2Sensor_NONE");
+            delay(10000);
+            return;
+        }
     }
-    sensors.scd4x.startPeriodicMeasurement();
-    return featureSet;
+}
+
+void initSCD30SensorLowPower() {
+#ifndef Wire1
+    if (!sensors.scd30.begin()) return;
+#else
+    if (!sensors.scd30.begin() && !sensors.scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire1, SCD30_CHIP_ID)) return;
+#endif
+}
+
+void initSensorsLowPower() {
+    const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
+    if (deepSleepData.lowPowerMode == SENSORS::SSCD30) {
+        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: SCD30");
+        initSCD30SensorLowPower();
+        return;
+    }
+
+    if (selectedCO2Sensor == AUTO) {
+        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
+        deepSleepData.measurementsStarted = false;
+        sensors.initCO2LowPowerMode(SENSORS::Auto, static_cast<LowPowerModes>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+        return;
+    }
+
+
+    Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+    displayNotification("-->[SENS][ERROR] Init sensors", "Low Power Mode not supported for this sensor", notifyError);
+    while (1) {
+        Serial.println("-->[SENS][ERROR] Low Power Mode not supported for this sensor " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+        delay(10000);
+    }
 }
 
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
-    if (firstCO2SensorInit) {
-        Serial.printf("-->[SENS] Using sensorlib v%s Rev:%d\n", CSL_VERSION, CSL_REVISION);
-        firstCO2SensorInit = false;
-    }
-
-    displayNotification("Init sensors", notifyInfo);
-
-#ifdef ENABLE_PIN
-    // Turn On the Sensor (reserved for future use)
-    Serial.println("-->[SENS] Turning on sensor..");
-    pinMode(ENABLE_PIN, OUTPUT);
-    digitalWrite(ENABLE_PIN, ENABLE_PIN_HIGH);
-    delay(50);
-#endif
+    int16_t period;
+    uint8_t smooth;
 
 // Initialize sensors
 #ifdef I2C_SDA &&defined(I2C_SCL)
@@ -95,62 +172,129 @@ void initSensors() {
     Wire.begin();
 #endif
 
-    Serial.println("-->[SENS] Detecting sensors..");
-
-    uint16_t defaultCO2MeasurementInterval = 5;  // TO-DO: Move to preferences
-// Breaking change: https://github.com/kike-canaries/canairio_sensorlib/pull/110
-// CanAirIO Sensorlib was multipliying sample time by two until rev 340 (inclusive). Adjust to avoid need for recalibration.
-#ifdef CSL_REVISION  // CanAirIO Sensorlib Revision > 340 (341 where CSL_REVISION was included)
-    if (sensors.getLibraryRevision() > 340) {
-        sensors.setSampleTime(defaultCO2MeasurementInterval * 2);
-    } else {
-        sensors.setSampleTime(defaultCO2MeasurementInterval);
-    }
-#else
-    sensors.setSampleTime(defaultCO2MeasurementInterval);
-#endif
-
+    Serial.println("-->[SENS] Detecting sensors...");
     sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
     sensors.setDebugMode(debugSensors);              // [optional] debug mode
     sensors.setTempOffset(tempOffset);
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
+    sensors.setSampleTime(measurementInterval);
 
-    Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
+    Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+    Serial.println("-->[SENS] Measurement Interval: " + String(sensors.getSampleTime()));
 
-    if (selectedCO2Sensor == AUTO) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: AutoSensor (I2C)");
-        sensors.detectI2COnly(true);
-        sensors.init();
-    } else if (selectedCO2Sensor == MHZ19) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
-        sensors.detectI2COnly(false);
-        sensors.init(MHZ19);
-    } else if (selectedCO2Sensor == CM1106) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
-        sensors.detectI2COnly(false);
-        sensors.init(CM1106);
-    } else if (selectedCO2Sensor == SENSEAIRS8) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
-        sensors.detectI2COnly(false);
-        sensors.init(SENSEAIRS8);
+    if ((deepSleepData.lowPowerMode) && (!interactiveMode)) {
+        displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
+        Serial.println("-->[SENS] Trying to init sensors in Low Power Mode: " + String(deepSleepData.lowPowerMode));
+        initSensorsLowPower();
+    } else {
+        displayNotification("Init sensors", notifyInfo);
+        if (selectedCO2Sensor == AUTO) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: AutoSensor (I2C)");
+            sensors.detectI2COnly(true);
+            sensors.init();
+        } else if (selectedCO2Sensor == MHZ19) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: MHZ19(A/B/C/D)");
+            sensors.detectI2COnly(false);
+            sensors.init(MHZ19);
+        } else if (selectedCO2Sensor == CM1106) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: CM1106");
+            sensors.detectI2COnly(false);
+#ifdef CM1106_ENABLE_PIN
+            pinMode(CM1106_ENABLE_PIN, OUTPUT);
+            digitalWrite(CM1106_ENABLE_PIN, HIGH);
+#endif
+#ifdef CM1106_READY_PIN
+            pinMode(CM1106_READY_PIN, INPUT);
+#endif
+#if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
+            sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);
+#else
+            sensors.init(CM1106);
+#endif
+            sensors.cm1106->set_working_status(CM1106_CONTINUOUS_MEASUREMENT);
+            sensors.cm1106->get_measurement_period(&period, &smooth);
+            Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
+            sensors.cm1106->set_measurement_period(measurementInterval, 1);
+            sensors.cm1106->get_measurement_period(&period, &smooth);
+            Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
+            // sensors.cm1106->set_working_status(CM1106_SINGLE_MEASUREMENT);
+        } else if (selectedCO2Sensor == SENSEAIRS8) {
+            Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
+            sensors.detectI2COnly(false);
+            sensors.init(SENSEAIRS8);
+        }
     }
 
     printSensorsDetected();
+    storeSensorSelectedInRTC();
+}
 
-    if (!sensorsGetMainDeviceSelected().isEmpty()) {
-        Serial.println("-->[SENS] Sensor configured: " + sensorsGetMainDeviceSelected());
+void sensorSCD30LoopLowPower() {
+    Serial.println("-->[DEEP] " + String(__func__) + "()");
+}
 
-        // Temporary getFeatureSet() for SCD4x. To be moved into the sensorlib
-        if (sensorsGetMainDeviceSelected() == "SCD4X") {
-            Serial.println("-->[SENS] SCD4x Feature Set: " + String(getSCD4xFeatureSet()));
+void sensorCM1106SL_NSLoopLowPower() {
+    Serial.println("-->[DEEP] " + String(__func__) + "()");
+}
+
+void sensorSCD4XLoopLowPower() {
+    bool dataReadyFlag = false;
+    uint16_t error = 0;
+    uint16_t co2value = 0;
+    float temperature = 0;
+    float humidity = 0;
+
+    Serial.println("-->[DEEP] " + String(__func__) + "() " + sensors.getSCD4xModel());
+
+    // Serial.println("-->[SENS] sensorSCD4XLoopLowPower() " + (sensors.getSCD4xModel() == "SCD40" ? "SCD40" : "SCD41"));
+
+    error = sensors.scd4x.getDataReadyFlag(dataReadyFlag);
+    if (error != 0) {
+        Serial.printf("-->[DEEP] SCD4X sensorSCD4XLoopLowPower() --> getDataReadyFlag() error: %d\n", error);
+    }
+
+    if (dataReadyFlag) {
+        error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
+        if (error != 0) {
+            Serial.printf("-->[DEEP] sensorSCD4XLoopLowPower() error: %d\n", error);
+        } else {
+            // Serial.println("-->[SENS] sensorSCD4XLoopLowPower() " + (sensors.getSCD4xModel() == "SCD40" ? "SCD40" : "SCD41"));
+            Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f Sensor: (%s)\n", co2value, temperature, humidity, humidity, temperature, sensors.getSCD4xModel().c_str());
+            co2 = co2value;
+            temp = temperature;
+            hum = humidity;
         }
     }
 }
 
+void sensorsLoopLowPower() {
+    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
+        // Serial.println("sensorsLoopLowPower() SCD30");
+        sensorSCD30LoopLowPower();
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
+        // Serial.println("sensorsLoopLowPower() CM1106SL_NS");
+        sensorCM1106SL_NSLoopLowPower();
+    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
+        // Serial.println("sensorsLoopLowPower() SCD41");
+        sensorSCD4XLoopLowPower();
+    }
+}
+
 void sensorsLoop() {
-    if (!buzzerBeeping) {
+    static unsigned long lastDotPrintTime = 0;
+    if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+        if (millis() - lastDotPrintTime >= 100) {
+            Serial.print("[-]");  // Print a - every loop to show that the device is alive
+            lastDotPrintTime = millis();
+        }
+        sensorsLoopLowPower();
+    } else if (!buzzerBeeping) {  // Avoid affecting beep sound
+        // if (millis() - lastDotPrintTime >= 100) {
+        //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
+        //     lastDotPrintTime = millis();
+        // }
         sensors.loop();
     }
 }
