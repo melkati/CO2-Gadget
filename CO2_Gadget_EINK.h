@@ -395,7 +395,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     // Serial.println("-->[EINK] Width: " + String(display.width()) + ", Height: " + String(display.height()));
 #endif
 
-    // Each cyclesToRedrawDisplay boots do a full screen refresh
+    // Each deepSleepData.redrawDisplayEveryCycles boots do a full screen refresh
     if (forceRedraw) {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with full refresh from: ");
@@ -403,7 +403,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 #endif
         display.fillScreen(GxEPD_WHITE);
         display.display();
-        //        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
+        drawMainScreen(false);
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
     } else {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with partial refresh from: ");
@@ -413,6 +414,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
         // display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         // display.displayWindow(0, 0, display.width(), display.height());
+        drawMainScreen(false);
     }
 }
 
@@ -667,10 +669,6 @@ void testRedrawValues(bool randomNumbers = false) {
     display.setTextColor(GxEPD_BLACK);
     display.setFont(&BigFont);
     display.setTextSize(1);
-    display.setCursor(0, 100);
-    display.print(textToDraw);
-    display.setFont(&SmallFont);
-    textDrawn = textToDraw;
     lastTimeDrawn = millis();
 }
 

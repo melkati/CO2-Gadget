@@ -166,6 +166,37 @@ function loadPreferencesFromServer() {
             if (getPreferencesDebug) console.log('Setting timeBtwnBzr to:', preferences.timeBtwnBzr);
             document.getElementById("timeBtwnBzr").value = preferences.timeBtwnBzr;
 
+            if (getPreferencesDebug) console.log('Setting lowPowerMode to:', preferences.lowPowerMode);
+            document.getElementById("lowPowerMode").value = preferences.lowPowerMode;
+
+            if (getPreferencesDebug) console.log('Setting waitToDeep to:', preferences.waitToDeep);
+            document.getElementById("waitToDeep").value = preferences.waitToDeep;
+
+            if (getPreferencesDebug) console.log('Setting timeSleeping to:', preferences.timeSleeping);
+            document.getElementById("timeSleeping").value = preferences.timeSleeping;
+
+            if (getPreferencesDebug) console.log('Setting cyclsWifiConn to:', preferences.cyclsWifiConn);
+            document.getElementById("cyclsWifiConn").value = preferences.cyclsWifiConn;
+
+            if (getPreferencesDebug) console.log('Setting cycRedrawDis to:', preferences.cycRedrawDis);
+            document.getElementById("cycRedrawDis").value = preferences.cycRedrawDis;
+
+            if (getPreferencesDebug) console.log('Setting actBLEOnWake to:', preferences.actBLEOnWake);
+            document.getElementById("actBLEOnWake").checked = preferences.actBLEOnWake;
+
+            if (getPreferencesDebug) console.log('Setting actWifiOnWake to:', preferences.actWifiOnWake);
+            document.getElementById("actWifiOnWake").checked = preferences.actWifiOnWake;
+
+            if (getPreferencesDebug) console.log('Setting actMQTTOnWake to:', preferences.actMQTTOnWake);
+            document.getElementById("actMQTTOnWake").checked = preferences.actMQTTOnWake;
+
+            if (getPreferencesDebug) console.log('Setting actESPnowWake to:', preferences.actESPnowWake);
+            document.getElementById("actESPnowWake").checked = preferences.actESPnowWake;
+
+            if (getPreferencesDebug) console.log('Setting deepSleepData.displayOnWake to:', preferences.deepSleepData.displayOnWake);
+            document.getElementById("deepSleepData.displayOnWake").checked = preferences.deepSleepData.displayOnWake;
+
+
         })
         .catch(error => console.error('Error retrieving preferences:', error));
 }
@@ -219,7 +250,19 @@ function collectPreferencesData() {
         // mqttPass: document.getElementById("mqttPass").value
         toneBzrBeep: document.getElementById("toneBzrBeep").value,
         durBzrBeep: document.getElementById("durBzrBeep").value,
-        timeBtwnBzr: document.getElementById("timeBtwnBzr").value
+        timeBtwnBzr: document.getElementById("timeBtwnBzr").value,
+
+        // New preferences for Low Power
+        lowPowerMode: document.getElementById("lowPowerMode").value,
+        waitToDeep: document.getElementById("waitToDeep").value,
+        timeSleeping: document.getElementById("timeSleeping").value,
+        cyclsWifiConn: document.getElementById("cyclsWifiConn").value,
+        cycRedrawDis: document.getElementById("cycRedrawDis").value,
+        actBLEOnWake: document.getElementById("actBLEOnWake").checked,
+        actWifiOnWake: document.getElementById("actWifiOnWake").checked,
+        actMQTTOnWake: document.getElementById("actMQTTOnWake").checked,
+        actESPnowWake: document.getElementById("actESPnowWake").checked,
+        displayOnWake: document.getElementById("deepSleepData.displayOnWake").checked
     };
     return preferencesData;
 }
