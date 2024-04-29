@@ -428,10 +428,13 @@ void initDisplay(bool fastMode = false) {
 #endif
     display.epd2.setBusyCallback(busyHighPerformanceCallback);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
+
     // display.init(115200, true, resetDuration, false);
     display.init(115200, !fastMode, resetDuration, false);
 
 #ifdef DEBUG_EINK
+    int a = SCK, b = EPD_MISO, c = MOSI, d = SS, e = EPD_DC, f = EPD_RST, g = EPD_BUSY;
+    Serial.println("-->[EINK] SPI pins: SCK: " + String(a) + ", MISO: " + String(b) + ", MOSI: " + String(c) + ", SS: " + String(d) + ", DC: " + String(e) + ", RST: " + String(f) + ", BUSY: " + String(g));
     Serial.println("-->[EINK] Display hasPartialUpdate " + String(display.epd2.hasPartialUpdate));
     Serial.println("-->[EINK] Display hasFastPartialUpdate " + String(display.epd2.hasFastPartialUpdate));
 #endif
@@ -676,7 +679,7 @@ void testRedrawValues(bool randomNumbers = false) {
 
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
-    // Resurn if last update less than 15 seconds ago
+    // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
         return;
     }
@@ -714,7 +717,6 @@ void displayShowValues(bool forceRedraw = false) {
     showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
     showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
-    // showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
