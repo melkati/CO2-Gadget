@@ -459,16 +459,16 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     } else {
         display.fillRect(posX, posY + 4, 2, 6, GxEPD_BLACK);
         display.drawRoundRect(posX + 2, posY, 27, 14, 3, GxEPD_BLACK);  // Battery outter rectangle
-        if (batteryLevel > 20) {
+        if (batteryLevel > 80) {
             display.fillRect(posX + 6, posY + 2, 4, 10, GxEPD_BLACK);
         }
-        if (batteryLevel > 40) {
+        if (batteryLevel > 60) {
             display.fillRect(posX + 11, posY + 2, 4, 10, GxEPD_BLACK);
         }
-        if (batteryLevel > 60) {
+        if (batteryLevel > 40) {
             display.fillRect(posX + 16, posY + 2, 4, 10, GxEPD_BLACK);
         }
-        if (batteryLevel > 80) {
+        if (batteryLevel > 20) {
             display.fillRect(posX + 21, posY + 2, 4, 10, GxEPD_BLACK);
         }
     }
