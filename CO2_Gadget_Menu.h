@@ -1174,6 +1174,8 @@ bool menuEntryCharacterReceived() {
 }
 
 void menuLoop() {
+    if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
+    
     if (mustInitMenu) {
         initMenu();
 #ifdef DEBUG_ARDUINOMENU

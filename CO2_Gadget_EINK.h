@@ -646,6 +646,7 @@ void testRedrawValues(bool randomNumbers = false) {
 
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
+    if (isDownloadingBLE) return; // Do not update display while downloading BLE data to MyAmbiance
     // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
         return;
