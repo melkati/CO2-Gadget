@@ -125,7 +125,8 @@ void BLELoop() {
         return;
     }
     provider.handleDownload();
-    delay(3);
+    isDownloadingBLE = provider.isDownloading();
+    // delay(3);
     if (provider.wifiChanged()) handleBLEwifiChanged();
     if (provider.historyIntervalChanged()) {
         Serial.print("-->[BLE ] History interval changed to: ");

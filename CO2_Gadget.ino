@@ -35,6 +35,7 @@ uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // BLE options
 bool activeBLE = true;
+bool isDownloadingBLE = false;
 
 // WIFI options
 bool activeWIFI = true;
