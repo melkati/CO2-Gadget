@@ -349,10 +349,10 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-// busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
-void busyCallback(const void* p) {
+// busyCallbackDeepSleep function called during waiting for BUSY to end, to light sleep or service other tasks
+void busyCallbackDeepSleep(const void* p) {
 #ifdef DEBUG_EINK
-    // Serial.println("Serial.println("[EINK] busyCallback light sleep");
+    // Serial.println("Serial.println("[EINK] busyCallbackDeepSleep light sleep");
 #endif
     esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
     Serial.flush();
@@ -365,9 +365,9 @@ void busyCallback(const void* p) {
 #endif
 }
 
-void busyHighPerformanceCallback(const void* p) {
+void busyCallbackHighPerformance(const void* p) {
 #ifdef DEBUG_EINK
-    // Serial.println("[EINK] busyHighPerformanceCallback light sleep");
+    // Serial.println("[EINK] busyCallbackHighPerformance light sleep");
 #endif
     menuLoop();
 }
@@ -375,7 +375,7 @@ void busyHighPerformanceCallback(const void* p) {
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
     RTC_DATA_ATTR static bool firstBoot = true;
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
-    display.epd2.setBusyCallback(busyCallback);  // register callback to be called during BUSY active time
+    display.epd2.setBusyCallback(busyCallbackDeepSleep);  // register callback to be called during BUSY active time
     setElementLocations();
     if (firstBoot) {
         forceRedraw = true;
@@ -397,14 +397,14 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
 
     // Each deepSleepData.redrawDisplayEveryCycles boots do a full screen refresh
     if (forceRedraw) {
+        // display.fillScreen(GxEPD_WHITE);
+        // display.display();
+        // drawMainScreen(false);
+        // deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with full refresh from: ");
         Serial.println(__func__);
 #endif
-        display.fillScreen(GxEPD_WHITE);
-        display.display();
-        drawMainScreen(false);
-        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
     } else {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with partial refresh from: ");
@@ -414,7 +414,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
         // display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         // display.displayWindow(0, 0, display.width(), display.height());
-        drawMainScreen(false);
+        // drawMainScreen(false);
     }
 }
 
@@ -428,7 +428,7 @@ void initDisplay(bool fastMode = false) {
         Serial.println(__func__);
     }
 #endif
-    display.epd2.setBusyCallback(busyHighPerformanceCallback);  // register callback to be called during BUSY active time (attend menu)
+    display.epd2.setBusyCallback(busyCallbackHighPerformance);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
 
     // display.init(115200, true, resetDuration, false);
