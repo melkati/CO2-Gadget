@@ -854,6 +854,10 @@ void initWebServer() {
 
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(hum));
+    });    
+
+    server.on("/readBatteryVoltage", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(batteryVoltage));
     });
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
