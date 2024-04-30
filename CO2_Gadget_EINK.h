@@ -499,39 +499,6 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     oldCO2Value = co2;
 }
 
-void showCO2OLD(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
-    RTC_DATA_ATTR static uint16_t oldCO2Value = 0;
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-
-    if (!forceRedraw && (co2 == oldCO2Value)) return;
-    if ((co2 == 0) || (co2 > 9999)) return;
-
-    display.setRotation(1);
-    display.setPartialWindow(0, 0, display.width(), display.height());
-
-    // // Erase old CO2 value
-    // display.fillRect(elementPosition.co2X, elementPosition.co2Y, elementPosition.co2W, elementPosition.bifFontDigitsHeight, GxEPD_WHITE);  // Clear previous co2 value
-
-    display.fillRoundRect(0, elementPosition.bleIconY + 16 + 4, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);
-    display.drawRoundRect(0, elementPosition.bleIconY + 16 + 4, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_BLACK);
-
-    display.setRotation(4);
-    display.setFont(&SmallFont);
-    drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H, 16, "PPM", 'c', 'b');
-
-    // Show new CO2 value
-    display.setRotation(1);
-    display.setFont(&BigFont);
-    display.setTextColor(GxEPD_BLACK);
-    // #ifdef DEBUG_EINK
-    display.getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);  // Set elementPosition.bifFontDigitsHeight to tbh and elementPosition.co2W to tbw for static assignment
-    Serial.println("-->[EINK] CO2 value width: " + String(elementPosition.co2W) + " and height: " + String(elementPosition.co2H) + " Text bound x: " + String(tbw) + " y: " + String(tbh) + " w: " + String(tbw) + " h: " + String(tbh) + " in: " + __func__ + "()");
-    // #endif
-    drawTextAligned(elementPosition.co2X, elementPosition.co2Y + 5, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
-    oldCO2Value = co2;
-}
-
 void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     RTC_DATA_ATTR static float oldHumiValue = -200;
     if (!displayShowHumidity) return;
