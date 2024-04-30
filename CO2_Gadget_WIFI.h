@@ -668,7 +668,6 @@ void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 #ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] Connected to WiFi access point");
 #endif
-
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -851,7 +850,7 @@ void initWebServer() {
 
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(hum));
-    });    
+    });
 
     server.on("/readBatteryVoltage", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(batteryVoltage));
@@ -902,22 +901,29 @@ void initWebServer() {
     });
 
     server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getPreferencesAsJson();
-    request->send(200, "application/json", preferencesJson); });
+        String preferencesJson = getPreferencesAsJson();
+        request->send(200, "application/json", preferencesJson);
+    });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getActualSettingsAsJson();
-    // Serial.println(preferencesJson);
-    request->send(200, "application/json", preferencesJson); });
+        String preferencesJson = getActualSettingsAsJson();
+        request->send(200, "application/json", preferencesJson);
+    });
 
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String versionJson = getCO2GadgetVersionAsJson();
-    request->send(200, "application/json", versionJson); });
+        String versionJson = getCO2GadgetVersionAsJson();
+        request->send(200, "application/json", versionJson);
+    });
+
+    server.on("/getMeasurementInterval", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(measurementInterval));
+    });
 
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String statusJson = getCO2GadgetStatusAsJson();
-    request->send(200, "application/json", statusJson); });
-    
+        String statusJson = getCO2GadgetStatusAsJson();
+        request->send(200, "application/json", statusJson);
+    });
+
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "ESP32 restart initiated");
