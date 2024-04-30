@@ -17,6 +17,10 @@
 // clang-format on
 #include <GxEPD2_BW.h>
 
+#ifndef RESETDURATION
+#define RESETDURATION 2 // Default reset duration in seconds for WaveShare displays with clever reset circuit
+#endif
+
 uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
 uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
 
@@ -39,7 +43,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
@@ -49,7 +52,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
@@ -59,7 +61,6 @@ const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
-uint16_t resetDuration = 2;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 // GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
@@ -73,7 +74,6 @@ const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = NotoSans_Bold48pt7b;
 int displayWidth = 296;
 int displayHeight = 128;
-uint16_t resetDuration = 2;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -100,7 +100,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -115,7 +114,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -130,7 +128,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -379,10 +376,10 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     setElementLocations();
     if (firstBoot) {
         forceRedraw = true;
-        display.init(115200, true, resetDuration, false);
+        display.init(115200, true, RESETDURATION, false);
         firstBoot = false;
     } else {
-        display.init(115200, false, resetDuration, false);
+        display.init(115200, false, RESETDURATION, false);
     }
 
     // Set default options to draw
@@ -431,8 +428,8 @@ void initDisplay(bool fastMode = false) {
     display.epd2.setBusyCallback(busyCallbackHighPerformance);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
 
-    // display.init(115200, true, resetDuration, false);
-    display.init(115200, !fastMode, resetDuration, false);
+    // display.init(115200, true, RESETDURATION, false);
+    display.init(115200, !fastMode, RESETDURATION, false);
 
 #ifdef DEBUG_EINK
     int a = SCK, b = EPD_MISO, c = MOSI, d = SS, e = EPD_DC, f = EPD_RST, g = EPD_BUSY;
