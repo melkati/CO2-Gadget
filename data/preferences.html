@@ -26,202 +26,209 @@
 
         <form id="preferencesForm">
 
-            <!-- Low Power Options Group -->
+            <!-- Buttons Group -->
+            <div id="buttonContainer">
+                <button type="button" id="resetButton" onclick="restartESP32()">Restart ESP32</button>
+                <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
+            </div>
+            </form>
+
+        <!-- Low Power Options Group -->
+        <fieldset>
+            <legend>Low Power Options</legend>
+
+            <div>
+                <label for="lowPowerMode">Initial Low Power Mode:</label>
+                <select id="lowPowerMode" name="lowPowerMode">
+                    <option value="0">No Low Power</option>
+                    <!-- <option value="2">Basic Low Power (Not implemented)</option> -->
+                    <option value="2">Medium Low Power</option>
+                    <!-- <option value="2">Maximum Low Power (Not implemented)</option> -->
+                </select>
+            </div>
+
+            <div>
+                <label for="waitToDeep">Wait Time Before Low Power Mode (secs):</label>
+                <input type="number" id="waitToDeep" name="waitToDeep" value="" min="15" max="900">
+            </div>
+
+            <div>
+                <label for="timeSleeping">Time to be in Low Power Mode (secs):</label>
+                <input type="number" id="timeSleeping" name="timeSleeping" value="">
+            </div>
+
+            <div>
+                <label for="cyclsWifiConn">Connect to WiFi Every (Cycles):</label>
+                <input type="number" id="cyclsWifiConn" name="cyclsWifiConn" value="">
+            </div>
+
+            <div>
+                <label for="cycRedrawDis">Redraw Display Every (Cycles):</label>
+                <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
+            </div>
+
+            <div>
+                <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+                <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+            </div>
+
+            <div>
+                <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
+                <input type="checkbox" id="actWifiOnWake" name="actWifiOnWake">
+            </div>
+
+            <div>
+                <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
+                <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
+            </div>
+
+            <div>
+                <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
+                <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
+            </div>
+
+            <div>
+                <label for="deepSleepData.displayOnWake">Momentary Display on Wakeup:</label>
+                <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
+            </div>
+
+        </fieldset>
+
+        <!-- Networking Group -->
+        <fieldset>
+            <legend>Networking</legend>
+
+            <div>
+                <label for="activeWIFI">WIFI Active:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Should the device connect to a WiFi network?
+                </label>
+                <input type="checkbox" id="activeWIFI" name="activeWIFI">
+            </div>
+
             <fieldset>
-                <legend>Low Power Options</legend>
+                <legend>WiFi Credentials</legend>
 
                 <div>
-                    <label for="lowPowerMode">Initial Low Power Mode:</label>
-                    <select id="lowPowerMode" name="lowPowerMode">
-                        <option value="0">No Low Power</option>
-                        <!-- <option value="2">Basic Low Power (Not implemented)</option> -->
-                        <option value="2">Medium Low Power</option>
-                        <!-- <option value="2">Maximum Low Power (Not implemented)</option> -->
-                    </select>
-                </div>
-
-                <div>
-                    <label for="waitToDeep">Wait Time Before Low Power Mode (secs):</label>
-                    <input type="number" id="waitToDeep" name="waitToDeep" value="" min="15" max="900">
-                </div>
-
-                <div>
-                    <label for="timeSleeping">Time to be in Low Power Mode (secs):</label>
-                    <input type="number" id="timeSleeping" name="timeSleeping" value="">
-                </div>
-
-                <div>
-                    <label for="cyclsWifiConn">Connect to WiFi Every (Cycles):</label>
-                    <input type="number" id="cyclsWifiConn" name="cyclsWifiConn" value="">
-                </div>
-
-                <div>
-                    <label for="cycRedrawDis">Redraw Display Every (Cycles):</label>
-                    <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
-                </div>
-
-                <div>
-                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
-                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
-                </div>
-
-                <div>
-                    <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
-                    <input type="checkbox" id="actWifiOnWake" name="actWifiOnWake">
-                </div>
-
-                <div>
-                    <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
-                    <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
-                </div>
-
-                <div>
-                    <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
-                    <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
-                </div>
-
-                <div>
-                    <label for="deepSleepData.displayOnWake">Momentary Display on Wakeup:</label>
-                    <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
-                </div>
-
-            </fieldset>
-
-            <!-- Networking Group -->
-            <fieldset>
-                <legend>Networking</legend>
-
-                <div>
-                    <label for="activeWIFI">WIFI Active:
+                    <label for="wifiSSID">WiFi SSID:
                         <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Should the device connect to a WiFi network?
+                        <span class="tooltip-text">The name of your WiFi network</span>
                     </label>
-                    <input type="checkbox" id="activeWIFI" name="activeWIFI">
+                    <input type="text" id="wifiSSID" name="wifiSSID" value="" readonly>
                 </div>
 
-                <fieldset>
-                    <legend>WiFi Credentials</legend>
+                <div>
+                    <label for="wifiPass">WiFi Password:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">The password for your WiFi network. Dissabled for security
+                            reasons.</span>
+                    </label>
+                    <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
+                </div>
 
-                    <div>
-                        <label for="wifiSSID">WiFi SSID:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">The name of your WiFi network</span>
-                        </label>
-                        <input type="text" id="wifiSSID" name="wifiSSID" value="" readonly>
-                    </div>
-
-                    <div>
-                        <label for="wifiPass">WiFi Password:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">The password for your WiFi network. Dissabled for security
-                                reasons.</span>
-                        </label>
-                        <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
-                    </div>
-
-                </fieldset>
-
-                <fieldset>
-                    <legend>Host Name</legend>
-
-                    <div>
-                        <label for="hostName">Host Name:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">The hostname of the device on the network</span>
-                            <input type="text" id="hostName" name="hostName" value="">
-                        </label>
-                    </div>
-                </fieldset>
             </fieldset>
 
-            <!-- Sensors Group -->
             <fieldset>
-                <legend>Sensors</legend>
+                <legend>Host Name</legend>
 
-                <fieldset>
-                    <legend>CO2 Sensor</legend>
-
-                    <div>
-                        <label for="selCO2Sensor">Selected Sensor:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Only automatic detection is supported at the moment. Please do
-                                not change this
-                                value.</span>
-                            <input type="number" id="selCO2Sensor" name="selCO2Sensor" value="">
-                        </label>
-                    </div>
-
-                    <div>
-                        <label for="autoSelfCalibration">Auto Self Calibration:
-                            <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor.</span>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label for="customCalValue">Custom Calibration Value:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Custom calibration value for the CO2 sensor. This value is used
-                                to adjust the sensor readings. Set to ~415 to calibrate the sensor to outdoor air. Use
-                                with caution.</span>
-                            <input type="number" id="customCalValue" name="customCalValue" value="">
-                        </label>
-                    </div>
-
-                    <div>
-                        <label for="co2OrangeRange">Orange level:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">CO2 level to be considered "warning".</span>
-                            <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="">
-                        </label>
-                    </div>
-
-                    <div>
-                        <label for="co2RedRange">Red level:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">CO2 level to be considered "danger".</span>
-                            <input type="number" id="co2RedRange" name="co2RedRange" value="">
-                        </label>
-                    </div>
+                <div>
+                    <label for="hostName">Host Name:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">The hostname of the device on the network</span>
+                        <input type="text" id="hostName" name="hostName" value="">
+                    </label>
+                </div>
+                </fieldset>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Temperature Sensor</legend>
+        <!-- Sensors Group -->
+        <fieldset>
+            <legend>Sensors</legend>
 
-                    <div>
-                        <label for="tempOffset">Temperature Offset (Cº):
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Offset value to adjust the temperature readings. Use this value
-                                to calibrate the temperature sensor. For Sensirion sensors this value is deducted from
-                                the temperature readings. Takes a while to update.</span>
-                            <input type="number" step="0.1" id="tempOffset" name="tempOffset" value="" min="0" max="30">
-                        </label>
-                    </div>
+            <fieldset>
+                <legend>CO2 Sensor</legend>
 
-                    <div>
-                        <label for="showFahrenheit">Show Fahrenheit:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Show temperature readings in Fahrenheit instead of
-                                Celsius.</span>
-                            <input type="checkbox" id="showFahrenheit" name="showFahrenheit">
-                        </label>
-                    </div>
+                <div>
+                    <label for="selCO2Sensor">Selected Sensor:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Only automatic detection is supported at the moment. Please do
+                            not change this
+                            value.</span>
+                        <input type="number" id="selCO2Sensor" name="selCO2Sensor" value="">
+                    </label>
+                </div>
+
+                <div>
+                    <label for="autoSelfCalibration">Auto Self Calibration:
+                        <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor.</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="customCalValue">Custom Calibration Value:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Custom calibration value for the CO2 sensor. This value is used
+                            to adjust the sensor readings. Set to ~415 to calibrate the sensor to outdoor air. Use
+                            with caution.</span>
+                        <input type="number" id="customCalValue" name="customCalValue" value="">
+                    </label>
+                </div>
+
+                <div>
+                    <label for="co2OrangeRange">Orange level:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">CO2 level to be considered "warning".</span>
+                        <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="">
+                    </label>
+                </div>
+
+                <div>
+                    <label for="co2RedRange">Red level:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">CO2 level to be considered "danger".</span>
+                        <input type="number" id="co2RedRange" name="co2RedRange" value="">
+                    </label>
+                </div>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Barometer Sensor</legend>
+            <fieldset>
+                <legend>Temperature Sensor</legend>
 
-                    <div>
-                        <label for="altitudeMeters">Altitude (meters):
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Altitude in meters above sea level. This value is used to adjust
-                                CO2 based on
-                                the barometric
-                                pressure for Sensirion sensors.</span>
-                            <input type="number" id="altitudeMeters" name="altitudeMeters" value="">
-                        </label>
-                    </div>
+                <div>
+                    <label for="tempOffset">Temperature Offset (Cº):
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Offset value to adjust the temperature readings. Use this value
+                            to calibrate the temperature sensor. For Sensirion sensors this value is deducted from
+                            the temperature readings. Takes a while to update.</span>
+                        <input type="number" step="0.1" id="tempOffset" name="tempOffset" value="" min="0" max="30">
+                    </label>
+                </div>
+
+                <div>
+                    <label for="showFahrenheit">Show Fahrenheit:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Show temperature readings in Fahrenheit instead of
+                            Celsius.</span>
+                        <input type="checkbox" id="showFahrenheit" name="showFahrenheit">
+                    </label>
+                </div>
+                </fieldset>
+
+            <fieldset>
+                <legend>Barometer Sensor</legend>
+
+                <div>
+                    <label for="altitudeMeters">Altitude (meters):
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Altitude in meters above sea level. This value is used to adjust
+                            CO2 based on
+                            the barometric
+                            pressure for Sensirion sensors.</span>
+                        <input type="number" id="altitudeMeters" name="altitudeMeters" value="">
+                    </label>
+                </div>
                 </fieldset>
                 <div>
                     <label for="measurementInterval">Measurement Interval (seconds):
@@ -232,321 +239,321 @@
                         <input type="number" id="measurementInterval" name="measurementInterval" value="">
                     </label>
                 </div>
-            </fieldset>
-
-            <!-- Outputs Group -->
-            <fieldset>
-                <legend>Outputs</legend>
-                <!-- NeoPixel Group -->
-                <fieldset>
-                    <legend>NeoPixel</legend>
-
-                    <div>
-                        <label for="neopixBright">NeoPixel Brightness:</label>
-                        <input type="number" id="neopixBright" name="neopixBright" value="">
-                    </div>
-
-                    <div>
-                        <label for="selNeopxType">Selected NeoPixel Type:</label>
-                        <input type="number" id="selNeopxType" name="selNeopxType" value="">
-                    </div>
                 </fieldset>
 
-                <!-- Buzzer Group -->
-                <fieldset id="buzzerFieldset">
-                    <legend>Buzzer</legend>
+        <!-- Outputs Group -->
+        <fieldset>
+            <legend>Outputs</legend>
+            <!-- NeoPixel Group -->
+            <fieldset>
+                <legend>NeoPixel</legend>
 
-                    <label for="timeBtwnBzr">Buzzer Beeps:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between buzzer beeps. Set to OFF to disable the buzzer.</span>
-                        <select id="timeBtwnBzr" name="timeBtwnBzr">
-                            <option value="65535">OFF</option>
-                            <option value="0">One time</option>
-                            <option value="5">Every 5 sec</option>
-                            <option value="10">Every 10 sec</option>
-                            <option value="15">Every 15 sec</option>
-                            <option value="30">Every 30 sec</option>
-                            <option value="60">Every 1 min</option>
-                            <option value="120">Every 2 min</option>
-                            <option value="300">Every 5 min</option>
-                        </select>
-                    </label>
+                <div>
+                    <label for="neopixBright">NeoPixel Brightness:</label>
+                    <input type="number" id="neopixBright" name="neopixBright" value="">
+                </div>
 
-                    <label for="toneBzrBeep">Tone of Buzzer Beep:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The tone of the buzzer beep. Higher values will increase the pitch of
-                            the beep.</span>
-                        <select id="toneBzrBeep" name="toneBzrBeep">
-                            <option value="1500">High</option>
-                            <option value="1000">Med</option>
-                            <option value="300">Low</option>
-                        </select>
-                    </label>
-
-                    <label for="durBzrBeep">Buzzer Beep Duration:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The duration of the buzzer beep. Longer values will increase the
-                            duration of the beep.</span>
-                        <select id="durBzrBeep" name="durBzrBeep">
-                            <option value="50">Short</option>
-                            <option value="150">Medium</option>
-                            <option value="300">Long</option>
-                        </select>
-                    </label>
-
+                <div>
+                    <label for="selNeopxType">Selected NeoPixel Type:</label>
+                    <input type="number" id="selNeopxType" name="selNeopxType" value="">
+                </div>
                 </fieldset>
 
+            <!-- Buzzer Group -->
+            <fieldset id="buzzerFieldset">
+                <legend>Buzzer</legend>
 
+                <label for="timeBtwnBzr">Buzzer Beeps:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time between buzzer beeps. Set to OFF to disable the buzzer.</span>
+                    <select id="timeBtwnBzr" name="timeBtwnBzr">
+                        <option value="65535">OFF</option>
+                        <option value="0">One time</option>
+                        <option value="5">Every 5 sec</option>
+                        <option value="10">Every 10 sec</option>
+                        <option value="15">Every 15 sec</option>
+                        <option value="30">Every 30 sec</option>
+                        <option value="60">Every 1 min</option>
+                        <option value="120">Every 2 min</option>
+                        <option value="300">Every 5 min</option>
+                    </select>
+                </label>
 
-                <div>
-                    <label for="outModeRelay">GPIO Outputs in Relay Mode:</label>
-                    <input type="checkbox" id="outModeRelay" name="outModeRelay">
-                </div>
+                <label for="toneBzrBeep">Tone of Buzzer Beep:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The tone of the buzzer beep. Higher values will increase the pitch of
+                        the beep.</span>
+                    <select id="toneBzrBeep" name="toneBzrBeep">
+                        <option value="1500">High</option>
+                        <option value="1000">Med</option>
+                        <option value="300">Low</option>
+                    </select>
+                </label>
+
+                <label for="durBzrBeep">Buzzer Beep Duration:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The duration of the buzzer beep. Longer values will increase the
+                        duration of the beep.</span>
+                    <select id="durBzrBeep" name="durBzrBeep">
+                        <option value="50">Short</option>
+                        <option value="150">Medium</option>
+                        <option value="300">Long</option>
+                    </select>
+                </label>
+
             </fieldset>
 
 
 
-            <!-- Connectivity Group -->
-            <fieldset>
-                <legend>Connectivity</legend>
-
-                <div>
-                    <label for="activeBLE">BLE:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Should the device use the bluetooth low energy (BLE) connection? Use
-                            with Sensirion's MyAmbiance App or others</span>
-                        <input type="checkbox" id="activeBLE" name="activeBLE">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="activeMQTT">MQTT:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Should the device use the MQTT connection? Use with Home Assistant or
-                            others. If not used disable to save energy and resources.</span>
-                        <input type="checkbox" id="activeMQTT" name="activeMQTT">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="activeESPNOW">ESPNOW:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Should the device use the ESP-NOW connection? Use with other ESP32
-                            devices. If not used disable to save energy and resources.</span>
-                        <input type="checkbox" id="activeESPNOW" name="activeESPNOW">
-                    </label>
-                </div>
+            <div>
+                <label for="outModeRelay">GPIO Outputs in Relay Mode:</label>
+                <input type="checkbox" id="outModeRelay" name="outModeRelay">
+            </div>
             </fieldset>
 
-            <!-- MQTT Configuration Group -->
-            <fieldset>
-                <legend>MQTT Configuration</legend>
 
-                <div>
-                    <label for="mqttClientId">MQTT Client ID:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The client ID for the MQTT connection. Must be unique for each
-                            device.</span>
-                        <input type="text" id="mqttClientId" name="mqttClientId" value="">
-                    </label>
-                </div>
 
-                <div>
-                    <label for="rootTopic">Root Topic:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The root topic for the MQTT connection. All MQTT messages will be
-                            published under this topic.</span>
-                        <input type="text" id="rootTopic" name="rootTopic" value="">
-                    </label>
-                </div>
+        <!-- Connectivity Group -->
+        <fieldset>
+            <legend>Connectivity</legend>
 
-                <div>
-                    <label for="mqttBroker">MQTT Broker:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The MQTT broker address. Use the IP address or hostname of the MQTT
-                            broker.</span>
-                        <input type="text" id="mqttBroker" name="mqttBroker" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="activeBLE">BLE:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Should the device use the bluetooth low energy (BLE) connection? Use
+                        with Sensirion's MyAmbiance App or others</span>
+                    <input type="checkbox" id="activeBLE" name="activeBLE">
+                </label>
+            </div>
 
-                <div>
-                    <label for="mqttUser">MQTT User:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The user name for the MQTT connection. Leave empty if not
-                            used.</span>
-                        <input type="text" id="mqttUser" name="mqttUser" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="activeMQTT">MQTT:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Should the device use the MQTT connection? Use with Home Assistant or
+                        others. If not used disable to save energy and resources.</span>
+                    <input type="checkbox" id="activeMQTT" name="activeMQTT">
+                </label>
+            </div>
 
-                <div>
-                    <label for="mqttPass">MQTT Password:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The password for the MQTT connection. Leave empty if not used.
-                            Disabled for security reasons.</span>
-                        <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
-                    </label>
-                </div>
+            <div>
+                <label for="activeESPNOW">ESPNOW:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Should the device use the ESP-NOW connection? Use with other ESP32
+                        devices. If not used disable to save energy and resources.</span>
+                    <input type="checkbox" id="activeESPNOW" name="activeESPNOW">
+                </label>
+            </div>
             </fieldset>
 
-            <!-- ESP-NOW Configuration Group -->
-            <fieldset>
-                <legend>ESP-NOW Configuration</legend>
+        <!-- MQTT Configuration Group -->
+        <fieldset>
+            <legend>MQTT Configuration</legend>
 
-                <div>
-                    <label for="channelESPNow">Channel:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The channel for the ESP-NOW connection. Must be the same for all
-                            devices.</span>
-                        <input type="number" id="channelESPNow" name="channelESPNow" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="mqttClientId">MQTT Client ID:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The client ID for the MQTT connection. Must be unique for each
+                        device.</span>
+                    <input type="text" id="mqttClientId" name="mqttClientId" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="boardIdESPNow">Board ID:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The board ID for the ESP-NOW connection. Must be unique for each
-                            device.</span>
-                        <input type="number" id="boardIdESPNow" name="boardIdESPNow" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="rootTopic">Root Topic:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The root topic for the MQTT connection. All MQTT messages will be
+                        published under this topic.</span>
+                    <input type="text" id="rootTopic" name="rootTopic" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="peerESPNowAddress">Peer Address:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The address of the peer device for the ESP-NOW connection. Must be
-                            unique for each device.</span>
-                        <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="mqttBroker">MQTT Broker:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The MQTT broker address. Use the IP address or hostname of the MQTT
+                        broker.</span>
+                    <input type="text" id="mqttBroker" name="mqttBroker" value="">
+                </label>
+            </div>
+
+            <div>
+                <label for="mqttUser">MQTT User:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The user name for the MQTT connection. Leave empty if not
+                        used.</span>
+                    <input type="text" id="mqttUser" name="mqttUser" value="">
+                </label>
+            </div>
+
+            <div>
+                <label for="mqttPass">MQTT Password:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The password for the MQTT connection. Leave empty if not used.
+                        Disabled for security reasons.</span>
+                    <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
+                </label>
+            </div>
             </fieldset>
 
-            <!-- Battery Group -->
-            <fieldset>
-                <legend>Battery</legend>
+        <!-- ESP-NOW Configuration Group -->
+        <fieldset>
+            <legend>ESP-NOW Configuration</legend>
 
-                <div>
-                    <label for="batDischgd">Battery Discharged Millivolts:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The voltage at which the battery is considered discharged. Used to
-                            calculate the
-                            battery level.</span>
-                        <input type="number" id="batDischgd" name="batDischgd" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="channelESPNow">Channel:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The channel for the ESP-NOW connection. Must be the same for all
+                        devices.</span>
+                    <input type="number" id="channelESPNow" name="channelESPNow" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="batChargd">Battery Fully Charged Millivolts:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The voltage at which the battery is considered fully charged. Used to
-                            calculate
-                            the battery level.</span>
-                        <input type="number" id="batChargd" name="batChargd" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="boardIdESPNow">Board ID:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The board ID for the ESP-NOW connection. Must be unique for each
+                        device.</span>
+                    <input type="number" id="boardIdESPNow" name="boardIdESPNow" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="vRef">VRef:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">The reference voltage for the battery level calculation. Used to
-                            calculate the
-                            battery level. Must be set so that the battery voltage is shown correctly.</span>
-                        <input type="number" id="vRef" name="vRef" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="peerESPNowAddress">Peer Address:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The address of the peer device for the ESP-NOW connection. Must be
+                        unique for each device.</span>
+                    <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
+                </label>
+            </div>
             </fieldset>
 
-            <!-- Time Settings Group -->
-            <fieldset>
-                <legend>Time Settings</legend>
+        <!-- Battery Group -->
+        <fieldset>
+            <legend>Battery</legend>
 
-                <div>
-                    <label for="tToDispOff">Time to Display Off (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
-                            disable
-                            this feature.</span>
-                        <input type="number" id="tToDispOff" name="tToDispOff" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="batDischgd">Battery Discharged Millivolts:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The voltage at which the battery is considered discharged. Used to
+                        calculate the
+                        battery level.</span>
+                    <input type="number" id="batDischgd" name="batDischgd" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
-                            frequency of
-                            MQTT messages.</span>
-                        <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="batChargd">Battery Fully Charged Millivolts:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The voltage at which the battery is considered fully charged. Used to
+                        calculate
+                        the battery level.</span>
+                    <input type="number" id="batChargd" name="batChargd" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
-                            frequency of
-                            ESPNOW messages.</span>
-                        <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
-                            connection to
-                            drop.</span>
-                        <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
-                            connection
-                            to drop.</span>
-                        <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
-                    </label>
-                </div>
+            <div>
+                <label for="vRef">VRef:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">The reference voltage for the battery level calculation. Used to
+                        calculate the
+                        battery level. Must be set so that the battery voltage is shown correctly.</span>
+                    <input type="number" id="vRef" name="vRef" value="">
+                </label>
+            </div>
             </fieldset>
 
-            <!-- Display Preferences Group -->
-            <fieldset>
-                <legend>Display Preferences</legend>
+        <!-- Time Settings Group -->
+        <fieldset>
+            <legend>Time Settings</legend>
 
-                <div>
-                    <label for="showTemp">Show Temperature:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Show temperature readings on the display.</span>
-                        <input type="checkbox" id="showTemp" name="showTemp">
-                    </label>
-                </div>
+            <div>
+                <label for="tToDispOff">Time to Display Off (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
+                        disable
+                        this feature.</span>
+                    <input type="number" id="tToDispOff" name="tToDispOff" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="showHumidity">Show Humidity:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Show humidity readings on the display.</span>
-                        <input type="checkbox" id="showHumidity" name="showHumidity">
-                    </label>
-                </div>
+            <div>
+                <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
+                        frequency of
+                        MQTT messages.</span>
+                    <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="showBattery">Show Battery:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Show battery level on the display.</span>
-                        <input type="checkbox" id="showBattery" name="showBattery">
-                    </label>
-                </div>
+            <div>
+                <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
+                        frequency of
+                        ESPNOW messages.</span>
+                    <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
+                </label>
+            </div>
 
-                <div>
-                    <label for="showCO2">Show CO2:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Show CO2 readings on the display.</span>
-                        <input type="checkbox" id="showCO2" name="showCO2">
-                    </label>
-                </div>
+            <div>
+                <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
+                        connection to
+                        drop.</span>
+                    <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
+                </label>
+            </div>
 
-                <!-- <div>
+            <div>
+                <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
+                        connection
+                        to drop.</span>
+                    <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
+                </label>
+            </div>
+            </fieldset>
+
+        <!-- Display Preferences Group -->
+        <fieldset>
+            <legend>Display Preferences</legend>
+
+            <div>
+                <label for="showTemp">Show Temperature:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Show temperature readings on the display.</span>
+                    <input type="checkbox" id="showTemp" name="showTemp">
+                </label>
+            </div>
+
+            <div>
+                <label for="showHumidity">Show Humidity:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Show humidity readings on the display.</span>
+                    <input type="checkbox" id="showHumidity" name="showHumidity">
+                </label>
+            </div>
+
+            <div>
+                <label for="showBattery">Show Battery:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Show battery level on the display.</span>
+                    <input type="checkbox" id="showBattery" name="showBattery">
+                </label>
+            </div>
+
+            <div>
+                <label for="showCO2">Show CO2:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Show CO2 readings on the display.</span>
+                    <input type="checkbox" id="showCO2" name="showCO2">
+                </label>
+            </div>
+
+            <!-- <div>
                     <label for="showPM25">Show PM2.5:
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Show PM2.5 readings on the display.</span>
@@ -554,51 +561,51 @@
                     </label>
                 </div> -->
 
-                <div>
-                    <label for="dispOffOnExP">Turn Off on USB Power:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Turn off the display when USB power is detected.</span>
-                        <input type="checkbox" id="dispOffOnExP" name="dispOffOnExP">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="displayReverse">Display Reverse:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Reverse the display orientation.</span>
-                        <input type="checkbox" id="displayReverse" name="displayReverse">
-                    </label>
-                </div>
-
-
-                <div>
-                    <label for="DisplayBright">Display Brightness:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
-                            of the display.</span>
-                        <input type="number" id="DisplayBright" name="DisplayBright" value="">
-                    </label>
-                </div>
-            </fieldset>
-
-            <!-- Sensor Debug Group -->
-            <fieldset>
-                <legend>Sensor Debug</legend>
-
-                <div>
-                    <label for="debugSensors">Debug Sensors:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Enable debug output for the sensors. This will print sensor data to
-                            the serial console.</span>
-                        <input type="checkbox" id="debugSensors" name="debugSensors">
-                    </label>
-                </div>
-            </fieldset>
-
-            <div id="buttonContainer">
-                <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>
-                <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
+            <div>
+                <label for="dispOffOnExP">Turn Off on USB Power:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Turn off the display when USB power is detected.</span>
+                    <input type="checkbox" id="dispOffOnExP" name="dispOffOnExP">
+                </label>
             </div>
+
+            <div>
+                <label for="displayReverse">Display Reverse:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Reverse the display orientation.</span>
+                    <input type="checkbox" id="displayReverse" name="displayReverse">
+                </label>
+            </div>
+
+
+            <div>
+                <label for="DisplayBright">Display Brightness:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
+                        of the display.</span>
+                    <input type="number" id="DisplayBright" name="DisplayBright" value="">
+                </label>
+            </div>
+            </fieldset>
+
+        <!-- Sensor Debug Group -->
+        <fieldset>
+            <legend>Sensor Debug</legend>
+
+            <div>
+                <label for="debugSensors">Debug Sensors:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Enable debug output for the sensors. This will print sensor data to
+                        the serial console.</span>
+                    <input type="checkbox" id="debugSensors" name="debugSensors">
+                </label>
+            </div>
+            </fieldset>
+
+        <div id="buttonContainer">
+            <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>
+            <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
+        </div>
         </form>
 
         <!-- Popup to display a message -->

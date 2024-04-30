@@ -317,7 +317,7 @@
             function getBatteryVoltage() {
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function () {
-                    console.log(this.responseText);
+                    // console.log(this.responseText);
                     if (this.readyState == 4 && this.status == 200) {
                         document.getElementById("batVoltage").innerHTML =
                             this.responseText;

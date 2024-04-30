@@ -334,5 +334,5 @@ function restartESP32() {
 }
 
 // Set initial values when the page loads
-// document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
-// document.addEventListener("DOMContentLoaded", fetchVersion);
+document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
+document.addEventListener("DOMContentLoaded", fetchVersion);

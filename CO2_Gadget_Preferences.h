@@ -134,7 +134,9 @@ int getCO2GadgetRevisionNumber() {
     strncpy(revNumberStr, CO2_GADGET_REV + secondDotIndex + 1, revisionLength);
     revNumberStr[revisionLength] = '\0';  // Null-terminate the string
 #ifdef DEBUG_PREFERENCES
-    Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
+    // Print the revision number to the serial console
+    Serial.print("-->[PREF] Revision number: ");
+    Serial.println(revNumberStr);
 #endif
     return atoi(revNumberStr);
 #else
@@ -289,7 +291,6 @@ void initPreferences() {
     firmRevision = getCO2GadgetRevisionNumber();
     firmBranch = getCO2GadgetRevisionBranch();
     firmFlavour = FLAVOUR;
-    
 
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
@@ -597,7 +598,9 @@ String getPreferencesAsJson() {
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+#endif
     return preferencesJson;
 }
 
@@ -687,7 +690,10 @@ String getActualSettingsAsJson() {
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.print("-->[PREF] Preferences JSON: ");
+    Serial.println(preferencesJson);
+#endif
     return preferencesJson;
 }
 
