@@ -51,14 +51,19 @@ void initBLE() {
  * @note This function should be called periodically to publish the sensor data.
  */
 void publishBLE() {
+    static int64_t lastMeasurementTimeMs = 0;
+    static int measurementIntervalMs = 1000;
     static int64_t lastBatteryLevelUpdateMs = 0;
     static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
-    if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100)) {
-        provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-        provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-        provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
-        provider.commitSample();
+    if (millis() - lastMeasurementTimeMs >= measurementIntervalMs) {
+        if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100)) {
+            provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+            provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+            provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+            provider.commitSample();
+            lastMeasurementTimeMs = millis();
+        }
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         publishMQTTLogData("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
@@ -67,11 +72,15 @@ void publishBLE() {
     }
     if (millis() - lastBatteryLevelUpdateMs >= batteryLevelUpdateIntervalMs) {
         lastBatteryLevelUpdateMs = millis();
-        provider.setBatteryLevel(batteryLevel);
-        // Serial.println("-->[BLE ] Battery Level: " + String(batteryLevel) + "%");
         if (batteryLevel == 0) {
             batteryLevel = 100;
         }
+        provider.setBatteryLevel(batteryLevel);
+#ifdef DEBUG_BLE
+        Serial.println("-->[BLE ] Sent Battery Level: " + String(batteryLevel) + "%");
+        publishMQTTLogData("-->[BLE ] Sent Battery Level: " + String(batteryLevel) + "%");
+        delay(20);
+#endif
     }
 #endif
 }
