@@ -854,7 +854,7 @@ void initWebServer() {
 
     server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(hum));
-    });    
+    });
 
     server.on("/readBatteryVoltage", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(batteryVoltage));
@@ -914,7 +914,6 @@ void initWebServer() {
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         restartTimerToDeepSleep();
         String preferencesJson = getActualSettingsAsJson();
-        // Serial.println(preferencesJson);
         request->send(200, "application/json", preferencesJson);
     });
 
@@ -926,6 +925,15 @@ void initWebServer() {
 
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         restartTimerToDeepSleep();
+        String versionJson = getCO2GadgetVersionAsJson();
+        request->send(200, "application/json", versionJson);
+    });
+
+    server.on("/getMeasurementInterval", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(measurementInterval));
+    });
+
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         String statusJson = getCO2GadgetStatusAsJson();
         request->send(200, "application/json", statusJson);
     });
