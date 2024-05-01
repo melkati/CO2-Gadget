@@ -154,7 +154,12 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 #include <FS.h>
 #include <SPIFFS.h>
 
-// Stream& miSerialPort = Serial;
+#ifdef TIMEDEBUG
+#include "Timer.h"
+Timer timer;
+Timer timerAwake;
+Timer timerLightSleep;
+#endif
 
 enum notificationTypes { notifyNothing,
                          notifyInfo,
