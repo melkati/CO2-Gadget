@@ -210,8 +210,6 @@ Timer timerAwake;
 Timer timerLightSleep;
 #endif
 
-// Stream& miSerialPort = Serial;
-
 enum notificationTypes { notifyNothing,
                          notifyInfo,
                          notifyWarning,
