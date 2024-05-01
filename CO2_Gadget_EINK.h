@@ -644,6 +644,68 @@ void testRedrawValues(bool randomNumbers = false) {
     lastTimeDrawn = millis();
 }
 
+#ifdef EINKBOARDGDEM0213B74
+void displayShowValues(bool forceRedraw = false) {
+    static uint32_t lastDisplayUpdate = 0;
+    if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
+    // Return if last update less than 15 seconds ago
+    if (!forceRedraw && (millis() - lastDisplayUpdate < 10000)) {
+        return;
+    }
+
+    if ((!forceRedraw) && (co2 == 0)) {
+        return;
+    }
+
+    lastDisplayUpdate = millis();
+
+#ifdef TIMEDEBUG
+    timer.start();
+#endif
+
+    if (cyclesLeftToRedrawDisplay > 0) {
+        cyclesLeftToRedrawDisplay--;
+#ifdef DEBUG_EINK
+        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
+#endif
+    } else {
+        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        forceRedraw = true;
+#ifdef DEBUG_EINK
+        Serial.println("-->[EINK] Forcing full refresh of display");
+#endif
+    }
+
+    display.firstPage();
+    do {
+        if (forceRedraw) {
+            display.setFullWindow();
+            display.fillScreen(GxEPD_WHITE);
+        }
+        forceRedraw = true;  // force to print all values
+        // testRedrawValues(true);
+        showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
+        showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
+        showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+        showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+        showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+        showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+        showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+        showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+        // display.hibernate();
+
+    } while (display.nextPage());
+
+#ifdef TIMEDEBUG
+    uint32_t elapsed = timer.read();
+    if (elapsed > 10) {
+        Serial.println("-->[EINK] Time used to showValues: " + String(elapsed));
+    }
+#endif
+}
+
+#else  // ALL OTHER NOT EINKBOARDGDEM0213B74 BOARDS
+
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
@@ -675,35 +737,27 @@ void displayShowValues(bool forceRedraw = false) {
 #endif
     }
 
-#ifdef EINKBOARDGDEM0213B74
-    display.firstPage();
-    do {
-#endif
-        if (forceRedraw) {
-            display.setFullWindow();
-            display.fillScreen(GxEPD_WHITE);
-        }
+    if (forceRedraw) {
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
+    }
 
-        // testRedrawValues(true);
-        showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
-        showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
-        showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
-        showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
-        showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-        showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-        showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-        showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
-        // display.hibernate();
+    // testRedrawValues(true);
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
+    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
+    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    // display.hibernate();
 
-#ifdef EINKBOARDGDEM0213B74
-    } while (display.nextPage());
-#else
     if (forceRedraw) {
         display.display();  // Full update
     } else {
         display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
     }
-#endif
 
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
@@ -712,6 +766,7 @@ void displayShowValues(bool forceRedraw = false) {
     }
 #endif
 }
+#endif
 
 #endif  // SUPPORT_EINK
 #endif  // CO2_Gadget_EINK_h
