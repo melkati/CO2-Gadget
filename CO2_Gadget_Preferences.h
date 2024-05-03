@@ -78,59 +78,27 @@ int getCO2GadgetMinorVersion() {
 }
 
 // Function to extract the revision number as an integer
-// int getCO2GadgetRevisionNumber() {
-// #ifdef CO2_GADGET_REV
-//     // Find the position of the first dash
-//     int dashIndex = 0;
-//     while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0' && dashIndex < strlen(CO2_GADGET_REV)) {
-//         dashIndex++;
-//     }
-//     // Check if no dash was found or if the string is empty
-//     if (CO2_GADGET_REV[dashIndex] == '\0' || dashIndex == 0) {
-//         return -1;  // Sentinel value indicating error
-//     }
-//     // Extract the substring before the first dash and convert it to an integer
-//     char revNumberStr[dashIndex + 1];  // Add 1 for the null terminator
-//     strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
-//     revNumberStr[dashIndex] = '\0';  // Null-terminate the string
-// #ifdef DEBUG_PREFERENCES
-//     Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
-// #endif
-//     return atoi(revNumberStr);
-// #else
-//     return -1;  // Sentinel value indicating error
-// #endif
-// }
-
-// Function to extract the revision number as an integer
 int getCO2GadgetRevisionNumber() {
 #ifdef CO2_GADGET_REV
-    // Find the position of the second dot
-    int secondDotIndex = 0;
-    int dotCount = 0;
-    while (CO2_GADGET_REV[secondDotIndex] != '\0') {
-        if (CO2_GADGET_REV[secondDotIndex] == '.') {
-            dotCount++;
-            if (dotCount == 2) {
-                break;
-            }
-        }
-        secondDotIndex++;
-    }
-    // If the second dot is not found or the string ends right after the second dot, return error
-    if (CO2_GADGET_REV[secondDotIndex] == '\0' || CO2_GADGET_REV[secondDotIndex + 1] == '\0') {
-        return -1;  // Sentinel value indicating error
-    }
-    // Find the position of the dash or the end of the version string
-    int dashIndex = secondDotIndex + 1;
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] CO2 Gadget Revision: " + String(CO2_GADGET_REV));
+#endif
+    // Find the position of the dash
+    int dashIndex = 0;
     while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0') {
+        if (!isdigit(CO2_GADGET_REV[dashIndex])) {
+            // If the character is not a digit, return error
+            return -1;
+        }
         dashIndex++;
     }
-    // Extract the substring between the second dot and the dash or the end of the string
-    int revisionLength = dashIndex - secondDotIndex - 1;
-    char revNumberStr[revisionLength + 1];  // Add 1 for the null terminator
-    strncpy(revNumberStr, CO2_GADGET_REV + secondDotIndex + 1, revisionLength);
-    revNumberStr[revisionLength] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Dash index: " + String(dashIndex));
+#endif
+    // Extract the substring from the beginning to the dash
+    char revNumberStr[dashIndex + 1];  // Add 1 for the null terminator
+    strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
+    revNumberStr[dashIndex] = '\0';  // Null-terminate the string
 #ifdef DEBUG_PREFERENCES
     Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
 #endif
