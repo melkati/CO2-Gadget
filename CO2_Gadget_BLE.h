@@ -27,7 +27,6 @@ void initBLE() {
             Serial.println(provider.getDeviceIdString());
             return;
         } else {
-            // provider.setSampleIntervalMs(60000); // Set interval for MyAmbiance dataloging at 60 seconds. See https://github.com/melkati/CO2-Gadget/projects/2#card-91517604
             setBLEHistoryInterval(60);
             provider.begin();
             Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
@@ -57,6 +56,9 @@ void publishBLE() {
     static int64_t lastBatteryLevelUpdateMs = 0;
     static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
+    if (isDownloadingBLE) {
+        return;
+    }
     if (millis() - lastMeasurementTimeMs >= measurementIntervalMs) {
         if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100)) {
             provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
