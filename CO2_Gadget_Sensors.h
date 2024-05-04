@@ -18,6 +18,114 @@ volatile uint16_t previousCO2Value = 0;
 float temp, tempFahrenheit, hum = 0;
 String mainDeviceSelected = "";
 
+// Enum for output types
+enum OutputType {
+    DISPLAY_SHOW,
+    MQTT_SEND,
+    BLE_SEND,
+    ESPNow_SEND,
+    NUM_OUTPUTS  // Number of output types
+};
+
+// Structure to hold configuration settings for each output type
+struct SensorConfig {
+    bool enabled;
+    uint16_t co2ThresholdAbsolute;
+    float tempThresholdAbsolute;
+    float humThresholdAbsolute;
+    uint16_t co2ThresholdPercentage;
+    float tempThresholdPercentage;
+    float humThresholdPercentage;
+    uint16_t previousCO2Value;
+    float previousTemperatureValue;
+    float previousHumidityValue;
+};
+
+// Array of configurations for each output type
+SensorConfig configs[NUM_OUTPUTS] = {
+    // DISPLAY_SHOW
+    {
+        .enabled = false,
+        .co2ThresholdAbsolute = 20,
+        .tempThresholdAbsolute = 0.5f,
+        .humThresholdAbsolute = 1.0f,
+        .co2ThresholdPercentage = 5,
+        .tempThresholdPercentage = 1.0f,
+        .humThresholdPercentage = 1.0f,
+    },
+    // MQTT_SEND
+    {
+        .enabled = false,
+        .co2ThresholdAbsolute = 20,
+        .tempThresholdAbsolute = 0.5f,
+        .humThresholdAbsolute = 1.0f,
+        .co2ThresholdPercentage = 5,
+        .tempThresholdPercentage = 1.0f,
+        .humThresholdPercentage = 1.0f,
+    },
+    // BLE_SEND
+    {
+        .enabled = false,
+        .co2ThresholdAbsolute = 20,
+        .tempThresholdAbsolute = 0.5f,
+        .humThresholdAbsolute = 1.0f,
+        .co2ThresholdPercentage = 5,
+        .tempThresholdPercentage = 1.0f,
+        .humThresholdPercentage = 1.0f,
+    },
+    // ESPNow_SEND
+    {
+        .enabled = false,
+        .co2ThresholdAbsolute = 20,
+        .tempThresholdAbsolute = 0.5f,
+        .humThresholdAbsolute = 1.0f,
+        .co2ThresholdPercentage = 5,
+        .tempThresholdPercentage = 1.0f,
+        .humThresholdPercentage = 1.0f,
+    }};
+
+void printMeasurementThresholdsDifferences(const SensorConfig& config) {
+    Serial.println("-->[SENS] Thresholds differences:");
+    Serial.println("-->[SENS] CO2: " + String(config.co2ThresholdAbsolute) + " ppm or " + String(config.co2ThresholdPercentage) + "%");
+    Serial.println("-->[SENS] Temperature: " + String(config.tempThresholdAbsolute) + "°C or " + String(config.tempThresholdPercentage) + "%");
+    Serial.println("-->[SENS] Humidity: " + String(config.humThresholdAbsolute) + "%hR or " + String(config.humThresholdPercentage) + "%");
+}
+
+void updateLastMeasurementValues(OutputType outputType) {
+    SensorConfig& config = configs[outputType];
+    config.previousCO2Value = co2;
+    config.previousTemperatureValue = temp;
+    config.previousHumidityValue = hum;
+}
+
+bool checkThresholdsAndMaybeUpdate(OutputType outputType) {
+    const SensorConfig& config = configs[outputType];
+    if (!config.enabled) return true;
+    if (abs(co2 - config.previousCO2Value) >= config.co2ThresholdAbsolute ||
+        abs(temp - config.previousTemperatureValue) >= config.tempThresholdAbsolute ||
+        abs(hum - config.previousHumidityValue) >= config.humThresholdAbsolute ||
+        (config.previousCO2Value != 0 && abs(co2 - config.previousCO2Value) >= config.previousCO2Value * config.co2ThresholdPercentage / 100) ||
+        (config.previousTemperatureValue != 0 && abs(temp - config.previousTemperatureValue) >= config.previousTemperatureValue * config.tempThresholdPercentage / 100) ||
+        (config.previousHumidityValue != 0 && abs(hum - config.previousHumidityValue) >= config.previousHumidityValue * config.humThresholdPercentage / 100)) {
+        updateLastMeasurementValues(outputType);
+        return true;
+    }
+    return false;
+}
+
+bool passMeasurementThresholds(OutputType outputType) {
+    switch (outputType) {
+        case DISPLAY_SHOW:
+        case MQTT_SEND:
+        case BLE_SEND:
+        case ESPNow_SEND:
+            return checkThresholdsAndMaybeUpdate(outputType);
+        default:
+            // Invalid output type
+            return false;
+    }
+}
+
 String sensorsGetMainDeviceSelected() {
     return mainDeviceSelected;
 }
@@ -46,6 +154,8 @@ void printSensorsDetected() {
 
 void onSensorDataOk() {
     previousCO2Value = co2;
+    previousTemperatureValue = temp;
+    previousHumidityValue = hum;
     co2 = sensors.getCO2();
     hum = sensors.getHumidity();
     if (hum == 0.0) hum = sensors.getCO2humi();
@@ -62,7 +172,7 @@ void onSensorDataOk() {
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
 }
 
-void onSensorDataError(const char *msg) {
+void onSensorDataError(const char* msg) {
     Serial.println("-->[SENS] " + String(msg));
 }
 
@@ -151,7 +261,6 @@ void initSensorsLowPower() {
         return;
     }
 
-
     Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
     displayNotification("-->[SENS][ERROR] Init sensors", "Low Power Mode not supported for this sensor", notifyError);
     while (1) {
@@ -166,7 +275,7 @@ void initSensors() {
     uint8_t smooth;
 
 // Initialize sensors
-#ifdef I2C_SDA &&defined(I2C_SCL)
+#ifdef I2C_SDA&& defined(I2C_SCL)
     Wire.begin(I2C_SDA, I2C_SCL);
 #else
     Wire.begin();
