@@ -35,25 +35,27 @@ void IRAM_ATTR buttonDownISR() {
 // }
 
 void initButtons() {
-    // Interrupt Service Routine to turn on the display on button UP press
-    if (BTN_UP >= 0) {
-        attachInterrupt(BTN_UP, buttonUpISR, RISING);
-        btnUp.setLongClickTime(LONGCLICK_TIME_MS);
-        btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
-        btnUp.setClickHandler([](Button2 &b) {
-            // Up
-            nav.doNav(downCmd);
-        });
-    }
-    if (BTN_DWN >= 0) {
-        // attachInterrupt(BTN_DWN, buttonUpISR, RISING); // Conflicts with Improv because of GPIO 0
-        btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
-        btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
-        btnDwn.setClickHandler([](Button2 &b) {
-            // Down
-            nav.doNav(upCmd);
-        });
-    }
+    // Set Interrupt Service Routine to turn on the display on button UP or DOWN press (nothing to do with the button functionality for the menu itself)
+    #if BTN_UP != -1
+    attachInterrupt(BTN_UP, buttonUpISR, RISING);
+    #endif
+    #if BTN_DWN != -1
+    // attachInterrupt(BTN_DWN, buttonUpISR, RISING); // Conflicts with Improv because of GPIO 0 
+    #endif
+
+    btnUp.setLongClickTime(LONGCLICK_TIME_MS);
+    btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });
+    btnUp.setClickHandler([](Button2 &b) {
+        // Up
+        nav.doNav(downCmd);
+    });
+
+    btnDwn.setLongClickTime(LONGCLICK_TIME_MS);
+    btnDwn.setLongClickHandler([](Button2 &b) { nav.doNav(escCmd); });
+    btnDwn.setClickHandler([](Button2 &b) {
+        // Down
+        nav.doNav(upCmd);
+    });
 
     // btnDwn.setDoubleClickHandler(doubleClick);
 }
