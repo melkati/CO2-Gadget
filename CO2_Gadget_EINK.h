@@ -676,25 +676,20 @@ void displayShowValues(bool forceRedraw = false) {
 #endif
     }
 
-    display.firstPage();
-    do {
-        if (forceRedraw) {
-            display.setFullWindow();
-            display.fillScreen(GxEPD_WHITE);
-        }
-        forceRedraw = true;  // force to print all values
-        // testRedrawValues(true);
-        showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
-        showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
-        showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
-        showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
-        showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-        showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-        showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-        showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
-        // display.hibernate();
+    if (forceRedraw) {
+        display.fillScreen(GxEPD_WHITE);
+        display.clearScreen(GxEPD_WHITE);
+    }
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
+    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
+    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+    showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
 
-    } while (display.nextPage());
+    display.display(true);  // Partial update
 
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
