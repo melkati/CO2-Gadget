@@ -45,7 +45,7 @@ struct SensorConfig {
 SensorConfig configs[NUM_OUTPUTS] = {
     // DISPLAY_SHOW
     {
-        .enabled = false,
+        .enabled = true,
         .co2ThresholdAbsolute = 20,
         .tempThresholdAbsolute = 0.5f,
         .humThresholdAbsolute = 1.0f,
@@ -101,12 +101,18 @@ void updateLastMeasurementValues(OutputType outputType) {
 bool checkThresholdsAndMaybeUpdate(OutputType outputType) {
     const SensorConfig& config = configs[outputType];
     if (!config.enabled) return true;
+
+    // Comprobación de división por cero
+    bool co2DivideByZero = config.previousCO2Value == 0;
+    bool tempDivideByZero = config.previousTemperatureValue == 0;
+    bool humDivideByZero = config.previousHumidityValue == 0;
+
     if (abs(co2 - config.previousCO2Value) >= config.co2ThresholdAbsolute ||
         abs(temp - config.previousTemperatureValue) >= config.tempThresholdAbsolute ||
         abs(hum - config.previousHumidityValue) >= config.humThresholdAbsolute ||
-        (config.previousCO2Value != 0 && abs(co2 - config.previousCO2Value) >= config.previousCO2Value * config.co2ThresholdPercentage / 100) ||
-        (config.previousTemperatureValue != 0 && abs(temp - config.previousTemperatureValue) >= config.previousTemperatureValue * config.tempThresholdPercentage / 100) ||
-        (config.previousHumidityValue != 0 && abs(hum - config.previousHumidityValue) >= config.previousHumidityValue * config.humThresholdPercentage / 100)) {
+        (co2DivideByZero || abs(co2 - config.previousCO2Value) >= config.previousCO2Value * config.co2ThresholdPercentage / 100) ||
+        (tempDivideByZero || abs(temp - config.previousTemperatureValue) >= config.previousTemperatureValue * config.tempThresholdPercentage / 100) ||
+        (humDivideByZero || abs(hum - config.previousHumidityValue) >= config.previousHumidityValue * config.humThresholdPercentage / 100)) {
         updateLastMeasurementValues(outputType);
         return true;
     }
@@ -154,8 +160,6 @@ void printSensorsDetected() {
 
 void onSensorDataOk() {
     previousCO2Value = co2;
-    previousTemperatureValue = temp;
-    previousHumidityValue = hum;
     co2 = sensors.getCO2();
     hum = sensors.getHumidity();
     if (hum == 0.0) hum = sensors.getCO2humi();

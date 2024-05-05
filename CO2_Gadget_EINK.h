@@ -642,6 +642,7 @@ void testRedrawValues(bool randomNumbers = false) {
 #ifdef EINKBOARDGDEM0213B74
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
+    if (!passMeasurementThresholds(DISPLAY_SHOW)) return;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 10000)) {
@@ -697,7 +698,8 @@ void displayShowValues(bool forceRedraw = false) {
 #else  // ALL OTHER NOT EINKBOARDGDEM0213B74 BOARDS
 
 void displayShowValues(bool forceRedraw = false) {
-    static uint32_t lastDisplayUpdate = 0;
+    static uint32_t lastDisplayUpdate = 0;    
+    if (!passMeasurementThresholds(DISPLAY_SHOW)) return;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {

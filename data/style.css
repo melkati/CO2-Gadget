@@ -343,3 +343,51 @@ button:hover {
     opacity: 0;
   }
 }
+
+.tab-container {
+  margin-top: 20px;
+}
+
+.tab {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px 4px 0 0;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  cursor: pointer;
+}
+
+.tab.active {
+  background-color: #f4f4f4;
+}
+
+.tab-content {
+  display: none;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+#buttonContainer button {
+  margin-top: 10px;
+}
+
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeInOut 2s ease-in-out;
+}
