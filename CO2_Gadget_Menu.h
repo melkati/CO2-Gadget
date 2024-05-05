@@ -1175,7 +1175,7 @@ bool menuEntryCharacterReceived() {
 
 void menuLoop() {
     if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
-    
+
     if (mustInitMenu) {
         initMenu();
 #ifdef DEBUG_ARDUINOMENU
@@ -1223,13 +1223,15 @@ void menuLoop() {
     }
 #endif
 
-    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device. Looks like the issue is just with ESP32 S3
     if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
         Serial.println("[MENU] Serial TX buffer full or not connected to a receiving device. Restarting Serial...");
         Serial.end();
         delay(10);
         Serial.begin(115200);
     }
+#endif
 
     if (activeWIFI) {
         activeMQTTMenu[0].enable();
