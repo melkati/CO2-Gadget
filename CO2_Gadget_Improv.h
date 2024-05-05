@@ -46,6 +46,7 @@ void initImprov() {
 }
 
 void improvLoop() {
+    if (isDownloadingBLE) return;
     if (inMenu) {  // If in menu ignore Improv functionality
 #ifdef DEBUG_IMPROV_WIFI
         static unsigned long lastPrintTime = 0;
