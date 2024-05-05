@@ -117,7 +117,7 @@ void initSensors() {
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
 
-    setBLEHistoryInterval(60);
+    setBLEHistoryInterval(sampleInterval);
 
     Serial.printf("-->[SENS] Selected CO2 Sensor: %d\n", selectedCO2Sensor);
 
@@ -152,6 +152,7 @@ void initSensors() {
 }
 
 void sensorsLoop() {
+    if (isDownloadingBLE) return;
     if (!buzzerBeeping) {
         sensors.loop();
     }

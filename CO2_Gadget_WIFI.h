@@ -1065,6 +1065,7 @@ void initWifi() {
 }
 
 void wifiClientLoop() {
+    if (isDownloadingBLE) return;
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
     }
@@ -1091,6 +1092,7 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
+    if (isDownloadingBLE) return;
     if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
         AsyncElegantOTA.loop();
     }
