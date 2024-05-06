@@ -761,7 +761,7 @@ String getCO2GadgetStatusAsJson() {
     doc["measurementInterval"] = measurementInterval;
     doc["calibrationValue"] = calibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
-    doc["freeheap"] = ESP.getFreeHeap();
+    doc["freeHeap"] = ESP.getFreeHeap();
     doc["uptime"] = millis();
     String output;
     serializeJson(doc, output);
