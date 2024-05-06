@@ -820,10 +820,9 @@ public:
   }
 };
 
-
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(batteryVoltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp " BUILD_GIT, doNothing, noEvent)
+  ,OP("Comp " __DATE__ " at " __TIME__, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,OP("" FLAVOUR, doNothing, noEvent)
   ,altOP(altPromptUptime, "", doNothing, noEvent)
