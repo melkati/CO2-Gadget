@@ -314,27 +314,41 @@
                 .catch(error => console.error('Error fetching status:', error));
         }
 
-            function getBatteryVoltage() {
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function () {
-                    console.log(this.responseText);
-                    if (this.readyState == 4 && this.status == 200) {
-                        document.getElementById("batVoltage").innerHTML =
-                            this.responseText;
-                    }
-                };
-                xhttp.open("GET", "readBatteryVoltage", true);
-                xhttp.send();
-            }
-
-            setInterval(function () {
-                // Call a function repetatively with 1 Second interval
-                getBatteryVoltage();
-            }, 1000); // 1000mS  update rate
-
-            window.onload = function () {
-                getBatteryVoltage();
+        function getBatteryVoltage() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                console.log(this.responseText);
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("batVoltage").innerHTML =
+                        this.responseText;
+                }
             };
+            xhttp.open("GET", "readBatteryVoltage", true);
+            xhttp.send();
+        }
+
+        function getFreeHeap() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                console.log(this.responseText);
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("freeHeap").innerHTML =
+                        this.responseText;
+                }
+            };
+            xhttp.open("GET", "getFreeHeap", true);
+            xhttp.send();
+        }
+
+        setInterval(function () {
+            // Call a function repetatively with 1 Second interval
+            getBatteryVoltage();
+            getFreeHeap();
+        }, 1000); // 1000mS  update rate
+
+        window.onload = function () {
+            getBatteryVoltage();
+        };
 
         // Set initial values when the page loads
         document.addEventListener("DOMContentLoaded", loadStatusFromServer);

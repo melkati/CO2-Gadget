@@ -919,6 +919,10 @@ void initWebServer() {
         request->send(200, "text/plain", String(measurementInterval));
     });
 
+    server.on("/getFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(ESP.getFreeHeap()));
+    });
+
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         String statusJson = getCO2GadgetStatusAsJson();
         request->send(200, "application/json", statusJson);
