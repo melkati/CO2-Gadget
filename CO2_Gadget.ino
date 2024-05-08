@@ -4,7 +4,7 @@ void outputsLoop();                             // Defined in CO2_Gadget_Main.h
 void publishMQTTLogData(String logData);        // Defined in CO2_Gadget_MQTT.h
 void putPreferences();                          // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                                // Defined in CO2_Gadget_Menu.h
-void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
+// void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -119,11 +119,6 @@ uint16_t co2RedRange = 1000;
 // Variables for Improv-Serial
 bool waitingForImprov = true;
 uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
-
-#ifdef BUILD_GIT
-#undef BUILD_GIT
-#endif  // ifdef BUILD_GIT
-#define BUILD_GIT __DATE__
 
 #ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
