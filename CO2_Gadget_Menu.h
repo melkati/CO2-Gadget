@@ -1224,12 +1224,13 @@ void menuLoop() {
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
     // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device. Looks like the issue is just with ESP32 S3
-    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
+/*    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
         Serial.println("[MENU] Serial TX buffer full or not connected to a receiving device. Restarting Serial...");
         Serial.end();
         delay(10);
         Serial.begin(115200);
     }
+    */
 #endif
 
     if (activeWIFI) {
