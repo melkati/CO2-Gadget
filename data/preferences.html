@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="./style.css" />    
+    <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./preferences.js"></script>
     <title>CO2 Gadget Configuration</title>
 </head>
@@ -533,11 +533,27 @@
                 </div>
             </fieldset>
 
-            <div id="buttonContainer">
+            <div id="backupRestoreButtons">
+                <button type="button" id="backupButton" onclick="backupPreferences()">
+                    <span class="tooltip-icon">ℹ️</span> Backup
+                    <span class="tooltip-text">Make a backup of your current preferences</span>
+                </button>
+                
+                <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">
+                    <span class="tooltip-icon">ℹ️</span> Restore
+                    <span class="tooltip-text">Restore previously backed up preferences</span>
+                </button>
+            </div>
+
+            <div id="resetSaveButtons">
                 <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>
+                
                 <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
             </div>
         </form>
+
+        <!-- Hidden file input to select preferences file -->
+        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileSelection(event)">
 
         <!-- Popup to display a message -->
         <div id="popup">
@@ -551,4 +567,5 @@
 
     </div>
 </body>
+
 </html>
