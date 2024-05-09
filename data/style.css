@@ -281,7 +281,7 @@ button:hover {
 
 .tooltip-text {
   visibility: hidden;
-  width: 150px;
+  width: 180px;
   background-color: #555;
   color: #fff;
   text-align: center;

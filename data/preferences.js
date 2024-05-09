@@ -160,6 +160,11 @@ function populateFormWithPreferences(preferences) {
 
     if (getPreferencesDebug) console.log('Setting timeBtwnBzr to:', preferences.timeBtwnBzr);
     document.getElementById("timeBtwnBzr").value = preferences.timeBtwnBzr;
+
+    // Toggle visibility of elements based on checkbox state
+    toggle('activeWIFI', 'wifiNetworks');
+    toggle('activeMQTT', 'mqttConfig');
+    toggle('activeESPNOW', 'espNowConfig');
 }
 
 function loadPreferencesFromServer() {
@@ -346,27 +351,70 @@ function handleFileSelection(event) {
     }
 }
 
-// Function to restore preferences from data
-function restorePreferencesFromData(preferencesData) {
-    try {
-        // Parse preferences data from JSON format
-        var restoredPreferences = JSON.parse(preferencesData);
-
-        // Apply restored preferences to your application
-        // For demonstration, let's log the restored preferences
-        console.log("Restored preferences:", restoredPreferences);
-
-        populateFormWithPreferences(restoredPreferences);
-
-        // Once preferences are applied, you can notify the user or perform any other necessary actions
-        alert("Preferences restored successfully. Must be saved to apply them.!");
-    } catch (error) {
-        // Handle JSON parsing errors or any other exceptions
-        console.error("Error restoring preferences:", error);
-        alert("Error restoring preferences. Please check the data format.");
+function toggle(checkboxId, elementId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (!checkbox) {
+        console.error('Checkbox with id ' + checkboxId + ' is not found.');
+        return;
     }
+
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.error('Element with id ' + elementId + ' is not found.');
+        return;
+    }
+
+
+    // Function to toggle element visibility
+    function toggleElement() {
+        element.style.display = checkbox.checked ? 'block' : 'none';
+        // if (checkbox.checked) {
+        //     element.style.display = 'block'; // Show the element if checkbox is checked
+        // } else {
+        //     element.style.display = 'none'; // Hide the element if checkbox is unchecked
+        // }
+    }
+
+    // Call toggleElement initially to set initial state
+    toggleElement();
+
+    // Add event listener to checkbox to update visibility when checkbox state changes
+    checkbox.addEventListener('change', toggleElement);
 }
 
-// Set initial values when the page loads
-document.addEventListener("DOMContentLoaded", loadPreferencesFromServer);
-document.addEventListener("DOMContentLoaded", fetchVersion);
+function updateVoltage() {
+    fetch('/readBatteryVoltage')
+        .then(response => response.text())
+        .then(voltage => {
+            document.getElementById('currentVoltage').textContent = voltage + ' Volts';
+        })
+        .catch(error => console.error('Error fetching battery voltage:', error));
+}
+
+function updateVRef() {
+    // Enviar el nuevo valor de VRef al servidor
+    fetch('/settings?SetVRef=' + document.getElementById('vRef').value)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error updating VRef');
+            }
+            console.log('VRef updated successfully');
+        })
+        .catch(error => console.error('Error updating VRef:', error));
+}
+
+// Update the battery voltage every second
+setInterval(updateVoltage, 1000);
+
+// Lisen for input events on the voltage reference field with a delay of 100ms
+document.getElementById('vRef').addEventListener('input', () => {
+    setTimeout(updateVRef, 100);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadPreferencesFromServer();
+    fetchVersion();
+    toggle('activeWIFI', 'wifiNetworks');
+    toggle('activeMQTT', 'mqttConfig');
+    toggle('activeESPNOW', 'espNowConfig');
+});
