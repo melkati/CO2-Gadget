@@ -32,7 +32,7 @@
                 <button type="button" id="resetButton" onclick="restartESP32()">Restart ESP32</button>
                 <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
             </div>
-            </form>
+        </form>
 
         <!-- Low Power Options Group -->
         <fieldset>
@@ -139,8 +139,8 @@
                         <input type="text" id="hostName" name="hostName" value="">
                     </label>
                 </div>
-                </fieldset>
-                </fieldset>
+            </fieldset>
+        </fieldset>
 
         <!-- Sensors Group -->
         <fieldset>
@@ -192,7 +192,7 @@
                         <input type="number" id="co2RedRange" name="co2RedRange" value="">
                     </label>
                 </div>
-                </fieldset>
+            </fieldset>
 
             <fieldset>
                 <legend>Temperature Sensor</legend>
@@ -215,7 +215,7 @@
                         <input type="checkbox" id="showFahrenheit" name="showFahrenheit">
                     </label>
                 </div>
-                </fieldset>
+            </fieldset>
 
             <fieldset>
                 <legend>Barometer Sensor</legend>
@@ -230,17 +230,17 @@
                         <input type="number" id="altitudeMeters" name="altitudeMeters" value="">
                     </label>
                 </div>
-                </fieldset>
-                <div>
-                    <label for="measurementInterval">Measurement Interval (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Interval between sensor readings. Lower values will increase the
-                            frequency of
-                            sensor readings.</span>
-                        <input type="number" id="measurementInterval" name="measurementInterval" value="">
-                    </label>
-                </div>
-                </fieldset>
+            </fieldset>
+            <div>
+                <label for="measurementInterval">Measurement Interval (seconds):
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Interval between sensor readings. Lower values will increase the
+                        frequency of
+                        sensor readings.</span>
+                    <input type="number" id="measurementInterval" name="measurementInterval" value="">
+                </label>
+            </div>
+        </fieldset>
 
         <!-- Outputs Group -->
         <fieldset>
@@ -258,7 +258,7 @@
                     <label for="selNeopxType">Selected NeoPixel Type:</label>
                     <input type="number" id="selNeopxType" name="selNeopxType" value="">
                 </div>
-                </fieldset>
+            </fieldset>
 
             <!-- Buzzer Group -->
             <fieldset id="buzzerFieldset">
@@ -310,7 +310,7 @@
                 <label for="outModeRelay">GPIO Outputs in Relay Mode:</label>
                 <input type="checkbox" id="outModeRelay" name="outModeRelay">
             </div>
-            </fieldset>
+        </fieldset>
 
 
 
@@ -344,7 +344,7 @@
                     <input type="checkbox" id="activeESPNOW" name="activeESPNOW">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- MQTT Configuration Group -->
         <fieldset>
@@ -394,7 +394,7 @@
                     <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- ESP-NOW Configuration Group -->
         <fieldset>
@@ -426,7 +426,7 @@
                     <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- Battery Group -->
         <fieldset>
@@ -461,7 +461,7 @@
                     <input type="number" id="vRef" name="vRef" value="">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- Time Settings Group -->
         <fieldset>
@@ -516,7 +516,7 @@
                     <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- Display Preferences Group -->
         <fieldset>
@@ -555,12 +555,12 @@
             </div>
 
             <!-- <div>
-                    <label for="showPM25">Show PM2.5:
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Show PM2.5 readings on the display.</span>
-                        <input type="checkbox" id="showPM25" name="showPM25">
-                    </label>
-                </div> -->
+                <label for="showPM25">Show PM2.5:
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Show PM2.5 readings on the display.</span>
+                    <input type="checkbox" id="showPM25" name="showPM25">
+                </label>
+            </div> -->
 
             <div>
                 <label for="dispOffOnExP">Turn Off on USB Power:
@@ -587,7 +587,7 @@
                     <input type="number" id="DisplayBright" name="DisplayBright" value="">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
         <!-- Sensor Debug Group -->
         <fieldset>
@@ -601,13 +601,29 @@
                     <input type="checkbox" id="debugSensors" name="debugSensors">
                 </label>
             </div>
-            </fieldset>
+        </fieldset>
 
-        <div id="buttonContainer">
+        <div id="backupRestoreButtons">
+            <button type="button" id="backupButton" onclick="backupPreferences()">
+                <span class="tooltip-icon">ℹ️</span> Backup
+                <span class="tooltip-text">Make a backup of your current preferences</span>
+            </button>
+
+            <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">
+                <span class="tooltip-icon">ℹ️</span> Restore
+                <span class="tooltip-text">Restore previously backed up preferences</span>
+            </button>
+        </div>
+
+        <div id="resetSaveButtons">
             <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>
+
             <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
         </div>
         </form>
+
+        <!-- Hidden file input to select preferences file -->
+        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileSelection(event)">
 
         <!-- Popup to display a message -->
         <div id="popup">

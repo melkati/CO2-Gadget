@@ -343,6 +343,7 @@ void publishMQTT(bool forcePublish = false) {
 
 void mqttClientLoop() {
 #ifdef SUPPORT_MQTT
+    if (isDownloadingBLE) return;
     if (troubledMQTT && (millis() - timeTroubledMQTT >= timeToRetryTroubledMQTT * 1000)) {
         troubledMQTT = false;
         timeTroubledMQTT = 0;

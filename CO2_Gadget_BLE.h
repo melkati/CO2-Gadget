@@ -14,7 +14,15 @@ DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, true, &wifi);
 
 void setBLEHistoryInterval(uint64_t interval) {
 #ifdef SUPPORT_BLE
-    provider.setHistoryInterval(interval * 1000);
+    if (provider.getHistoryInterval() != interval * 1000) {
+#ifdef DEBUG_BLE
+        Serial.flush();
+        Serial.println("-->[BLE ] Actual history interval: " + String(provider.getHistoryInterval() / 1000) + " seconds");
+        Serial.println("-->[BLE ] Setting history interval to: " + String(interval) + " seconds");
+        delay(20);
+#endif
+        provider.setHistoryInterval(interval * 1000);
+    }
 #endif
 }
 
@@ -22,15 +30,16 @@ void initBLE() {
 #ifdef SUPPORT_BLE
     if (activeBLE) {
         if (bleInitialized) {
-            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib already initialized with deviceId = ");
-            Serial.println(provider.getDeviceIdString() + " - Skipping BLE init.");
+            Serial.print(
+                "-->[BLE ] Sensirion Gadget BLE Lib already initialized with deviceId = ");
+            Serial.println(provider.getDeviceIdString());
             return;
         } else {
-            setBLEHistoryInterval(60);
+            setBLEHistoryInterval(sampleInterval);
             provider.begin();
-            Serial.print("-->[SBLE] Sensirion Gadget BLE Lib initialized with deviceId = ");
+            Serial.print("-->[BLE ] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
-            Serial.print("-->[SBLE] History interval set to: ");
+            Serial.print("-->[BLE ] History interval set to: ");
             Serial.print(provider.getHistoryInterval() / 1000);
             Serial.println(" seconds");
             // Set initial battery level
@@ -127,6 +136,7 @@ void BLELoop() {
     }
     provider.handleDownload();
     isDownloadingBLE = provider.isDownloading();
+    if (isDownloadingBLE) return;
     // delay(3);
     if (provider.wifiChanged()) handleBLEwifiChanged();
     if (provider.historyIntervalChanged()) {
