@@ -770,6 +770,7 @@ String getCO2GadgetStatusAsJson() {
 
 const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
+const char *PARAM_INPUT_3 = "SetVRef";
 
 void initWebServer() {
     SPIFFS.begin();
@@ -896,6 +897,19 @@ void initWebServer() {
                 request->send(200, "text/plain", "OK. Setting displayShowBatteryVoltage to " + inputString);
             } else {
                 request->send(400, "text/plain", "Error. Invalid parameter. Use 'true' or 'false'");
+            }
+        }
+        // <CO2-GADGET_IP>/settings?SetVRef=930
+        if (request->hasParam("SetVRef")) {
+            inputString = request->getParam("SetVRef")->value();
+            if (checkStringIsNumerical(inputString)) {
+                // Serial.printf("-->[WiFi] Received /settings command SetVRef with parameter %s\n", inputString);
+                Serial.println("-->[WiFi] Received /settings command SetVRef with parameter: " + inputString);
+                battery.begin(vRef, voltageDividerRatio, &asigmoidal);
+                vRef = inputString.toFloat();
+                request->send(200, "text/plain", "OK. Setting VRef to " + inputString);
+            } else {
+                request->send(400, "text/plain", "Error. VRef must have a number as parameter.");
             }
         }
     });
