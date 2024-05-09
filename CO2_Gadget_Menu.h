@@ -817,10 +817,9 @@ public:
   }
 };
 
-
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
   ,FIELD(batteryVoltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
-  ,OP("Comp " BUILD_GIT, doNothing, noEvent)
+  ,OP("Comp " __DATE__ " at " __TIME__, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,OP("" FLAVOUR, doNothing, noEvent)
   ,altOP(altPromptUptime, "", doNothing, noEvent)
@@ -1172,7 +1171,7 @@ bool menuEntryCharacterReceived() {
 
 void menuLoop() {
     if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
-    
+
     if (mustInitMenu) {
         initMenu();
 #ifdef DEBUG_ARDUINOMENU
@@ -1220,13 +1219,16 @@ void menuLoop() {
     }
 #endif
 
-    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device
-    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device. Looks like the issue is just with ESP32 S3
+/*    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
         Serial.println("[MENU] Serial TX buffer full or not connected to a receiving device. Restarting Serial...");
         Serial.end();
         delay(10);
         Serial.begin(115200);
     }
+    */
+#endif
 
     if (activeWIFI) {
         activeMQTTMenu[0].enable();

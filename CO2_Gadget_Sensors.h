@@ -296,7 +296,7 @@ void initSensors() {
 
     Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
     Serial.println("-->[SENS] Measurement Interval: " + String(sensors.getSampleTime()));
-    setBLEHistoryInterval(60);
+    // setBLEHistoryInterval(sampleInterval);
 
     if ((deepSleepData.lowPowerMode) && (!interactiveMode)) {
         displayNotification("Init sensors", "Trying Low Power Mode: " + String(deepSleepData.lowPowerMode), notifyInfo);
@@ -398,6 +398,7 @@ void sensorsLoopLowPower() {
 
 void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
+    if (isDownloadingBLE) return;
     if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
         if (millis() - lastDotPrintTime >= 100) {
             Serial.print("[-]");  // Print a - every loop to show that the device is alive

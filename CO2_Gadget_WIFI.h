@@ -765,7 +765,7 @@ String getCO2GadgetStatusAsJson() {
     doc["measurementInterval"] = measurementInterval;
     doc["calibrationValue"] = calibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
-    doc["freeheap"] = ESP.getFreeHeap();
+    doc["freeHeap"] = ESP.getFreeHeap();
     doc["uptime"] = millis();
     String output;
     serializeJson(doc, output);
@@ -940,6 +940,10 @@ void initWebServer() {
         request->send(200, "text/plain", String(measurementInterval));
     });
 
+    server.on("/getFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(ESP.getFreeHeap()));
+    });
+
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         String statusJson = getCO2GadgetStatusAsJson();
         request->send(200, "application/json", statusJson);
@@ -1089,6 +1093,7 @@ void initWifi() {
 }
 
 void wifiClientLoop() {
+    if (isDownloadingBLE) return;
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
     }
@@ -1115,6 +1120,7 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
+    if (isDownloadingBLE) return;
     if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
         AsyncElegantOTA.loop();
     }

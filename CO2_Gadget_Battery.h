@@ -63,6 +63,7 @@ void readBatteryVoltage() {
 }
 
 void batteryLoop() {
+    if (isDownloadingBLE) return;
     readBatteryVoltage();
     if (!inMenu) {
         if (abs(lastBatteryVoltage - batteryVoltage) >= 0.1) {  // If battery voltage changed by at least 0.1V, update battery level

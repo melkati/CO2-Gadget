@@ -205,6 +205,7 @@ void printPreferences() {
     Serial.println("-->[PREF] displayReverse is:\t#" + String(displayReverse ? "Reversed" : "Normal") + "# (" + String(displayReverse) + ")");
     Serial.println("-->[PREF] showFahrenheit is:\t#" + String(showFahrenheit ? "Fahrenheit" : "Celsius") + "#");
     Serial.println("-->[PREF] measInterval:\t #" + String(measurementInterval) + "#");
+    Serial.println("-->[PREF] sampInterval:\t #" + String(sampleInterval) + "#");
     Serial.println("-->[PREF] outModeRelay is:\t#" + String(outputsModeRelay ? "Relay" : "RGB LED") + "#");
     Serial.println("-->[PREF] channelESPNow:\t #" + String(channelESPNow) + "#");
     Serial.println("-->[PREF] boardIdESPNow:\t #" + String(boardIdESPNow) + "#");
@@ -313,6 +314,7 @@ void initPreferences() {
     displayReverse = preferences.getBool("displayReverse", false);
     showFahrenheit = preferences.getBool("showFahrenheit", false);
     measurementInterval = preferences.getUInt("measInterval", 10);
+    sampleInterval = preferences.getUInt("sampInterval", 60);
     outputsModeRelay = preferences.getBool("outModeRelay", false);
     channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
     boardIdESPNow = preferences.getUInt("boardIdESPNow", 0);
@@ -437,6 +439,7 @@ void putPreferences() {
     preferences.putBool("displayReverse", displayReverse);
     preferences.putBool("showFahrenheit", showFahrenheit);
     preferences.putUInt("measInterval", measurementInterval);
+    preferences.putUInt("sampInterval", sampleInterval);
     preferences.putBool("outModeRelay", outputsModeRelay);
     preferences.putUInt("channelESPNow", channelESPNow);
     preferences.putUInt("boardIdESPNow", boardIdESPNow);
@@ -544,7 +547,8 @@ String getPreferencesAsJson() {
     doc["showBattery"] = preferences.getBool("showBattery", true);
     doc["showCO2"] = preferences.getBool("showCO2", true);
     doc["showPM25"] = preferences.getBool("showPM25", true);
-    doc["measInterval"] = preferences.getInt("measInterval", 5);
+    doc["measInterval"] = preferences.getInt("measInterval", 10);
+    doc["sampInterval"] = preferences.getInt("sampInterval", 60);
 
     // Buzzer preferences
     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
@@ -638,6 +642,7 @@ String getActualSettingsAsJson() {
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
     doc["measInterval"] = measurementInterval;
+    doc["sampInterval"] = sampleInterval;
 
     // Buzzer preferences
     doc["toneBzrBeep"] = toneBuzzerBeep;          // Buzzer frequency
@@ -729,6 +734,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayReverse = JsonDocument["displayReverse"];
         showFahrenheit = JsonDocument["showFahrenheit"];
         measurementInterval = JsonDocument["measurementInterval"];
+        sampleInterval = JsonDocument["sampleInterval"];
         outputsModeRelay = JsonDocument["outModeRelay"];
         channelESPNow = JsonDocument["channelESPNow"];
         boardIdESPNow = JsonDocument["boardIdESPNow"];

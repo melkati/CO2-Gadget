@@ -87,6 +87,7 @@ bool inMenu = false;
 bool shouldWakeUpDisplay = false;
 bool shouldRedrawDisplay = false;
 uint16_t measurementInterval = 10;
+uint16_t sampleInterval = 60;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
@@ -367,6 +368,7 @@ void wakeUpDisplay() {
 }
 
 void processPendingCommands() {
+    if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
         if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
             Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
@@ -460,6 +462,7 @@ void outputsRGBLeds() {
 }
 
 void outputsLoop() {
+    if (isDownloadingBLE) return;
     outputsRelays();
     outputsRGBLeds();
     neopixelLoop();
@@ -467,6 +470,7 @@ void outputsLoop() {
 }
 
 void readingsLoop() {
+    if (isDownloadingBLE) return;
     if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
         if (newReadingsAvailable) {
             lastReadingsCommunicationTime = esp_timer_get_time();
@@ -487,6 +491,7 @@ void readingsLoop() {
 
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    if (isDownloadingBLE) return;
 
     if (shouldWakeUpDisplay) {
         wakeUpDisplay();
@@ -565,6 +570,7 @@ void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
 }
 
 void utilityLoop() {
+    if (isDownloadingBLE) return;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
     const int16_t highCpuFrequency = 240;
     const int16_t lowCpuFrequency = 80;
