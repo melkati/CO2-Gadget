@@ -314,6 +314,7 @@ void initPreferences() {
     displayReverse = preferences.getBool("displayReverse", false);
     showFahrenheit = preferences.getBool("showFahrenheit", false);
     measurementInterval = preferences.getUInt("measInterval", 10);
+    if (sampleInterval < 2) sampleInterval = 60;  // Minimum sample interval is 2 seconds
     sampleInterval = preferences.getUInt("sampInterval", 60);
     outputsModeRelay = preferences.getBool("outModeRelay", false);
     channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
@@ -537,7 +538,7 @@ String getPreferencesAsJson() {
     doc["debugSensors"] = preferences.getBool("debugSensors", false);
     doc["displayReverse"] = preferences.getBool("displayReverse", false);
     doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-    doc["measurementInterval"] = preferences.getInt("measInterval", 5);
+    doc["measurementInterval"] = preferences.getInt("measInterval", 10);
     doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
     doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
     doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
