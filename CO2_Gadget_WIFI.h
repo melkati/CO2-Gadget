@@ -710,7 +710,8 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 String getCO2GadgetStatusAsJson() {
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<512> doc;    
+    doc["mainDeviceSelected"] = mainDeviceSelected;
     doc["CO2"] = co2;
     doc["Temperature"] = temp;
     doc["Humidity"] = hum;
