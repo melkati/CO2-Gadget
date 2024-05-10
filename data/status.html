@@ -20,7 +20,9 @@
     </div>
 
     <div class="content">
-        <h1>Status Information</h1>
+        <div class="status-item" id="mainDeviceSelectedItem">
+            <span class="status-label">Sensor Selected:</span> <span id="mainDeviceSelected"></span>
+        </div>
         <div class="status-item" id="co2Item">
             <span class="status-label">CO2:</span> <span id="co2"></span>
         </div>
@@ -137,6 +139,11 @@
                 .then(data => {
                     console.log('Fetching data successful!');
                     // Update DOM with status data
+                    if (data.mainDeviceSelected !== undefined) {
+                        document.getElementById('mainDeviceSelected').textContent = data.mainDeviceSelected;
+                    } else {
+                        document.getElementById('mainDeviceSelected').style.display = 'none';
+                    }
                     if (data.CO2 !== undefined) {
                         document.getElementById('co2').textContent = data.CO2;
                     } else {
