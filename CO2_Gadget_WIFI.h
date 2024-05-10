@@ -763,6 +763,7 @@ String getCO2GadgetStatusAsJson() {
     doc["calibrationValue"] = calibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
     doc["freeHeap"] = ESP.getFreeHeap();
+    doc["minFreeHeap"] = ESP.getMinFreeHeap();
     doc["uptime"] = millis();
     String output;
     serializeJson(doc, output);
@@ -775,6 +776,16 @@ const char *PARAM_INPUT_3 = "SetVRef";
 
 void initWebServer() {
     SPIFFS.begin();
+
+#ifdef DEBUG_WIFI_EVENTS
+    // Print to serial the free space in the SPIFFS
+    Serial.print("-->[WiFi] SPIFFS total bytes: ");
+    Serial.println(SPIFFS.totalBytes());
+    Serial.print("-->[WiFi] SPIFFS used bytes: ");
+    Serial.println(SPIFFS.usedBytes());
+    Serial.print("-->[WiFi] SPIFFS free bytes: ");
+    Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+#endif
 
     // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     // server.serveStatic("/", SPIFFS, "/index.html");
@@ -936,6 +947,10 @@ void initWebServer() {
 
     server.on("/getFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", String(ESP.getFreeHeap()));
+    });
+
+    server.on("/getMinFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", String(ESP.getMinFreeHeap()));
     });
 
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {

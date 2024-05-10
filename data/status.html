@@ -109,6 +109,9 @@
         <div class="status-item" id="freeHeapItem">
             <span class="status-label">Free Heap:</span> <span id="freeHeap"></span>
         </div>
+        <div class="status-item" id="minFreeHeapItem">
+            <span class="status-label">Min Free Heap:</span> <span id="minFreeHeap"></span>
+        </div>
         <div class="status-item" id="uptimeItem">
             <span class="status-label">Uptime:</span> <span id="uptime"></span>
         </div>
@@ -311,7 +314,24 @@
                         document.getElementById('freeHeapItem').style.display = 'none';
                     }
 
+                    if (data.minFreeHeap !== undefined) {
+                        document.getElementById('minFreeHeap').textContent = data.minFreeHeap;
+                    } else {
+                        document.getElementById('minFreeHeapItem').style.display = 'none';
+                    }
+
                     if (data.uptime !== undefined) {
+                        // Convert data.uptime (in melliseconds) to human readable format (HH:MM:SS)
+                        var seconds = Math.floor(data.uptime / 1000);
+                        var minutes = Math.floor(seconds / 60);
+                        var hours = Math.floor(minutes / 60);
+                        var days = Math.floor(hours / 24);
+
+                        hours = hours - (days * 24);
+                        minutes = minutes - (days * 24 * 60) - (hours * 60);
+                        seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+                        
+
                         document.getElementById('uptime').textContent = data.uptime;
                     } else {
                         document.getElementById('uptimeItem').style.display = 'none';
@@ -347,10 +367,24 @@
             xhttp.send();
         }
 
+            function getMinFreeHeap() {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function () {
+                    console.log(this.responseText);
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("minFreeHeap").innerHTML =
+                            this.responseText;
+                    }
+                };
+                xhttp.open("GET", "getMinFreeHeap", true);
+                xhttp.send();
+            }
+
         setInterval(function () {
             // Call a function repetatively with 1 Second interval
             getBatteryVoltage();
             getFreeHeap();
+            getMinFreeHeap();
         }, 1000); // 1000mS  update rate
 
         window.onload = function () {
