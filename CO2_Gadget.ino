@@ -601,24 +601,16 @@ void initHighPerformanceMode() {
 #else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
 #endif
-<<<<<<< HEAD
     Serial.println("-->[STUP] Version compiled: " __DATE__ " at " __TIME__);
     Serial.println("-->[STUP] Total heap: " + String(ESP.getHeapSize()));
     Serial.println("-->[STUP] Free heap: " + String(ESP.getFreeHeap()));
+    Serial.println("-->[STUP] Min Free heap: " + String(ESP.getMinFreeHeap()));
     if (ESP.getPsramSize() > 0) {
         Serial.println("-->[STUP] Total PSRAM: " + String(ESP.getPsramSize()));
         Serial.println("-->[STUP] Free PSRAM: " + String(ESP.getFreePsram()));
     } else {
         Serial.println("-->[STUP] No PSRAM available");
     }
-=======
-    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
-    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
-    Serial.printf("-->[STUP] Min Free heap: %d\n", ESP.getMinFreeHeap());
-    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
-    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
->>>>>>> development
 
     if (ESP.getFlashChipSize() > 0) {
         Serial.println("-->[STUP] Flash size: " + String(ESP.getFlashChipSize()));
