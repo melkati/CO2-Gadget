@@ -292,7 +292,7 @@ void initPreferences() {
     displayReverse = preferences.getBool("displayReverse", false);
     showFahrenheit = preferences.getBool("showFahrenheit", false);
     measurementInterval = preferences.getUInt("measInterval", 10);
-    if (sampleInterval < 10) sampleInterval = 2;  // Minimum sample interval is 2 seconds
+    if (sampleInterval < 2) sampleInterval = 60;  // Minimum sample interval is 60 seconds
     sampleInterval = preferences.getUInt("sampInterval", 60);
     outputsModeRelay = preferences.getBool("outModeRelay", false);
     channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);

@@ -545,6 +545,7 @@ void setup() {
     Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
     Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
     Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
+    Serial.printf("-->[STUP] Min Free heap: %d\n", ESP.getMinFreeHeap());
     Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
     Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
 
