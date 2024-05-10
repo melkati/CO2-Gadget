@@ -829,7 +829,7 @@ void initWebServer() {
 
     server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.gz", "text/html");
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html.gz", "text/html");
         response->addHeader("Content-Encoding", "gzip");
         request->send(response);
     });
