@@ -1,8 +1,6 @@
 #ifndef CO2_Gadget_WIFI
 #define CO2_Gadget_WIFI
 
-// #define DEBUG_WIFI_EVENTS
-
 // clang-format off
 /*****************************************************************************************************/
 /*********                                                                                   *********/
@@ -939,12 +937,6 @@ void initWebServer() {
     });
 
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
-        restartTimerToDeepSleep();
-        String versionJson = getCO2GadgetVersionAsJson();
-        request->send(200, "application/json", versionJson);
-    });
-
-    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
         restartTimerToDeepSleep();
         String versionJson = getCO2GadgetVersionAsJson();
         request->send(200, "application/json", versionJson);
