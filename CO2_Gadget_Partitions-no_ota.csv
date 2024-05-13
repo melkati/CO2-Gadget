@@ -1,5 +1,9 @@
-# Extendend to 0x2D0000 for the program
-# Name,   Type, SubType, Offset,  Size, Flags
-nvs,      data, nvs,     0x9000,  0x5000,
-app0,     app,  ota_0,   0x10000, 0x2D0000,  
-spiffs,   data, spiffs,  0x3D0000, 0x30000,
+# app0 size 1,850,000 bytes
+# app1 size 1,850,000 bytes
+# spiffs size 300,000 bytes
+# Name,   Type, SubType, Offset,   Size, Flags
+nvs,      data, nvs,     0x9000,   0x5000,
+otadata,  data, ota,     0xe000,   0x2000,
+app0,     app,  ota_0,   0x10000,  0x1B0000,
+app1,     app,  ota_1,   0x1C0000, 0x1B0000,
+spiffs,   data, spiffs,  0x370000, 0x4B000,
