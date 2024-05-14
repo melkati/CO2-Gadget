@@ -588,7 +588,7 @@ String getActualSettingsAsJson() {
     return preferencesJson;
 }
 
-bool handleSavePreferencesfromJSON(String jsonPreferences) {
+bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Create a JSON object to store preferences
     JsonDocument JsonDocument;
 
@@ -691,7 +691,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
 
     // Send a successful response
     // request->send(200, "text/plain", "Preferences saved successfully");
-    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesfromJSON()");
+    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
 }
