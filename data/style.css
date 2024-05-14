@@ -116,6 +116,7 @@ input[type="checkbox"] {
   float: right;
   /* Alinea los botones a la derecha */
 }
+
 button {
   background-color: #4caf50;
   color: white;
@@ -303,14 +304,16 @@ button:hover {
   top: 0;
   width: 100%;
   background-color: #f2f2f2;
-  padding: 10px 0;
+  padding: 0px 20px;
+    /* Add padding to space out links */
   z-index: 1000; /* Ensure it's on top of other content */
 }
 
 .navbar a {
-  padding: 14px 20px;
   text-decoration: none;
   color: #333;
+  padding: 14px 20px;
+    /* Adjust padding */
 }
 
 .navbar a.active {
@@ -318,9 +321,13 @@ button:hover {
   pointer-events: none; /* Disable pointer events for the active link */
 }
 
+#otaLink {
+  float: right;
+}
+
 /* Adjust content area to prevent overlap with navbar */
 .content {
-  margin-top: 60px; /* Adjust the value according to your navbar height */
+  margin-top: 60px;
 }
 
 .status-item {
@@ -348,4 +355,8 @@ button:hover {
   100% {
     opacity: 0;
   }
+}
+
+img {
+  display: none;
 }
