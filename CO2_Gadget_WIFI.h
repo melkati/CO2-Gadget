@@ -825,6 +825,12 @@ void initWebServer() {
         request->send(response);
     });
 
+    server.on("/ota.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.html", "text/html");
+        response->addHeader("Content-Encoding", "text/html");
+        request->send(response);
+    });
+
     server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         /** GZIPPED CONTENT ***/
         AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
@@ -981,7 +987,7 @@ void initWebServer() {
         request->send(200, "application/json", response);
         // Serial.print("-->[WiFi] Received /savepreferences command with parameter: ");
         // Serial.println(response);
-        handleSavePreferencesfromJSON(response);
+        handleSavePreferencesFromJSON(response);
     });
 
     server.addHandler(handler);
