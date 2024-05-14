@@ -318,6 +318,10 @@ button:hover {
   pointer-events: none; /* Disable pointer events for the active link */
 }
 
+.navbar a[href="/update"] {
+  /* Update link positioned to the right */
+  float: right;
+}
 /* Adjust content area to prevent overlap with navbar */
 .content {
   margin-top: 60px; /* Adjust the value according to your navbar height */

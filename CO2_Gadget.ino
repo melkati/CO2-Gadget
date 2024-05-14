@@ -412,6 +412,14 @@ void initGPIO() {
 #endif
 }
 
+void initThresholds() {
+    thresholdsManager.loadThresholdsFromNVR();
+#ifdef DEBUG_THRESHOLDS
+    Serial.print("-->[THRE] Thresholds loaded from NVRAM\t: ");
+    printThresholdsFromNVR();
+#endif
+}
+
 void outputsRelays() {
     if ((!outputsModeRelay) || (co2 == 0)) return;  // Don't turn on relays until there is CO2 Data
 #ifdef GREEN_PIN
@@ -620,6 +628,7 @@ void initHighPerformanceMode() {
     delay(50);
 
     initPreferences();
+    initThresholds();
     initBattery();
     initGPIO();
     initNeopixel();
@@ -789,6 +798,7 @@ void setup() {
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
             Serial.println("-->[STUP] Initializing from: " + getResetReason());
             initPreferences();
+            initThresholds();
             if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) {
                 Serial.println("-->[STUP] Will go into high performance mode after initialization");
                 delay(10);

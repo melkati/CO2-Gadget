@@ -273,8 +273,6 @@ String getMACAddressAsString() {
     return macAddress;
 }
 
-#include <WiFi.h>
-
 void printDisconnectReason(int reasonCode) {
 #ifdef DEBUG_WIFI_EVENTS
     switch (reasonCode) {
@@ -827,6 +825,12 @@ void initWebServer() {
         request->send(response);
     });
 
+    // server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    //     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html", "text/html");
+    //     response->addHeader("Content-Encoding", "text/html");
+    //     request->send(response);
+    // });
+
     server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         /** GZIPPED CONTENT ***/
         AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html.gz", "text/html");
@@ -948,6 +952,12 @@ void initWebServer() {
         request->send(200, "application/json", preferencesJson);
     });
 
+    server.on("/getThresholdsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
+        String thresholdsAsJson = thresholdsManager.getAllThresholdsAsJson();
+        request->send(200, "application/json", thresholdsAsJson);
+    });
+
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
         restartTimerToDeepSleep();
         String versionJson = getCO2GadgetVersionAsJson();
@@ -984,7 +994,7 @@ void initWebServer() {
         request->send(400, "text/plain", "Not found");
     });
 
-    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         restartTimerToDeepSleep();
         StaticJsonDocument<2048> data;
         if (json.is<JsonArray>()) {
@@ -997,10 +1007,29 @@ void initWebServer() {
         request->send(200, "application/json", response);
         // Serial.print("-->[WiFi] Received /savepreferences command with parameter: ");
         // Serial.println(response);
-        handleSavePreferencesfromJSON(response);
+        handleSavePreferencesFromJSON(response);
+    });
+
+    AsyncCallbackJsonWebHandler *handlerThresholds = new AsyncCallbackJsonWebHandler("/saveThresholds", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        restartTimerToDeepSleep();
+        StaticJsonDocument<2048> data;
+        if (json.is<JsonArray>()) {
+            data = json.as<JsonArray>();
+        } else if (json.is<JsonObject>()) {
+            data = json.as<JsonObject>();
+        }
+        String response;
+        serializeJson(data, response);
+        request->send(200, "application/json", response);
+        Serial.print("-->[WiFi] Received /saveThresholds command with parameter: ");
+        Serial.println(response);
+        thresholdsManager.setThresholdsFromJSON(response);
+        Serial.print("-->[WiFi] Thresholds saved: ");
+        printThresholdsFromNVR();
     });
 
     server.addHandler(handler);
+    server.addHandler(handlerThresholds);
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {

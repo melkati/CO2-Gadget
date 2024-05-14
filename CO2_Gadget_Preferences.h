@@ -314,7 +314,7 @@ void initPreferences() {
     measurementInterval = preferences.getUInt("measInterval", 10);
     if (sampleInterval < 2) {
         Serial.print("-->[PREF] Sample interval too low: ");
-        Serial.println(sampleInterval);        
+        Serial.println(sampleInterval);
         sampleInterval = 60;
         preferences.putUInt("sampInterval", sampleInterval);
         Serial.print("-->[PREF] Setting sample interval to: ");
@@ -676,7 +676,7 @@ String getActualSettingsAsJson() {
     return preferencesJson;
 }
 
-bool handleSavePreferencesfromJSON(String jsonPreferences) {
+bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Create a JSON object to store preferences
     JsonDocument JsonDocument;
 
@@ -791,7 +791,7 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
 
     // Send a successful response
     // request->send(200, "text/plain", "Preferences saved successfully");
-    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesfromJSON()");
+    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
 }
