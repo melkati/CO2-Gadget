@@ -265,7 +265,7 @@ function savePreferences() {
 
     // Send the preferences data to the server
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/savepreferences", true);
+    xhr.open("POST", "/savePreferences", true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhr.send(JSON.stringify(preferencesData));
 

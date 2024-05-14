@@ -644,7 +644,7 @@ void showCO2units(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void displayShowValues(bool forceRedraw = false) {
-    if (!passMeasurementThresholds(DISPLAY_SHOW)) return;
+    if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {

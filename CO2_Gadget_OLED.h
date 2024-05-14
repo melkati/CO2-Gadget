@@ -90,7 +90,7 @@ void initDisplay(bool fastMode = false) {  // fastMode not used in OLED display.
 }
 
 void displayShowValues(bool forceRedraw = false) {
-    if (!passMeasurementThresholds(DISPLAY_SHOW)) return;
+    if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
     if ((co2 == 0) || (co2 > 9999)) return;
     String co2Str = String(co2);
     if (co2Str.length() < 4) {
