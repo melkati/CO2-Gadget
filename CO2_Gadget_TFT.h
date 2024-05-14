@@ -644,7 +644,11 @@ void showCO2units(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void displayShowValues(bool forceRedraw = false) {
-    if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
+    if (forceRedraw) {
+        thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
+    } else {
+        if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
+    }
     uint8_t currentDatum = tft.getTextDatum();
     tft.unloadFont();
     if (forceRedraw) {
