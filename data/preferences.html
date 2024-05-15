@@ -305,13 +305,23 @@
                     <legend>NeoPixel</legend>
 
                     <div>
-                        <label for="neopixBright">NeoPixel Brightness:</label>
-                        <input type="number" id="neopixBright" name="neopixBright" value="">
+                        <label for="neopixBright">NeoPixel Brightness:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Set the brightness of the NeoPixel. Lower values will decrease
+                                the
+                                brightness of the NeoPixel.</span>
+                            <input type="number" id="neopixBright" name="neopixBright" value="">
+                        </label>
                     </div>
 
                     <div>
-                        <label for="selNeopxType">Selected NeoPixel Type:</label>
-                        <input type="number" id="selNeopxType" name="selNeopxType" value="">
+                        <label for="selNeopxType">Selected NeoPixel Type:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">The type of NeoPixel used. 0 = NEO_GRB + NEO_KHZ800, 1 = NEO_RGB
+                                + NEO_KHZ800, 2 =
+                                NEO_RGBW + NEO_KHZ800
+                                <input type="number" id="selNeopxType" name="selNeopxType" value="">
+                        </label>
                     </div>
                 </fieldset>
 
@@ -362,8 +372,12 @@
 
 
                 <div>
-                    <label for="outModeRelay">GPIO Outputs in Relay Mode:</label>
-                    <input type="checkbox" id="outModeRelay" name="outModeRelay">
+                    <label for="outModeRelay">GPIO Outputs in Relay Mode:
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Check this box if you are using a relay to control the GPIO outputs.
+                            This will adjust the logic of the outputs.</span>
+                        <input type="checkbox" id="outModeRelay" name="outModeRelay">
+                    </label>
                 </div>
             </fieldset>
 
