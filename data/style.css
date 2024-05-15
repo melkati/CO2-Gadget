@@ -71,7 +71,6 @@ legend {
 
 label {
   display: inline-block;
-  margin-bottom: 8px;
 }
 
 select {
@@ -292,15 +291,14 @@ button:hover {
   top: 0;
   width: 100%;
   background-color: #f2f2f2;
-  padding: 0px 20px;
-    /* Add padding to space out links */
+  padding: 15px 10px;
   z-index: 1000; /* Ensure it's on top of other content */
 }
 
 .navbar a {
   text-decoration: none;
   color: #333;
-  padding: 14px 20px;
+  padding: 0px 20px;
     /* Adjust padding */
 }
 
@@ -343,8 +341,4 @@ button:hover {
   100% {
     opacity: 0;
   }
-}
-
-img {
-  display: none;
 }
