@@ -264,7 +264,7 @@ void initPreferences() {
     activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
-    activeOTA = preferences.getBool("activeOTA", false);
+    activeOTA = preferences.getBool("activeOTA", activeOTA);
     rootTopic = preferences.getString("rootTopic", rootTopic);
     mqttClientId = preferences.getString("mqttClientId", mqttClientId);
     mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
