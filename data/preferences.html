@@ -18,7 +18,9 @@
         <a href="preferences.html" class="active">Preferences</a>
         <a href="status.html">Status</a>
         <a href="low_power.html">Thresholds</a>
-        <a href="/update">Update</a>
+        <div id="otaLink">
+            <a href="ota.html">OTA</a>
+        </div>
     </div>
 
     <div class="content">
@@ -593,8 +595,8 @@
                 </div>
 
                 <div>
-                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>                    
-                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">                    
+                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Activate BLE on wakeup. This will allow CO2 Gadget to send data to your
                         phone or other BLE devices.</span>
@@ -619,7 +621,8 @@
                 <div>
                     <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
                     <span class="tooltip-icon">ℹ️</span>
-                    <span class="tooltip-text">Send data via ESPNow on wakeup. This will allow CO2 Gadget to send data to
+                    <span class="tooltip-text">Send data via ESPNow on wakeup. This will allow CO2 Gadget to send data
+                        to
                         other ESP32 devices.</span>
                     <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
                 </div>
@@ -631,25 +634,14 @@
                         allow you to see the current readings.</span>
                     <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
                 </div>
-
             </fieldset>
 
-            <div id="backupRestoreButtons">
-                <button type="button" id="backupButton" onclick="backupPreferences()">
-                    <span class="tooltip-icon">ℹ️</span> Backup
-                    <span class="tooltip-text">Make a backup of your current preferences</span>
-                </button>
-
-                <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">
-                    <span class="tooltip-icon">ℹ️</span> Restore
-                    <span class="tooltip-text">Restore previously backed up preferences</span>
-                </button>
-            </div>
-
-            <div id="resetSaveButtons">
-                <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>
-
-                <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save Preferences</button>
+            <div class="buttonGroup">
+                <button type="button" id="backupButton" onclick="backupPreferences()">Backup</button>
+                <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">Restore</button>
+                <button type="button" id="restartButton" onclick="restartESP32()">Restart</button>
+                <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save
+                    Preferences</button>
             </div>
         </form>
 
@@ -658,7 +650,12 @@
 
         <!-- Popup to display a message -->
         <div id="popup">
-            <p>Saving thresholds...</p>
+            <p>Saving preferences...</p>
+        </div>
+
+        <!-- Status line to display CO2 Gadget version -->
+        <div id="statusLineContainer">
+            <span id="co2GadgetVersion"></span>
         </div>
     </div>
 </body>

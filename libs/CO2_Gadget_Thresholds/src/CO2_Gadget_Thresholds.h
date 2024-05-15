@@ -1,8 +1,6 @@
 #ifndef CO2_Gadget_Thresholds_h
 #define CO2_Gadget_Thresholds_h
 
-#define DEBUG_THRESHOLDS
-
 #include <Preferences.h>
 #include <ArduinoJson.h>
 

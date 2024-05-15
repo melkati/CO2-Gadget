@@ -86,25 +86,44 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
     bool co2ExceedsAbsolute = abs(co2 - config.previousCO2Value) >= config.co2ThresholdAbsolute;
     bool tempExceedsAbsolute = abs(temp - config.previousTemperatureValue) >= config.tempThresholdAbsolute;
     bool humExceedsAbsolute = abs(hum - config.previousHumidityValue) >= config.humThresholdAbsolute;
+#ifdef DEBUG_THRESHOLDS
+    if (co2ExceedsAbsolute) {
+        Serial.println("-->[THRE] CO2 exceeds absolute threshold. Old value: " + String(config.previousCO2Value) + ", New value: " + String(co2) + ", Difference: " + String(abs(co2 - config.previousCO2Value)));
+    }
+#endif
 
     // Check percentage thresholds (avoid division by zero)
-    bool co2ExceedsPercentage = config.previousCO2Value == 0 ? false : abs(co2 - config.previousCO2Value) >= config.previousCO2Value * config.co2ThresholdPercentage / 100;
-    bool tempExceedsPercentage = config.previousTemperatureValue == 0 ? false : abs(temp - config.previousTemperatureValue) >= config.previousTemperatureValue * config.tempThresholdPercentage / 100;
-    bool humExceedsPercentage = config.previousHumidityValue == 0 ? false : abs(hum - config.previousHumidityValue) >= config.previousHumidityValue * config.humThresholdPercentage / 100;
+    bool co2ExceedsPercentage = (config.previousCO2Value == 0) ? true : ((config.co2ThresholdPercentage != 0) && (abs(co2 - config.previousCO2Value) >= (config.previousCO2Value * config.co2ThresholdPercentage / 100)));
+    bool tempExceedsPercentage = (config.previousTemperatureValue == 0) ? true : ((config.tempThresholdPercentage != 0) && (abs(temp - config.previousTemperatureValue) >= (config.previousTemperatureValue * config.tempThresholdPercentage / 100)));
+    bool humExceedsPercentage = (config.previousHumidityValue == 0) ? true : ((config.humThresholdPercentage != 0) && (abs(hum - config.previousHumidityValue) >= (config.previousHumidityValue * config.humThresholdPercentage / 100)));
+#ifdef DEBUG_THRESHOLDS
+    if (co2ExceedsPercentage) {
+        Serial.println("-->[THRE] CO2 exceeds percentage threshold. Old value: " + String(config.previousCO2Value) + ", New value: " + String(co2) + ", Difference (%): " + String(config.previousCO2Value != 0 ? (abs(co2 - config.previousCO2Value) * 100 / config.previousCO2Value) : 0));
+
+    }
+#endif
 
     // Check if both absolute and percentage thresholds are exceeded (AND or OR combination)
     bool co2ThresholdsExceeded = (config.co2CombineWithAnd ? co2ExceedsAbsolute && co2ExceedsPercentage : co2ExceedsAbsolute || co2ExceedsPercentage);
-    bool tempThresholdsExceeded = (config.tempCombineWithAnd ? tempExceedsAbsolute && tempExceedsPercentage : tempExceedsAbsolute || tempExceedsPercentage);
-    bool humThresholdsExceeded = (config.humCombineWithAnd ? humExceedsAbsolute && humExceedsPercentage : humExceedsAbsolute || humExceedsPercentage);
+        bool tempThresholdsExceeded = (config.tempCombineWithAnd ? tempExceedsAbsolute && tempExceedsPercentage : tempExceedsAbsolute || tempExceedsPercentage);
+        bool humThresholdsExceeded = (config.humCombineWithAnd ? humExceedsAbsolute && humExceedsPercentage : humExceedsAbsolute || humExceedsPercentage);
+    #ifdef DEBUG_THRESHOLDS
+        if (co2ThresholdsExceeded) {
+            // If co2CombineWithAnd = true append AND otherwise append OR
+            Serial.println("-->[THRE] CO2 threshold combination meeted evaluating with: " + String(config.co2CombineWithAnd ? "AND" : "OR"));
+        } else {
+            if (co2ExceedsAbsolute) Serial.println("-->[THRE] CO2 threshold combination not meeted evaluating with: " + String(config.co2CombineWithAnd ? "AND" : "OR"));
+        }
+    #endif
 
-    // Check if any threshold is exceeded
-    if (co2ThresholdsExceeded || tempThresholdsExceeded || humThresholdsExceeded) {
-        // Update previous values
-        updatePreviousValues(outputType, co2, temp, hum);
-        return true; // Thresholds exceeded
-    }
+        // Check if any threshold is exceeded
+        if (co2ThresholdsExceeded || tempThresholdsExceeded || humThresholdsExceeded) {
+            // Update previous values
+            updatePreviousValues(outputType, co2, temp, hum);
+            return true;  // Thresholds exceeded
+        }
 
-    return false; // Thresholds not exceeded
+    return false;  // Thresholds not exceeded
 }
 
 /**
