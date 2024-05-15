@@ -66,7 +66,11 @@ uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-
 uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 // OTA options
+#ifdef SUPPORT_OTA
+bool activeOTA = true;
+#else
 bool activeOTA = false;
+#endif
 
 // Display and menu options
 bool mustInitMenu = false;
