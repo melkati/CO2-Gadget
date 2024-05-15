@@ -105,18 +105,6 @@ input[type="checkbox"] {
   font-size: 14px;
 }
 
-/* Estilos para botones de backup y restore */
-#backupRestoreButtons {
-  float: left;
-  /* Alinea los botones a la izquierda */
-}
-
-/* Estilos para botones de reset y save */
-#resetSaveButtons {
-  float: right;
-  /* Alinea los botones a la derecha */
-}
-
 button {
   background-color: #4caf50;
   color: white;
@@ -128,7 +116,7 @@ button {
   margin-left: 10px;
 }
 
-#resetButton {
+#restartButton {
   background-color: red;
   color: white;
   padding: 10px 20px;
