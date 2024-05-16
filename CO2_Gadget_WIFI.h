@@ -760,6 +760,7 @@ String getCO2GadgetStatusAsJson() {
     doc["troubledESPNOW"] = troubledESPNOW;
 #endif
     doc["measurementInterval"] = measurementInterval;
+    doc["sampleInterval"] = sampleInterval;
     doc["calibrationValue"] = calibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
     doc["freeHeap"] = ESP.getFreeHeap();

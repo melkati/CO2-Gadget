@@ -312,15 +312,8 @@ void initPreferences() {
     displayReverse = preferences.getBool("displayReverse", false);
     showFahrenheit = preferences.getBool("showFahrenheit", false);
     measurementInterval = preferences.getUInt("measInterval", 10);
-    if (sampleInterval < 2) {
-        Serial.print("-->[PREF] Sample interval too low: ");
-        Serial.println(sampleInterval);
-        sampleInterval = 60;
-        preferences.putUInt("sampInterval", sampleInterval);
-        Serial.print("-->[PREF] Setting sample interval to: ");
-        Serial.println(sampleInterval);
-    }
     sampleInterval = preferences.getUInt("sampInterval", 60);
+    if (sampleInterval < 2) sampleInterval = 60;  // Default sample interval is 60 seconds
     outputsModeRelay = preferences.getBool("outModeRelay", false);
     channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
     boardIdESPNow = preferences.getUInt("boardIdESPNow", 0);
