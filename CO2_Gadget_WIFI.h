@@ -710,7 +710,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 String getCO2GadgetStatusAsJson() {
-    StaticJsonDocument<512> doc;    
+    StaticJsonDocument<512> doc;
     doc["mainDeviceSelected"] = mainDeviceSelected;
     doc["CO2"] = co2;
     doc["Temperature"] = temp;
@@ -938,7 +938,9 @@ void initWebServer() {
     });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String preferencesJson = getActualSettingsAsJson();
+        // if /getActualSettingsAsJson is called with parameter "relaxedSecurity", getActualSettingsAsJson() will be called with parameter includePasswords = true
+        bool relaxedSecurity = request->hasParam("relaxedSecurity");
+        String preferencesJson = getActualSettingsAsJson(relaxedSecurity);
         request->send(200, "application/json", preferencesJson);
     });
 

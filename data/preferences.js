@@ -1,5 +1,8 @@
 // https://www.zickty.com/filetogzip
 
+// Global variable to control relaxed security mode
+var relaxedSecurity = false;
+
 // Function to fetch version information from the server
 function fetchVersion() {
     fetch('/getVersion')
@@ -26,8 +29,10 @@ function populateFormWithPreferences(preferences) {
     if (getPreferencesDebug) console.log('Setting wifiSSID to:', preferences.wifiSSID);
     document.getElementById("wifiSSID").value = preferences.wifiSSID;
 
-    // if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
-    // document.getElementById("wifiPass").value = preferences.wifiPass;
+    if (relaxedSecurity) {
+        if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
+        document.getElementById("wifiPass").value = preferences.wifiPass;
+    }
 
     if (getPreferencesDebug) console.log('Setting hostName to:', preferences.hostName);
     document.getElementById("hostName").value = preferences.hostName;
@@ -98,8 +103,10 @@ function populateFormWithPreferences(preferences) {
     if (getPreferencesDebug) console.log('Setting mqttUser to:', preferences.mqttUser);
     document.getElementById("mqttUser").value = preferences.mqttUser;
 
-    // if (getPreferencesDebug) console.log('Setting mqttPass to:', preferences.mqttPass);
-    // document.getElementById("mqttPass").value = preferences.mqttPass;
+    if (relaxedSecurity) {
+        if (getPreferencesDebug) console.log('Setting mqttPass to:', preferences.mqttPass);
+        document.getElementById("mqttPass").value = preferences.mqttPass;
+    }
 
     if (getPreferencesDebug) console.log('Setting batDischgd to:', preferences.batDischgd);
     document.getElementById("batDischgd").value = preferences.batDischgd;
@@ -168,7 +175,9 @@ function populateFormWithPreferences(preferences) {
 }
 
 function loadPreferencesFromServer() {
-    fetch('/getActualSettingsAsJson')
+    // Fetch preferences data from the server
+    // Add parameter relaxedSecurity to the URL if relaxed security mode is enabled
+    fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : '')) // Add query parameter to URL if relaxed security mode is enabled
         .then(response => response.json())
         .then(preferences => {
             populateFormWithPreferences(preferences);
@@ -203,7 +212,6 @@ function collectPreferencesData() {
         tKeepAlESPNow: document.getElementById("tKeepAlESPNow").value,
         dispOffOnExP: document.getElementById("dispOffOnExP").checked,
         wifiSSID: document.getElementById("wifiSSID").value,
-        // wifiPass: document.getElementById("wifiPass").value,
         hostName: document.getElementById("hostName").value,
         selCO2Sensor: document.getElementById("selCO2Sensor").value,
         debugSensors: document.getElementById("debugSensors").checked,
@@ -222,11 +230,15 @@ function collectPreferencesData() {
         mqttClientId: document.getElementById("mqttClientId").value,
         mqttBroker: document.getElementById("mqttBroker").value,
         mqttUser: document.getElementById("mqttUser").value,
-        // mqttPass: document.getElementById("mqttPass").value
         toneBzrBeep: document.getElementById("toneBzrBeep").value,
         durBzrBeep: document.getElementById("durBzrBeep").value,
         timeBtwnBzr: document.getElementById("timeBtwnBzr").value
     };
+    // If relaxedSecurity is enabled, add the password fields to the preferences data
+    if (relaxedSecurity) {
+        preferencesData.wifiPass = document.getElementById("wifiPass").value;
+        preferencesData.mqttPass = document.getElementById("mqttPass").value;
+    }
     return preferencesData;
 }
 
@@ -329,6 +341,15 @@ function backupPreferences() {
     alert('Preferences backup completed successfully!');
 }
 
+// Function to restore preferences from JSON data
+function restorePreferencesFromData(preferencesData) {
+    // Parse the preferences data from JSON format
+    var preferences = JSON.parse(preferencesData);
+
+    // Populate the form with the received preferences
+    populateFormWithPreferences(preferences);
+}
+
 // Function to trigger file input click and restore preferences
 function chooseFileAndRestore() {
     document.getElementById('fileInput').click();
@@ -411,7 +432,33 @@ document.getElementById('vRef').addEventListener('input', () => {
     setTimeout(updateVRef, 100);
 });
 
+// Enable password fields if relaxed security mode is enabled
+function handlePasswordFields() {
+    var inputField = document.getElementById("wifiSSID");
+    var passwordFields = document.querySelectorAll('input[type=password]');
+    if (relaxedSecurity) {
+        passwordFields.forEach(function (field) {
+            field.removeAttribute('disabled');
+        });
+        inputField.removeAttribute('readonly');
+    } else {
+        passwordFields.forEach(function (field) {
+            // field.setAttribute('disabled', 'disabled');
+            // Disable the field
+            field.disabled = true;
+            // Clear the field's value
+            field.value = '';
+            // Set a default value to prevent "undefined"
+            field.placeholder = "Password (disabled)";
+        });
+        inputField.setAttribute('readonly', 'readonly');
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    // Update relaxedSecurity variable based on URL
+    relaxedSecurity = window.location.href.includes("relaxedSecurity");
+    handlePasswordFields();
     loadPreferencesFromServer();
     fetchVersion();
     toggle('activeWIFI', 'wifiNetworks');
