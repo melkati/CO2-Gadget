@@ -104,6 +104,9 @@
         <div class="status-item" id="measurementIntervalItem">
             <span class="status-label">Measurement Interval:</span> <span id="measurementInterval"></span>
         </div>
+        <div class="status-item" id="sampleIntervalItem">
+            <span class="status-label">Calibration Value:</span> <span id="sampleInterval"></span>
+        </div>
         <div class="status-item" id="calibrationValueItem">
             <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span>
         </div>
@@ -298,6 +301,12 @@
                         document.getElementById('measurementInterval').textContent = data.measurementInterval;
                     } else {
                         document.getElementById('measurementIntervalItem').style.display = 'none';
+                    }
+
+                    if (data.sampleInterval !== undefined) {
+                        document.getElementById('sampleInterval').textContent = data.sampleInterval;
+                    } else {
+                        document.getElementById('sampleIntervalItem').style.display = 'none';
                     }
 
                     if (data.calibrationValue !== undefined) {
