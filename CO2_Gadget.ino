@@ -145,6 +145,9 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 #endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
+#ifdef SUPPORT_CAPTIVE_PORTAL
+#include <DNSServer.h>
+#endif
 #include <ESPAsyncWebServer.h>
 
 #include "AsyncJson.h"
@@ -590,6 +593,10 @@ void setup() {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
+    } else {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+        initCaptivePortal();
+#endif
     }
     initImprov();
     if (timeToWaitForImprov > 0) {
@@ -608,6 +615,7 @@ void loop() {
     utilityLoop();
     improvLoop();
     wifiClientLoop();
+    wifiCaptivePortalLoop();
     mqttClientLoop();
     sensorsLoop();
     outputsLoop();

@@ -14,6 +14,10 @@
 #include "credentials.h"
 #endif
 
+#ifdef SUPPORT_CAPTIVE_PORTAL
+DNSServer dnsServer;
+#endif
+
 WiFiClient espClient;
 AsyncWebServer server(80);
 
@@ -1105,6 +1109,58 @@ void initWifi() {
 
         troubledMQTT = false;  // Try to connect to MQTT broker on next loop if needed
     }
+}
+
+#ifdef SUPPORT_CAPTIVE_PORTAL
+class CaptiveRequestHandler : public AsyncWebHandler {
+   public:
+    CaptiveRequestHandler() {
+        initWebServer();
+    }
+
+    virtual ~CaptiveRequestHandler() {}
+
+    bool canHandle(AsyncWebServerRequest *request) {
+        // request->addInterestingHeader("ANY");
+        return true;
+    }
+
+    void handleRequest(AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
+        response->print("<p>This is out captive portal front page.</p>");
+        response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
+        response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
+        response->print("</body></html>");
+        request->send(response);
+    }
+};
+
+static const void initCaptivePortal() {
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("-->[WiFi] Already connected to Wi-Fi");
+        return;
+    } else {
+        Serial.println("-->[WiFi] Not connected to Wi-Fi. Starting captive portal");
+    }
+    WiFi.softAP("CO2-Gadget", NULL);  // SSID, password
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server.end();
+    delay(100);
+    // initWebServer();
+    server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);  // only when requested from AP
+
+    server.begin();
+    // Print IP Adrress
+    Serial.print("-->[WiFi] AP IP address: ");
+    Serial.println(WiFi.softAPIP());
+}
+#endif  // SUPPORT_CAPTIVE_PORTAL
+
+void wifiCaptivePortalLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    dnsServer.processNextRequest();
+#endif
 }
 
 void wifiClientLoop() {
