@@ -343,7 +343,7 @@ void saveWifiCredentials() {
 }
 
 void putPreferences() {
-    Serial.println("-->[PREF] \n Saving preferences to NVR");
+    Serial.println("-->[PREF] Saving preferences to NVR");
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -509,7 +509,7 @@ String getPreferencesAsJson() {
     return preferencesJson;
 }
 
-String getActualSettingsAsJson() {
+String getActualSettingsAsJson(bool includePasswords = false) {
     JsonDocument doc;
 
     doc["prefVersion"] = prefVersion;
@@ -540,7 +540,10 @@ String getActualSettingsAsJson() {
     doc["mqttClientId"] = mqttClientId;
     doc["mqttBroker"] = mqttBroker;
     doc["mqttUser"] = mqttUser;
-    // doc["mqttPass"] = mqttPass;
+    // if includePasswords is false, do not include the password
+    if (includePasswords) {
+        doc["mqttPass"] = mqttPass;
+    }
     doc["tToDispOff"] = timeToDisplayOff;
     doc["tKeepAlMQTT"] = timeToKeepAliveMQTT;
     doc["tKeepAlESPNow"] = timeToKeepAliveESPNow;
@@ -548,7 +551,10 @@ String getActualSettingsAsJson() {
     doc["tToPubESPNow"] = timeBetweenESPNowPublish;
     doc["dispOffOnExP"] = displayOffOnExternalPower;
     doc["wifiSSID"] = wifiSSID;
-    // doc["wifiPass"] = wifiPass;
+    // if includePasswords is false, do not include the password
+    if (includePasswords) {
+        doc["wifiPass"] = wifiPass;
+    }
     doc["hostName"] = hostName;
     doc["selCO2Sensor"] = selectedCO2Sensor;
     doc["debugSensors"] = debugSensors;
@@ -678,8 +684,16 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
         timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
-        // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
-        // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+        // If JsonDocument["wifiPass"] is present, update the wifiPass variable
+        if (JsonDocument.containsKey("wifiPass")) {
+            wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+            wifiChanged = true;
+        }
+        // If JsonDocument["mqttPass"] is present, update the mqttPass variable
+        if (JsonDocument.containsKey("mqttPass")) {
+            mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
+            wifiChanged = true;
+        }
         preferences.end();
     } catch (const std::exception& e) {
         // Manage error while storing preferences
