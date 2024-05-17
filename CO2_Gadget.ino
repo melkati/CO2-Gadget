@@ -582,6 +582,7 @@ void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
 }
 
 void utilityLoop() {
+    return; // Temporary disable utilityLoop
     if (isDownloadingBLE) return;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
     const int16_t highCpuFrequency = 240;
