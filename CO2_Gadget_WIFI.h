@@ -687,6 +687,7 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+    if (captivePortalActive) return;
     ++WiFiConnectionRetries;
     Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
@@ -1090,6 +1091,8 @@ void initOTA() {
 }
 
 void initWifi() {
+    if (captivePortalActive) return;
+
     if (wifiSSID == "") {
         activeWIFI = false;
     }
@@ -1115,7 +1118,8 @@ void initWifi() {
 class CaptiveRequestHandler : public AsyncWebHandler {
    public:
     CaptiveRequestHandler() {
-        initWebServer();
+        // initWebServer();
+        Serial.println("-->[WiFi] Captive portal started");
     }
 
     virtual ~CaptiveRequestHandler() {}
@@ -1133,6 +1137,7 @@ class CaptiveRequestHandler : public AsyncWebHandler {
         response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
         response->print("</body></html>");
         request->send(response);
+        Serial.println("-->[WiFi] Captive portal request");
     }
 };
 
@@ -1141,29 +1146,46 @@ static const void initCaptivePortal() {
         Serial.println("-->[WiFi] Already connected to Wi-Fi");
         return;
     } else {
-        Serial.println("-->[WiFi] Not connected to Wi-Fi. Starting captive portal");
+        Serial.println("-->[WiFi] Not connected to Wi-Fi. Starting captive portal for " + String(timeToWaitForCaptivePortal) + " seconds");
     }
+    WiFi.disconnect(true);
+    delay(20);
     WiFi.softAP("CO2-Gadget", NULL);  // SSID, password
     dnsServer.start(53, "*", WiFi.softAPIP());
     server.end();
-    delay(100);
-    // initWebServer();
+    delay(20);
+    initWebServer();
     server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);  // only when requested from AP
 
     server.begin();
-    // Print IP Adrress
+    delay(100);
     Serial.print("-->[WiFi] AP IP address: ");
     Serial.println(WiFi.softAPIP());
+    captivePortalActive = true;
 }
 #endif  // SUPPORT_CAPTIVE_PORTAL
 
 void wifiCaptivePortalLoop() {
 #ifdef SUPPORT_CAPTIVE_PORTAL
-    dnsServer.processNextRequest();
+    if (captivePortalActive) {
+        dnsServer.processNextRequest();
+        // int connectedStations = WiFi.softAPgetStationNum();
+        // Serial.println("-->[WiFi] Captive portal active. Connected stations: " + String(connectedStations));
+        if (millis() > timeInitializationCompleted + timeToWaitForCaptivePortal * 1000) {
+            captivePortalActive = false;
+            Serial.println("-->[WiFi] Captive portal timeout. Disabling captive portal");
+        }
+    }
 #endif
 }
 
 void wifiClientLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) {
+        wifiCaptivePortalLoop();
+        return;
+    }
+#endif
     if (isDownloadingBLE) return;
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
@@ -1191,6 +1213,9 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) return;
+#endif
     if (isDownloadingBLE) return;
     if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
         AsyncElegantOTA.loop();

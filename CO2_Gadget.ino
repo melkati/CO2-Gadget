@@ -124,6 +124,13 @@ uint16_t co2RedRange = 1000;
 bool waitingForImprov = true;
 uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 
+// Variables for Captive Portal
+#ifdef SUPPORT_CAPTIVE_PORTAL
+bool captivePortalActive = false;
+uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+#endif
+
+
 #ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
 #define I2C_SDA CUSTOM_I2C_SDA
@@ -612,10 +619,9 @@ void setup() {
 
 void loop() {
     batteryLoop();
-    utilityLoop();
+    // utilityLoop();
     improvLoop();
     wifiClientLoop();
-    wifiCaptivePortalLoop();
     mqttClientLoop();
     sensorsLoop();
     outputsLoop();
