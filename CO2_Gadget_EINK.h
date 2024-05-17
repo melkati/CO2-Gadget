@@ -33,30 +33,30 @@ uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
 // #define EPD_BUSY 4
 
 #ifdef EINKBOARDDEPG0213BN
-#include <NotoSans_Bold46pt7b.h>
+#include <Digits_NotoSans_Bold46pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold46pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
-#include <NotoSans_Bold46pt7b.h>
+#include <Digits_NotoSans_Bold46pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold46pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
-#include <NotoSans_Bold38pt7b.h>
+#include <Digits_NotoSans_Bold48pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
 const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold38pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
 uint16_t resetDuration = 2;
@@ -67,10 +67,10 @@ GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS
 #endif
 
 #ifdef EINKBOARDGDEM029T94
-#include <NotoSans_Bold48pt7b.h>
+#include <Digits_NotoSans_Bold48pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
 const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = NotoSans_Bold48pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 296;
 int displayHeight = 128;
 uint16_t resetDuration = 2;
@@ -94,10 +94,10 @@ GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(EPD_CS,
 #endif
 
 #ifdef EINKBOARD_WEACT_DEPG0213BN
-#include <NotoSans_Bold46pt7b.h>
+#include <Digits_NotoSans_Bold46pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold46pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 uint16_t resetDuration = 50;
@@ -109,10 +109,10 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EP
 #endif
 
 #ifdef EINKBOARD_WEACT_GDEH0154D67
-#include <NotoSans_Bold38pt7b.h>
+#include <Digits_NotoSans_Bold48pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold38pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 uint16_t resetDuration = 50;
@@ -124,10 +124,10 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS,
 #endif
 
 #ifdef EINKBOARD_WEACT_GxEPD2_290_BS
-#include <NotoSans_Bold38pt7b.h>
+#include <Digits_NotoSans_Bold48pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = NotoSans_Bold38pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 uint16_t resetDuration = 50;
