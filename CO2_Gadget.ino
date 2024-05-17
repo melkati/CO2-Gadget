@@ -605,7 +605,7 @@ void setup() {
 
 void loop() {
     batteryLoop();
-    utilityLoop();
+    // utilityLoop();
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
