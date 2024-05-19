@@ -53,10 +53,10 @@ uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
-#include <Digits_NotoSans_Bold48pt7b.h>
+#include <Digits_NotoSans_Bold38pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
 const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
 uint16_t resetDuration = 2;
@@ -112,7 +112,7 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EP
 #include <Digits_NotoSans_Bold48pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 uint16_t resetDuration = 50;
