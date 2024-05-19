@@ -818,10 +818,15 @@ void initWebServer() {
     });
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
+        if (captivePortalActive && !request->hasParam("relaxedSecurity")) {
+            // Redirigir a preferences.html con el parámetro ?relaxedSecurity
+            request->redirect("/preferences.html?relaxedSecurity");
+        } else {
+            // Servir la página preferences.html sin el parámetro
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        }
     });
 
     server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1119,7 +1124,7 @@ class CaptiveRequestHandler : public AsyncWebHandler {
    public:
     CaptiveRequestHandler() {
         // initWebServer();
-        Serial.println("-->[WiFi] Captive portal started");
+        Serial.println("-->[WiFi] CAPTIVE PORTAL STARTED");
     }
 
     virtual ~CaptiveRequestHandler() {}
@@ -1133,6 +1138,11 @@ class CaptiveRequestHandler : public AsyncWebHandler {
         request->redirect("/index.html");
         Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
     }
+
+    // void handleRequest(AsyncWebServerRequest *request) {
+    //     request->redirect("/index.html");
+    //     Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
+    // }
 
     // void handleRequest(AsyncWebServerRequest *request) {
     //     AsyncResponseStream *response = request->beginResponseStream("text/html");
@@ -1151,7 +1161,7 @@ static const void initCaptivePortal() {
         Serial.println("-->[WiFi] Already connected to Wi-Fi");
         return;
     } else {
-        Serial.println("-->[WiFi] Not connected to Wi-Fi. Starting captive portal for " + String(timeToWaitForCaptivePortal) + " seconds");
+        Serial.println("-->[WiFi] NOT CONNECTED TO WI-FI. STARTING CAPTIVE PORTAL FOR " + String(timeToWaitForCaptivePortal) + " SECONDS");
     }
     WiFi.disconnect(true);
     delay(20);
