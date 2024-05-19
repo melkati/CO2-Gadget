@@ -832,7 +832,7 @@ void setup() {
 
 void loopOLD() {  // Only reached in HIGH PERFORMANCE MODE
     batteryLoop();
-    utilityLoop();
+    // utilityLoop();
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
