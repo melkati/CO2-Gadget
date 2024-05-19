@@ -240,9 +240,6 @@ void turnOnDisplay() {
     delay(120);
     tft.writecommand(TFT_DISPON);       // turn on display
     digitalWrite(TFT_BACKLIGHT, HIGH);  // turn on lcd backlight
-#ifdef TTGO_TDISPLAY
-    setDisplayBrightness(DisplayBrightness);
-#endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
 #endif
