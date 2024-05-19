@@ -109,7 +109,7 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EP
 #endif
 
 #ifdef EINKBOARD_WEACT_GDEH0154D67
-#include <Digits_NotoSans_Bold48pt7b.h>
+#include <Digits_NotoSans_Bold38pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
