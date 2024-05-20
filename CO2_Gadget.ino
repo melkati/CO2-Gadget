@@ -28,8 +28,8 @@ String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
 String mqttPass = "";
-String wifiSSID = WIFI_SSID_CREDENTIALS;
-String wifiPass = WIFI_PW_CREDENTIALS;
+String wifiSSID = "";
+String wifiPass = "";
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
