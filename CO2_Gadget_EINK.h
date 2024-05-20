@@ -55,10 +55,10 @@ int displayHeight = 122;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
-#include <Digits_NotoSans_Bold48pt7b.h>
+#include <Digits_NotoSans_Bold38pt7b.h>
 #include <NotoSans_Bold6pt7b.h>
 const GFXfont SmallFont = NotoSans_Bold6pt7b;
-const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
@@ -108,10 +108,10 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EP
 #endif
 
 #ifdef EINKBOARD_WEACT_GDEH0154D67
-#include <Digits_NotoSans_Bold48pt7b.h>
+#include <Digits_NotoSans_Bold38pt7b.h>
 #include <NotoSans_SemiCondensed_Bold10pt7b.h>
 const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
-const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
+const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
 
@@ -556,6 +556,11 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    // If captivePortalActive = true; draw a circle instead of the WiFi icon
+    if (captivePortalActive) {
+        display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        return;
+    }
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
