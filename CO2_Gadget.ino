@@ -28,8 +28,8 @@ String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
 String mqttPass = "";
-String wifiSSID = WIFI_SSID_CREDENTIALS;
-String wifiPass = WIFI_PW_CREDENTIALS;
+String wifiSSID = "";
+String wifiPass = "";
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
@@ -45,6 +45,12 @@ uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connec
 uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 10;
 bool wifiChanged = false;
+bool useStaticIP = false;              // Set to true if you want to use a static IP
+IPAddress staticIP(192, 168, 1, 199);  // Change this to the desired IP
+IPAddress gateway(192, 168, 1, 1);     // Change this to your network's gateway
+IPAddress subnet(255, 255, 255, 0);    // Change this to your network's subnet mask
+IPAddress dns1(8, 8, 8, 8);            // Change this to your preferred DNS server
+IPAddress dns2(8, 8, 4, 4);            // Change this to your secondary DNS server
 
 // MQTT options
 bool activeMQTT = true;
@@ -125,6 +131,12 @@ uint16_t co2RedRange = 1000;
 bool waitingForImprov = true;
 uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 
+// Variables for Captive Portal
+#ifdef SUPPORT_CAPTIVE_PORTAL
+bool captivePortalActive = false;
+uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+#endif
+
 #ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
 #define I2C_SDA CUSTOM_I2C_SDA
@@ -146,6 +158,9 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 #endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
+#ifdef SUPPORT_CAPTIVE_PORTAL
+#include <DNSServer.h>
+#endif
 #include <ESPAsyncWebServer.h>
 
 #include "AsyncJson.h"
@@ -597,6 +612,10 @@ void setup() {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
+    } else {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+        initCaptivePortal();
+#endif
     }
     initImprov();
     if (timeToWaitForImprov > 0) {

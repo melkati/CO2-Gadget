@@ -9,9 +9,8 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
-// If not using enviroment variables, you must have a credentials.h file
-#include "credentials.h"
+#ifdef SUPPORT_CAPTIVE_PORTAL
+DNSServer dnsServer;
 #endif
 
 WiFiClient espClient;
@@ -683,6 +682,7 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+    if (captivePortalActive) return;
     ++WiFiConnectionRetries;
     Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
@@ -724,6 +724,12 @@ String getCO2GadgetStatusAsJson() {
     doc["RSSI"] = WiFi.RSSI();
     doc["MACAddress"] = MACAddress;
     doc["hostName"] = hostName;
+    doc["useStaticIP"] = useStaticIP;
+    doc["staticIP"] = staticIP.toString();
+    doc["gateway"] = gateway.toString();
+    doc["subnet"] = subnet.toString();
+    doc["dns1"] = dns1.toString();
+    doc["dns2"] = dns2.toString();
 #ifdef SUPPORT_MQTT
     doc["rootTopic"] = rootTopic;
     doc["discoveryTopic"] = discoveryTopic;
@@ -813,10 +819,15 @@ void initWebServer() {
     });
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
+        if (captivePortalActive && !request->hasParam("relaxedSecurity")) {
+            // Redirigir a preferences.html con el parámetro ?relaxedSecurity
+            request->redirect("/preferences.html?relaxedSecurity");
+        } else {
+            // Servir la página preferences.html sin el parámetro
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        }
     });
 
     server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1023,7 +1034,18 @@ bool connectToWiFi() {
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     delay(100);
     WiFi.mode(WIFI_STA);
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    
+    if (useStaticIP) {
+        if (!WiFi.config(staticIP, gateway, subnet, dns1, dns2)) {
+            Serial.println("-->[WiFi] Failed to configure static IP and DNS");
+            return false;
+        }
+        Serial.print("-->[WiFi] Configuring static IP: ");
+        Serial.println(staticIP);
+    } else {
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // Use DHCP
+    }
+
     WiFi.setHostname(hostName.c_str());
     Serial.println("-->[WiFi] Setting hostname: " + hostName);
 #ifdef WIFI_PRIVACY
@@ -1086,6 +1108,8 @@ void initOTA() {
 }
 
 void initWifi() {
+    if (captivePortalActive) return;
+
     if (wifiSSID == "") {
         activeWIFI = false;
     }
@@ -1107,7 +1131,88 @@ void initWifi() {
     }
 }
 
+#ifdef SUPPORT_CAPTIVE_PORTAL
+class CaptiveRequestHandler : public AsyncWebHandler {
+   public:
+    CaptiveRequestHandler() {
+        // initWebServer();
+        Serial.println("-->[WiFi] CAPTIVE PORTAL STARTED");
+    }
+
+    virtual ~CaptiveRequestHandler() {}
+
+    bool canHandle(AsyncWebServerRequest *request) {
+        // request->addInterestingHeader("ANY");
+        return true;
+    }
+
+    void handleRequest(AsyncWebServerRequest *request) {
+        request->redirect("/index.html");
+        Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
+    }
+
+    // void handleRequest(AsyncWebServerRequest *request) {
+    //     request->redirect("/index.html");
+    //     Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
+    // }
+
+    // void handleRequest(AsyncWebServerRequest *request) {
+    //     AsyncResponseStream *response = request->beginResponseStream("text/html");
+    //     response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
+    //     response->print("<p>This is out captive portal front page.</p>");
+    //     response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
+    //     response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
+    //     response->print("</body></html>");
+    //     request->send(response);
+    //     Serial.println("-->[WiFi] Captive portal request");
+    // }
+};
+
+static const void initCaptivePortal() {
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("-->[WiFi] Already connected to Wi-Fi");
+        return;
+    } else {
+        Serial.println("-->[WiFi] NOT CONNECTED TO WI-FI. STARTING CAPTIVE PORTAL FOR " + String(timeToWaitForCaptivePortal) + " SECONDS");
+    }
+    WiFi.disconnect(true);
+    delay(20);
+    WiFi.softAP("CO2-Gadget", NULL);  // SSID, password
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server.end();
+    delay(20);
+    initWebServer();
+    server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);  // only when requested from AP
+
+    server.begin();
+    delay(100);
+    Serial.print("-->[WiFi] AP IP address: ");
+    Serial.println(WiFi.softAPIP());
+    captivePortalActive = true;
+}
+#endif  // SUPPORT_CAPTIVE_PORTAL
+
+void wifiCaptivePortalLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) {
+        dnsServer.processNextRequest();
+        // int connectedStations = WiFi.softAPgetStationNum();
+        // Serial.println("-->[WiFi] Captive portal active. Connected stations: " + String(connectedStations));
+        if (millis() > timeInitializationCompleted + timeToWaitForCaptivePortal * 1000) {
+            captivePortalActive = false;
+            Serial.println("-->[WiFi] Captive portal timeout. Disabling captive portal");
+        }
+    }
+#endif
+}
+
 void wifiClientLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) {
+        wifiCaptivePortalLoop();
+        return;
+    }
+#endif
     if (isDownloadingBLE) return;
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
@@ -1135,6 +1240,9 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) return;
+#endif
     if (isDownloadingBLE) return;
     if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
         AsyncElegantOTA.loop();

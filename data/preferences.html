@@ -71,7 +71,6 @@
             <!-- Networking Group -->
             <fieldset>
                 <legend>Networking</legend>
-
                 <div id="wifiNetworks">
                     <fieldset>
                         <legend>WiFi Credentials</legend>
@@ -92,7 +91,6 @@
                             </label>
                             <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
                         </div>
-
                     </fieldset>
 
                     <fieldset>
@@ -106,8 +104,62 @@
                             </label>
                         </div>
                     </fieldset>
+                    <fieldset>
+                        <legend>Fixed IP</legend>
+                        <div>
+                            <label for="useStaticIP">Use Static IP:
+                                <input type="checkbox" id="useStaticIP" name="useStaticIP">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Use a fixed IP address for the device. This is useful for
+                                    devices that need to be accessed by a fixed IP address.</span>
+                            </label>
+                    
+                            <div id="staticIPSettings">
+                                <div>
+                                    <label for="staticIP">Static IP:
+                                        <span class="tooltip-icon">ℹ️</span>
+                                        <span class="tooltip-text">The fixed IP address for the device.</span>
+                                        <input type="text" id="staticIP" name="staticIP" value="">
+                                    </label>
+                                </div>
+                    
+                                <div>
+                                    <label for="gateway">Gateway:
+                                        <span class="tooltip-icon">ℹ️</span>
+                                        <span class="tooltip-text">The gateway IP address for the device.</span>
+                                        <input type="text" id="gateway" name="gateway" value="">
+                                    </label>
+                                </div>
+                    
+                                <div>
+                                    <label for="subnet">Subnet:
+                                        <span class="tooltip-icon">ℹ️</span>
+                                        <span class="tooltip-text">The subnet mask for the device.</span>
+                                        <input type="text" id="subnet" name="subnet" value="">
+                                    </label>
+                                </div>
+                    
+                                <div>
+                                    <label for="dns1">DNS 1:
+                                        <span class="tooltip-icon">ℹ️</span>
+                                        <span class="tooltip-text">The primary DNS server for the device.</span>
+                                        <input type="text" id="dns1" name="dns1" value="">
+                                    </label>
+                                </div>
+                    
+                                <div>
+                                    <label for="dns2">DNS 2:
+                                        <span class="tooltip-icon">ℹ️</span>
+                                        <span class="tooltip-text">The secondary DNS server for the device.</span>
+                                        <input type="text" id="dns2" name="dns2" value="">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
                 </div>
             </fieldset>
+            
             <!-- MQTT Configuration Group -->
             <div id="mqttConfig">
                 <fieldset>

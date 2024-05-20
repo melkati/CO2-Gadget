@@ -456,6 +456,12 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    // If captivePortalActive = true; draw a white circle instead of the WiFi icon
+    if (captivePortalActive) {
+        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+        tft.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);
+        return;
+    }
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
