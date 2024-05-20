@@ -9,6 +9,11 @@
 /*****************************************************************************************************/
 // clang-format on
 
+#if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
+// If not using enviroment variables, you must have a credentials.h file
+#include "credentials.h"
+#endif
+
 #ifdef SUPPORT_CAPTIVE_PORTAL
 DNSServer dnsServer;
 #endif
@@ -724,13 +729,6 @@ String getCO2GadgetStatusAsJson() {
     doc["RSSI"] = WiFi.RSSI();
     doc["MACAddress"] = MACAddress;
     doc["hostName"] = hostName;
-    doc["useStaticIP"] = useStaticIP;
-    doc["staticIP"] = staticIP.toString();
-    doc["gateway"] = gateway.toString();
-    doc["subnet"] = subnet.toString();
-    doc["dns1"] = dns1.toString();
-    doc["dns2"] = dns2.toString();
-
 #ifdef SUPPORT_MQTT
     doc["rootTopic"] = rootTopic;
     doc["discoveryTopic"] = discoveryTopic;
@@ -1035,18 +1033,7 @@ bool connectToWiFi() {
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     delay(100);
     WiFi.mode(WIFI_STA);
-
-    if (useStaticIP) {
-        if (!WiFi.config(staticIP, gateway, subnet, dns1, dns2)) {
-            Serial.println("-->[WiFi] Failed to configure static IP and DNS");
-            return false;
-        }
-        Serial.print("-->[WiFi] Configuring static IP: ");
-        Serial.println(staticIP);
-    } else {
-        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // Use DHCP
-    }
-
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.setHostname(hostName.c_str());
     Serial.println("-->[WiFi] Setting hostname: " + hostName);
 #ifdef WIFI_PRIVACY
