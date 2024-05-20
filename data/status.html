@@ -59,6 +59,24 @@
         <div class="status-item" id="hostNameItem">
             <span class="status-label">Host Name:</span> <span id="hostName"></span>
         </div>
+        <div class="status-item" id="useStaticIPItem">
+            <span class="status-label">Use Static IP:</span> <span id="useStaticIP"></span>
+        </div>
+        <div class="status-item" id="staticIPItem">
+            <span class="status-label">Static IP:</span> <span id="staticIP"></span>
+        </div>
+        <div class="status-item" id="gatewayItem">
+            <span class="status-label">Gateway:</span> <span id="gateway"></span>
+        </div>
+        <div class="status-item" id="subnetItem">
+            <span class="status-label">Subnet:</span> <span id="subnet"></span>
+        </div>
+        <div class="status-item" id="dns1Item">
+            <span class="status-label">DNS1:</span> <span id="dns1"></span>
+        </div>
+        <div class="status-item" id="dns2Item">
+            <span class="status-label">DNS2:</span> <span id="dns2"></span>
+        </div>
         <div class="status-item" id="rootTopicItem">
             <span class="status-label">Root Topic:</span> <span id="rootTopic"></span>
         </div>
@@ -213,6 +231,42 @@
                         document.getElementById('hostNameItem').style.display = 'none';
                     }
 
+                    if (data.useStaticIP !== undefined) {
+                        document.getElementById('useStaticIP').textContent = data.useStaticIP;
+                    } else {
+                        document.getElementById('useStaticIPItem').style.display = 'none';
+                    }
+
+                    if (data.staticIP !== undefined) {
+                        document.getElementById('staticIP').textContent = data.staticIP;
+                    } else {
+                        document.getElementById('staticIPItem').style.display = 'none';
+                    }
+
+                    if (data.gateway !== undefined) {
+                        document.getElementById('gateway').textContent = data.gateway;
+                    } else {
+                        document.getElementById('gatewayItem').style.display = 'none';
+                    }
+
+                    if (data.subnet !== undefined) {
+                        document.getElementById('subnet').textContent = data.subnet;
+                    } else {
+                        document.getElementById('subnetItem').style.display = 'none';
+                    }
+
+                    if (data.dns1 !== undefined) {
+                        document.getElementById('dns1').textContent = data.dns1;
+                    } else {
+                        document.getElementById('dns1Item').style.display = 'none';
+                    }
+
+                    if (data.dns2 !== undefined) {
+                        document.getElementById('dns2').textContent = data.dns2;
+                    } else {
+                        document.getElementById('dns2Item').style.display = 'none';
+                    }
+
                     if (data.rootTopic !== undefined) {
                         document.getElementById('rootTopic').textContent = data.rootTopic;
                     } else {
@@ -343,7 +397,7 @@
                         hours = hours - (days * 24);
                         minutes = minutes - (days * 24 * 60) - (hours * 60);
                         seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
-                        
+
 
                         document.getElementById('uptime').textContent = data.uptime;
                     } else {
