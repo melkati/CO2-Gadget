@@ -381,6 +381,8 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
 #ifdef SUPPORT_OTA
   ,SUBMENU(activeOTAMenu)
 #endif
+  ,OP("Set fixed IP", doNothing, noEvent)
+  ,OP("in WEB config.", doNothing, noEvent)
   ,EXIT("<Back"));
 
 

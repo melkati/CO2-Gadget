@@ -195,6 +195,15 @@ void printPreferences() {
     Serial.println("-->[PREF] wifiPass:\t#" + wifiPass + "#");
 #endif
     Serial.println("-->[PREF] hostName:\t#" + hostName + "#");
+
+    // Fixed IP
+    Serial.println("-->[PREF] useStaticIP:\t #" + String(useStaticIP) + "#");
+    Serial.println("-->[PREF] staticIP:\t #" + staticIP.toString() + "#");
+    Serial.println("-->[PREF] gateway:\t #" + gateway.toString() + "#");
+    Serial.println("-->[PREF] subnet:\t #" + subnet.toString() + "#");
+    Serial.println("-->[PREF] dns1:\t #" + dns1.toString() + "#");
+    Serial.println("-->[PREF] dns2:\t #" + dns2.toString() + "#");
+
     Serial.println("-->[PREF] selCO2Sensor:\t #" + String(selectedCO2Sensor) + "#");
     Serial.println("-->[PREF] debugSensors is:\t#" + String(debugSensors ? "Enabled" : "Disabled") + "# (" + String(debugSensors) + ")");
     Serial.println("-->[PREF] displayReverse is:\t#" + String(displayReverse ? "Reversed" : "Normal") + "# (" + String(displayReverse) + ")");
@@ -287,6 +296,15 @@ void initPreferences() {
     wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
     wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
     hostName = preferences.getString("hostName", hostName).c_str();
+
+    // Fixed IP
+    useStaticIP = preferences.getBool("useStaticIP", false);
+    staticIP.fromString(preferences.getString("staticIP", staticIP.toString()).c_str());
+    gateway.fromString(preferences.getString("gateway", gateway.toString()).c_str());
+    subnet.fromString(preferences.getString("subnet", subnet.toString()).c_str());
+    dns1.fromString(preferences.getString("dns1", dns1.toString()).c_str());
+    dns2.fromString(preferences.getString("dns2", dns2.toString()).c_str());
+
     selectedCO2Sensor = preferences.getUInt("selCO2Sensor", 0);
     debugSensors = preferences.getBool("debugSensors", false);
     displayReverse = preferences.getBool("displayReverse", false);
@@ -392,6 +410,15 @@ void putPreferences() {
     preferences.putString("wifiSSID", wifiSSID);
     preferences.putString("wifiPass", wifiPass);
     preferences.putString("hostName", hostName);
+
+     // Fixed IP
+    preferences.putBool("useStaticIP", useStaticIP);
+    preferences.putString("staticIP", staticIP.toString());
+    preferences.putString("gateway", gateway.toString());
+    preferences.putString("subnet", subnet.toString());
+    preferences.putString("dns1", dns1.toString());
+    preferences.putString("dns2", dns2.toString());
+
     preferences.putUInt("selCO2Sensor", selectedCO2Sensor);
     preferences.putBool("debugSensors", debugSensors);
     preferences.putBool("displayReverse", displayReverse);
@@ -479,6 +506,15 @@ String getPreferencesAsJson() {
     doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
     // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
     doc["hostName"] = preferences.getString("hostName", hostName);
+
+    // Fixed IP
+    doc["useStaticIP"] = preferences.getBool("useStaticIP", false);
+    doc["staticIP"] = preferences.getString("staticIP", staticIP.toString());
+    doc["gateway"] = preferences.getString("gateway", gateway.toString());
+    doc["subnet"] = preferences.getString("subnet", subnet.toString());
+    doc["dns1"] = preferences.getString("dns1", dns1.toString());
+    doc["dns2"] = preferences.getString("dns2", dns2.toString());
+
     doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
     doc["debugSensors"] = preferences.getBool("debugSensors", false);
     doc["displayReverse"] = preferences.getBool("displayReverse", false);
@@ -556,6 +592,15 @@ String getActualSettingsAsJson(bool includePasswords = false) {
         doc["wifiPass"] = wifiPass;
     }
     doc["hostName"] = hostName;
+
+    // Fixed IP
+    doc["useStaticIP"] = useStaticIP;
+    doc["staticIP"] = staticIP.toString();
+    doc["gateway"] = gateway.toString();
+    doc["subnet"] = subnet.toString();
+    doc["dns1"] = dns1.toString();
+    doc["dns2"] = dns2.toString();
+
     doc["selCO2Sensor"] = selectedCO2Sensor;
     doc["debugSensors"] = debugSensors;
     doc["displayReverse"] = displayReverse;
@@ -653,6 +698,15 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         displayOffOnExternalPower = JsonDocument["dispOffOnExP"];
         wifiSSID = JsonDocument["wifiSSID"].as<String>().c_str();
         hostName = JsonDocument["hostName"].as<String>().c_str();
+
+        // Fixed IP
+        useStaticIP = JsonDocument["useStaticIP"];
+        staticIP.fromString(JsonDocument["staticIP"].as<String>());
+        gateway.fromString(JsonDocument["gateway"].as<String>());
+        subnet.fromString(JsonDocument["subnet"].as<String>());
+        dns1.fromString(JsonDocument["dns1"].as<String>());
+        dns2.fromString(JsonDocument["dns2"].as<String>());
+        
         selectedCO2Sensor = JsonDocument["selCO2Sensor"];
         debugSensors = JsonDocument["debugSensors"];
         displayReverse = JsonDocument["displayReverse"];
