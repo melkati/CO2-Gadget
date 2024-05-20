@@ -9,11 +9,6 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
-// If not using enviroment variables, you must have a credentials.h file
-#include "credentials.h"
-#endif
-
 #ifdef SUPPORT_CAPTIVE_PORTAL
 DNSServer dnsServer;
 #endif
