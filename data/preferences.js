@@ -37,6 +37,24 @@ function populateFormWithPreferences(preferences) {
     if (getPreferencesDebug) console.log('Setting hostName to:', preferences.hostName);
     document.getElementById("hostName").value = preferences.hostName;
 
+    if (getPreferencesDebug) console.log('Setting useStaticIP to:', preferences.useStaticIP);
+    document.getElementById("useStaticIP").checked = preferences.useStaticIP;
+
+    if (getPreferencesDebug) console.log('Setting staticIP to:', preferences.staticIP);
+    document.getElementById("staticIP").value = preferences.staticIP;
+
+    if (getPreferencesDebug) console.log('Setting gateway to:', preferences.gateway);
+    document.getElementById("gateway").value = preferences.gateway;
+
+    if (getPreferencesDebug) console.log('Setting subnet to:', preferences.subnet);
+    document.getElementById("subnet").value = preferences.subnet;
+
+    if (getPreferencesDebug) console.log('Setting dns1 to:', preferences.dns1);
+    document.getElementById("dns1").value = preferences.dns1;
+
+    if (getPreferencesDebug) console.log('Setting dns2 to:', preferences.dns2);
+    document.getElementById("dns2").value = preferences.dns2;
+
     if (getPreferencesDebug) console.log('Setting selCO2Sensor to:', preferences.selCO2Sensor);
     document.getElementById("selCO2Sensor").value = preferences.selCO2Sensor;
 
@@ -172,6 +190,7 @@ function populateFormWithPreferences(preferences) {
     toggle('activeWIFI', 'wifiNetworks');
     toggle('activeMQTT', 'mqttConfig');
     toggle('activeESPNOW', 'espNowConfig');
+    toggle('useStaticIP', 'staticIPSettings');
 }
 
 function loadPreferencesFromServer() {
@@ -213,6 +232,12 @@ function collectPreferencesData() {
         dispOffOnExP: document.getElementById("dispOffOnExP").checked,
         wifiSSID: document.getElementById("wifiSSID").value,
         hostName: document.getElementById("hostName").value,
+        useStaticIP: document.getElementById("useStaticIP").checked,
+        staticIP: document.getElementById("staticIP").value,
+        gateway: document.getElementById("gateway").value,
+        subnet: document.getElementById("subnet").value,
+        dns1: document.getElementById("dns1").value,
+        dns2: document.getElementById("dns2").value,        
         selCO2Sensor: document.getElementById("selCO2Sensor").value,
         debugSensors: document.getElementById("debugSensors").checked,
         displayReverse: document.getElementById("displayReverse").checked,
@@ -464,4 +489,5 @@ document.addEventListener("DOMContentLoaded", function () {
     toggle('activeWIFI', 'wifiNetworks');
     toggle('activeMQTT', 'mqttConfig');
     toggle('activeESPNOW', 'espNowConfig');
+    toggle('useStaticIP', 'staticIPSettings');
 });
