@@ -1188,7 +1188,7 @@ static const void initCaptivePortal() {
     }
     WiFi.disconnect(true);
     delay(20);
-    WiFi.softAP("CO2-Gadget", NULL);  // SSID, password
+    WiFi.softAP("CO2-Gadget", "emariete");  // SSID, password
     dnsServer.start(53, "*", WiFi.softAPIP());
     server.end();
     delay(20);
