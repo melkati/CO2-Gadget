@@ -246,7 +246,6 @@ void initPreferences() {
     firmRevision = getCO2GadgetRevisionNumber();
     firmBranch = getCO2GadgetRevisionBranch();
     firmFlavour = FLAVOUR;
-    
 
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
@@ -411,7 +410,7 @@ void putPreferences() {
     preferences.putString("wifiPass", wifiPass);
     preferences.putString("hostName", hostName);
 
-     // Fixed IP
+    // Fixed IP
     preferences.putBool("useStaticIP", useStaticIP);
     preferences.putString("staticIP", staticIP.toString());
     preferences.putString("gateway", gateway.toString());
@@ -706,10 +705,15 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         subnet.fromString(JsonDocument["subnet"].as<String>());
         dns1.fromString(JsonDocument["dns1"].as<String>());
         dns2.fromString(JsonDocument["dns2"].as<String>());
-        
+
         selectedCO2Sensor = JsonDocument["selCO2Sensor"];
         debugSensors = JsonDocument["debugSensors"];
-        displayReverse = JsonDocument["displayReverse"];
+        if (displayReverse != JsonDocument["displayReverse"]) {
+            displayReverse = JsonDocument["displayReverse"];
+            setDisplayReverse(displayReverse);
+            reverseButtons(displayReverse);
+        }
+        // displayReverse = JsonDocument["displayReverse"];
         showFahrenheit = JsonDocument["showFahrenheit"];
         measurementInterval = JsonDocument["measurementInterval"];
         sampleInterval = JsonDocument["sampleInterval"];

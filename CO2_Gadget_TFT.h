@@ -286,17 +286,25 @@ void initBacklight() {
 #endif
 }
 
+void setDisplayReverse(bool reverse) {
+    if (reverse) {
+        Serial.printf("-->[TFT ] Set display reversed\n");
+        tft.setRotation(3);
+    } else {
+        Serial.printf("-->[TFT ] Set display normal\n");
+        tft.setRotation(1);
+    }
+    tft.fillScreen(TFT_BLACK);
+    shouldRedrawDisplay = true;
+}
+
 void initDisplay(bool fastMode = false) {
     Serial.printf("-->[TFT ] Initializing display\n");
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
     tft.init();
-    if (displayReverse) {
-        tft.setRotation(3);
-    } else {
-        tft.setRotation(1);
-    }
+    setDisplayReverse(displayReverse);
     setElementLocations();
     tft.setTextSize(2);
     initBacklight();

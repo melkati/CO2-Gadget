@@ -4,6 +4,7 @@ void outputsLoop();                       // Defined in CO2_Gadget_Main.h
 void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
 void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                          // Defined in CO2_Gadget_Menu.h
+void setDisplayReverse(bool reverse);     // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 // void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
