@@ -708,11 +708,16 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 
         selectedCO2Sensor = JsonDocument["selCO2Sensor"];
         debugSensors = JsonDocument["debugSensors"];
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
         if (displayReverse != JsonDocument["displayReverse"]) {
             displayReverse = JsonDocument["displayReverse"];
             setDisplayReverse(displayReverse);
             reverseButtons(displayReverse);
         }
+#else
+        displayReverse = JsonDocument["displayReverse"];
+        reverseButtons(displayReverse);
+#endif
         // displayReverse = JsonDocument["displayReverse"];
         showFahrenheit = JsonDocument["showFahrenheit"];
         measurementInterval = JsonDocument["measurementInterval"];
