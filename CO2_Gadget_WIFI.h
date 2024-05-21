@@ -628,7 +628,7 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
     WiFi.mode(WIFI_OFF);    // Switch WiFi off
-    Serial.println("-->[WiFi] WiFi dissabled!");
+    Serial.println("-->[WiFi] WiFi disabled!");
 }
 
 // Replaces placeholder with actual values
@@ -682,7 +682,9 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+#ifdef SUPPORT_CAPTIVE_PORTAL
     if (captivePortalActive) return;
+#endif
     ++WiFiConnectionRetries;
     Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
@@ -819,6 +821,7 @@ void initWebServer() {
     });
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+#ifdef SUPPORT_CAPTIVE_PORTAL
         if (captivePortalActive && !request->hasParam("relaxedSecurity")) {
             // Redirigir a preferences.html con el parámetro ?relaxedSecurity
             request->redirect("/preferences.html?relaxedSecurity");
@@ -828,6 +831,12 @@ void initWebServer() {
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         }
+#else
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+#endif
     });
 
     server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1034,7 +1043,7 @@ bool connectToWiFi() {
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     delay(100);
     WiFi.mode(WIFI_STA);
-    
+
     if (useStaticIP) {
         if (!WiFi.config(staticIP, gateway, subnet, dns1, dns2)) {
             Serial.println("-->[WiFi] Failed to configure static IP and DNS");
@@ -1108,7 +1117,9 @@ void initOTA() {
 }
 
 void initWifi() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
     if (captivePortalActive) return;
+#endif
 
     if (wifiSSID == "") {
         activeWIFI = false;
@@ -1200,7 +1211,7 @@ void wifiCaptivePortalLoop() {
         // Serial.println("-->[WiFi] Captive portal active. Connected stations: " + String(connectedStations));
         if (millis() > timeInitializationCompleted + timeToWaitForCaptivePortal * 1000) {
             captivePortalActive = false;
-            Serial.println("-->[WiFi] Captive portal timeout. Disabling captive portal");
+            Serial.println("-->[WiFi] CAPTIVE PORTAL TIMEOUT. DISABLE CAPTIVE PORTAL");
         }
     }
 #endif
