@@ -557,11 +557,14 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+#ifdef SUPPORT_CAPTIVE_PORTAL
     // If captivePortalActive = true; draw a circle instead of the WiFi icon
     if (captivePortalActive) {
-        display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        // display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        display.fillCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
         return;
     }
+#endif
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
