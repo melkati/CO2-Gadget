@@ -652,6 +652,13 @@ result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
     u8g2.setDisplayRotation(U8G2_R0);
   }
   #endif
+  #ifdef SUPPORT_EINK
+  if (displayReverse) {
+    display.setRotation(3);
+  } else {
+    display.setRotation(1);
+  }
+  #endif
   nav.target-> dirty = true;
   return proceed;
 }
@@ -1034,7 +1041,7 @@ result idle(menuOut &o, idleEvent e) {
             setInMenu(false);
             //       nav.poll();
 
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(true);
 #endif
             break;
@@ -1042,7 +1049,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
             Serial.println("-->[MENU] Event iddling");
 #endif
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(shouldRedrawDisplay);
             shouldRedrawDisplay = false;
 #endif
@@ -1111,6 +1118,7 @@ void menuLoopEINK() {
     nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(false);
+        shouldRedrawDisplay = false;
     } else {
         if (nav.changed(0)) {
             nav.doOutput();
