@@ -1004,7 +1004,7 @@ void initWebServer() {
         request->send(200, "application/json", preferencesJson);
     });
 
-    server.on("/getWifiNetworks", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/getWifiNetworksAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         String wifiNetworksJson = getWifiNetworksAsJson();
         request->send(200, "application/json", wifiNetworksJson);
     });
