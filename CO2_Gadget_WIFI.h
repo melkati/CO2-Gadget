@@ -779,6 +779,38 @@ String getCO2GadgetStatusAsJson() {
     return output;
 }
 
+String getCaptivePortalStatusAsJson() {
+    StaticJsonDocument<256> doc;
+    doc["captivePortalActive"] = captivePortalActive;
+    doc["captivePortalNoTimeout"] = captivePortalNoTimeout;
+    doc["timeCaptivePortalStarted"] = timeCaptivePortalStarted;
+    doc["timeToWaitForCaptivePortal"] = timeToWaitForCaptivePortal;
+    // timeToWaitForCaptivePortal in seconds timeCaptivePortalStarted in milliseconds captivePortalTimeLeft in seconds
+    if (captivePortalActive && !captivePortalNoTimeout) {  // If Captive Portal is active
+        doc["captivePortalTimeLeft"] = (timeToWaitForCaptivePortal - (millis() - timeCaptivePortalStarted) / 1000);
+    } else {
+        doc["captivePortalTimeLeft"] = 0;
+    }
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+String getWifiNetworksAsJson() {
+    StaticJsonDocument<1024> doc;
+    JsonArray networks = doc.createNestedArray("networks");
+    int numNetworks = WiFi.scanNetworks();
+    for (int i = 0; i < numNetworks; i++) {
+        JsonObject network = networks.createNestedObject();
+        network["SSID"] = WiFi.SSID(i);
+        network["RSSI"] = WiFi.RSSI(i);
+        network["Encryption"] = WiFi.encryptionType(i);
+    }
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
 const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
@@ -862,6 +894,13 @@ void initWebServer() {
     server.on("/preferences.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         /** GZIPPED CONTENT ***/
         AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
+    server.on("/captiveportal.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
         response->addHeader("Content-Encoding", "gzip");
         request->send(response);
     });
@@ -965,9 +1004,32 @@ void initWebServer() {
         request->send(200, "application/json", preferencesJson);
     });
 
+    server.on("/getWifiNetworks", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String wifiNetworksJson = getWifiNetworksAsJson();
+        request->send(200, "application/json", wifiNetworksJson);
+    });
+
+    // getCaptivePortalStatusAsJson() returns a JSON with the status of the Captive Portal
+    server.on("/getCaptivePortalStatusAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String captivePortalStatusJson = getCaptivePortalStatusAsJson();
+        request->send(200, "application/json", captivePortalStatusJson);
+    });
+
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
         String versionJson = getCO2GadgetVersionAsJson();
         request->send(200, "application/json", versionJson);
+    });
+
+    server.on("/disableCaptivePortalTimeout", HTTP_GET, [](AsyncWebServerRequest *request) {
+        captivePortalNoTimeout = true;
+        Serial.println("-->[WiFi] Captive Portal timeout disabled");
+        request->send(200, "text/plain", "Captive Portal timeout disabled");
+    });
+
+    server.on("/enableCaptivePortalTimeout", HTTP_GET, [](AsyncWebServerRequest *request) {
+        captivePortalNoTimeout = false;
+        Serial.println("-->[WiFi] Captive Portal timeout enabled");
+        request->send(200, "text/plain", "Captive Portal timeout enabled");
     });
 
     server.on("/getMeasurementInterval", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1159,7 +1221,10 @@ class CaptiveRequestHandler : public AsyncWebHandler {
 
     void handleRequest(AsyncWebServerRequest *request) {
         request->redirect("/index.html");
-        Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
+#ifdef DEBUG_WIFI_EVENTS
+        Serial.println("-->[WiFi] Captive portal request");
+#endif
+        timeCaptivePortalStarted = millis();
     }
 
     // void handleRequest(AsyncWebServerRequest *request) {
@@ -1209,9 +1274,12 @@ void wifiCaptivePortalLoop() {
         dnsServer.processNextRequest();
         // int connectedStations = WiFi.softAPgetStationNum();
         // Serial.println("-->[WiFi] Captive portal active. Connected stations: " + String(connectedStations));
-        if (millis() > timeInitializationCompleted + timeToWaitForCaptivePortal * 1000) {
-            captivePortalActive = false;
-            Serial.println("-->[WiFi] CAPTIVE PORTAL TIMEOUT. DISABLE CAPTIVE PORTAL");
+        if (!captivePortalNoTimeout) {
+            // Check if the time to wait for the Captive Portal has expired (timeToWaitForCaptivePortal in seconds
+            if (millis() > timeCaptivePortalStarted + timeToWaitForCaptivePortal * 1000) {
+                captivePortalActive = false;
+                Serial.println("-->[WiFi] CAPTIVE PORTAL TIMEOUT. DISABLE CAPTIVE PORTAL");
+            }
         }
     }
 #endif
