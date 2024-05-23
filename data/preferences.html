@@ -8,20 +8,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./preferences.js"></script>
+    <script defer type="text/javascript" src="./captiveportal.js"></script>
     <title>CO2 Gadget Configuration</title>
 </head>
 
 <body>
-    <!-- Navigation bar -->
     <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="preferences.html" class="active">Preferences</a>
-        <a href="status.html">Status</a>
-        <div id="otaLink">
-            <a href="ota.html">OTA</a>
+        <div class="nav-content">
+            <a href="index.html">Home</a>
+            <a href="preferences.html" class="active">Preferences</a>
+            <a href="status.html">Status</a>
+            <a href="ota.html" style="float: right;">OTA</a>
         </div>
     </div>
-
+    
+    <!-- Captive portal status bar -->
+    <div id="captive-portal-status" class="captive-portal-status-bar">
+        <span id="status-content">Captive portal status</span>
+        <button id="hide-status-bar" onclick="toggleStatusBar()">Hide</button>
+    </div>
+    
     <div class="content">
 
         <h1>CO2 Gadget Preferences</h1>
@@ -113,7 +119,7 @@
                                 <span class="tooltip-text">Use a fixed IP address for the device. This is useful for
                                     devices that need to be accessed by a fixed IP address.</span>
                             </label>
-                    
+
                             <div id="staticIPSettings">
                                 <div>
                                     <label for="staticIP">Static IP:
@@ -122,7 +128,7 @@
                                         <input type="text" id="staticIP" name="staticIP" value="">
                                     </label>
                                 </div>
-                    
+
                                 <div>
                                     <label for="gateway">Gateway:
                                         <span class="tooltip-icon">ℹ️</span>
@@ -130,7 +136,7 @@
                                         <input type="text" id="gateway" name="gateway" value="">
                                     </label>
                                 </div>
-                    
+
                                 <div>
                                     <label for="subnet">Subnet:
                                         <span class="tooltip-icon">ℹ️</span>
@@ -138,7 +144,7 @@
                                         <input type="text" id="subnet" name="subnet" value="">
                                     </label>
                                 </div>
-                    
+
                                 <div>
                                     <label for="dns1">DNS 1:
                                         <span class="tooltip-icon">ℹ️</span>
@@ -146,7 +152,7 @@
                                         <input type="text" id="dns1" name="dns1" value="">
                                     </label>
                                 </div>
-                    
+
                                 <div>
                                     <label for="dns2">DNS 2:
                                         <span class="tooltip-icon">ℹ️</span>
@@ -159,7 +165,7 @@
                     </fieldset>
                 </div>
             </fieldset>
-            
+
             <!-- MQTT Configuration Group -->
             <div id="mqttConfig">
                 <fieldset>
@@ -611,11 +617,15 @@
             </fieldset>
 
             <div class="buttonGroup">
-                <button type="button" id="backupButton" onclick="backupPreferences()">Backup</button>
-                <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">Restore</button>
-                <button type="button" id="restartButton" onclick="restartESP32()">Restart</button>
-                <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save
-                    Preferences</button>
+                <div class="buttonsBackupRestore">
+                    <button type="button" id="backupButton" onclick="backupPreferences()">Backup</button>
+                    <button type="button" id="restoreButton" onclick="chooseFileAndRestore()">Restore</button>
+                </div>
+                <div class="buttonsRestartSave">
+                    <button type="button" id="restartButton" onclick="restartESP32()">Restart</button>
+                    <button type="button" id="savePreferencesButton" onclick="savePreferences()">Save
+                        Preferences</button>
+                </div>
             </div>
         </form>
 
