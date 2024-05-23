@@ -134,7 +134,9 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 // Variables for Captive Portal
 #ifdef SUPPORT_CAPTIVE_PORTAL
 bool captivePortalActive = false;
-uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+bool captivePortalNoTimeout = false;
+uint16_t timeToWaitForCaptivePortal = 0;  // Time in seconds to wait for captive portal
+uint64_t timeCaptivePortalStarted = 0;
 #endif
 
 #ifdef CUSTOM_I2C_SDA
