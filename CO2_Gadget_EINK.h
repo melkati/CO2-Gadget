@@ -40,7 +40,8 @@ const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 uint16_t resetDuration = 2;
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
 #include <NotoSans_Bold46pt7b.h>
@@ -50,7 +51,8 @@ const GFXfont BigFont = NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
 uint16_t resetDuration = 2;
-GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT>    // Ajusta esto a tu pantalla
+GxEPD2_DRIVER display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
 #include <NotoSans_Bold38pt7b.h>
@@ -62,7 +64,8 @@ int displayHeight = 104;
 uint16_t resetDuration = 2;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 // GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
-GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #endif
 
@@ -85,7 +88,8 @@ uint16_t resetDuration = 2;
 // #define EPD_DC 27
 // #define EPD_RST 25
 // #define EPD_BUSY 32
-GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT> display(GxEPD2_290_T94(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_290_T94, GxEPD2_290_T94::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_290_T94(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94
 // GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94 V2 GDEM029T94  128x296, SSD1680, (FPC-7519 rev.b), Waveshare 2.9" V2 variant
 // GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029T94 BS
 // GxEPD2_BW<GxEPD2_290_GDEY029T94, GxEPD2_290_GDEY029T94::HEIGHT> display(GxEPD2_290_GDEY029T94(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEY029T94  128x296, SSD1680, (FPC-A005 20.06.15)
@@ -105,7 +109,8 @@ uint16_t resetDuration = 50;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDvVZ4N
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDvVZ4N
 #endif
 
 #ifdef EINKBOARD_WEACT_GDEH0154D67
@@ -120,7 +125,8 @@ uint16_t resetDuration = 50;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEH0154D67 200x200, SSD1681 https://s.click.aliexpress.com/e/_DDvVZ4N
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEH0154D67 200x200, SSD1681 https://s.click.aliexpress.com/e/_DDvVZ4N
 #endif
 
 #ifdef EINKBOARD_WEACT_GxEPD2_290_BS
@@ -135,7 +141,8 @@ uint16_t resetDuration = 50;
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
 
-GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT> display(GxEPD2_290_BS(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029C90 As WeAct Studio 2.9" 296x128 E-Ink Display
+#define GxEPD2_DRIVER GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT>
+GxEPD2_DRIVER display(GxEPD2_290_BS(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM029C90 As WeAct Studio 2.9" 296x128 E-Ink Display
 #endif
 
 // Define a structure for the locations of elements

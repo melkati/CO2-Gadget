@@ -18,6 +18,10 @@
 #include <menuIO/TFT_eSPIOut.h>
 #endif
 
+#ifdef SUPPORT_EINK
+#include <GxEPD2Out.h>
+#endif
+
 #ifdef SUPPORT_OLED
 #include <menuIO/chainStream.h>
 #include <menuIO/u8g2Out.h>
@@ -954,7 +958,36 @@ menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
 MENU_INPUTS(in,&serial);
 #endif // SUPPORT_OLED
 
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#ifdef SUPPORT_EINK
+// define menu colors --------------------------------------------------------
+const colorDef<uint8_t> colors[6] MEMMODE = {
+    // {{disabled normal, disabled selected}, {enabled normal, enabled selected, enabled editing}}
+    {{0, 1}, {1, 0, 0}}, // bgColor
+    {{1, 0}, {0, 1, 1}}, // fgColor
+    {{1, 0}, {0, 1, 1}}, // valColor
+    {{1, 0}, {0, 1, 1}}, // unitColor
+    {{0, 1}, {0, 0, 0}}, // cursorColor
+    {{1, 0}, {1, 0, 0}}, // titleColor
+};
+
+#define fontW 10
+#define fontH 20  
+#define offsetX 1
+#define offsetY -2
+#define fontMarginX 2
+#define fontMarginY 2
+
+//define output device oled
+idx_t gfx_tops[MAX_DEPTH];
+PANELS(gfxPanels,{0, 0, displayWidth/fontW,displayHeight/fontH});
+// Crear la instancia de salida para GxEPD2
+Menu::GxEPD2Out<GxEPD2_DRIVER> displayOut(display, colors, gfx_tops, gfxPanels, fontW, fontH, offsetX, offsetY, fontMarginX, fontMarginY);
+
+//define outputs controller
+menuOut* outputs[]{&outSerial,&displayOut};//list of output devices
+#endif // SUPPORT_EINK
+
+#if (!SUPPORT_OLED && !SUPPORT_TFT && !SUPPORT_EINK)
 menuOut* outputs[]{&outSerial};//No display, only serial output
 #endif
 
@@ -1033,7 +1066,7 @@ result idle(menuOut &o, idleEvent e) {
             setInMenu(false);
             //       nav.poll();
 
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(true);
 #endif
             break;
@@ -1041,7 +1074,7 @@ result idle(menuOut &o, idleEvent e) {
 #ifdef DEBUG_ARDUINOMENU
             Serial.println("-->[MENU] Event iddling");
 #endif
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             displayShowValues(shouldRedrawDisplay);
             shouldRedrawDisplay = false;
 #endif
@@ -1113,6 +1146,7 @@ void menuLoopEINK() {
     } else {
         if (nav.changed(0)) {
             nav.doOutput();
+            display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
         }
     }
 #endif
