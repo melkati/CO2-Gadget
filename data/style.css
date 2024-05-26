@@ -97,7 +97,7 @@ input[type="number"] {
 
 input[type="checkbox"] {
   width: auto;
-    /* Adjust the width automatically */
+  /* Adjust the width automatically */
   margin-bottom: 10px;
   box-sizing: border-box;
   border: 1px solid #ccc;
@@ -111,7 +111,7 @@ button {
   /* Green background */
   color: white;
   /* White text */
-    padding: 10px 13px;
+  padding: 10px 13px;
     /* Padding around text */
   border: none;
   /* No border */
@@ -139,64 +139,64 @@ button {
 button:hover {
   background-color: #45a049;
   /* Darker green background on hover */
+}
+
+/* Button group alignment */
+.buttonGroup {
+  display: flex;
+  /* Use flexbox for layout */
+  justify-content: space-between;
+  /* Separate buttons evenly */
+}
+
+/* Adjust margins for individual buttons */
+#backupButton,
+#restoreButton {
+  margin-right: 10px;
+  /* Space after backup and restore buttons */
+}
+
+#restartButton {
+  margin-left: 10px;
+  /* Space before restart button */
+}
+
+/* No need to adjust margin for savePreferencesButton as it's the last button */
+
+/* Responsive adjustments for narrow screens */
+@media screen and (max-width: 600px) {
+  .buttonGroup button {
+    font-size: 14px;
+    /* Smaller text size */
+    padding: 8px 10px;
+    /* Smaller padding */
+    margin-left: 5px;
+    /* Smaller left margin */
   }
-  
-  /* Button group alignment */
-  .buttonGroup {
-    display: flex;
-    /* Use flexbox for layout */
-    justify-content: space-between;
-    /* Separate buttons evenly */
-  }
-  
-  /* Adjust margins for individual buttons */
-  #backupButton,
-  #restoreButton {
-    margin-right: 10px;
-    /* Space after backup and restore buttons */
-  }
-  
+
   #restartButton {
-    margin-left: 10px;
-    /* Space before restart button */
+    padding: 8px 15px;
+    /* Adjusted padding for restart button */
   }
-  
-  /* No need to adjust margin for savePreferencesButton as it's the last button */
-  
-  /* Responsive adjustments for narrow screens */
-  @media screen and (max-width: 600px) {
-    .buttonGroup button {
-      font-size: 14px;
-      /* Smaller text size */
-      padding: 8px 10px;
-      /* Smaller padding */
-      margin-left: 5px;
-      /* Smaller left margin */
-    }
-  
-    #restartButton {
-      padding: 8px 15px;
-      /* Adjusted padding for restart button */
-    }
-  
-    #savePreferencesButton {
-      font-size: 0;
-      /* Hide original text */
-    }
-  
-    #savePreferencesButton::after {
-      content: "Save";
-      /* Show 'Save' text */
-      font-size: 14px;
-      /* Reset font size for new text */
-      padding: 10px 20px;
-      /* Adjust padding if necessary */
-    }
+
+  #savePreferencesButton {
+    font-size: 0;
+    /* Hide original text */
+  }
+
+  #savePreferencesButton::after {
+    content: "Save";
+    /* Show 'Save' text */
+    font-size: 14px;
+    /* Reset font size for new text */
+    padding: 10px 20px;
+    /* Adjust padding if necessary */
+  }
 }
 
 .content {
   max-width: 600px;
-    /* Adjust the value according to your content width */
+  /* Adjust the value according to your content width */
   margin: 0 auto;
 }
 
@@ -318,7 +318,7 @@ button:hover {
   text-align: center;
   margin-top: 20px;
   white-space: nowrap;
-    overflow: hidden;
+  overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
     /* Asegura que el contenedor no exceda el ancho de la pantalla */
@@ -333,7 +333,7 @@ button:hover {
 
 #co2GadgetVersion {
   display: block;
-    /* Ocupa su propio espacio en la línea */
+  /* Ocupa su propio espacio en la línea */
   font-size: 14px;
   color: var(--font-color);
   background-color: var(--bg-color);
@@ -342,7 +342,7 @@ button:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
   white-space: nowrap;
-    /* Mantiene el texto en una sola línea */
+  /* Mantiene el texto en una sola línea */
 }
 
 
@@ -376,7 +376,7 @@ button:hover {
   background-color: #f2f2f2;
   padding: 15px 10px;
   z-index: 1000;
-    display: flex;
+  display: flex;
     justify-content: space-between;
     align-items: center;
 }
@@ -391,7 +391,7 @@ button:hover {
 .navbar a.active {
   color: #999;
   pointer-events: none;
-    /* Disable pointer events for the active link */
+  /* Disable pointer events for the active link */
   }
   
   .navbar .nav-content {
@@ -400,31 +400,34 @@ button:hover {
     align-items: center;
     width: 100%;
   }
-  
-  .captive-portal-status-bar {
-    width: 100%;
-    background-color: #ffeb3b;
+#captive-portal-status-bar {
+  width: 100%;
+  background-color: #fbef83;
     color: #333;
-    padding: 10px;
-    position: fixed;
-    top: 60px;
-    /* Adjust the top position */
+  position: fixed;
+  top: 45px;
     z-index: 999;
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }
-  
-  /* Media query para pantallas más pequeñas */
-  @media (max-width: 600px) {
-    .captive-portal-status-bar {
-      top: 75px;
-      /* Ajuste para pantallas más pequeñas */
-    }
+  font-size: 0.7em;
 }
 
-/* Styles to hide the status bar */
-.hidden {
+/* Media query para pantallas más pequeñas */
+@media (max-width: 600px) {
+  #captive-portal-status-bar {
+      top: 45px;
+    
+}
+
+#hide-captive-portal-status-bar-button {
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 5px 10px;
+  font-size: 0.7em;
+}
+
+.hidden-captive-portal-status-bar {
   display: none;
 }
 
@@ -458,4 +461,17 @@ button:hover {
   100% {
     opacity: 0;
   }
+}
+.status-dot {
+  height: 10px;
+  width: 10px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.status-dot.hidden {
+  display: none;
 }

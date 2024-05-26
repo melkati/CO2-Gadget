@@ -582,10 +582,13 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
 #ifdef SUPPORT_CAPTIVE_PORTAL
-    // If captivePortalActive = true; draw a circle instead of the WiFi icon
+    // If captivePortalActive = true; draw a filled circle instead of the WiFi icon.  If testCaptivePortal is also true, draw a non filled circle
     if (captivePortalActive) {
-        // display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
-        display.fillCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        if (testCaptivePortal) {
+            display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        } else {
+            display.fillCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        }
         return;
     }
 #endif

@@ -2,201 +2,110 @@
 
 // Global variable to control relaxed security mode
 var relaxedSecurity = false;
+// Global variable to control captive portal test mode
+var testCaptivePortal = false;
 
-// Function to fetch version information from the server
+/**
+ * Fetches version information from the server and updates the version display.
+ */
 function fetchVersion() {
     fetch('/getVersion')
         .then(response => response.json())
         .then(versionInfo => {
-            // Update CO2 Gadget version in the status line
-            document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: v" + versionInfo.firmVerMajor + "." + versionInfo.firmVerMinor + "." + versionInfo.firmRevision + "-" + versionInfo.firmBranch + " (Flavour: " + versionInfo.firmFlavour + ")";
+            const versionElement = document.getElementById("co2GadgetVersion");
+            const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
+            versionElement.innerText = versionText;
         })
         .catch(error => console.error('Error fetching version information:', error));
 }
 
+/**
+ * Populates the preferences form with the provided preferences data.
+ * @param {Object} preferences - The preferences data to populate the form with.
+ */
 function populateFormWithPreferences(preferences) {
+    const getPreferencesDebug = false; // Set to true to enable debug output
 
-    let getPreferencesDebug = true; // Set to false to disable debug output
-    if (getPreferencesDebug) {
-        console.log('Loading preferences:', preferences);
-    }
+    if (getPreferencesDebug) console.log('Loading preferences:', preferences);
 
-    // Populate the form with the received preferences
+    // Helper function to set form values
+    const setFormValue = (elementId, value) => {
+        const element = document.getElementById(elementId);
+        if (element) element.value = value;
+        if (getPreferencesDebug) console.log(`Setting ${elementId} to:`, value);
+    };
 
-    if (getPreferencesDebug) console.log('Setting activeWIFI to:', preferences.activeWIFI);
-    document.getElementById("activeWIFI").checked = preferences.activeWIFI;
+    // Helper function to set form checkbox
+    const setFormCheckbox = (elementId, isChecked) => {
+        const element = document.getElementById(elementId);
+        if (element) element.checked = isChecked;
+        if (getPreferencesDebug) console.log(`Setting ${elementId} to:`, isChecked);
+    };
 
-    if (getPreferencesDebug) console.log('Setting wifiSSID to:', preferences.wifiSSID);
-    document.getElementById("wifiSSID").value = preferences.wifiSSID;
+    setFormCheckbox("activeWIFI", preferences.activeWIFI);
+    setFormValue("wifiSSID", preferences.wifiSSID);
+    if (relaxedSecurity) setFormValue("wifiPass", preferences.wifiPass);
+    setFormValue("hostName", preferences.hostName);
+    setFormCheckbox("useStaticIP", preferences.useStaticIP);
+    setFormValue("staticIP", preferences.staticIP);
+    setFormValue("gateway", preferences.gateway);
+    setFormValue("subnet", preferences.subnet);
+    setFormValue("dns1", preferences.dns1);
+    setFormValue("dns2", preferences.dns2);
+    setFormValue("selCO2Sensor", preferences.selCO2Sensor);
+    setFormCheckbox("autoSelfCalibration", preferences.autoSelfCal);
+    setFormValue("customCalValue", preferences.customCalValue);
+    setFormValue("co2OrangeRange", preferences.co2OrangeRange);
+    setFormValue("co2RedRange", preferences.co2RedRange);
+    setFormValue("tempOffset", preferences.tempOffset);
+    setFormCheckbox("showFahrenheit", preferences.showFahrenheit);
+    setFormValue("altitudeMeters", preferences.altitudeMeters);
+    setFormValue("measurementInterval", preferences.measurementInterval);
+    setFormCheckbox("outModeRelay", preferences.outModeRelay);
+    setFormValue("channelESPNow", preferences.channelESPNow);
+    setFormValue("boardIdESPNow", preferences.boardIdESPNow);
+    setFormValue("peerESPNowAddress", preferences.peerESPNowAddress);
+    setFormValue("neopixBright", preferences.neopixBright);
+    setFormValue("selNeopxType", preferences.selNeopxType);
+    setFormCheckbox("activeBLE", preferences.activeBLE);
+    setFormCheckbox("activeMQTT", preferences.activeMQTT);
+    setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
+    setFormValue("mqttClientId", preferences.mqttClientId);
+    setFormValue("rootTopic", preferences.rootTopic);
+    setFormValue("mqttBroker", preferences.mqttBroker);
+    setFormValue("mqttUser", preferences.mqttUser);
+    if (relaxedSecurity) setFormValue("mqttPass", preferences.mqttPass);
+    setFormValue("batDischgd", preferences.batDischgd);
+    setFormValue("batChargd", preferences.batChargd);
+    setFormValue("vRef", preferences.vRef);
+    setFormValue("tToDispOff", preferences.tToDispOff);
+    setFormValue("tToPubMQTT", preferences.tToPubMQTT);
+    setFormValue("tToPubESPNow", preferences.tToPubESPNow);
+    setFormValue("tKeepAlMQTT", preferences.tKeepAlMQTT);
+    setFormValue("tKeepAlESPNow", preferences.tKeepAlESPNow);
+    setFormCheckbox("showTemp", preferences.showTemp);
+    setFormCheckbox("showHumidity", preferences.showHumidity);
+    setFormCheckbox("showBattery", preferences.showBattery);
+    setFormCheckbox("showCO2", preferences.showCO2);
+    setFormCheckbox("dispOffOnExP", preferences.dispOffOnExP);
+    setFormCheckbox("displayReverse", preferences.displayReverse);
+    setFormValue("DisplayBright", preferences.DisplayBright);
+    setFormCheckbox("debugSensors", preferences.debugSensors);
+    setFormValue("toneBzrBeep", preferences.toneBzrBeep);
+    setFormValue("durBzrBeep", preferences.durBzrBeep);
+    setFormValue("timeBtwnBzr", preferences.timeBtwnBzr);
 
-    if (relaxedSecurity) {
-        if (getPreferencesDebug) console.log('Setting wifiPass to:', preferences.wifiPass);
-        document.getElementById("wifiPass").value = preferences.wifiPass;
-    }
-
-    if (getPreferencesDebug) console.log('Setting hostName to:', preferences.hostName);
-    document.getElementById("hostName").value = preferences.hostName;
-
-    if (getPreferencesDebug) console.log('Setting useStaticIP to:', preferences.useStaticIP);
-    document.getElementById("useStaticIP").checked = preferences.useStaticIP;
-
-    if (getPreferencesDebug) console.log('Setting staticIP to:', preferences.staticIP);
-    document.getElementById("staticIP").value = preferences.staticIP;
-
-    if (getPreferencesDebug) console.log('Setting gateway to:', preferences.gateway);
-    document.getElementById("gateway").value = preferences.gateway;
-
-    if (getPreferencesDebug) console.log('Setting subnet to:', preferences.subnet);
-    document.getElementById("subnet").value = preferences.subnet;
-
-    if (getPreferencesDebug) console.log('Setting dns1 to:', preferences.dns1);
-    document.getElementById("dns1").value = preferences.dns1;
-
-    if (getPreferencesDebug) console.log('Setting dns2 to:', preferences.dns2);
-    document.getElementById("dns2").value = preferences.dns2;
-
-    if (getPreferencesDebug) console.log('Setting selCO2Sensor to:', preferences.selCO2Sensor);
-    document.getElementById("selCO2Sensor").value = preferences.selCO2Sensor;
-
-    if (getPreferencesDebug) console.log('Setting autoSelfCalibration to:', preferences.autoSelfCal);
-    document.getElementById("autoSelfCalibration").checked = preferences.autoSelfCal;
-
-    if (getPreferencesDebug) console.log('Setting customCalValue to:', preferences.customCalValue);
-    document.getElementById("customCalValue").value = preferences.customCalValue;
-
-    if (getPreferencesDebug) console.log('Setting co2OrangeRange to:', preferences.co2OrangeRange);
-    document.getElementById("co2OrangeRange").value = preferences.co2OrangeRange;
-
-    if (getPreferencesDebug) console.log('Setting co2RedRange to:', preferences.co2RedRange);
-    document.getElementById("co2RedRange").value = preferences.co2RedRange;
-
-    if (getPreferencesDebug) console.log('Setting tempOffset to:', preferences.tempOffset);
-    document.getElementById("tempOffset").value = preferences.tempOffset;
-
-    if (getPreferencesDebug) console.log('Setting showFahrenheit to:', preferences.showFahrenheit);
-    document.getElementById("showFahrenheit").checked = preferences.showFahrenheit;
-
-    if (getPreferencesDebug) console.log('Setting altitudeMeters to:', preferences.altitudeMeters);
-    document.getElementById("altitudeMeters").value = preferences.altitudeMeters;
-
-    if (getPreferencesDebug) console.log('Setting measurementInterval to:', preferences.measurementInterval);
-    document.getElementById("measurementInterval").value = preferences.measurementInterval;
-
-    if (getPreferencesDebug) console.log('Setting outModeRelay to:', preferences.outModeRelay);
-    document.getElementById("outModeRelay").checked = preferences.outModeRelay;
-
-    if (getPreferencesDebug) console.log('Setting channelESPNow to:', preferences.channelESPNow);
-    document.getElementById("channelESPNow").value = preferences.channelESPNow;
-
-    if (getPreferencesDebug) console.log('Setting boardIdESPNow to:', preferences.boardIdESPNow);
-    document.getElementById("boardIdESPNow").value = preferences.boardIdESPNow;
-
-    if (getPreferencesDebug) console.log('Setting peerESPNowAddress to:', preferences.peerESPNowAddress);
-    document.getElementById("peerESPNowAddress").value = preferences.peerESPNowAddress;
-
-    if (getPreferencesDebug) console.log('Setting neopixBright to:', preferences.neopixBright);
-    document.getElementById("neopixBright").value = preferences.neopixBright;
-
-    if (getPreferencesDebug) console.log('Setting selNeopxType to:', preferences.selNeopxType);
-    document.getElementById("selNeopxType").value = preferences.selNeopxType;
-
-    if (getPreferencesDebug) console.log('Setting activeBLE to:', preferences.activeBLE);
-    document.getElementById("activeBLE").checked = preferences.activeBLE;
-
-    if (getPreferencesDebug) console.log('Setting activeMQTT to:', preferences.activeMQTT);
-    document.getElementById("activeMQTT").checked = preferences.activeMQTT;
-
-    if (getPreferencesDebug) console.log('Setting activeESPNOW to:', preferences.activeESPNOW);
-    document.getElementById("activeESPNOW").checked = preferences.activeESPNOW;
-
-    if (getPreferencesDebug) console.log('Setting mqttClientId to:', preferences.mqttClientId);
-    document.getElementById("mqttClientId").value = preferences.mqttClientId;
-
-    if (getPreferencesDebug) console.log('Setting rootTopic to:', preferences.rootTopic);
-    document.getElementById("rootTopic").value = preferences.rootTopic;
-
-    if (getPreferencesDebug) console.log('Setting mqttBroker to:', preferences.mqttBroker);
-    document.getElementById("mqttBroker").value = preferences.mqttBroker;
-
-    if (getPreferencesDebug) console.log('Setting mqttUser to:', preferences.mqttUser);
-    document.getElementById("mqttUser").value = preferences.mqttUser;
-
-    if (relaxedSecurity) {
-        if (getPreferencesDebug) console.log('Setting mqttPass to:', preferences.mqttPass);
-        document.getElementById("mqttPass").value = preferences.mqttPass;
-    }
-
-    if (getPreferencesDebug) console.log('Setting batDischgd to:', preferences.batDischgd);
-    document.getElementById("batDischgd").value = preferences.batDischgd;
-
-    if (getPreferencesDebug) console.log('Setting batChargd to:', preferences.batChargd);
-    document.getElementById("batChargd").value = preferences.batChargd;
-
-    if (getPreferencesDebug) console.log('Setting vRef to:', preferences.vRef);
-    document.getElementById("vRef").value = preferences.vRef;
-
-    if (getPreferencesDebug) console.log('Setting tToDispOff to:', preferences.tToDispOff);
-    document.getElementById("tToDispOff").value = preferences.tToDispOff;
-
-    if (getPreferencesDebug) console.log('Setting tToPubMQTT to:', preferences.tToPubMQTT);
-    document.getElementById("tToPubMQTT").value = preferences.tToPubMQTT;
-
-    if (getPreferencesDebug) console.log('Setting tToPubESPNow to:', preferences.tToPubESPNow);
-    document.getElementById("tToPubESPNow").value = preferences.tToPubESPNow;
-
-    if (getPreferencesDebug) console.log('Setting tKeepAlMQTT to:', preferences.tKeepAlMQTT);
-    document.getElementById("tKeepAlMQTT").value = preferences.tKeepAlMQTT;
-
-    if (getPreferencesDebug) console.log('Setting tKeepAlESPNow to:', preferences.tKeepAlESPNow);
-    document.getElementById("tKeepAlESPNow").value = preferences.tKeepAlESPNow;
-
-    if (getPreferencesDebug) console.log('Setting showTemp to:', preferences.showTemp);
-    document.getElementById("showTemp").checked = preferences.showTemp;
-
-    if (getPreferencesDebug) console.log('Setting showHumidity to:', preferences.showHumidity);
-    document.getElementById("showHumidity").checked = preferences.showHumidity;
-
-    if (getPreferencesDebug) console.log('Setting showBattery to:', preferences.showBattery);
-    document.getElementById("showBattery").checked = preferences.showBattery;
-
-    if (getPreferencesDebug) console.log('Setting showCO2 to:', preferences.showCO2);
-    document.getElementById("showCO2").checked = preferences.showCO2;
-
-    // if (getPreferencesDebug) console.log('Setting showPM25 to:', preferences.showPM25);
-    // document.getElementById("showPM25").checked = preferences.showPM25;
-
-    if (getPreferencesDebug) console.log('Setting dispOffOnExP to:', preferences.dispOffOnExP);
-    document.getElementById("dispOffOnExP").checked = preferences.dispOffOnExP;
-
-    if (getPreferencesDebug) console.log('Setting displayReverse to:', preferences.displayReverse);
-    document.getElementById("displayReverse").checked = preferences.displayReverse;
-
-    if (getPreferencesDebug) console.log('Setting DisplayBright to:', preferences.DisplayBright);
-    document.getElementById("DisplayBright").value = preferences.DisplayBright;
-
-    if (getPreferencesDebug) console.log('Setting debugSensors to:', preferences.debugSensors);
-    document.getElementById("debugSensors").checked = preferences.debugSensors;
-
-    if (getPreferencesDebug) console.log('Setting toneBzrBeep to:', preferences.toneBzrBeep);
-    document.getElementById("toneBzrBeep").value = preferences.toneBzrBeep;
-
-    if (getPreferencesDebug) console.log('Setting durBzrBeep to:', preferences.durBzrBeep);
-    document.getElementById("durBzrBeep").value = preferences.durBzrBeep;
-
-    if (getPreferencesDebug) console.log('Setting timeBtwnBzr to:', preferences.timeBtwnBzr);
-    document.getElementById("timeBtwnBzr").value = preferences.timeBtwnBzr;
-
-    // Toggle visibility of elements based on checkbox state
-    toggle('activeWIFI', 'wifiNetworks');
-    toggle('activeMQTT', 'mqttConfig');
-    toggle('activeESPNOW', 'espNowConfig');
-    toggle('useStaticIP', 'staticIPSettings');
+    toggleVisibility('activeWIFI', 'wifiNetworks');
+    toggleVisibility('activeMQTT', 'mqttConfig');
+    toggleVisibility('activeESPNOW', 'espNowConfig');
+    toggleVisibility('useStaticIP', 'staticIPSettings');
 }
 
+/**
+ * Fetches preferences data from the server and populates the form.
+ */
 function loadPreferencesFromServer() {
-    // Fetch preferences data from the server
-    // Add parameter relaxedSecurity to the URL if relaxed security mode is enabled
-    fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : '')) // Add query parameter to URL if relaxed security mode is enabled
+    fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
         .then(response => response.json())
         .then(preferences => {
             populateFormWithPreferences(preferences);
@@ -204,9 +113,12 @@ function loadPreferencesFromServer() {
         .catch(error => console.error('Error retrieving preferences:', error));
 }
 
+/**
+ * Collects preferences data from the form.
+ * @returns {Object} - The collected preferences data.
+ */
 function collectPreferencesData() {
-    // Collect preferences data from the form
-    var preferencesData = {
+    const preferencesData = {
         customCalValue: document.getElementById("customCalValue").value,
         tempOffset: document.getElementById("tempOffset").value,
         altitudeMeters: document.getElementById("altitudeMeters").value,
@@ -237,7 +149,7 @@ function collectPreferencesData() {
         gateway: document.getElementById("gateway").value,
         subnet: document.getElementById("subnet").value,
         dns1: document.getElementById("dns1").value,
-        dns2: document.getElementById("dns2").value,        
+        dns2: document.getElementById("dns2").value,
         selCO2Sensor: document.getElementById("selCO2Sensor").value,
         debugSensors: document.getElementById("debugSensors").checked,
         displayReverse: document.getElementById("displayReverse").checked,
@@ -251,7 +163,6 @@ function collectPreferencesData() {
         showHumidity: document.getElementById("showHumidity").checked,
         showBattery: document.getElementById("showBattery").checked,
         showCO2: document.getElementById("showCO2").checked,
-        // showPM25: document.getElementById("showPM25").checked,
         mqttClientId: document.getElementById("mqttClientId").value,
         mqttBroker: document.getElementById("mqttBroker").value,
         mqttUser: document.getElementById("mqttUser").value,
@@ -259,58 +170,60 @@ function collectPreferencesData() {
         durBzrBeep: document.getElementById("durBzrBeep").value,
         timeBtwnBzr: document.getElementById("timeBtwnBzr").value
     };
-    // If relaxedSecurity is enabled, add the password fields to the preferences data
+
     if (relaxedSecurity) {
         preferencesData.wifiPass = document.getElementById("wifiPass").value;
         preferencesData.mqttPass = document.getElementById("mqttPass").value;
     }
+
     return preferencesData;
 }
 
+/**
+ * Shows a popup message indicating that preferences are being saved.
+ */
 function showSavingPopup() {
-    // Show the popup
-    document.getElementById("popup").style.display = "block";
+    const popup = document.getElementById("popup");
+    popup.style.display = "block";
     console.log("Show popup");
 
-    // After 2 seconds, hide the popup
-    setTimeout(function () {
-        // Oculta el popup
-        document.getElementById("popup").style.display = "none";
+    setTimeout(() => {
+        popup.style.display = "none";
         console.log("Hide popup");
     }, 2000);
 }
 
-// Function to save preferences to server NVR
+/**
+ * Saves preferences to the server.
+ */
 function savePreferences() {
-    // Show a popup to indicate that the preferences are being saved
     showSavingPopup();
-    // Collect preferences data from the form
-    var preferencesData = collectPreferencesData();
+    const preferencesData = collectPreferencesData();
     console.log("Sending preferences to server:", preferencesData);
 
-    // Send the preferences data to the server
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/savepreferences", true);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.send(JSON.stringify(preferencesData));
-
-    // Handle the response from the server
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            console.log("Preferences updated successfully!");
-        } else {
-            alert("Error updating preferences. Please try again.");
-        }
-    };
+    fetch('/savePreferences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(preferencesData)
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log("Preferences updated successfully!");
+            } else {
+                alert("Error updating preferences. Please try again.");
+            }
+        })
+        .catch(error => console.error('Error saving preferences:', error));
 }
 
+/**
+ * Restarts the ESP32 device after user confirmation.
+ */
 function restartESP32() {
-    // Show a confirmation dialog
-    var isConfirmed = confirm("Are you sure you want to restart the ESP32?");
-
-    // If the user confirms, proceed with the restart
+    const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
     if (isConfirmed) {
-        // Send a request to the ESP32 endpoint to trigger a reset
         fetch('/restart', {
             method: 'GET',
             headers: {
@@ -318,116 +231,95 @@ function restartESP32() {
             }
         })
             .then(response => {
-                if (!response.ok) {
+                if (response.ok) {
+                    console.log('ESP32 restart initiated');
+                } else {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                // Reset successful, you can add any additional handling here
-                console.log('ESP32 restart initiated');
             })
-            .catch(error => {
-                // Handle errors during the reset process
-                console.error('Error restarting ESP32:', error);
-            });
-    } else {
-        // User chose not to restart, you can add additional logic or leave it empty
+            .catch(error => console.error('Error restarting ESP32:', error));
     }
 }
 
-// Function to backup preferences
+/**
+ * Backs up preferences by saving them to a JSON file.
+ */
 function backupPreferences() {
-    // Collect preferences data
-    var preferencesData = collectPreferencesData();
+    const preferencesData = collectPreferencesData();
+    const jsonData = JSON.stringify(preferencesData);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const a = document.createElement('a');
 
-    // Convert preferences data to JSON format
-    var jsonData = JSON.stringify(preferencesData);
-
-    // Create a Blob object with the JSON data
-    var blob = new Blob([jsonData], { type: 'application/json' });
-
-    // Create a link element
-    var a = document.createElement('a');
-
-    // Set the href attribute to a URL representing the Blob data
     a.href = URL.createObjectURL(blob);
-
-    // Set the download attribute to specify the filename
     a.download = 'preferences_backup.json';
-
-    // Append the link to the document body
     document.body.appendChild(a);
-
-    // Programmatically click the link to trigger the download
     a.click();
-
-    // Remove the link from the document body
     document.body.removeChild(a);
 
-    // Show a message to the user indicating that the backup is completed
     alert('Preferences backup completed successfully!');
 }
 
-// Function to restore preferences from JSON data
+/**
+ * Restores preferences from the provided JSON data.
+ * @param {string} preferencesData - The JSON string containing preferences data.
+ */
 function restorePreferencesFromData(preferencesData) {
-    // Parse the preferences data from JSON format
-    var preferences = JSON.parse(preferencesData);
-
-    // Populate the form with the received preferences
+    const preferences = JSON.parse(preferencesData);
     populateFormWithPreferences(preferences);
 }
 
-// Function to trigger file input click and restore preferences
+/**
+ * Triggers file input click event to restore preferences from a file.
+ */
 function chooseFileAndRestore() {
     document.getElementById('fileInput').click();
 }
 
-// Function to handle file selection
+/**
+ * Handles file selection for restoring preferences.
+ * @param {Event} event - The file selection event.
+ */
 function handleFileSelection(event) {
-    var file = event.target.files[0];
+    const file = event.target.files[0];
     if (file) {
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.readAsText(file, 'UTF-8');
-        reader.onload = function (evt) {
-            var preferencesData = evt.target.result;
+        reader.onload = (evt) => {
+            const preferencesData = evt.target.result;
             restorePreferencesFromData(preferencesData);
-        }
-        reader.onerror = function (evt) {
+        };
+        reader.onerror = (evt) => {
             console.error("Error reading file:", evt.target.error);
             alert("Error reading file. Please try again.");
-        }
+        };
     }
 }
 
-function toggle(checkboxId, elementId) {
+/**
+ * Toggles the visibility of an element based on a checkbox state.
+ * @param {string} checkboxId - The ID of the checkbox.
+ * @param {string} elementId - The ID of the element to toggle.
+ */
+function toggleVisibility(checkboxId, elementId) {
     const checkbox = document.getElementById(checkboxId);
-    if (!checkbox) {
-        console.error('Checkbox with id ' + checkboxId + ' is not found.');
-        return;
-    }
-
     const element = document.getElementById(elementId);
-    if (!element) {
-        console.error('Element with id ' + elementId + ' is not found.');
+
+    if (!checkbox || !element) {
+        console.error(`Checkbox or element not found: ${checkboxId}, ${elementId}`);
         return;
     }
 
-
-    // Function to toggle element visibility
-    function toggleElement() {
+    const toggleElement = () => {
         element.style.display = checkbox.checked ? 'block' : 'none';
-        // if (checkbox.checked) {
-        //     element.style.display = 'block'; // Show the element if checkbox is checked
-        // } else {
-        //     element.style.display = 'none'; // Hide the element if checkbox is unchecked
-        // }
-    }
+    };
 
-    // Call toggleElement initially to set initial state
     toggleElement();
-
-    // Add event listener to checkbox to update visibility when checkbox state changes
     checkbox.addEventListener('change', toggleElement);
 }
 
+/**
+ * Updates the battery voltage display by fetching it from the server.
+ */
 function updateVoltage() {
     fetch('/readBatteryVoltage')
         .then(response => response.text())
@@ -437,13 +329,14 @@ function updateVoltage() {
         .catch(error => console.error('Error fetching battery voltage:', error));
 }
 
+/**
+ * Updates the VRef value on the server.
+ */
 function updateVRef() {
-    // Enviar el nuevo valor de VRef al servidor
-    fetch('/settings?SetVRef=' + document.getElementById('vRef').value)
+    const vRefValue = document.getElementById('vRef').value;
+    fetch(`/settings?SetVRef=${vRefValue}`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Error updating VRef');
-            }
+            if (!response.ok) throw new Error('Error updating VRef');
             console.log('VRef updated successfully');
         })
         .catch(error => console.error('Error updating VRef:', error));
@@ -452,42 +345,43 @@ function updateVRef() {
 // Update the battery voltage every second
 setInterval(updateVoltage, 1000);
 
-// Lisen for input events on the voltage reference field with a delay of 100ms
+// Listen for input events on the voltage reference field with a delay of 100ms
 document.getElementById('vRef').addEventListener('input', () => {
     setTimeout(updateVRef, 100);
 });
 
-// Enable password fields if relaxed security mode is enabled
+/**
+ * Enables or disables password fields based on the relaxed security mode.
+ */
 function handlePasswordFields() {
-    var inputField = document.getElementById("wifiSSID");
-    var passwordFields = document.querySelectorAll('input[type=password]');
-    if (relaxedSecurity) {
-        passwordFields.forEach(function (field) {
+    const inputField = document.getElementById("wifiSSID");
+    const passwordFields = document.querySelectorAll('input[type=password]');
+
+    passwordFields.forEach(field => {
+        if (relaxedSecurity) {
             field.removeAttribute('disabled');
-        });
+        } else {
+            field.disabled = true;
+            field.value = '';
+            field.placeholder = "Password (disabled)";
+        }
+    });
+
+    if (relaxedSecurity) {
         inputField.removeAttribute('readonly');
     } else {
-        passwordFields.forEach(function (field) {
-            // field.setAttribute('disabled', 'disabled');
-            // Disable the field
-            field.disabled = true;
-            // Clear the field's value
-            field.value = '';
-            // Set a default value to prevent "undefined"
-            field.placeholder = "Password (disabled)";
-        });
         inputField.setAttribute('readonly', 'readonly');
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Update relaxedSecurity variable based on URL
+document.addEventListener("DOMContentLoaded", () => {
     relaxedSecurity = window.location.href.includes("relaxedSecurity");
+    testCaptivePortal = window.location.href.includes("testCaptivePortal");
     handlePasswordFields();
     loadPreferencesFromServer();
     fetchVersion();
-    toggle('activeWIFI', 'wifiNetworks');
-    toggle('activeMQTT', 'mqttConfig');
-    toggle('activeESPNOW', 'espNowConfig');
-    toggle('useStaticIP', 'staticIPSettings');
+    toggleVisibility('activeWIFI', 'wifiNetworks');
+    toggleVisibility('activeMQTT', 'mqttConfig');
+    toggleVisibility('activeESPNOW', 'espNowConfig');
+    toggleVisibility('useStaticIP', 'staticIPSettings');
 });

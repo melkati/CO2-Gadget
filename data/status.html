@@ -17,11 +17,10 @@
         <a href="index.html">Home</a>
         <a href="preferences.html">Preferences</a>
         <a href="status.html" class="active">Status</a>
-        <a href="ota.html" style="float: right;">OTA</a>
-        <div id="captivePortalStatus">
-            <!-- placeholder for captive portal status -->
+        <a href="ota.html">OTA <span id="server-status-dot" class="status-dot hidden"></span></a>
         </div>
-    </div>
+<!-- Captive Portal Status Container -->
+<div id="captive-portal-status-bar" class="captive-portal-status-bar hidden"></div>
 
     <div class="content">
         <div class="status-item" id="mainDeviceSelectedItem">
@@ -171,40 +170,40 @@
                 .catch(error => console.error('Error fetching version information:', error));
         }
 
-                // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
-                function LoadCaptivePortalStatusFromServer() {
-                    fetch('/getCaptivePortalStatusAsJson')
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Fetching data successful!');
-                            // Update DOM with status data
-                            if (data.captivePortalActive !== undefined) {
-                                document.getElementById('captivePortalActive').textContent = data.captivePortalActive;
-                            } else {
-                                document.getElementById('captivePortalActiveItem').style.display = 'none';
-                            }
+            // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
+            function LoadCaptivePortalStatusFromServer() {
+                fetch('/getCaptivePortalStatusAsJson')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Fetching data successful!');
+                        // Update DOM with status data
+                        if (data.captivePortalActive !== undefined) {
+                            document.getElementById('captivePortalActive').textContent = data.captivePortalActive;
+                        } else {
+                            document.getElementById('captivePortalActiveItem').style.display = 'none';
+                        }
 
-                            if (data.timeCaptivePortalStarted !== undefined) {
-                                document.getElementById('timeCaptivePortalStarted').textContent = data.timeCaptivePortalStarted;
-                            } else {
-                                document.getElementById('timeCaptivePortalStartedItem').style.display = 'none';
-                            }
+                    if (data.timeCaptivePortalStarted !== undefined) {
+                        document.getElementById('timeCaptivePortalStarted').textContent = data.timeCaptivePortalStarted;
+                    } else {
+                        document.getElementById('timeCaptivePortalStartedItem').style.display = 'none';
+                    }
 
-                            if (data.timeToWaitForCaptivePortal !== undefined) {
-                                document.getElementById('timeToWaitForCaptivePortal').textContent = data.timeToWaitForCaptivePortal;
-                            } else {
-                                document.getElementById('timeToWaitForCaptivePortalItem').style.display = 'none';
-                            }
+                    if (data.timeToWaitForCaptivePortal !== undefined) {
+                        document.getElementById('timeToWaitForCaptivePortal').textContent = data.timeToWaitForCaptivePortal;
+                    } else {
+                        document.getElementById('timeToWaitForCaptivePortalItem').style.display = 'none';
+                    }
 
-                            if (data.captivePortalTimeLeft !== undefined) {
-                                document.getElementById('captivePortalTimeLeft').textContent = data.captivePortalTimeLeft;
-                            } else {
-                                document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
-                            }
-                        })
-                        .catch(error => console.error('Error fetching status:', error));
-                }
-            
+                    if (data.captivePortalTimeLeft !== undefined) {
+                        document.getElementById('captivePortalTimeLeft').textContent = data.captivePortalTimeLeft;
+                    } else {
+                        document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+
 
         // Function to Fetch status data from /status endpoint and populate the form
         function loadStatusFromServer() {
@@ -499,6 +498,7 @@
             getBatteryVoltage();
             getFreeHeap();
             getMinFreeHeap();
+            LoadCaptivePortalStatusFromServer();
         }, 1000); // 1000mS  update rate
 
         window.onload = function () {

@@ -134,8 +134,9 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 // Variables for Captive Portal
 #ifdef SUPPORT_CAPTIVE_PORTAL
 bool captivePortalActive = false;
+bool testCaptivePortal = false;
 bool captivePortalNoTimeout = false;
-uint16_t timeToWaitForCaptivePortal = 0;  // Time in seconds to wait for captive portal
+uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
 uint64_t timeCaptivePortalStarted = 0;
 #endif
 
