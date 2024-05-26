@@ -921,27 +921,18 @@ void initWebServer() {
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-#ifdef SUPPORT_CAPTIVE_PORTAL
-            if (captivePortalActive && !request->hasParam("relaxedSecurity")) {
-                // Redirect to preferences.html with the ?relaxedSecurity parameter
-                Serial.println("---> [WiFi] Redirecting to preferences.html with the ?relaxedSecurity parameter");
-                request->redirect("/preferences.html?relaxedSecurity");
-            } else if (captivePortalActive && !request->hasParam("testCaptivePortal")) {
-                // Redirect to preferences.html with the ?captivePortalActive parameter
-                Serial.println("---> [WiFi] Redirecting to preferences.html with the ?testCaptivePortal parameter");
-                request->redirect("/preferences.html?testCaptivePortal");
-            } else {
-                // Serve the preferences.html file
-                AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
-                response->addHeader("Content-Encoding", "gzip");
-                request->send(response);
-            }
-#else
-        /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
-#endif
+            if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
+            if (request->hasParam("testCaptivePortal")) testCaptivePortal = true;
+            if (request->hasParam("captivePortalNoTimeout")) captivePortalNoTimeout = true;
+
+            if (testCaptivePortal) captivePortalActive = true;
+            if (captivePortalActive) relaxedSecurity = true;
+            
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
