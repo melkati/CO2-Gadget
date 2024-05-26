@@ -136,6 +136,7 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 bool captivePortalActive = false;
 bool testCaptivePortal = false;
 bool captivePortalNoTimeout = false;
+bool relaxedSecurity = false;
 uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
 uint64_t timeCaptivePortalStarted = 0;
 #endif
