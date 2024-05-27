@@ -3,7 +3,7 @@
 // Global variable to control relaxed security mode
 var relaxedSecurity = false;
 // Global variable to control captive portal test mode
-var testCaptivePortal = false;
+var forceCaptivePortalActive = false;
 
 /**
  * Fetches version information from the server and updates the version display.
@@ -376,7 +376,7 @@ function handlePasswordFields() {
 
 document.addEventListener("DOMContentLoaded", () => {
     relaxedSecurity = window.location.href.includes("relaxedSecurity");
-    testCaptivePortal = window.location.href.includes("testCaptivePortal");
+    forceCaptivePortalActive = window.location.href.includes("forceCaptivePortalActive");
     handlePasswordFields();
     loadPreferencesFromServer();
     fetchVersion();

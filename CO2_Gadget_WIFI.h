@@ -784,7 +784,7 @@ String getCO2GadgetStatusAsJson() {
 String getCaptivePortalStatusAsJson() {
     StaticJsonDocument<256> doc;
     doc["captivePortalActive"] = captivePortalActive;
-    doc["testCaptivePortal"] = testCaptivePortal;
+    doc["forceCaptivePortalActive"] = forceCaptivePortalActive;
     doc["captivePortalNoTimeout"] = captivePortalNoTimeout;
     doc["timeCaptivePortalStarted"] = timeCaptivePortalStarted;
     doc["timeToWaitForCaptivePortal"] = timeToWaitForCaptivePortal;
@@ -826,25 +826,26 @@ bool handleCaptivePortalSettings(String captivePortalPreferences) {
         Serial.println(error.c_str());
         return false;
     }
-    if (doc.containsKey("testCaptivePortal")) {
+    if (doc.containsKey("captivePortalActive")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
         // Serial.print("-->[CAPT] Received Captive Portal Settings: ");
         // Serial.println(captivePortalPreferences);
-        Serial.println("-->[CAPT] Received Captive Portal Setting testCaptivePortal:            " + String(doc["testCaptivePortal"] ? "Enabled" : "Disabled") + " (Actual value: " + String(testCaptivePortal ? "Enabled" : "Disabled") + ")");
         Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalActive:          " + String(doc["captivePortalActive"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalActive ? "Enabled" : "Disabled") + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting forceCaptivePortalActive:     " + String(doc["forceCaptivePortalActive"] ? "Enabled" : "Disabled") + " (Actual value: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ")");
         Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalNoTimeout:       " + String(doc["captivePortalNoTimeout"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ")");
         Serial.println("-->[CAPT] Received Captive Portal Setting timeCaptivePortalStarted:     " + String(doc["timeCaptivePortalStarted"].as<unsigned long>()) + " (Actual value: " + String(timeCaptivePortalStarted) + ")");
         Serial.println("-->[CAPT] Received Captive Portal Setting timeToWaitForCaptivePortal:   " + String(doc["timeToWaitForCaptivePortal"].as<unsigned long>()) + " (Actual value: " + String(timeToWaitForCaptivePortal) + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalDebug            " + String(doc["captivePortalDebug"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalDebug ? "Enabled" : "Disabled") + ")");
 #endif
-        if ((doc["testCaptivePortal"] == true) && (!testCaptivePortal)) {  // If test captive portal is enabled and it was not enabled before
+        if ((doc["forceCaptivePortalActive"] == true) && (!forceCaptivePortalActive)) {  // If test captive portal is enabled and it was not enabled before
             captivePortalActive = true;
-            testCaptivePortal = true;
+            forceCaptivePortalActive = true;
             timeCaptivePortalStarted = millis();
             Serial.println("-->[CAPT] *** Activating Captive Portal for testing");
 
-        } else if ((doc["testCaptivePortal"] == false) && (testCaptivePortal)) {  // If test captive portal is disabled and it was enabled before
+        } else if ((doc["forceCaptivePortalActive"] == false) && (forceCaptivePortalActive)) {  // If test captive portal is disabled and it was enabled before
             captivePortalActive = false;
-            testCaptivePortal = false;
+            forceCaptivePortalActive = false;
             Serial.println("-->[CAPT] *** Deactivating Captive Portal for testing");
 
         } else if ((doc["captivePortalActive"] == true) && (!captivePortalActive)) {  // If captive portal is enabled and it was not enabled before
@@ -853,7 +854,7 @@ bool handleCaptivePortalSettings(String captivePortalPreferences) {
             Serial.println("-->[CAPT] *** Activating Captive Portal");
         }
 #ifdef DEBUG_CAPTIVE_PORTAL
-        Serial.println("-->[CAPT] Captive Portal enabled for testing: " + String(testCaptivePortal ? "Enabled" : "Disabled"));
+        Serial.println("-->[CAPT] Captive Portal enabled for testing: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled"));
         Serial.println("-->[CAPT] Captive Portal Active: " + String(captivePortalActive ? "Enabled" : "Disabled"));
 #endif
     }
@@ -866,6 +867,12 @@ bool handleCaptivePortalSettings(String captivePortalPreferences) {
         captivePortalNoTimeout = doc["captivePortalNoTimeout"];
         // Print if captive portal timeout is enabled or disabled
         Serial.println("-->[CAPT] Captive Portal captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled"));
+    }
+
+    if (doc.containsKey("captivePortalDebug")) {
+        captivePortalDebug = doc["captivePortalDebug"];
+        // Print if captive portal debug is enabled or disabled
+        Serial.println("-->[CAPT] Captive Portal Debug: " + String(captivePortalDebug ? "Enabled" : "Disabled"));
     }
     return true;
 }
@@ -921,15 +928,21 @@ void initWebServer() {
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
+
             if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
-            if (request->hasParam("testCaptivePortal")) testCaptivePortal = true;
+            if (request->hasParam("forceCaptivePortalActive")) forceCaptivePortalActive = true;
             if (request->hasParam("captivePortalNoTimeout")) captivePortalNoTimeout = true;
 
-            if (testCaptivePortal) captivePortalActive = true;
+            if (WiFi.softAPgetStationNum() > 0) {
+                captivePortalActive = true;
+                Serial.println("-->[WiFi] Captive Portal active because there are connected stations");
+            }
+
+            if (forceCaptivePortalActive) captivePortalActive = true;
             if (captivePortalActive) relaxedSecurity = true;
 
 #ifdef DEBUG_CAPTIVE_PORTAL
-            Serial.println("-->[WiFi] Loading preferences.html with parameters: relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled") + ", testCaptivePortal: " + String(testCaptivePortal ? "Enabled" : "Disabled") + ", captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled"));
+            Serial.println("-->[WiFi] Loading preferences.html with parameters: captivePortalActive: " + String(captivePortalActive ? "Enabled" : "Disabled") + ", forceCaptivePortalActive: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ", captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ", relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled"));
 #endif
 
             /** GZIPPED CONTENT ***/
@@ -1165,16 +1178,6 @@ void initWebServer() {
         }
     });
 
-    // server.on("/disableCaptivePortalTimeout", HTTP_GET, [](AsyncWebServerRequest *request) {
-    //     if (request != nullptr) {
-    //         captivePortalNoTimeout = true;
-    //         Serial.println("-->[WiFi] Captive Portal timeout disabled");
-    //         request->send(200, "text/plain", "Captive Portal timeout disabled");
-    //     } else {
-    //         Serial.println("---> [WiFi] Error: request is null");
-    //     }
-    // });
-
     server.on("/getMeasurementInterval", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             request->send(200, "text/plain", String(measurementInterval));
@@ -1399,7 +1402,6 @@ void initWifi() {
 class CaptiveRequestHandler : public AsyncWebHandler {
    public:
     CaptiveRequestHandler() {
-        // initWebServer();
         Serial.println("-->[WiFi] CAPTIVE PORTAL STARTED");
     }
 
@@ -1411,28 +1413,13 @@ class CaptiveRequestHandler : public AsyncWebHandler {
     }
 
     void handleRequest(AsyncWebServerRequest *request) {
-        request->redirect("/index.html");
+        request->redirect("/preferences.html");
 #ifdef DEBUG_WIFI_EVENTS
         Serial.println("-->[WiFi] Captive portal request");
 #endif
+        captivePortalActive = true;  // Set captive portal active to true
         timeCaptivePortalStarted = millis();
     }
-
-    // void handleRequest(AsyncWebServerRequest *request) {
-    //     request->redirect("/index.html");
-    //     Serial.println("-->[WiFi] Captive portal request redirected to /index.html");
-    // }
-
-    // void handleRequest(AsyncWebServerRequest *request) {
-    //     AsyncResponseStream *response = request->beginResponseStream("text/html");
-    //     response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
-    //     response->print("<p>This is out captive portal front page.</p>");
-    //     response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
-    //     response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
-    //     response->print("</body></html>");
-    //     request->send(response);
-    //     Serial.println("-->[WiFi] Captive portal request");
-    // }
 };
 
 static const void initCaptivePortal() {
@@ -1469,10 +1456,10 @@ void wifiCaptivePortalLoop() {
 
 #ifdef DEBUG_CAPTIVE_PORTAL
         static uint64_t lastPrintTime = 0;
-        if (millis() - lastPrintTime >= 1000) {
+        if (millis() - lastPrintTime >= 5000) {
             lastPrintTime = millis();
             int connectedStations = WiFi.softAPgetStationNum();
-            Serial.println("-->[CAPT] Captive portal active. Connected stations: " + String(connectedStations));
+            if (connectedStations > 1) Serial.println("-->[CAPT] Captive portal active. Connected stations: " + String(connectedStations));
             // Serial.println("-->[CAPT] Time to wait for Captive Portal: " + String(timeToWaitForCaptivePortal) + " seconds. ");
             // Serial.println("-->[CAPT] Time Captive Portal started: " + String(timeCaptivePortalStarted) + " milliseconds. ");
             Serial.println("-->[CAPT] Time left to disable captive portal: " + String((timeToWaitForCaptivePortal - (millis() - timeCaptivePortalStarted) / 1000)) + " seconds. ");
@@ -1480,7 +1467,7 @@ void wifiCaptivePortalLoop() {
 #endif
         if ((millis() > timeCaptivePortalStarted + timeToWaitForCaptivePortal * 1000)) {
             captivePortalActive = false;
-            testCaptivePortal = false;
+            forceCaptivePortalActive = false;
             Serial.println("-->[CAPT] CAPTIVE PORTAL TIMEOUT. DISABLE CAPTIVE PORTAL");
         }
     }

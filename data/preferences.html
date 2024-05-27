@@ -22,11 +22,15 @@
             <a href="getCaptivePortalStatusAsJson">SPS</a>
             <a href="ota.html">OTA </a>
             <span id="server-status-dot" class="status-dot status-dot-hidden"></span>
+            <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
         </div>
     </div>
 
     <!-- Captive Portal Status Container -->
     <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+
+    <!-- Debug Window Container -->
+    <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
         <h1>CO2 Gadget Preferences</h1>
@@ -105,8 +109,8 @@
                             <label for="hostName">Host Name:
                                 <span class="tooltip-icon">ℹ️</span>
                                 <span class="tooltip-text">The hostname of the device on the network.</span>
-                                </label>
-                                <input type="text" id="hostName" name="hostName" value="">
+                            </label>
+                            <input type="text" id="hostName" name="hostName" value="">
                         </div>
                     </fieldset>
                     <fieldset>
@@ -377,7 +381,7 @@
                             <span class="tooltip-text">The type of NeoPixel used. 0 = NEO_GRB + NEO_KHZ800, 1 = NEO_RGB
                                 + NEO_KHZ800, 2 = NEO_RGBW +
                                 NEO_KHZ800.</span>
-                                <input type="number" id="selNeopxType" name="selNeopxType" value="">
+                            <input type="number" id="selNeopxType" name="selNeopxType" value="">
                         </label>
                     </div>
                 </fieldset>
