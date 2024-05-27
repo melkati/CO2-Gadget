@@ -1,3 +1,8 @@
+var captivePortalDebug = true;
+var captivePortalStatusBarActive = false;
+var testCaptivePortal = false;
+var captivePortalActive = false;
+
 // Global variables to store the previous state
 var previousData = {
     captivePortalActive: false,
@@ -5,39 +10,40 @@ var previousData = {
     captivePortalNoTimeout: false
 };
 
-var captivePortalDebug = true;
-var captivePortalStatusBarActive = false;
-var testCaptivePortal = false;
-var captivePortalActive = false;
+var previousServerStatusDotState = {
+    show: null,
+    colorClass: '',
+    title: ''
+};
 
 /**
- * Toggles the visibility of the status bar.
- */
-function toggleStatusBar() {
-    const captivePortalStatusBar = document.getElementById('captive-portal-status-bar');
-    if (captivePortalStatusBar) {
-        captivePortalStatusBar.classList.toggle('hidden-captive-portal-status-bar');
-        captivePortalStatusBarActive = !captivePortalStatusBar.classList.contains('hidden-captive-portal-status-bar');
-        if (captivePortalDebug) {
-            console.log('Toggling status bar visibility');
-            console.log('Status bar visibility is now:', captivePortalStatusBarActive);
-        }
-    } else {
-        console.error('Element with ID "captive-portal-status-bar" not found.');
-    }
-}
-
-/**
- * Shows or hides the Captive Portal status bar based on the provided flag.
+ * Shows or hides the captive portal status bar.
  * @param {boolean} show - Determines whether to show or hide the status bar.
  */
 function showCaptivePortalStatusBar(show) {
-    const captivePortalStatusBar = document.getElementById('captive-portal-status-bar');
-    if (captivePortalStatusBar) {
-        if (captivePortalDebug) console.log('Showing captive portal status bar:', show);
-        captivePortalStatusBar.classList.toggle('hidden-captive-portal-status-bar', !show);
-    } else {
-        console.error('Element with ID "captive-portal-status-bar" not found.');
+    if (!captivePortalStatusBarActive === show) {
+        const captivePortalStatusBar = document.getElementById('captive-portal-status-bar');
+        if (captivePortalStatusBar) {
+            if (captivePortalDebug) console.log('Captive portal status bar found:', captivePortalStatusBar);
+            if (show && !captivePortalStatusBarActive) {
+                if (captivePortalDebug) console.log('Showing captive portal status bar');
+                captivePortalStatusBar.classList.remove('hidden-captive-portal-status-bar');
+                captivePortalStatusBarActive = true;
+                return 'Captive portal status bar shown';
+            }
+
+            if (!show && captivePortalStatusBarActive) {
+                if (captivePortalDebug) console.log('Hiding captive portal status bar');
+                captivePortalStatusBar.classList.add('hidden-captive-portal-status-bar');
+                captivePortalStatusBarActive = false;
+                return 'Captive portal status bar hidden';
+            }
+
+            return 'Captive portal status bar visibility unchanged';
+        } else {
+            console.error('Element with ID "captive-portal-status-bar" not found.');
+            return 'Error: Element not found';
+        }
     }
 }
 
@@ -87,9 +93,9 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
         },
         body: JSON.stringify({
             timeToWaitForCaptivePortal: timeToWait,
-            captivePortalActive: previousData.captivePortalActive,
+            captivePortalActive: captivePortalActive,
             captivePortalNoTimeout: captivePortalNoTimeout,
-            testCaptivePortal: previousData.testCaptivePortal
+            testCaptivePortal: testCaptivePortal
         })
     })
         .then(response => {
@@ -116,6 +122,8 @@ function handleCaptivePortalData(data) {
     const changes = {};
     const propertiesToCheck = ['captivePortalActive', 'testCaptivePortal', 'captivePortalNoTimeout'];
 
+    if (captivePortalDebug) console.log('Received captive portal data:', data);
+
     propertiesToCheck.forEach(key => {
         if (data[key] !== previousData[key]) {
             changes[key] = { previous: previousData[key], current: data[key] };
@@ -131,9 +139,17 @@ function handleCaptivePortalData(data) {
         captivePortalDebug = data.captivePortalDebug;
     }
 
+    if (data.testCaptivePortal) {
+        testCaptivePortal = true;
+        data.captivePortalActive = true;
+    } else {
+        testCaptivePortal = false;
+    }
+
     if (data.captivePortalActive) {
+        captivePortalActive = true;
         previousData.captivePortalActive = true;
-        showCaptivePortalStatusBar(true);
+        // showCaptivePortalStatusBar(true);
 
         const newStatusContent = data.testCaptivePortal ? 'Captive portal active (test mode)' : 'Captive portal active';
         updateStatusBar(newStatusContent);
@@ -164,49 +180,62 @@ function handleCaptivePortalData(data) {
             });
         }
     } else {
-        clearCaptivePortalStatusBar();
+        showCaptivePortalStatusBar(false);
     }
 
-    showCaptivePortalStatusBar(previousData.captivePortalActive);
-}
-
-/**
- * Clears the captive portal status bar content.
- */
-function clearCaptivePortalStatusBar() {
-    const captivePortalStatusBar = document.getElementById('captive-portal-status-bar');
-    if (captivePortalStatusBar) {
-        captivePortalStatusBar.innerHTML = '';
-        captivePortalStatusBar.classList.add('hidden-captive-portal-status-bar');
-        captivePortalStatusBarActive = false;
-    } else {
-        console.error('Element with ID "captive-portal-status-bar" not found.');
-    }
+    updateServerStatusDot(); // Ensure the status dot is updated after handling captive portal data
 }
 
 /**
  * Fetches the captive portal settings from the server.
  */
 function getCaptivePortalSettings() {
-    if (!previousData.captivePortalActive) return;
-
+    if (!captivePortalStatusBarActive) return;
     fetch('/getCaptivePortalStatusAsJson')
         .then(response => response.json())
-        .then(handleCaptivePortalData)
+        .then(captivePortalSettings => {
+            handleCaptivePortalData(captivePortalSettings);
+        })
         .catch(error => {
             console.error('Error fetching captive portal status:', error);
-            showServerStatusDot(true);
+            showServerStatusDot(true, 'status-dot-red', 'Connection to server lost');
         });
 }
 
 /**
  * Shows or hides the server status dot based on the provided flag.
  * @param {boolean} show - Determines whether to show or hide the server status dot.
+ * @param {string} [colorClass] - The color class to apply.
+ * @param {string} [title] - The title to apply for hover text.
  */
-function showServerStatusDot(show) {
+function showServerStatusDot(show, colorClass = 'status-dot-white', title = '') {
     const serverStatusDot = document.getElementById('server-status-dot');
     if (serverStatusDot) {
-        serverStatusDot.classList.toggle('hidden', !show);
+        const hasStateChanged =
+            previousServerStatusDotState.show !== show ||
+            previousServerStatusDotState.colorClass !== colorClass ||
+            previousServerStatusDotState.title !== title;
+
+        if (hasStateChanged) {
+            serverStatusDot.classList.toggle('status-dot-hidden', !show);
+            serverStatusDot.classList.remove('status-dot-white', 'status-dot-blue', 'status-dot-red', 'status-dot-hidden');
+            if (show) {
+                serverStatusDot.classList.add(colorClass);
+                serverStatusDot.title = title;
+                if (captivePortalDebug) {
+                    console.log(`Showing server status dot with color: ${colorClass} and title: ${title}`);
+                }
+            } else {
+                if (captivePortalDebug) {
+                    console.log('Hiding server status dot');
+                }
+            }
+
+            // Update previous state
+            previousServerStatusDotState.show = show;
+            previousServerStatusDotState.colorClass = colorClass;
+            previousServerStatusDotState.title = title;
+        }
     } else {
         console.error('Element with ID "server-status-dot" not found.');
     }
@@ -218,47 +247,104 @@ function showServerStatusDot(show) {
 function checkServerConnection() {
     fetch('/pingServer')
         .then(response => {
-            showServerStatusDot(!response.ok);
+            if (response.ok) {
+                updateServerStatusDot(); // Update status dot based on current state
+            } else {
+                captivePortalActive = false; // Mark captive portal as inactive
+                updateServerStatusDot(); // Update status dot to reflect the lost connection
+            }
         })
         .catch(error => {
             console.error('Error pinging server:', error);
-            showServerStatusDot(true);
+            captivePortalActive = false; // Mark captive portal as inactive
+            updateServerStatusDot(); // Update status dot to reflect the lost connection
         });
 }
 
-// Initial setup based on URL parameters
-if (window.location.href.includes("debugCaptivePortal")) {
-    captivePortalDebug = true;
-    console.log('Forcing captive portal debug mode to be active by parameter in URL');
+/**
+ * Updates the server status dot based on the captive portal status.
+ */
+function updateServerStatusDot() {
+    const serverStatusDot = document.getElementById('server-status-dot');
+    if (serverStatusDot) {
+        let show, colorClass, title;
+
+        if (!captivePortalActive) {
+            show = true;
+            colorClass = 'status-dot-hidden';
+            title = 'Captive portal inactive';
+        } else if (testCaptivePortal) {
+            show = true;
+            colorClass = 'status-dot-blue';
+            title = 'Captive portal active (test mode)';
+        } else {
+            show = true;
+            colorClass = 'status-dot-white';
+            title = 'Captive portal active';
+        }
+
+        // Call showServerStatusDot with the new state
+        showServerStatusDot(show, colorClass, title);
+
+        if (captivePortalDebug) {
+            console.log('Updated server status dot based on captive portal status');
+            console.log('captivePortalActive:', captivePortalActive, 'testCaptivePortal:', testCaptivePortal);
+        }
+    } else {
+        console.error('Element with ID "server-status-dot" not found.');
+    }
 }
 
-if (window.location.href.includes("testCaptivePortal")) {
-    if (captivePortalDebug) console.log('Forcing captive portal to be active in test mode by parameter in URL');
-    testCaptivePortal = true;
-    captivePortalActive = true;
-    previousData.testCaptivePortal = true;
-    previousData.captivePortalActive = true;
-}
+/**
+ * Initializes the Captive Portal Status Bar.
+ */
+function initializeCaptivePortalStatusBar() {
+    if (captivePortalDebug) console.log('Initializing captive portal status bar');
 
-// Fetch initial settings and set intervals to update them periodically
-document.addEventListener("DOMContentLoaded", function () {
-    if (captivePortalDebug) console.log('Document loaded. Initializing captive portal status bar');
-
-    // Injecting the content dynamically for the status bar
     const captivePortalStatusBar = document.getElementById("captive-portal-status-bar");
     if (captivePortalStatusBar) {
         if (captivePortalDebug) console.log('Injecting captive portal status bar content');
         captivePortalStatusBar.innerHTML = `
             <span id="status-content"></span>
-            <button id="hide-captive-portal-status-bar-button" onclick="toggleStatusBar()">Hide</button>
+            <span id="hide-captive-portal-status-bar-button" onclick="showCaptivePortalStatusBar(false)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="black" stroke-width="2"/>
+                    <line x1="8" y1="8" x2="16" y2="16" stroke="black" stroke-width="2"/>
+                    <line x1="16" y1="8" x2="8" y2="16" stroke="black" stroke-width="2"/>
+                </svg>
+            </span>
         `;
+        if (testCaptivePortal) showCaptivePortalStatusBar(true);
     } else {
         console.error('Element with ID "captive-portal-status-bar" not found.');
     }
+}
 
+/**
+ * Sets up the initial settings based on URL parameters.
+ */
+function setupInitialSettings() {
+    if (window.location.href.includes("debugCaptivePortal")) {
+        captivePortalDebug = true;
+        console.log('Forcing captive portal debug mode to be active by parameter in URL');
+    }
+
+    if (window.location.href.includes("testCaptivePortal")) {
+        if (captivePortalDebug) console.log('Forcing captive portal to be active in test mode by parameter in URL');
+        testCaptivePortal = true;
+        captivePortalActive = true;
+    }
+
+    setCaptivePortalSettings(60, true);
+}
+
+/**
+ * Updates the status bar content and sets up the event listener for the disable timeout checkbox.
+ */
+function updateStatusBarContent() {
     if (captivePortalActive) {
         if (captivePortalDebug) console.log('Captive portal active. Showing status bar');
-        showCaptivePortalStatusBar(true);
+        // showCaptivePortalStatusBar(true);
         updateStatusBar('Captive portal active (test mode)');
 
         const statusContentElement = document.getElementById('status-content');
@@ -284,7 +370,35 @@ document.addEventListener("DOMContentLoaded", function () {
         if (captivePortalDebug) console.log('Setting initial captive portal settings');
         setCaptivePortalSettings(60, true);
     }
+}
+
+/**
+ * Adds the 'active' class to the current page link in the navigation bar.
+ */
+function highlightCurrentPage() {
+    const currentPage = window.location.pathname.split("/").pop();
+    const navLinks = document.querySelectorAll(".navbar .nav-content a");
+
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === currentPage) {
+            link.classList.add("active");
+        }
+    });
+}
+
+/**
+ * Initializes after the DOM content has loaded.
+ */
+document.addEventListener("DOMContentLoaded", function () {
+    if (captivePortalDebug) console.log('Document loaded. Initializing captive portal status bar');
+    getCaptivePortalSettings(); // Fetch initial settings
+
+    setupInitialSettings();
+    initializeCaptivePortalStatusBar();
+    updateStatusBarContent();
 
     setInterval(getCaptivePortalSettings, 1000);
     setInterval(checkServerConnection, 1000);
+
+    highlightCurrentPage(); // Highlight the current page in the navigation
 });

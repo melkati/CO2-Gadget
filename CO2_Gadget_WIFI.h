@@ -927,15 +927,19 @@ void initWebServer() {
 
             if (testCaptivePortal) captivePortalActive = true;
             if (captivePortalActive) relaxedSecurity = true;
-            
+
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[WiFi] Loading preferences.html with parameters: relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled") + ", testCaptivePortal: " + String(testCaptivePortal ? "Enabled" : "Disabled") + ", captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled"));
+#endif
+
             /** GZIPPED CONTENT ***/
             AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
-
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
+        timeCaptivePortalStarted = millis();
     });
 
     server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
