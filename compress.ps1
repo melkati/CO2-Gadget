@@ -1,3 +1,4 @@
+
 # Rutas de directorios de entrada y salida
 $sourceDirectory = "data"
 $outputDirectory = "$sourceDirectory"

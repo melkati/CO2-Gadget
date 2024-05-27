@@ -10,12 +10,6 @@ var previousData = {
     captivePortalNoTimeout: false
 };
 
-var previousServerStatusDotState = {
-    show: null,
-    colorClass: '',
-    title: ''
-};
-
 /**
  * Shows or hides the captive portal status bar.
  * @param {boolean} show - Determines whether to show or hide the status bar.
@@ -77,7 +71,7 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
 
     if (captivePortalDebug) {
         console.log('Setting captivePortalNoTimeout to:', captivePortalNoTimeout);
-        console.log('disableTimeoutCheckbox checked:', disableTimeoutCheckbox ? disableTimeoutCheckbox.checked : 'N/A');
+        // console.log('disableTimeoutCheckbox checked:', disableTimeoutCheckbox ? disableTimeoutCheckbox.checked : 'N/A');
         console.log('Time to wait:', timeToWait);
     }
 
@@ -95,7 +89,8 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
             timeToWaitForCaptivePortal: timeToWait,
             captivePortalActive: captivePortalActive,
             captivePortalNoTimeout: captivePortalNoTimeout,
-            testCaptivePortal: testCaptivePortal
+            testCaptivePortal: testCaptivePortal,
+            captivePortalDebug: captivePortalDebug
         })
     })
         .then(response => {
@@ -103,11 +98,13 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
                 throw new Error('Network response was not ok');
             }
             if (captivePortalDebug) {
+                // console.log('Response from server:', response);
                 console.log('Settings updated successfully:', {
+                    testCaptivePortal: testCaptivePortal,
+                    captivePortalActive: captivePortalActive,
+                    captivePortalNoTimeout: captivePortalNoTimeout,
                     timeToWaitForCaptivePortal: timeToWait,
-                    testCaptivePortal: previousData.testCaptivePortal,
-                    captivePortalActive: previousData.captivePortalActive,
-                    captivePortalNoTimeout: captivePortalNoTimeout
+                    captivePortalDebug: captivePortalDebug
                 });
             }
         })
@@ -115,10 +112,123 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
 }
 
 /**
+ * Updates the debug window with the given data.
+ * @param {Object} data - The data to display in the debug window.
+ */
+function updateDebugWindow(data) {
+    const debugWindow = document.getElementById('debug-window');
+    if (debugWindow) {
+        debugWindow.innerHTML = `
+            <div>captivePortalActive: ${data.captivePortalActive}</div>
+            <div>testCaptivePortal: ${data.testCaptivePortal}</div>
+            <div>captivePortalNoTimeout: ${data.captivePortalNoTimeout}</div>
+            <div>timeToWaitForCaptivePortal: ${data.timeToWaitForCaptivePortal}</div>
+            <div>captivePortalTimeLeft: ${data.captivePortalTimeLeft}</div>
+            <div>captivePortalDebug: ${data.captivePortalDebug}</div>
+        `;
+    }
+}
+
+/**
+ * Shows or hides the debug window based on the provided flag.
+ * @param {boolean} show - Determines whether to show or hide the debug window.
+ */
+function showDebugWindow(show) {
+    const debugWindow = document.getElementById('debug-window');
+    if (debugWindow) {
+        if (show) {
+            debugWindow.classList.remove('hidden-debug-window');
+        } else {
+            debugWindow.classList.add('hidden-debug-window');
+        }
+    } else {
+        console.error('Element with ID "debug-window" not found.');
+    }
+}
+
+
+/**
  * Handles the response data from the captive portal status fetch and updates the UI.
  * @param {Object} data - The data received from the server.
  */
 function handleCaptivePortalData(data) {
+    const changes = {};
+    const propertiesToCheck = ['captivePortalActive', 'forceCaptivePortalActive', 'captivePortalNoTimeout'];
+
+    if (captivePortalDebug) console.log('Received captive portal data:', data);
+
+    // Check for changes in properties
+    propertiesToCheck.forEach(key => {
+        if (data[key] !== previousData[key]) {
+            changes[key] = { previous: previousData[key], current: data[key] };
+            previousData[key] = data[key];
+        }
+    });
+
+    if (Object.keys(changes).length > 0 && captivePortalDebug) {
+        console.log('Detected changes in captive portal data:', changes);
+    }
+
+    // Update debug mode if present in data
+    if (data.captivePortalDebug !== undefined) {
+        captivePortalDebug = data.captivePortalDebug;
+    }
+
+    // Update active states
+    forceCaptivePortalActive = data.forceCaptivePortalActive || false;
+    captivePortalActive = (data.captivePortalActive || false) || forceCaptivePortalActive;
+
+    if (captivePortalActive) {
+        showCaptivePortalStatusBar(true);
+
+        const newStatusContent = forceCaptivePortalActive ? 'Captive portal active (test mode)' : 'Captive portal active';
+        updateStatusBar(newStatusContent);
+
+        const statusContentElement = document.getElementById('status-content');
+        if (statusContentElement) {
+            if (data.captivePortalNoTimeout) {
+                statusContentElement.innerHTML = `
+                    <span>Timeout Disabled</span>
+                    <label><input type="checkbox" id="disableTimeoutCheckbox" ${data.captivePortalNoTimeout ? 'checked' : ''}> Enable</label>
+                `;
+            } else {
+                statusContentElement.innerHTML = `
+                    <span>Timeout: <strong>${data.captivePortalTimeLeft}</strong>s</span>
+                    <label><input type="checkbox" id="disableTimeoutCheckbox" ${data.timeToWaitForCaptivePortal === 0 ? 'checked' : ''}> Disable</label>
+                `;
+            }
+        } else {
+            console.error('Element with ID "status-content" not found.');
+        }
+
+        const disableTimeoutCheckbox = document.getElementById('disableTimeoutCheckbox');
+        if (disableTimeoutCheckbox) {
+            disableTimeoutCheckbox.addEventListener('change', function () {
+                const timeToWait = this.checked ? 0 : data.timeToWaitForCaptivePortal;
+                console.log('Setting time to wait:', timeToWait);
+                setCaptivePortalSettings(timeToWait);
+            });
+        }
+    } else {
+        showCaptivePortalStatusBar(false);
+    }
+
+    updateServerStatusDot(); // Ensure the status dot is updated after handling captive portal data
+
+    // Update the debug window if debug mode is active
+    if (captivePortalDebug) {
+        updateDebugWindow(data);
+        showDebugWindow(true);
+    } else {
+        showDebugWindow(false);
+    }
+}
+
+/**
+ * Handles the response data from the captive portal status fetch and updates the UI.
+ * @param {Object} data - The data received from the server.
+ */
+function handleCaptivePortalDataOld(data) {
     const changes = {};
     const propertiesToCheck = ['captivePortalActive', 'testCaptivePortal', 'captivePortalNoTimeout'];
 
@@ -149,7 +259,7 @@ function handleCaptivePortalData(data) {
     if (data.captivePortalActive) {
         captivePortalActive = true;
         previousData.captivePortalActive = true;
-        // showCaptivePortalStatusBar(true);
+        showCaptivePortalStatusBar(true);
 
         const newStatusContent = data.testCaptivePortal ? 'Captive portal active (test mode)' : 'Captive portal active';
         updateStatusBar(newStatusContent);
@@ -184,13 +294,21 @@ function handleCaptivePortalData(data) {
     }
 
     updateServerStatusDot(); // Ensure the status dot is updated after handling captive portal data
+
+    // Update the debug window if debug mode is active
+    if (captivePortalDebug) {
+        updateDebugWindow(data);
+        showDebugWindow(true);
+    } else {
+        showDebugWindow(false);
+    }
 }
 
 /**
  * Fetches the captive portal settings from the server.
  */
 function getCaptivePortalSettings() {
-    if (!captivePortalStatusBarActive) return;
+    // if (!captivePortalStatusBarActive) return;
     fetch('/getCaptivePortalStatusAsJson')
         .then(response => response.json())
         .then(captivePortalSettings => {
@@ -201,6 +319,12 @@ function getCaptivePortalSettings() {
             showServerStatusDot(true, 'status-dot-red', 'Connection to server lost');
         });
 }
+
+let previousServerStatusDotState = {
+    show: null,
+    colorClass: '',
+    title: ''
+};
 
 /**
  * Shows or hides the server status dot based on the provided flag.
@@ -217,18 +341,12 @@ function showServerStatusDot(show, colorClass = 'status-dot-white', title = '') 
             previousServerStatusDotState.title !== title;
 
         if (hasStateChanged) {
-            serverStatusDot.classList.toggle('status-dot-hidden', !show);
-            serverStatusDot.classList.remove('status-dot-white', 'status-dot-blue', 'status-dot-red', 'status-dot-hidden');
-            if (show) {
-                serverStatusDot.classList.add(colorClass);
-                serverStatusDot.title = title;
-                if (captivePortalDebug) {
-                    console.log(`Showing server status dot with color: ${colorClass} and title: ${title}`);
-                }
-            } else {
-                if (captivePortalDebug) {
-                    console.log('Hiding server status dot');
-                }
+            serverStatusDot.className = 'status-dot'; // Reset class
+            serverStatusDot.classList.add(show ? colorClass : 'status-dot-hidden');
+            serverStatusDot.title = title;
+
+            if (captivePortalDebug) {
+                console.log(`Server status dot updated: show=${show}, colorClass=${colorClass}, title=${title}`);
             }
 
             // Update previous state
@@ -265,33 +383,28 @@ function checkServerConnection() {
  * Updates the server status dot based on the captive portal status.
  */
 function updateServerStatusDot() {
-    const serverStatusDot = document.getElementById('server-status-dot');
-    if (serverStatusDot) {
-        let show, colorClass, title;
+    let show, colorClass, title;
 
-        if (!captivePortalActive) {
-            show = true;
-            colorClass = 'status-dot-hidden';
-            title = 'Captive portal inactive';
-        } else if (testCaptivePortal) {
-            show = true;
-            colorClass = 'status-dot-blue';
-            title = 'Captive portal active (test mode)';
-        } else {
-            show = true;
-            colorClass = 'status-dot-white';
-            title = 'Captive portal active';
-        }
-
-        // Call showServerStatusDot with the new state
-        showServerStatusDot(show, colorClass, title);
-
-        if (captivePortalDebug) {
-            console.log('Updated server status dot based on captive portal status');
-            console.log('captivePortalActive:', captivePortalActive, 'testCaptivePortal:', testCaptivePortal);
-        }
+    if (!captivePortalActive) {
+        show = false;
+        colorClass = 'status-dot-hidden';
+        title = 'Captive portal inactive';
+    } else if (forceCaptivePortalActive) {
+        show = true;
+        colorClass = 'status-dot-blue';
+        title = 'Captive portal active (test mode)';
     } else {
-        console.error('Element with ID "server-status-dot" not found.');
+        show = true;
+        colorClass = 'status-dot-white';
+        title = 'Captive portal active';
+    }
+
+    // Call showServerStatusDot with the new state
+    showServerStatusDot(show, colorClass, title);
+
+    if (captivePortalDebug) {
+        console.log('Updated server status dot based on captive portal status');
+        console.log('captivePortalActive:', captivePortalActive, 'forceCaptivePortalActive:', forceCaptivePortalActive);
     }
 }
 
@@ -390,7 +503,7 @@ function highlightCurrentPage() {
  * Initializes after the DOM content has loaded.
  */
 document.addEventListener("DOMContentLoaded", function () {
-    if (captivePortalDebug) console.log('Document loaded. Initializing captive portal status bar');
+    if (captivePortalDebug) console.log('Document loaded. Initializing captive portal');
     getCaptivePortalSettings(); // Fetch initial settings
 
     setupInitialSettings();

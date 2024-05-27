@@ -445,11 +445,11 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
-    // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If testCaptivePortal is also true, draw it blue
+    // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If forceCaptivePortalActive is also true, draw it blue
 
     if (captivePortalActive) {
         tft.drawRect(posX - 2, posY - 2, 16 + 4, 16 + 4, TFT_BLACK);
-        if (testCaptivePortal) {
+        if (forceCaptivePortalActive) {
             tft.fillCircle(posX + 8, posY + 8, 6, TFT_BLUE);
         } else {
             tft.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);

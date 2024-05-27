@@ -382,16 +382,12 @@ button:hover {
   height: 10px;
   border-radius: 50%;
   display: inline-block;
+  margin-left: 15px; /* Adjust as needed to position the dot */
+  vertical-align: middle;
 }
 
 .status-dot-hidden {
-  visibility: hidden;
-}
-
-.status-dot-white,
-.status-dot-blue,
-.status-dot-red {
-  visibility: visible;
+  display: none;
 }
 
 .status-dot-white {
@@ -435,4 +431,24 @@ button:hover {
   100% {
       opacity: 0;
   }
+}
+
+.debug-window {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 250px;
+  background-color: rgba(135, 206, 250, 0.5);
+  color: #333333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  font-size: 0.9em;
+  z-index: 1000;
+  pointer-events: none;
+  /* Make the debug window not clickable */
+}
+
+.hidden-debug-window {
+  display: none;
 }
