@@ -132,12 +132,16 @@ function updateDebugWindow(data) {
         if (captivePortalDebug) console.log('Updating debug window with data:', data);
         let content = `
             <div>captivePortalActive: ${data.captivePortalActive}</div>
-            <div>testCaptivePortal: ${data.testCaptivePortal}</div>
             <div>captivePortalNoTimeout: ${data.captivePortalNoTimeout}</div>
             <div>timeToWaitForCaptivePortal: ${data.timeToWaitForCaptivePortal}</div>
             <div>captivePortalTimeLeft: ${data.captivePortalTimeLeft}</div>
             <div>captivePortalDebug: ${data.captivePortalDebug}</div>
         `;
+        // if testCaptivePortal is present in the data, add it to the debug window
+        if (data.testCaptivePortal !== undefined) {
+            if (captivePortalDebug) console.log('Adding testCaptivePortal to debug window:', data.testCaptivePortal);
+            content += `<div>testCaptivePortal: ${data.testCaptivePortal}</div>`;
+        }
         // if relaxedSecurity is present in the data, add it to the debug window
         if (data.relaxedSecurity !== undefined) {
             if (captivePortalDebug) console.log('Adding relaxedSecurity to debug window:', data.relaxedSecurity);
@@ -437,44 +441,50 @@ function highlightCurrentPage() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    if (captivePortalDebug) console.log('Document loaded. Initializing captive portal');
-    getCaptivePortalSettings(); // Fetch initial settings
+    const currentPage = window.location.pathname.split("/").pop();
 
-    setupInitialSettings();
-    initializeCaptivePortalStatusBar();
-    updateStatusBarContent();
+    if (currentPage === "preferences.html") {
+        if (captivePortalDebug) console.log('Document loaded. Initializing captive portal for preferences.html');
+        getCaptivePortalSettings(); // Fetch initial settings
 
-    setInterval(getCaptivePortalSettings, 1000);
-    setInterval(checkServerConnection, 1000);
+        setupInitialSettings();
+        initializeCaptivePortalStatusBar();
+        updateStatusBarContent();
 
-    highlightCurrentPage(); // Highlight the current page in the navigation
+        setInterval(getCaptivePortalSettings, 1000);
+        setInterval(checkServerConnection, 1000);
 
-    // Create and append close button to the debug window
-    const debugWindow = document.getElementById('debug-window');
-    if (debugWindow) {
-        const closeButton = document.createElement('button');
-        closeButton.id = 'close-debug-window';
-        closeButton.innerHTML = '[X]';
-        closeButton.onclick = () => {
-            debugWindow.style.display = 'none';
-        };
-        debugWindow.appendChild(closeButton);
+        highlightCurrentPage(); // Highlight the current page in the navigation
 
-        const debugContent = document.createElement('div');
-        debugContent.id = 'debug-content';
-        debugWindow.appendChild(debugContent);
+        // Create and append close button to the debug window
+        const debugWindow = document.getElementById('debug-window');
+        if (debugWindow) {
+            const closeButton = document.createElement('button');
+            closeButton.id = 'close-debug-window';
+            closeButton.innerHTML = '[X]';
+            closeButton.onclick = () => {
+                debugWindow.style.display = 'none';
+            };
+            debugWindow.appendChild(closeButton);
 
-        // Function to show debug window for debugging purposes
-        function showDebugWindow(content) {
-            debugContent.innerText = content;
-            debugWindow.style.display = 'block';
-        }
+            const debugContent = document.createElement('div');
+            debugContent.id = 'debug-content';
+            debugWindow.appendChild(debugContent);
 
-        // Example usage: show debug window when captivePortalDebug is true
-        if (captivePortalDebug) {
-            showDebugWindow('Debug information will be displayed here.');
+            // Function to show debug window for debugging purposes
+            function showDebugWindow(content) {
+                debugContent.innerText = content;
+                debugWindow.style.display = 'block';
+            }
+
+            // Example usage: show debug window when captivePortalDebug is true
+            if (captivePortalDebug) {
+                showDebugWindow('Debug information will be displayed here.');
+            }
+        } else {
+            console.error('Debug window element not found');
         }
     } else {
-        console.error('Debug window element not found');
+        if (captivePortalDebug) console.log('Not on preferences.html, skipping debug window initialization');
     }
 });
