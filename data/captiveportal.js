@@ -127,10 +127,10 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
  * @param {Object} data - The data to display in the debug window.
  */
 function updateDebugWindow(data) {
-    const debugWindow = document.getElementById('debug-window');
-    if (debugWindow) {
+    const debugContent = document.getElementById('debug-content');
+    if (debugContent) {
         if (captivePortalDebug) console.log('Updating debug window with data:', data);
-        debugWindow.innerHTML = `
+        let content = `
             <div>captivePortalActive: ${data.captivePortalActive}</div>
             <div>testCaptivePortal: ${data.testCaptivePortal}</div>
             <div>captivePortalNoTimeout: ${data.captivePortalNoTimeout}</div>
@@ -141,8 +141,9 @@ function updateDebugWindow(data) {
         // if relaxedSecurity is present in the data, add it to the debug window
         if (data.relaxedSecurity !== undefined) {
             if (captivePortalDebug) console.log('Adding relaxedSecurity to debug window:', data.relaxedSecurity);
-            debugWindow.innerHTML += `<div>relaxedSecurity: ${data.relaxedSecurity}</div>`;
+            content += `<div>relaxedSecurity: ${data.relaxedSecurity}</div>`;
         }
+        debugContent.innerHTML = content;
     }
 }
 
@@ -162,7 +163,6 @@ function showDebugWindow(show) {
         console.error('Element with ID "debug-window" not found.');
     }
 }
-
 
 /**
  * Handles the response data from the captive portal status fetch and updates the UI.
@@ -436,9 +436,6 @@ function highlightCurrentPage() {
     });
 }
 
-/**
- * Initializes after the DOM content has loaded.
- */
 document.addEventListener("DOMContentLoaded", function () {
     if (captivePortalDebug) console.log('Document loaded. Initializing captive portal');
     getCaptivePortalSettings(); // Fetch initial settings
@@ -451,4 +448,33 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(checkServerConnection, 1000);
 
     highlightCurrentPage(); // Highlight the current page in the navigation
+
+    // Create and append close button to the debug window
+    const debugWindow = document.getElementById('debug-window');
+    if (debugWindow) {
+        const closeButton = document.createElement('button');
+        closeButton.id = 'close-debug-window';
+        closeButton.innerHTML = '[X]';
+        closeButton.onclick = () => {
+            debugWindow.style.display = 'none';
+        };
+        debugWindow.appendChild(closeButton);
+
+        const debugContent = document.createElement('div');
+        debugContent.id = 'debug-content';
+        debugWindow.appendChild(debugContent);
+
+        // Function to show debug window for debugging purposes
+        function showDebugWindow(content) {
+            debugContent.innerText = content;
+            debugWindow.style.display = 'block';
+        }
+
+        // Example usage: show debug window when captivePortalDebug is true
+        if (captivePortalDebug) {
+            showDebugWindow('Debug information will be displayed here.');
+        }
+    } else {
+        console.error('Debug window element not found');
+    }
 });
