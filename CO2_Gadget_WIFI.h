@@ -788,6 +788,7 @@ String getCaptivePortalStatusAsJson() {
     doc["captivePortalNoTimeout"] = captivePortalNoTimeout;
     doc["timeCaptivePortalStarted"] = timeCaptivePortalStarted;
     doc["timeToWaitForCaptivePortal"] = timeToWaitForCaptivePortal;
+    if (relaxedSecurity) doc["relaxedSecurity"] = relaxedSecurity;
     // timeToWaitForCaptivePortal in seconds timeCaptivePortalStarted in milliseconds captivePortalTimeLeft in seconds
     if (captivePortalActive && !captivePortalNoTimeout) {  // If Captive Portal is active
         doc["captivePortalTimeLeft"] = (timeToWaitForCaptivePortal - (millis() - timeCaptivePortalStarted) / 1000);
@@ -928,7 +929,6 @@ void initWebServer() {
 
     server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-
             if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
             if (request->hasParam("forceCaptivePortalActive")) forceCaptivePortalActive = true;
             if (request->hasParam("captivePortalNoTimeout")) captivePortalNoTimeout = true;
@@ -1130,19 +1130,19 @@ void initWebServer() {
         }
     });
 
-    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            String preferencesJson = getPreferencesAsJson();
-            request->send(200, "application/json", preferencesJson);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
+    // server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
+    //     if (request != nullptr) {
+    //         String preferencesJson = getPreferencesAsJson();
+    //         request->send(200, "application/json", preferencesJson);
+    //     } else {
+    //         Serial.println("---> [WiFi] Error: request is null");
+    //     }
+    // });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            // if /getActualSettingsAsJson is called with parameter "relaxedSecurity", getActualSettingsAsJson() will be called with parameter includePasswords = true
-            bool relaxedSecurity = request->hasParam("relaxedSecurity");
+            // 
+            if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
             String preferencesJson = getActualSettingsAsJson(relaxedSecurity);
             request->send(200, "application/json", preferencesJson);
         } else {
