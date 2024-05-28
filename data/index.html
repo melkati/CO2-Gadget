@@ -5,23 +5,33 @@
 <html lang="en">
 
 <head>
-    <title>CO2-Gadget meter</title>
+    <title>CO2 Gadget Monitor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
     <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./main.js"></script>
     <script defer type="text/javascript" src="./captiveportal.js"></script>
+    <script defer type="text/javascript" src="./main.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar -->
     <div class="navbar">
-        <a href="index.html" class="active">Home</a>
-        <a href="preferences.html">Preferences</a>
-        <a href="status.html">Status</a>
-        <a href="ota.html">OTA <span id="server-status-dot" class="status-dot status-dot-hidden"></span></a>
-        </div>
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
+                </a>
+            </div>
+            </div>
+            </div>
+
     <!-- Captive Portal Status Container -->
     <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
 

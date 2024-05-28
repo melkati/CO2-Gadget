@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./captiveportal.js"></script>
-    <title>AsyncAElegantOTA Example</title>
+    <title>CO2 Gadget Over The Air Update</title>
     <style>
         /* Custom styles for the main page if needed */
     </style>
@@ -13,14 +13,20 @@
 <body>
     <!-- Navigation bar -->
     <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="preferences.html">Preferences</a>
-        <a href="status.html">Status</a>
-        <a href="ota.html">OTA <span id="server-status-dot" class="status-dot status-dot-hidden active"></span></a>
-        </div>
-
-    <!-- Captive Portal Status Container -->
-    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
+                </a>
+            </div>
+            </div>
+            </div>
 
     <!-- Main content -->
     <div class="content">
