@@ -326,13 +326,25 @@ button:hover {
   pointer-events: none;
 }
 
-.navbar .nav-content {
+.nav-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
 
+.nav-links-left {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.nav-links-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 #captive-portal-status-bar {
   width: 100%;
   background-color: #fbef83;
@@ -382,7 +394,8 @@ button:hover {
   height: 10px;
   border-radius: 50%;
   display: inline-block;
-  margin-left: 15px; /* Adjust as needed to position the dot */
+  margin-left: 10px;
+    /* Adjust as needed to position the dot */
   vertical-align: middle;
 }
 

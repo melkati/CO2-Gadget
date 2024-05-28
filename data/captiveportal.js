@@ -1,7 +1,8 @@
-var captivePortalDebug = true;
-var captivePortalStatusBarActive = false;
-var testCaptivePortal = false;
 var captivePortalActive = false;
+var testCaptivePortal = false;
+var captivePortalStatusBarActive = false;
+var captivePortalDebug = true;
+var relaxedSecurity = false;
 
 // Global variables to store the previous state
 var previousData = {
@@ -90,22 +91,32 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
             captivePortalActive: captivePortalActive,
             captivePortalNoTimeout: captivePortalNoTimeout,
             testCaptivePortal: testCaptivePortal,
-            captivePortalDebug: captivePortalDebug
+            captivePortalDebug: captivePortalDebug,
+            relaxedSecurity: relaxedSecurity ? true : undefined // Add relaxedSecurity only if it's true
         })
     })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
-            }
-            if (captivePortalDebug) {
+                if (captivePortalDebug) {
                 // console.log('Response from server:', response);
-                console.log('Settings updated successfully:', {
-                    testCaptivePortal: testCaptivePortal,
-                    captivePortalActive: captivePortalActive,
-                    captivePortalNoTimeout: captivePortalNoTimeout,
-                    timeToWaitForCaptivePortal: timeToWait,
-                    captivePortalDebug: captivePortalDebug
-                });
+                    if (relaxedSecurity) console.log('Settings updated successfully:', {
+                        testCaptivePortal: testCaptivePortal,
+                        captivePortalActive: captivePortalActive,
+                        captivePortalNoTimeout: captivePortalNoTimeout,
+                        timeToWaitForCaptivePortal: timeToWait,
+                        captivePortalDebug: captivePortalDebug,
+                        relaxedSecurity: relaxedSecurity
+                    });
+                } else {
+                    console.log('Settings updated successfully:', {
+                        testCaptivePortal: testCaptivePortal,
+                        captivePortalActive: captivePortalActive,
+                        captivePortalNoTimeout: captivePortalNoTimeout,
+                        timeToWaitForCaptivePortal: timeToWait,
+                        captivePortalDebug: captivePortalDebug
+                    });
+                }
             }
         })
         .catch(error => console.error('Error setting captive portal settings:', error));
@@ -118,6 +129,7 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
 function updateDebugWindow(data) {
     const debugWindow = document.getElementById('debug-window');
     if (debugWindow) {
+        if (captivePortalDebug) console.log('Updating debug window with data:', data);
         debugWindow.innerHTML = `
             <div>captivePortalActive: ${data.captivePortalActive}</div>
             <div>testCaptivePortal: ${data.testCaptivePortal}</div>
@@ -126,6 +138,11 @@ function updateDebugWindow(data) {
             <div>captivePortalTimeLeft: ${data.captivePortalTimeLeft}</div>
             <div>captivePortalDebug: ${data.captivePortalDebug}</div>
         `;
+        // if relaxedSecurity is present in the data, add it to the debug window
+        if (data.relaxedSecurity !== undefined) {
+            if (captivePortalDebug) console.log('Adding relaxedSecurity to debug window:', data.relaxedSecurity);
+            debugWindow.innerHTML += `<div>relaxedSecurity: ${data.relaxedSecurity}</div>`;
+        }
     }
 }
 
@@ -182,86 +199,6 @@ function handleCaptivePortalData(data) {
         showCaptivePortalStatusBar(true);
 
         const newStatusContent = forceCaptivePortalActive ? 'Captive portal active (test mode)' : 'Captive portal active';
-        updateStatusBar(newStatusContent);
-
-        const statusContentElement = document.getElementById('status-content');
-        if (statusContentElement) {
-            if (data.captivePortalNoTimeout) {
-                statusContentElement.innerHTML = `
-                    <span>Timeout Disabled</span>
-                    <label><input type="checkbox" id="disableTimeoutCheckbox" ${data.captivePortalNoTimeout ? 'checked' : ''}> Enable</label>
-                `;
-            } else {
-                statusContentElement.innerHTML = `
-                    <span>Timeout: <strong>${data.captivePortalTimeLeft}</strong>s</span>
-                    <label><input type="checkbox" id="disableTimeoutCheckbox" ${data.timeToWaitForCaptivePortal === 0 ? 'checked' : ''}> Disable</label>
-                `;
-            }
-        } else {
-            console.error('Element with ID "status-content" not found.');
-        }
-
-        const disableTimeoutCheckbox = document.getElementById('disableTimeoutCheckbox');
-        if (disableTimeoutCheckbox) {
-            disableTimeoutCheckbox.addEventListener('change', function () {
-                const timeToWait = this.checked ? 0 : data.timeToWaitForCaptivePortal;
-                console.log('Setting time to wait:', timeToWait);
-                setCaptivePortalSettings(timeToWait);
-            });
-        }
-    } else {
-        showCaptivePortalStatusBar(false);
-    }
-
-    updateServerStatusDot(); // Ensure the status dot is updated after handling captive portal data
-
-    // Update the debug window if debug mode is active
-    if (captivePortalDebug) {
-        updateDebugWindow(data);
-        showDebugWindow(true);
-    } else {
-        showDebugWindow(false);
-    }
-}
-
-/**
- * Handles the response data from the captive portal status fetch and updates the UI.
- * @param {Object} data - The data received from the server.
- */
-function handleCaptivePortalDataOld(data) {
-    const changes = {};
-    const propertiesToCheck = ['captivePortalActive', 'testCaptivePortal', 'captivePortalNoTimeout'];
-
-    if (captivePortalDebug) console.log('Received captive portal data:', data);
-
-    propertiesToCheck.forEach(key => {
-        if (data[key] !== previousData[key]) {
-            changes[key] = { previous: previousData[key], current: data[key] };
-            previousData[key] = data[key];
-        }
-    });
-
-    if (Object.keys(changes).length > 0 && captivePortalDebug) {
-        console.log('Detected changes in captive portal data:', changes);
-    }
-
-    if (data.captivePortalDebug) {
-        captivePortalDebug = data.captivePortalDebug;
-    }
-
-    if (data.testCaptivePortal) {
-        testCaptivePortal = true;
-        data.captivePortalActive = true;
-    } else {
-        testCaptivePortal = false;
-    }
-
-    if (data.captivePortalActive) {
-        captivePortalActive = true;
-        previousData.captivePortalActive = true;
-        showCaptivePortalStatusBar(true);
-
-        const newStatusContent = data.testCaptivePortal ? 'Captive portal active (test mode)' : 'Captive portal active';
         updateStatusBar(newStatusContent);
 
         const statusContentElement = document.getElementById('status-content');

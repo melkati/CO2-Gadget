@@ -4,6 +4,8 @@
 var relaxedSecurity = false;
 // Global variable to control captive portal test mode
 var forceCaptivePortalActive = false;
+// Set to true to enable debug output in the console
+var preferencesDebug = true;
 
 /**
  * Fetches version information from the server and updates the version display.
@@ -12,6 +14,7 @@ function fetchVersion() {
     fetch('/getVersion')
         .then(response => response.json())
         .then(versionInfo => {
+            if (preferencesDebug) console.log('Version information:', versionInfo);
             const versionElement = document.getElementById("co2GadgetVersion");
             const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
             versionElement.innerText = versionText;
@@ -24,22 +27,26 @@ function fetchVersion() {
  * @param {Object} preferences - The preferences data to populate the form with.
  */
 function populateFormWithPreferences(preferences) {
-    const getPreferencesDebug = false; // Set to true to enable debug output
+    // Update relaxedSecurity if present in data
+    if (preferences.relaxedSecurity !== undefined) {
+        if (preferencesDebug) console.log(`Setting relaxedSecurity to:`, preferences.relaxedSecurity);
+        relaxedSecurity = preferences.relaxedSecurity;
+    }
 
-    if (getPreferencesDebug) console.log('Loading preferences:', preferences);
+    handlePasswordFields();
 
     // Helper function to set form values
     const setFormValue = (elementId, value) => {
         const element = document.getElementById(elementId);
         if (element) element.value = value;
-        if (getPreferencesDebug) console.log(`Setting ${elementId} to:`, value);
+        if (preferencesDebug) console.log(`Setting ${elementId} to:`, value);
     };
 
     // Helper function to set form checkbox
     const setFormCheckbox = (elementId, isChecked) => {
         const element = document.getElementById(elementId);
         if (element) element.checked = isChecked;
-        if (getPreferencesDebug) console.log(`Setting ${elementId} to:`, isChecked);
+        if (preferencesDebug) console.log(`Setting ${elementId} to:`, isChecked);
     };
 
     setFormCheckbox("activeWIFI", preferences.activeWIFI);
@@ -108,6 +115,7 @@ function loadPreferencesFromServer() {
     fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
         .then(response => response.json())
         .then(preferences => {
+            if (preferencesDebug) console.log('Get preferences from server response:', preferences);
             populateFormWithPreferences(preferences);
         })
         .catch(error => console.error('Error retrieving preferences:', error));
@@ -199,7 +207,7 @@ function showSavingPopup() {
 function savePreferences() {
     showSavingPopup();
     const preferencesData = collectPreferencesData();
-    console.log("Sending preferences to server:", preferencesData);
+    if (preferencesDebug) console.log("Sending preferences to server:", preferencesData);
 
     fetch('/savePreferences', {
         method: 'POST',
@@ -224,6 +232,7 @@ function savePreferences() {
 function restartESP32() {
     const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
     if (isConfirmed) {
+        if (preferencesDebug) console.log("Restarting ESP32...");
         fetch('/restart', {
             method: 'GET',
             headers: {
