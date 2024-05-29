@@ -102,6 +102,20 @@ function populateFormWithPreferences(preferences) {
     setFormValue("durBzrBeep", preferences.durBzrBeep);
     setFormValue("timeBtwnBzr", preferences.timeBtwnBzr);
 
+    // New fields for Captive Portal
+    if (preferences.cpNoTimeout !== undefined) {
+        setFormCheckbox("cpNoTimeout", preferences.cpNoTimeout);
+    }
+    if (preferences.cpRelaxedSec !== undefined) {
+        setFormCheckbox("cpRelaxedSec", preferences.cpRelaxedSec);
+    }
+    if (preferences.cpDebug !== undefined) {
+        setFormCheckbox("cpDebug", preferences.cpDebug);
+    }
+    if (preferences.cpWaitTime !== undefined) {
+        setFormValue("cpWaitTime", preferences.cpWaitTime);
+    }
+
     toggleVisibility('activeWIFI', 'wifiNetworks');
     toggleVisibility('activeMQTT', 'mqttConfig');
     toggleVisibility('activeESPNOW', 'espNowConfig');
@@ -182,6 +196,24 @@ function collectPreferencesData() {
     if (relaxedSecurity) {
         preferencesData.wifiPass = document.getElementById("wifiPass").value;
         preferencesData.mqttPass = document.getElementById("mqttPass").value;
+    }
+
+    // New fields for Captive Portal
+    const cpNoTimeout = document.getElementById("cpNoTimeout");
+    if (cpNoTimeout) {
+        preferencesData.cpNoTimeout = cpNoTimeout.checked;
+    }
+    const cpRelaxedSec = document.getElementById("cpRelaxedSec");
+    if (cpRelaxedSec) {
+        preferencesData.cpRelaxedSec = cpRelaxedSec.checked;
+    }
+    const cpDebug = document.getElementById("cpDebug");
+    if (cpDebug) {
+        preferencesData.cpDebug = cpDebug.checked;
+    }
+    const cpWaitTime = document.getElementById("cpWaitTime");
+    if (cpWaitTime) {
+        preferencesData.cpWaitTime = cpWaitTime.value;
     }
 
     return preferencesData;

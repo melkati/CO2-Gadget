@@ -264,6 +264,53 @@
                 </fieldset>
             </div>
 
+            <!-- Captive Portal Group -->
+            <fieldset>
+                <legend>Captive Portal</legend>
+            
+                <div>
+                    <label for="cpNoTimeout">No Timeout:
+                        <input type="checkbox" id="cpNoTimeout" name="cpNoTimeout">
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Enable or disable the timeout for the captive portal. If enabled,
+                            the captive portal will
+                            not time out and will stay active until the user closes it.</span>
+                    </label>
+                </div>
+            
+                <div>
+                    <label for="cpRelaxedSec">Relaxed Security:
+                        <input type="checkbox" id="cpRelaxedSec" name="cpRelaxedSec">
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Enable or disable relaxed security mode for the captive portal. If
+                            enabled, the captive
+                            portal will retrieve and show the passwords in plain text and enable to edit it (take care, this is a
+                            security risk).</span>
+                    </label>
+                </div>
+            
+                <div>
+                    <label for="cpDebug">Debug Mode:
+                        <input type="checkbox" id="cpDebug" name="cpDebug">
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Enable or disable debug mode for the captive portal. If enabled, the
+                            captive portal will
+                            show debug information in the browser console.</span>
+                    </label>
+                </div>
+            
+                <div>
+                    <label for="cpWaitTime">Wait Time (seconds):
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Set the wait time for the captive portal in seconds at start up if a
+                            WiFi connection is not possible. After this
+                            time, the captive portal
+                            will close automatically unless the "No Timeout" option is enabled.</span>
+                        <input type="number" id="cpWaitTime" name="cpWaitTime" value="">
+                    </label>
+                </div>
+            </fieldset>
+
             <!-- Sensors Group -->
             <fieldset>
                 <legend>Sensors</legend>
