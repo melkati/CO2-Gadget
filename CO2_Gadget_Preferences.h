@@ -150,7 +150,7 @@ void upgradePreferences() {
     }
 }
 
-void printPreferences() {
+void printActualSettings() {
     Serial.println("-->[PREF]");
     Serial.println("-->[PREF] LOADED PREFERENCES FROM NVR:");
     Serial.println("-->[PREF] prefVersion:\t #" + String(prefVersion) + "#");
@@ -226,6 +226,14 @@ void printPreferences() {
     Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
     Serial.println("-->[PREF] durationBuzzerBeep is:\t#" + String(durationBuzzerBeep) + "#");
     Serial.println("-->[PREF] timeBetweenBuzzerBeeps is:\t#" + String(timeBetweenBuzzerBeeps) + "#");
+
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    Serial.println("-->[PREF] cpNoTimeout is:\t#" + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpRelaxedSec is:\t#" + String(relaxedSecurity ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpDebug is:\t#" + String(captivePortalDebug ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpWaitTime is:\t#" + String(timeToWaitForCaptivePortal) + "#");
+#endif
 
     Serial.println();
     delay(50);
@@ -335,6 +343,14 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
+// Retrieve Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    captivePortalNoTimeout = preferences.getBool("cpNoTimeout", false);
+    relaxedSecurity = preferences.getBool("cpRelaxedSec", false);
+    captivePortalDebug = preferences.getBool("cpDebug", false);
+    timeToWaitForCaptivePortal = preferences.getUInt("cpWaitTime", 60);
+#endif
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -346,7 +362,7 @@ void initPreferences() {
     preferences.end();
 // #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
     upgradePreferences();
 }
@@ -441,10 +457,18 @@ void putPreferences() {
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
     preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    preferences.putBool("cpNoTimeout", captivePortalNoTimeout);
+    preferences.putBool("cpRelaxedSec", relaxedSecurity);
+    preferences.putBool("cpDebug", captivePortalDebug);
+    preferences.putUInt("cpWaitTime", timeToWaitForCaptivePortal);
+#endif
+
     preferences.end();
 
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
 }
 
@@ -636,6 +660,16 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    doc["cpNoTimeout"] = captivePortalNoTimeout;
+    if (relaxedSecurity) {
+        doc["cpRelaxedSec"] = relaxedSecurity;
+    }
+    doc["cpDebug"] = captivePortalDebug;
+    doc["cpWaitTime"] = timeToWaitForCaptivePortal;
+#endif
+
     if (relaxedSecurity) {
         doc["relaxedSecurity"] = true;
     }
@@ -755,11 +789,39 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
         timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
-        // If JsonDocument["wifiPass"] is present, update the wifiPass variable
-        if (JsonDocument.containsKey("wifiPass")) {
-            wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
-            wifiChanged = true;
-        }
+        // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (JsonDocument.containsKey("cpNoTimeout")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+        Serial.println("-->[CAPT] cpNoTimeout is present. Setting value to: " + String((const char*)JsonDocument["cpNoTimeout"]));
+#endif
+        captivePortalNoTimeout = JsonDocument["cpNoTimeout"];
+    }
+    if (JsonDocument.containsKey("cpRelaxedSec")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+        Serial.println("-->[CAPT] cpRelaxedSec is present. Setting value to: " + String((const char*)JsonDocument["cpRelaxedSec"]));
+#endif
+        relaxedSecurity = JsonDocument["cpRelaxedSec"];
+    }
+    if (JsonDocument.containsKey("cpDebug")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+        Serial.println("-->[CAPT] cpDebug is present. Setting value to: " + String((const char*)JsonDocument["cpDebug"]));
+#endif
+        captivePortalDebug = JsonDocument["cpDebug"];
+    }
+    if (JsonDocument.containsKey("cpWaitTime")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+        Serial.println("-->[CAPT] cpWaitTime is present. Setting value to: " + String((const char*)JsonDocument["cpWaitTime"]));
+#endif
+        timeToWaitForCaptivePortal = JsonDocument["cpWaitTime"];
+    }
+#endif
+
+    // If JsonDocument["wifiPass"] is present, update the wifiPass variable
+    if (JsonDocument.containsKey("wifiPass")) {
+        wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+        wifiChanged = true;
+    }
         // If JsonDocument["mqttPass"] is present, update the mqttPass variable
         if (JsonDocument.containsKey("mqttPass")) {
             mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
