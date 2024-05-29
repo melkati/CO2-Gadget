@@ -78,6 +78,7 @@ function populateFormWithPreferences(preferences) {
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
     setFormValue("mqttClientId", preferences.mqttClientId);
+    setFormCheckbox("mqttShowInCon", preferences.mqttShowInCon);
     setFormValue("rootTopic", preferences.rootTopic);
     setFormValue("mqttBroker", preferences.mqttBroker);
     setFormValue("mqttUser", preferences.mqttUser);
@@ -116,10 +117,15 @@ function populateFormWithPreferences(preferences) {
         setFormValue("cpWaitTime", preferences.cpWaitTime);
     }
 
-    toggleVisibility('activeWIFI', 'wifiNetworks');
+    toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
+        document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
+    });
     toggleVisibility('activeMQTT', 'mqttConfig');
     toggleVisibility('activeESPNOW', 'espNowConfig');
     toggleVisibility('useStaticIP', 'staticIPSettings');
+
+    // Handle dependencies after form is populated
+    handleWiFiMQTTDependency();
 }
 
 /**
@@ -186,6 +192,7 @@ function collectPreferencesData() {
         showBattery: document.getElementById("showBattery").checked,
         showCO2: document.getElementById("showCO2").checked,
         mqttClientId: document.getElementById("mqttClientId").value,
+        mqttShowInCon: document.getElementById("mqttShowInCon").checked,
         mqttBroker: document.getElementById("mqttBroker").value,
         mqttUser: document.getElementById("mqttUser").value,
         toneBzrBeep: document.getElementById("toneBzrBeep").value,
@@ -337,11 +344,12 @@ function handleFileSelection(event) {
 }
 
 /**
- * Toggles the visibility of an element based on a checkbox state.
+ * Toggles the visibility of an element based on a checkbox state and handles subdependencies.
  * @param {string} checkboxId - The ID of the checkbox.
  * @param {string} elementId - The ID of the element to toggle.
+ * @param {function} [callback] - Optional callback function to handle additional dependencies.
  */
-function toggleVisibility(checkboxId, elementId) {
+function toggleVisibility(checkboxId, elementId, callback) {
     const checkbox = document.getElementById(checkboxId);
     const element = document.getElementById(elementId);
 
@@ -352,10 +360,48 @@ function toggleVisibility(checkboxId, elementId) {
 
     const toggleElement = () => {
         element.style.display = checkbox.checked ? 'block' : 'none';
+        if (callback) callback(checkbox.checked);
     };
 
     toggleElement();
     checkbox.addEventListener('change', toggleElement);
+}
+
+/**
+ * Ensures that MQTT is disabled when WiFi is disabled, and enabled when WiFi is enabled.
+ */
+function handleWiFiMQTTDependency() {
+    const wifiCheckbox = document.getElementById('activeWIFI');
+    const mqttCheckbox = document.getElementById('activeMQTT');
+
+    if (!wifiCheckbox || !mqttCheckbox) {
+        console.error('Checkboxes not found: activeWIFI, activeMQTT');
+        return;
+    }
+
+    const updateMQTTState = () => {
+        if (!wifiCheckbox.checked) {
+            mqttCheckbox.checked = false;
+            mqttCheckbox.disabled = true;
+            document.getElementById('mqttConfig').style.display = 'none';
+        } else {
+            mqttCheckbox.disabled = false;
+        }
+    };
+
+    const updateWiFiState = () => {
+        if (mqttCheckbox.checked) {
+            wifiCheckbox.checked = true;
+        }
+        toggleVisibility('activeMQTT', 'mqttConfig');
+    };
+
+    wifiCheckbox.addEventListener('change', updateMQTTState);
+    mqttCheckbox.addEventListener('change', updateWiFiState);
+
+    // Initial call to set the correct state on page load
+    updateMQTTState();
+    updateWiFiState();
 }
 
 /**
@@ -421,8 +467,11 @@ document.addEventListener("DOMContentLoaded", () => {
     handlePasswordFields();
     loadPreferencesFromServer();
     fetchVersion();
-    toggleVisibility('activeWIFI', 'wifiNetworks');
+    toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
+        document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
+    });
     toggleVisibility('activeMQTT', 'mqttConfig');
     toggleVisibility('activeESPNOW', 'espNowConfig');
     toggleVisibility('useStaticIP', 'staticIPSettings');
+    handleWiFiMQTTDependency();
 });

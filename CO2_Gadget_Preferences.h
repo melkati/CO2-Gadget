@@ -178,7 +178,8 @@ void printActualSettings() {
     Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
     Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
     Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
-    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");
+    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");    
+    Serial.println("-->[PREF] mqttShowInConsole:\t#" + String(mqttShowInConsole ? "Enabled" : "Disabled") + "# (" + String(mqttShowInConsole) + ")");
     Serial.println("-->[PREF] mqttBroker:\t#" + mqttBroker + "#");
     Serial.println("-->[PREF] mqttUser:\t#" + mqttUser + "#");
 #ifndef WIFI_PRIVACY
@@ -283,6 +284,7 @@ void initPreferences() {
     activeOTA = preferences.getBool("activeOTA", activeOTA);
     rootTopic = preferences.getString("rootTopic", rootTopic);
     mqttClientId = preferences.getString("mqttClientId", mqttClientId);
+    mqttShowInConsole = preferences.getBool("mqttShowInCon", false);
     mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
     mqttUser = preferences.getString("mqttUser", mqttUser).c_str();
     mqttPass = preferences.getString("mqttPass", mqttPass).c_str();
@@ -413,6 +415,7 @@ void putPreferences() {
     preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
     preferences.putUInt("vRef", vRef);
     preferences.putString("mqttClientId", mqttClientId);
+    preferences.putBool("mqttShowInCon", mqttShowInConsole);
     preferences.putString("mqttBroker", mqttBroker);
     preferences.putString("mqttUser", mqttUser);
     preferences.putString("mqttPass", mqttPass);
@@ -517,6 +520,7 @@ String getCO2GadgetVersionAsJson() {
 //     doc["batChargd"] = preferences.getInt("batChargd", 4200);
 //     doc["vRef"] = preferences.getInt("vRef", 930);
 //     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
+//     doc["mqttShowInCon"] = preferences.getBool("mqttShowInCon", false);
 //     doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
 //     doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
 //     // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
@@ -601,6 +605,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["batChargd"] = batteryFullyChargedMillivolts;
     doc["vRef"] = vRef;
     doc["mqttClientId"] = mqttClientId;
+    doc["mqttShowInCon"] = mqttShowInConsole;
     doc["mqttBroker"] = mqttBroker;
     doc["mqttUser"] = mqttUser;
     // if includePasswords is false, do not include the password
@@ -727,8 +732,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
-        vRef = JsonDocument["vRef"];
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
         mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
         timeToDisplayOff = JsonDocument["tToDispOff"];
