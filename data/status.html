@@ -6,18 +6,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Page</title>
+    <title>CO2 Gadget Status</title>
     <link rel="stylesheet" type="text/css" href="./style.css">
+    <script defer type="text/javascript" src="./captiveportal.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar -->
     <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="preferences.html">Preferences</a>
-        <a href="status.html" class="active">Status</a>
-        <a href="ota.html">OTA</a>
-    </div>
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+                </div>
+                <div class="nav-links-right">
+                    <a href="ota.html">OTA</a>
+                    <a href="/getCaptivePortalStatusAsJson">
+                        <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
+                    </a>
+                </div>
+                </div>
+                </div>
+
+    <!-- Captive Portal Status Container -->
+    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
 
     <div class="content">
         <div class="status-item" id="mainDeviceSelectedItem">
@@ -137,7 +150,18 @@
         <div class="status-item" id="uptimeItem">
             <span class="status-label">Uptime:</span> <span id="uptime"></span>
         </div>
-
+        <div class="status-item" id="captivePortalActiveItem">
+            <span class="status-label">Captive Portal Active:</span> <span id="captivePortalActive"></span>
+        </div>
+        <div class="status-item" id="timeCaptivePortalStartedItem">
+            <span class="status-label">Time Captive Portal Started:</span> <span id="timeCaptivePortalStarted"></span>
+        </div>
+        <div class="status-item" id="timeToWaitForCaptivePortalItem">
+            <span class="status-label">Time To Wait For Captive Portal:</span> <span id="timeToWaitForCaptivePortal"></span>
+        </div>
+        <div class="status-item" id="captivePortalTimeLeftItem">
+            <span class="status-label">Captive Portal Time Left:</span> <span id="captivePortalTimeLeft"></span>
+        </div>
         <!-- Status line to display CO2 Gadget version -->
         <div id="statusLineContainer">
             <span id="co2GadgetVersion"></span>
@@ -155,6 +179,41 @@
                 })
                 .catch(error => console.error('Error fetching version information:', error));
         }
+
+            // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
+            function LoadCaptivePortalStatusFromServer() {
+                fetch('/getCaptivePortalStatusAsJson')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Fetching data successful!');
+                        // Update DOM with status data
+                        if (data.captivePortalActive !== undefined) {
+                            document.getElementById('captivePortalActive').textContent = data.captivePortalActive;
+                        } else {
+                            document.getElementById('captivePortalActiveItem').style.display = 'none';
+                        }
+
+                    if (data.timeCaptivePortalStarted !== undefined) {
+                        document.getElementById('timeCaptivePortalStarted').textContent = data.timeCaptivePortalStarted;
+                    } else {
+                        document.getElementById('timeCaptivePortalStartedItem').style.display = 'none';
+                    }
+
+                    if (data.timeToWaitForCaptivePortal !== undefined) {
+                        document.getElementById('timeToWaitForCaptivePortal').textContent = data.timeToWaitForCaptivePortal;
+                    } else {
+                        document.getElementById('timeToWaitForCaptivePortalItem').style.display = 'none';
+                    }
+
+                    if (data.captivePortalTimeLeft !== undefined) {
+                        document.getElementById('captivePortalTimeLeft').textContent = data.captivePortalTimeLeft;
+                    } else {
+                        document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+
 
         // Function to Fetch status data from /status endpoint and populate the form
         function loadStatusFromServer() {
@@ -449,6 +508,7 @@
             getBatteryVoltage();
             getFreeHeap();
             getMinFreeHeap();
+            LoadCaptivePortalStatusFromServer();
         }, 1000); // 1000mS  update rate
 
         window.onload = function () {
@@ -458,6 +518,8 @@
         // Set initial values when the page loads
         document.addEventListener("DOMContentLoaded", loadStatusFromServer);
         document.addEventListener("DOMContentLoaded", fetchVersion);
+            document.addEventListener("DOMContentLoaded", LoadCaptivePortalStatusFromServer);
+
     </script>
 </body>
 

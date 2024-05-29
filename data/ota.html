@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="./style.css" />
-        <title>AsyncAElegantOTA Example</title>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script defer type="text/javascript" src="./captiveportal.js"></script>
+    <title>CO2 Gadget Over The Air Update</title>
+    <style>
         /* Custom styles for the main page if needed */
     </style>
-    </head>
-    <body>
-        <!-- Navigation bar -->
-        <div class="navbar">
-            <a href="index.html">Home</a>
-            <a href="preferences.html">Preferences</a>
-            <a href="status.html">Status</a>
-            <a href="ota.html" style="margin-left: auto;" class="active">OTA</a>
-            <!-- <a href="ota.html" class="active">OTA</a> -->
-        </div>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
+                </a>
+            </div>
+            </div>
+            </div>
 
-        <!-- Main content -->
-        <div class="content">
-            <!-- iframe to load AsyncAElegantOTA -->
-            <iframe src="update" width="100%" height="600px"
-                frameborder="0"></iframe>
-        </div>
+    <!-- Main content -->
+    <div class="content">
+        <!-- iframe to load AsyncAElegantOTA -->
+        <iframe src="update" width="100%" height="600px" frameborder="0"></iframe>
+    </div>
     </body>
 </html>

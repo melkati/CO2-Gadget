@@ -4,6 +4,7 @@ void outputsLoop();                       // Defined in CO2_Gadget_Main.h
 void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
 void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                          // Defined in CO2_Gadget_Menu.h
+void setDisplayReverse(bool reverse);     // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 // void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
@@ -134,7 +135,12 @@ uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 // Variables for Captive Portal
 #ifdef SUPPORT_CAPTIVE_PORTAL
 bool captivePortalActive = false;
+bool forceCaptivePortalActive = false;
+bool captivePortalNoTimeout = false;
+bool relaxedSecurity = false;
+bool captivePortalDebug = false;
 uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+uint64_t timeCaptivePortalStarted = 0;
 #endif
 
 #ifdef CUSTOM_I2C_SDA

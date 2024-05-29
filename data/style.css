@@ -1,5 +1,3 @@
-/* https://www.zickty.com/filetogzip */
-
 :root {
   --font-color: #666;
   --bg-color: #ffffff;
@@ -24,21 +22,11 @@
   --circle-color: #474747;
 }
 
-bodyNew {
-  background-color: var(--bg-color);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* height: 100vh; */
-}
-
+/* Body Styles */
 body {
   font-family: 'Arial', sans-serif;
   background-color: var(--bg-color);
-  font-family: Arial, sans-serif;
-  margin: 20px auto;
+  margin: 22px auto;
 }
 
 h1 {
@@ -49,6 +37,7 @@ h1 {
   justify-content: center;
 }
 
+/* Form Styles */
 #preferencesForm {
   background-color: #ffffff;
   border-radius: 8px;
@@ -73,16 +62,7 @@ label {
   display: inline-block;
 }
 
-select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
+select,
 input[type="text"],
 input[type="password"],
 input[type="number"] {
@@ -96,7 +76,7 @@ input[type="number"] {
 }
 
 input[type="checkbox"] {
-  width: auto; /* Adjust the width automatically */
+  width: auto;
   margin-bottom: 10px;
   box-sizing: border-box;
   border: 1px solid #ccc;
@@ -104,10 +84,11 @@ input[type="checkbox"] {
   font-size: 14px;
 }
 
+/* Button Styles */
 button {
   background-color: #4caf50;
   color: white;
-  padding: 10px 15px;
+  padding: 10px 13px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -115,33 +96,58 @@ button {
   margin-left: 10px;
 }
 
-#restartButton {
-  background-color: red;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
 button:hover {
   background-color: #45a049;
 }
 
+#restartButton {
+  background-color: red;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+}
+
+#backupButton,
+#restoreButton {
+  margin-right: 10px;
+}
+
+#restartButton {
+  margin-left: 10px;
+}
+
+@media screen and (max-width: 600px) {
+  .buttonGroup button {
+    font-size: 14px;
+    padding: 8px 10px;
+    margin-left: 5px;
+  }
+
+  #restartButton {
+    padding: 8px 15px;
+  }
+
+  #savePreferencesButton {
+    font-size: 0;
+  }
+
+  #savePreferencesButton::after {
+    content: "Save";
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}
+
 .content {
-  max-width: 600px; /* Adjust the value according to your content width */
+  max-width: 600px;
   margin: 0 auto;
 }
 
-.tag {
-  font: bolder large arial;
-  font-family: Arial;
-  display: flex;
-  justify-content: space-around;
-  background-color: var(--title-color);
-  color: var(--font-color);
-}
-
+/* Circular Chart Styles */
 .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
@@ -209,7 +215,6 @@ button:hover {
   transform: scale(1.5);
 }
 
-/*smartphone styles*/
 @media only screen and (max-width: 639px) {
   .flex-wrapper {
     flex-flow: column wrap;
@@ -231,7 +236,7 @@ button:hover {
   }
 }
 
-/* popup styles */
+/* Popup Styles */
 #popup {
   display: none;
   position: fixed;
@@ -250,17 +255,29 @@ button:hover {
 #statusLineContainer {
   text-align: center;
   margin-top: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media screen and (max-width: 600px) {
+  #statusLineContainer {
+    font-size: 12px;
+    padding: 0 10px;
+  }
 }
 
 #co2GadgetVersion {
+  display: block;
   font-size: 14px;
   color: var(--font-color);
   background-color: var(--bg-color);
   padding: 10px 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
-  white-space: pre-wrap;
+  white-space: nowrap;
 }
 
 .tooltip-icon {
@@ -280,7 +297,7 @@ button:hover {
   animation: fadeInOut 2s ease-in-out;
 }
 
-.tooltip-icon:hover + .tooltip-text {
+.tooltip-icon:hover+.tooltip-text {
   visibility: visible;
 }
 
@@ -292,28 +309,114 @@ button:hover {
   width: 100%;
   background-color: #f2f2f2;
   padding: 15px 10px;
-  z-index: 1000; /* Ensure it's on top of other content */
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .navbar a {
   text-decoration: none;
   color: #333;
   padding: 0px 20px;
-    /* Adjust padding */
 }
 
 .navbar a.active {
   color: #999;
-  pointer-events: none; /* Disable pointer events for the active link */
+  pointer-events: none;
 }
 
-#otaLink {
-  float: right;
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
-/* Adjust content area to prevent overlap with navbar */
+.nav-links-left {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.nav-links-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+#captive-portal-status-bar {
+  width: 100%;
+  background-color: #fbef83;
+  color: #333;
+  position: fixed;
+  top: 45px;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7em;
+}
+
+@media (max-width: 600px) {
+  #captive-portal-status-bar {
+      top: 45px;
+  }
+}
+
+#hide-captive-portal-status-bar-button {
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 5px 10px;
+  font-size: 0.7em;
+  cursor: pointer; /* Cambiar el cursor a una mano */
+}
+
+#hide-captive-portal-status-bar-button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: black;
+  stroke-width: 2;
+}
+
+#hide-captive-portal-status-bar-button:hover svg {
+  stroke: red; /* Cambiar el color del ícono al pasar el cursor */
+}
+
+.hidden-captive-portal-status-bar {
+  display: none !important;
+}
+
+/* Status Dot Styles */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 10px;
+    /* Adjust as needed to position the dot */
+  vertical-align: middle;
+}
+
+.status-dot-hidden {
+  display: none;
+}
+
+.status-dot-white {
+  background-color: white;
+}
+
+.status-dot-blue {
+  background-color: blue;
+}
+
+.status-dot-red {
+  background-color: red;
+}
+
 .content {
-  margin-top: 60px;
+  margin-top: 120px;
 }
 
 .status-item {
@@ -327,18 +430,38 @@ button:hover {
 /* Add a fade animation effect */
 @keyframes fadeInOut {
   0% {
-    opacity: 0;
+      opacity: 0;
   }
 
   25% {
-    opacity: 1;
+      opacity: 1;
   }
 
   75% {
-    opacity: 1;
+      opacity: 1;
   }
 
   100% {
-    opacity: 0;
+      opacity: 0;
   }
+}
+
+.debug-window {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 250px;
+  background-color: rgba(135, 206, 250, 0.5);
+  color: #333333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  font-size: 0.9em;
+  z-index: 1000;
+  pointer-events: none;
+  /* Make the debug window not clickable */
+}
+
+.hidden-debug-window {
+  display: none;
 }

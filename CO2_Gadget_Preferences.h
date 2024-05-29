@@ -246,7 +246,6 @@ void initPreferences() {
     firmRevision = getCO2GadgetRevisionNumber();
     firmBranch = getCO2GadgetRevisionBranch();
     firmFlavour = FLAVOUR;
-    
 
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
@@ -411,7 +410,7 @@ void putPreferences() {
     preferences.putString("wifiPass", wifiPass);
     preferences.putString("hostName", hostName);
 
-     // Fixed IP
+    // Fixed IP
     preferences.putBool("useStaticIP", useStaticIP);
     preferences.putString("staticIP", staticIP.toString());
     preferences.putString("gateway", gateway.toString());
@@ -464,86 +463,90 @@ String getCO2GadgetVersionAsJson() {
     return versionJson;
 }
 
-String getPreferencesAsJson() {
-    preferences.begin("CO2-Gadget", false);
+// String getPreferencesAsJson() {
+//     preferences.begin("CO2-Gadget", false);
 
-    JsonDocument doc;
+//     JsonDocument doc;
 
-    doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
-    doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
-    doc["firmVerMajor"] = preferences.getUInt("firmVerMajor", 0);
-    doc["firmRevision"] = preferences.getUInt("firmRevision", 0);
-    doc["firmBranch"] = preferences.getString("firmBranch", "");
-    doc["firmFlavour"] = preferences.getString("firmFlavour", "");
-    doc["customCalValue"] = preferences.getInt("customCalValue", 415);
-    doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
-    doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
-    doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
-    doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
-    doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
-    doc["DisplayBright"] = preferences.getInt("DisplayBright", 100);
-    doc["neopixBright"] = preferences.getInt("neopixBright", 50);
-    doc["selNeopxType"] = preferences.getInt("selNeopxType", NEO_GRB + NEO_KHZ800);
-    doc["activeBLE"] = preferences.getBool("activeBLE", true);
-    doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
-    doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
-    doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
-    doc["activeOTA"] = preferences.getBool("activeOTA", false);
-    doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
-    doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
-    doc["batChargd"] = preferences.getInt("batChargd", 4200);
-    doc["vRef"] = preferences.getInt("vRef", 930);
-    doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
-    doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
-    doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
-    // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
-    doc["tToDispOff"] = preferences.getInt("tToDispOff", 60);
-    doc["tKeepAlMQTT"] = preferences.getInt("tKeepAlMQTT", 300);
-    doc["tKeepAlESPNow"] = preferences.getInt("tKeepAlESPNow", 300);
-    doc["tToPubMQTT"] = preferences.getInt("tToPubMQTT", 60);
-    doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
-    doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
-    doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
-    // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
-    doc["hostName"] = preferences.getString("hostName", hostName);
+//     doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
+//     doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
+//     doc["firmVerMajor"] = preferences.getUInt("firmVerMajor", 0);
+//     doc["firmRevision"] = preferences.getUInt("firmRevision", 0);
+//     doc["firmBranch"] = preferences.getString("firmBranch", "");
+//     doc["firmFlavour"] = preferences.getString("firmFlavour", "");
+//     doc["customCalValue"] = preferences.getInt("customCalValue", 415);
+//     doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
+//     doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
+//     doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
+//     doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
+//     doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
+//     doc["DisplayBright"] = preferences.getInt("DisplayBright", 100);
+//     doc["neopixBright"] = preferences.getInt("neopixBright", 50);
+//     doc["selNeopxType"] = preferences.getInt("selNeopxType", NEO_GRB + NEO_KHZ800);
+//     doc["activeBLE"] = preferences.getBool("activeBLE", true);
+//     doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
+//     doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
+//     doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
+//     doc["activeOTA"] = preferences.getBool("activeOTA", false);
+//     doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
+//     doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
+//     doc["batChargd"] = preferences.getInt("batChargd", 4200);
+//     doc["vRef"] = preferences.getInt("vRef", 930);
+//     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
+//     doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
+//     doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
+//     // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
+//     doc["tToDispOff"] = preferences.getInt("tToDispOff", 60);
+//     doc["tKeepAlMQTT"] = preferences.getInt("tKeepAlMQTT", 300);
+//     doc["tKeepAlESPNow"] = preferences.getInt("tKeepAlESPNow", 300);
+//     doc["tToPubMQTT"] = preferences.getInt("tToPubMQTT", 60);
+//     doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
+//     doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
+//     doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
+//     // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
+//     doc["hostName"] = preferences.getString("hostName", hostName);
 
-    // Fixed IP
-    doc["useStaticIP"] = preferences.getBool("useStaticIP", false);
-    doc["staticIP"] = preferences.getString("staticIP", staticIP.toString());
-    doc["gateway"] = preferences.getString("gateway", gateway.toString());
-    doc["subnet"] = preferences.getString("subnet", subnet.toString());
-    doc["dns1"] = preferences.getString("dns1", dns1.toString());
-    doc["dns2"] = preferences.getString("dns2", dns2.toString());
+//     // Fixed IP
+//     doc["useStaticIP"] = preferences.getBool("useStaticIP", false);
+//     doc["staticIP"] = preferences.getString("staticIP", staticIP.toString());
+//     doc["gateway"] = preferences.getString("gateway", gateway.toString());
+//     doc["subnet"] = preferences.getString("subnet", subnet.toString());
+//     doc["dns1"] = preferences.getString("dns1", dns1.toString());
+//     doc["dns2"] = preferences.getString("dns2", dns2.toString());
 
-    doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
-    doc["debugSensors"] = preferences.getBool("debugSensors", false);
-    doc["displayReverse"] = preferences.getBool("displayReverse", false);
-    doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-    doc["measurementInterval"] = preferences.getInt("measInterval", 10);
-    doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
-    doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
-    doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
-    doc["peerESPNowAddress"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
-    doc["showTemp"] = preferences.getBool("showTemp", true);
-    doc["showHumidity"] = preferences.getBool("showHumidity", true);
-    doc["showBattery"] = preferences.getBool("showBattery", true);
-    doc["showCO2"] = preferences.getBool("showCO2", true);
-    doc["showPM25"] = preferences.getBool("showPM25", true);
-    doc["measInterval"] = preferences.getInt("measInterval", 10);
-    doc["sampInterval"] = preferences.getInt("sampInterval", 60);
+//     doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
+//     doc["debugSensors"] = preferences.getBool("debugSensors", false);
+//     doc["displayReverse"] = preferences.getBool("displayReverse", false);
+//     doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
+//     doc["measurementInterval"] = preferences.getInt("measInterval", 10);
+//     doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
+//     doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
+//     doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
+//     doc["peerESPNowAddress"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
+//     doc["showTemp"] = preferences.getBool("showTemp", true);
+//     doc["showHumidity"] = preferences.getBool("showHumidity", true);
+//     doc["showBattery"] = preferences.getBool("showBattery", true);
+//     doc["showCO2"] = preferences.getBool("showCO2", true);
+//     doc["showPM25"] = preferences.getBool("showPM25", true);
+//     doc["measInterval"] = preferences.getInt("measInterval", 10);
+//     doc["sampInterval"] = preferences.getInt("sampInterval", 60);
 
-    // Buzzer preferences
-    doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
-    doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
-    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
+//     // Buzzer preferences
+//     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
+//     doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
+//     doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
 
-    preferences.end();
+//     preferences.end();
 
-    String preferencesJson;
-    serializeJson(doc, preferencesJson);
-    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
-    return preferencesJson;
-}
+//     if (relaxedSecurity) {
+//         doc["relaxedSecurity"] = true;
+//     }
+
+//     String preferencesJson;
+//     serializeJson(doc, preferencesJson);
+//     // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+//     return preferencesJson;
+// }
 
 String getActualSettingsAsJson(bool includePasswords = false) {
     JsonDocument doc;
@@ -633,6 +636,10 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    if (relaxedSecurity) {
+        doc["relaxedSecurity"] = true;
+    }
+
     String preferencesJson;
     serializeJson(doc, preferencesJson);
     // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
@@ -706,10 +713,20 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         subnet.fromString(JsonDocument["subnet"].as<String>());
         dns1.fromString(JsonDocument["dns1"].as<String>());
         dns2.fromString(JsonDocument["dns2"].as<String>());
-        
+
         selectedCO2Sensor = JsonDocument["selCO2Sensor"];
         debugSensors = JsonDocument["debugSensors"];
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+        if (displayReverse != JsonDocument["displayReverse"]) {
+            displayReverse = JsonDocument["displayReverse"];
+            setDisplayReverse(displayReverse);
+            reverseButtons(displayReverse);
+        }
+#else
         displayReverse = JsonDocument["displayReverse"];
+        reverseButtons(displayReverse);
+#endif
+        // displayReverse = JsonDocument["displayReverse"];
         showFahrenheit = JsonDocument["showFahrenheit"];
         measurementInterval = JsonDocument["measurementInterval"];
         sampleInterval = JsonDocument["sampleInterval"];

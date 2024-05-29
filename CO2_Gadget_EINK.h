@@ -258,6 +258,18 @@ void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issu
     }
 }
 
+// Function to set the display rotation
+void setDisplayRotation(int rotation) {
+    if (rotation == 1) {
+        display.setRotation(displayReverse ? 3 : 1);
+    } else if (rotation == 4) {
+        display.setRotation(displayReverse ? 2 : 4);
+    } else {
+        display.setRotation(rotation); // Default behavior for other values
+    }
+    // shouldRedrawDisplay = true;
+}
+
 /**
  * Draws text on the display with alignment options.
  *
@@ -372,6 +384,17 @@ void busyHighPerformanceCallback(const void* p) {
     menuLoop();
 }
 
+void setDisplayReverse(bool reverse) {
+    if (reverse) {
+        Serial.printf("-->[EINK] Set display reverse\n");
+        setDisplayRotation(3);
+    } else {
+        Serial.printf("-->[EINK] Set display normal\n");
+        setDisplayRotation(1);
+    }
+    shouldRedrawDisplay = true;
+}
+
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
     RTC_DATA_ATTR static bool firstBoot = true;
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
@@ -386,7 +409,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     }
 
     // Set default options to draw
-    display.setRotation(1);
+    setDisplayRotation(1);
+    // display.setRotation(1);
     display.setFont(&SmallFont);
     // display.setTextColor(GxEPD_BLACK);
     // display.setFullWindow();
@@ -440,7 +464,7 @@ void initDisplay(bool fastMode = false) {
 #endif
 
     // Set default options to draw
-    display.setRotation(1);
+    setDisplayRotation(1);
     display.setFont(&SmallFont);
     display.setTextColor(GxEPD_BLACK);
     // display.setFullWindow();
@@ -479,17 +503,17 @@ void showCO2(uint16_t co2, int32_t posX, int32_t posY, bool forceRedraw) {
     if (!forceRedraw && (co2 == oldCO2Value)) return;
     if ((co2 == 0) || (co2 > 9999)) return;
 
-    display.setRotation(1);
+    setDisplayRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
 
     display.fillRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_WHITE);  // 10 = 2px for top and bottom rectangle borders + 8px for top and bottom margin
     display.drawRoundRect(0, elementPosition.co2Y, display.width(), elementPosition.bifFontDigitsHeight + 10, 6, GxEPD_BLACK);
 
-    display.setRotation(4);
+    setDisplayRotation(4);
     display.setFont(&SmallFont);
     drawTextAligned(elementPosition.co2XUnits, elementPosition.co2YUnits, elementPosition.co2H - 5, elementPosition.smallFontDigitsHeight + 3, "PPM", 'c', 'b');
 
-    display.setRotation(1);
+    setDisplayRotation(1);
     display.setFont(&BigFont);
     display.setTextColor(GxEPD_BLACK);
     drawTextAligned(elementPosition.co2X, elementPosition.co2Y + 2, elementPosition.co2W, elementPosition.bifFontDigitsHeight, String(co2), 'c', 'b');
@@ -505,7 +529,7 @@ void showHumidity(float hum, int32_t posX, int32_t posY, bool forceRedraw) {
     String humidityStr;
     if (!forceRedraw && (hum == oldHumiValue)) return;
     if ((hum == 0) && (temp == 0)) return;
-    display.setRotation(1);
+    setDisplayRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.humidityXIcon, elementPosition.humidityYUnits, iconHumidityBW, 16, 16, GxEPD_BLACK);
     display.fillRect(elementPosition.humidityXValue, elementPosition.humidityYValue, elementPosition.humidityWValue, elementPosition.humidityHValue, GxEPD_WHITE);  // Clear previous humidity value
@@ -525,7 +549,7 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
     String tempStr;
     if (!forceRedraw && (temp == oldTempValue)) return;
     if ((temp == 0) && (hum == 0)) return;
-    display.setRotation(1);
+    setDisplayRotation(1);
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.drawBitmap(elementPosition.tempXUnits, elementPosition.tempYUnits, iconTempBW, 16, 16, GxEPD_BLACK);
     display.fillRect(elementPosition.tempXValue, elementPosition.tempYValue, elementPosition.tempWValue, elementPosition.tempHValue, GxEPD_WHITE);  // Clear previous temperature value
@@ -557,11 +581,17 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-    // If captivePortalActive = true; draw a circle instead of the WiFi icon
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    // If captivePortalActive = true; draw a filled circle instead of the WiFi icon.  If forceCaptivePortalActive is also true, draw a non filled circle
     if (captivePortalActive) {
-        display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        if (forceCaptivePortalActive) {
+            display.drawCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        } else {
+            display.fillCircle(posX + 8, posY + 8, 6, GxEPD_BLACK);
+        }
         return;
     }
+#endif
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
@@ -653,6 +683,10 @@ void testRedrawValues(bool randomNumbers = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
+    if (shouldRedrawDisplay) {
+        forceRedraw = true;
+        shouldRedrawDisplay = false;
+    }
     // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 10000)) {
         return;
@@ -709,6 +743,10 @@ void displayShowValues(bool forceRedraw = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
+    if (shouldRedrawDisplay) {
+        forceRedraw = true;
+        shouldRedrawDisplay = false;
+    }
     // Return if last update less than 15 seconds ago
     if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
         return;
