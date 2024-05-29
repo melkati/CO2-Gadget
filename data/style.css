@@ -462,6 +462,7 @@ button:hover {
   display: none; /* Hidden by default */
   overflow: auto; /* To handle overflow content */
   z-index: 9998; /* Ensure it's behind the close button */
+  animation: fadeInOut 2s ease-in-out;
 }
 
 .hidden-debug-window {
