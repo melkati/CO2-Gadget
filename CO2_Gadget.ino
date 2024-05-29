@@ -62,6 +62,7 @@ bool mqttDiscoverySent = false;
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
 uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
+bool mqttShowInConsole = false;
 
 // ESP-NOW options
 bool activeESPNOW = false;

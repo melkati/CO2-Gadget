@@ -1000,10 +1000,10 @@ void initWebServer() {
 
     server.on("/captiveportal.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            // /** GZIPPED CONTENT ***/
-            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
-            // response->addHeader("Content-Encoding", "gzip");
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
             request->send(response);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
