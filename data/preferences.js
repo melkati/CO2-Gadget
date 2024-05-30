@@ -5,7 +5,7 @@ var relaxedSecurity = false;
 // Global variable to control captive portal test mode
 var forceCaptivePortalActive = false;
 // Set to true to enable debug output in the console
-var preferencesDebug = true;
+var preferencesDebug = false;
 
 /**
  * Fetches version information from the server and updates the version display.
@@ -222,6 +222,8 @@ function collectPreferencesData() {
     if (cpWaitTime) {
         preferencesData.cpWaitTime = cpWaitTime.value;
     }
+
+    console.log("Collected preferences data:", preferencesData);
 
     return preferencesData;
 }
