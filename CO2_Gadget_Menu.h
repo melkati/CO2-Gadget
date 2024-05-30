@@ -1185,6 +1185,14 @@ bool menuEntryCharacterReceived() {
 void menuLoop() {
     if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
 
+    if ((inMenu) && isMenuDirty) {
+#ifdef DEBUG_ARDUINOMENU        
+        Serial.println("-->[MENU] Menu is dirty. Restarting menu...");      
+#endif
+        isMenuDirty = false;
+        mainMenu.dirty = true;
+    }
+
     if (mustInitMenu) {
         initMenu();
 #ifdef DEBUG_ARDUINOMENU

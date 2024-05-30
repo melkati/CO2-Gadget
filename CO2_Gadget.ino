@@ -96,6 +96,7 @@ bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
 bool shouldRedrawDisplay = false;
+bool isMenuDirty = false;  // To know if we need to redraw the menu
 uint16_t measurementInterval = 10;
 uint16_t sampleInterval = 60;
 bool bleInitialized = false;

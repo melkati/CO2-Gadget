@@ -766,6 +766,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             displayReverse = JsonDocument["displayReverse"];
             setDisplayReverse(displayReverse);
             reverseButtons(displayReverse);
+            if (inMenu) isMenuDirty = true;
         }
 #else
         displayReverse = JsonDocument["displayReverse"];
