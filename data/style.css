@@ -247,7 +247,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin-left: 10px;
+  margin: 5px; /* Ajuste del margen para un espaciado uniforme */
   transition: background-color 0.3s ease;
 }
 
@@ -264,10 +264,15 @@ button:hover {
 .buttonGroup {
   display: flex;
   justify-content: space-between;
+  flex-wrap: nowrap; /* Mantener los botones en una fila en pantallas anchas */
 }
 
-#backupButton,
-#restoreButton {
+.buttonsBackupRestore, .buttonsRestartSave {
+  display: flex;
+  gap: 10px; /* Añadir espacio entre los botones */
+}
+
+#backupButton, #restoreButton {
   margin-right: 10px;
 }
 
@@ -276,10 +281,27 @@ button:hover {
 }
 
 @media screen and (max-width: 600px) {
+  .buttonGroup {
+    display: grid; /* Usar grid layout para pantallas estrechas */
+    grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
+    gap: 20px; /* Espacio entre columnas y filas */
+  }
+
+  .buttonsBackupRestore, .buttonsRestartSave {
+    flex-direction: column;
+    width: auto;
+    margin-bottom: 0;
+    align-items: center; /* Centrar los botones en cada columna */
+  }
+
+  .buttonsBackupRestore button, .buttonsRestartSave button {
+    width: 100%; /* Asegurar que los botones ocupen todo el ancho de la columna */
+    margin-bottom: 10px; /* Mayor separación vertical entre botones */
+  }
+
   .buttonGroup button {
     font-size: 14px;
     padding: 8px 10px;
-    margin-left: 5px;
   }
 
   #restartButton {
@@ -296,6 +318,7 @@ button:hover {
     padding: 10px 20px;
   }
 }
+
 
 .content {
   max-width: 600px;
@@ -595,4 +618,8 @@ button:hover {
 
 #debug-content {
   margin-top: 20px;
+}
+
+.hidden {
+  display: none;
 }
