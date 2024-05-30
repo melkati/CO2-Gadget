@@ -1,7 +1,7 @@
 // Initialize intervals with default values
 let co2Interval = 15000; // 15 seconds
-let temperatureInterval = 60000; // 60 seconds
-let humidityInterval = 60000; // 60 seconds
+let temperatureInterval = 30000; // 60 seconds
+let humidityInterval = 30000; // 60 seconds
 
 // Define timers for data update functions
 let co2Timer = setInterval(getCO2Data, co2Interval);
@@ -41,7 +41,8 @@ function getCO2Data() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if ((this.readyState == 4) && (this.status == 200)) {
-            document.querySelector('text#CO2Value').textContent = this.responseText;
+            let co2Value = parseFloat(this.responseText);
+            document.querySelector('text#CO2Value').textContent = co2Value.toFixed(0); // No decimals
         }
     };
     xhttp.onerror = function () {
@@ -55,7 +56,8 @@ function getTemperatureData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("TempValue").innerHTML = this.responseText;
+            let temperatureValue = parseFloat(this.responseText);
+            document.getElementById("TempValue").textContent = temperatureValue.toFixed(1); // One decimal
         }
     };
     xhttp.onerror = function () {
@@ -69,7 +71,8 @@ function getHumidityData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("HumValue").innerHTML = this.responseText;
+            let humidityValue = parseFloat(this.responseText);
+            document.getElementById("HumValue").textContent = humidityValue.toFixed(0); // No decimals
         }
     };
     xhttp.onerror = function () {
