@@ -43,8 +43,8 @@
                     </svg>
                 </div>
             </div>
-            </div>
-            </div>
+        </div>
+        </div>
 
     <!-- Captive Portal Status Container -->
     <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
@@ -179,6 +179,12 @@
         <div class="status-item" id="captivePortalTimeLeftItem">
             <span class="status-label">Captive Portal Time Left:</span> <span id="captivePortalTimeLeft"></span>
         </div>
+        <div class="status-item" id="captivePortalDebugItem">
+            <span class="status-label">Captive Portal Debug:</span> <span id="captivePortalDebug"></span>
+        </div>
+        <div class="status-item" id="relaxedSecurityItem">
+            <span class="status-label">Relaxed Security:</span> <span id="relaxedSecurity"></span>
+        </div>
         <!-- Status line to display CO2 Gadget version -->
         <div id="statusLineContainer">
             <span id="co2GadgetVersion"></span>
@@ -227,6 +233,19 @@
                     } else {
                         document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
                     }
+
+                    if (data.captivePortalDebug !== undefined) {
+                        document.getElementById('captivePortalDebug').textContent = data.captivePortalDebug;
+                    } else {
+                        document.getElementById('captivePortalDebugItem').style.display = 'none';
+                    }
+
+                    if (data.relaxedSecurity !== undefined) {
+                        document.getElementById('relaxedSecurity').textContent = data.relaxedSecurity;
+                    } else {
+                        document.getElementById('relaxedSecurityItem').style.display = 'none';
+                    }
+
                 })
                 .catch(error => console.error('Error fetching status:', error));
         }
