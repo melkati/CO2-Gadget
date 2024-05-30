@@ -789,12 +789,35 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
         }
 
-        displayShowTemperature = JsonDocument["showTemp"];
-        displayShowHumidity = JsonDocument["showHumidity"];
-        displayShowBattery = JsonDocument["showBattery"];
-        displayShowBatteryVoltage = JsonDocument["showBattVolt"];
-        displayShowCO2 = JsonDocument["showCO2"];
-        displayShowPM25 = JsonDocument["showPM25"];
+        if (displayShowTemperature != JsonDocument["showTemp"]) {
+            displayShowTemperature = JsonDocument["showTemp"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowHumidity != JsonDocument["showHumidity"]) {
+            displayShowHumidity = JsonDocument["showHumidity"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBattery != JsonDocument["showBattery"]) {
+            displayShowBattery = JsonDocument["showBattery"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
+            displayShowBatteryVoltage = JsonDocument["showBattVolt"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowCO2 != JsonDocument["showCO2"]) {
+            displayShowCO2 = JsonDocument["showCO2"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowPM25 != JsonDocument["showPM25"]) {
+            displayShowPM25 = JsonDocument["showPM25"];
+            shouldRedrawDisplay = true;
+        }
 
         // Buzzer preferences
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
@@ -861,7 +884,7 @@ bool setPreferenceValue(String key, String value) {
     bool success = false;
 
     // Determine the type of the value and store it accordingly
-    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {        
+    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
         bool boolValue = value.equalsIgnoreCase("true");
         success = preferences.putBool(key.c_str(), boolValue);
         Serial.println("-->[PREF] Setting boolean value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
