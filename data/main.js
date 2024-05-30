@@ -79,22 +79,10 @@ function getHumidityData() {
     xhttp.send();
 }
 
-const colorSwitch = document.querySelector("#iconBulb");
-function changeTheme(ev) {
-    let elementStyle = window.getComputedStyle(colorSwitch);
-    let elementColor = elementStyle.getPropertyValue('--icon-color');
-    if (elementColor == ' #6e6e6e') {
-        document.documentElement.setAttribute('theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('theme', 'light');
-    }
-};
-colorSwitch.addEventListener('click', changeTheme);
-
-// Start the process by fetching the measurement interval when the page loads
-window.onload = function () {
+document.addEventListener('DOMContentLoaded', function () {
+    // Start the process by fetching the measurement intervals and data when the page loads
     getCO2Data();
     getTemperatureData();
     getHumidityData();
     getMeasurementInterval();
-};
+});
