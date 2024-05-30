@@ -144,7 +144,7 @@ String getCO2GadgetRevisionBranch() {
 void upgradePreferences() {
     if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
         batteryDischargedMillivolts = 3200;
-        Serial.println("-->[PREF] Upgrading preferences batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
+        Serial.println("-->[PREF] Upgrading preferences (" + String(__func__) + ") batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
         prefRevision = 1;
         putPreferences();
     }
@@ -178,7 +178,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
     Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
     Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
-    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");    
+    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");
     Serial.println("-->[PREF] mqttShowInConsole:\t#" + String(mqttShowInConsole ? "Enabled" : "Disabled") + "# (" + String(mqttShowInConsole) + ")");
     Serial.println("-->[PREF] mqttBroker:\t#" + mqttBroker + "#");
     Serial.println("-->[PREF] mqttUser:\t#" + mqttUser + "#");
@@ -699,6 +699,11 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         return false;
     }
 
+#ifdef DEBUG_PREFERENCES
+    String debugMessage = "-->[PREF] JSON received (" + String(__func__) + "): " + jsonPreferences;
+    Serial.println(debugMessage);
+#endif
+
     // Save preferences to non-volatile memory (Preferences)
     try {
         preferences.begin("CO2-Gadget", false);
@@ -797,39 +802,39 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 
         // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
-    if (JsonDocument.containsKey("cpNoTimeout")) {
+        if (JsonDocument.containsKey("cpNoTimeout")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
-        Serial.println("-->[CAPT] cpNoTimeout is present. Setting value to: " + String((const char*)JsonDocument["cpNoTimeout"]));
+            Serial.println("-->[CAPT] cpNoTimeout is present. Setting value to: " + String(JsonDocument["cpNoTimeout"].as<String>()));
 #endif
-        captivePortalNoTimeout = JsonDocument["cpNoTimeout"];
-    }
-    if (JsonDocument.containsKey("cpRelaxedSec")) {
+            captivePortalNoTimeout = JsonDocument["cpNoTimeout"];
+        }
+        if (JsonDocument.containsKey("cpRelaxedSec")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
-        Serial.println("-->[CAPT] cpRelaxedSec is present. Setting value to: " + String((const char*)JsonDocument["cpRelaxedSec"]));
+            Serial.println("-->[CAPT] cpRelaxedSec is present. Setting value to: " + String(JsonDocument["cpRelaxedSec"].as<String>()));
 #endif
-        relaxedSecurity = JsonDocument["cpRelaxedSec"];
-    }
-    if (JsonDocument.containsKey("cpDebug")) {
+            relaxedSecurity = JsonDocument["cpRelaxedSec"];
+        }
+        if (JsonDocument.containsKey("cpDebug")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
-        Serial.println("-->[CAPT] cpDebug is present. Setting value to: " + String((const char*)JsonDocument["cpDebug"]));
+            Serial.println("-->[CAPT] cpDebug is present. Setting value to: " + String(JsonDocument["cpDebug"].as<String>()));
 #endif
-        captivePortalDebug = JsonDocument["cpDebug"];
-    }
-    if (JsonDocument.containsKey("cpWaitTime")) {
+            captivePortalDebug = JsonDocument["cpDebug"];
+        }
+        if (JsonDocument.containsKey("cpWaitTime")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
-        Serial.println("-->[CAPT] cpWaitTime is present. Setting value to: " + String((const char*)JsonDocument["cpWaitTime"]));
+            Serial.println("-->[CAPT] cpWaitTime is present. Setting value to: " + String((long)JsonDocument["cpWaitTime"]));
 #endif
-        timeToWaitForCaptivePortal = JsonDocument["cpWaitTime"];
-    }
+            timeToWaitForCaptivePortal = JsonDocument["cpWaitTime"];
+        }
 #endif
 
-    // If JsonDocument["wifiPass"] is present, update the wifiPass variable
-    if (JsonDocument.containsKey("wifiPass")) {
-        wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
-        wifiChanged = true;
-    }
-        // If JsonDocument["mqttPass"] is present, update the mqttPass variable
-        if (JsonDocument.containsKey("mqttPass")) {
+        // If JsonDocument["wifiPass"] is present and different from the current one, update the wifiPass variable
+        if (JsonDocument.containsKey("wifiPass") && wifiPass != JsonDocument["wifiPass"].as<String>().c_str()) {
+            wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+            wifiChanged = true;
+        }
+        // If JsonDocument["mqttPass"] is present and different from the current one, update the mqttPass variable
+        if (JsonDocument.containsKey("mqttPass") && mqttPass != JsonDocument["mqttPass"].as<String>().c_str()) {
             mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
             wifiChanged = true;
         }
@@ -847,6 +852,33 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
+}
+
+bool setPreferenceValue(String key, String value) {
+    preferences.begin("CO2-Gadget", false);
+
+    bool success = false;
+
+    // Determine the type of the value and store it accordingly
+    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {        
+        bool boolValue = value.equalsIgnoreCase("true");
+        success = preferences.putBool(key.c_str(), boolValue);
+        Serial.println("-->[PREF] Setting boolean value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toInt() != 0 || value == "0") {
+        int intValue = value.toInt();
+        success = preferences.putInt(key.c_str(), intValue);
+        Serial.println("-->[PREF] Setting integer value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toFloat() != 0.0 || value == "0.0") {
+        float floatValue = value.toFloat();
+        success = preferences.putFloat(key.c_str(), floatValue);
+        Serial.println("-->[PREF] Setting float value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else {
+        success = preferences.putString(key.c_str(), value);
+        Serial.println("-->[PREF] Setting string value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    }
+
+    preferences.end();
+    return success;
 }
 
 #endif  // CO2_Gadget_Preferences_h
