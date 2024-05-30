@@ -62,6 +62,7 @@ bool mqttDiscoverySent = false;
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
 uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
+bool mqttShowInConsole = false;
 
 // ESP-NOW options
 bool activeESPNOW = false;
@@ -96,6 +97,7 @@ bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
 bool shouldRedrawDisplay = false;
+bool isMenuDirty = false;  // To know if we need to redraw the menu
 uint16_t measurementInterval = 10;
 uint16_t sampleInterval = 60;
 bool bleInitialized = false;

@@ -2,11 +2,20 @@
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Immediately set the theme based on localStorage before the CSS is loaded
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('theme', savedTheme);
+            }
+        })();
+    </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./captiveportal.js"></script>
     <script defer type="text/javascript" src="./preferences.js"></script>
@@ -14,6 +23,7 @@
 </head>
 
 <body>
+    <!-- Navigation bar -->
     <div class="navbar">
         <div class="nav-content">
             <div class="nav-links-left">
@@ -26,9 +36,17 @@
                 <a href="/getCaptivePortalStatusAsJson">
                     <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
                 </a>
+                <!-- Theme Switch Icon -->
+                <div class="iconDarkLight" id="iconBulb">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="var(--icon-color)"
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
+
 
 
     <!-- Captive Portal Status Container -->
@@ -69,7 +87,7 @@
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Should the device use the MQTT connection? Use with Home Assistant or
                             others. If not used,
-                            disable to save energy and resources.</span>
+                            disable to save energy and resources. Needs WiFi to activate.</span>
                     </label>
                 </div>
 
@@ -85,94 +103,125 @@
             </fieldset>
 
             <!-- Networking Group -->
-            <fieldset>
+            <fieldset id="wifiNetworks">
                 <legend>Networking</legend>
-                <div id="wifiNetworks">
-                    <fieldset>
-                        <legend>WiFi Credentials</legend>
-
-                        <div>
-                            <label for="wifiSSID">WiFi SSID:
-                                <span class="tooltip-icon">ℹ️</span>
-                                <span class="tooltip-text">The name of your WiFi network.</span>
-                            </label>
-                            <input type="text" id="wifiSSID" name="wifiSSID" value="" readonly>
-                        </div>
-                        <div>
-                            <label for="wifiPass">WiFi Password:
-                                <span class="tooltip-icon">ℹ️</span>
-                                <span class="tooltip-text">The password for your WiFi network. Disabled for security
-                                    reasons.</span>
-                            </label>
-                            <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
-                        </div>
+                <fieldset>
+                    <legend>WiFi Credentials</legend>
+                    <div>
+                        <label for="wifiSSID">WiFi SSID:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">The name of your WiFi network.</span>
+                        </label>
+                        <input type="text" id="wifiSSID" name="wifiSSID" value="" readonly>
+                    </div>
+                    <div>
+                        <label for="wifiPass">WiFi Password:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">The password for your WiFi network. Disabled for security
+                                reasons.</span>
+                        </label>
+                        <input type="password" id="wifiPass" name="wifiPass" value="" disabled>
+                    </div>
                     </fieldset>
 
-                    <fieldset>
-                        <legend>Host Name</legend>
-                        <div>
-                            <label for="hostName">Host Name:
-                                <span class="tooltip-icon">ℹ️</span>
-                                <span class="tooltip-text">The hostname of the device on the network.</span>
+                <fieldset>
+                    <legend>Captive Portal</legend>
+                    <div>
+                        <label for="cpNoTimeout">No Timeout:
+                            <input type="checkbox" id="cpNoTimeout" name="cpNoTimeout">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Enable or disable the timeout for the captive portal. If enabled,
+                                the captive portal will not time out and will stay active until the user closes
+                                it.</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="cpRelaxedSec">Relaxed Security:
+                            <input type="checkbox" id="cpRelaxedSec" name="cpRelaxedSec">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Enable or disable relaxed security mode for the captive portal.
+                                If enabled, the captive portal will retrieve and show the passwords in plain text and
+                                enable to edit it (take care, this is a security risk).</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="cpDebug">Debug Mode:
+                            <input type="checkbox" id="cpDebug" name="cpDebug">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Enable or disable debug mode for the captive portal. If enabled,
+                                the captive portal will show debug information in the browser console.</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="cpWaitTime">Wait Time (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Set the wait time for the captive portal in seconds at start up
+                                if a WiFi connection is not possible. After this time, the captive portal will close
+                                automatically unless the "No Timeout" option is enabled.</span>
+                            <input type="number" id="cpWaitTime" name="cpWaitTime" value="">
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Host Name</legend>
+                    <div>
+                        <label for="hostName">Host Name:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">The hostname of the device on the network.</span>
+                        </label>
+                        <input type="text" id="hostName" name="hostName" value="">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Fixed IP</legend>
+                    <div>
+                        <label for="useStaticIP">Use Static IP:
+                            <input type="checkbox" id="useStaticIP" name="useStaticIP">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Use a fixed IP address for the device. This is useful for devices
+                                that need to be accessed by a fixed IP address.</span>
                             </label>
-                            <input type="text" id="hostName" name="hostName" value="">
-                        </div>
-                    </fieldset>
-                    <fieldset>
-                        <legend>Fixed IP</legend>
-                        <div>
-                            <label for="useStaticIP">Use Static IP:
-                                <input type="checkbox" id="useStaticIP" name="useStaticIP">
-                                <span class="tooltip-icon">ℹ️</span>
-                                <span class="tooltip-text">Use a fixed IP address for the device. This is useful for
-                                    devices that need to be accessed by
-                                    a fixed IP address.</span>
-                            </label>
-
-                            <div id="staticIPSettings">
-                                <div>
-                                    <label for="staticIP">Static IP:
-                                        <span class="tooltip-icon">ℹ️</span>
-                                        <span class="tooltip-text">The fixed IP address for the device.</span>
-                                        <input type="text" id="staticIP" name="staticIP" value="">
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label for="gateway">Gateway:
-                                        <span class="tooltip-icon">ℹ️</span>
-                                        <span class="tooltip-text">The gateway IP address for the device.</span>
-                                        <input type="text" id="gateway" name="gateway" value="">
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label for="subnet">Subnet:
-                                        <span class="tooltip-icon">ℹ️</span>
-                                        <span class="tooltip-text">The subnet mask for the device.</span>
-                                        <input type="text" id="subnet" name="subnet" value="">
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label for="dns1">DNS 1:
-                                        <span class="tooltip-icon">ℹ️</span>
-                                        <span class="tooltip-text">The primary DNS server for the device.</span>
-                                        <input type="text" id="dns1" name="dns1" value="">
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label for="dns2">DNS 2:
-                                        <span class="tooltip-icon">ℹ️</span>
-                                        <span class="tooltip-text">The secondary DNS server for the device.</span>
-                                        <input type="text" id="dns2" name="dns2" value="">
-                                    </label>
-                                </div>
+                        <div id="staticIPSettings">
+                            <div>
+                                <label for="staticIP">Static IP:
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The fixed IP address for the device.</span>
+                                    <input type="text" id="staticIP" name="staticIP" value="">
+                                </label>
                             </div>
-                        </div>
-                    </fieldset>
-                </div>
+                            <div>
+                                <label for="gateway">Gateway:
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The gateway IP address for the device.</span>
+                                    <input type="text" id="gateway" name="gateway" value="">
+                                </label>
+                            </div>
+                            <div>
+                                <label for="subnet">Subnet:
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The subnet mask for the device.</span>
+                                    <input type="text" id="subnet" name="subnet" value="">
+                                </label>
+                            </div>
+                            <div>
+                                <label for="dns1">DNS 1:
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The primary DNS server for the device.</span>
+                                    <input type="text" id="dns1" name="dns1" value="">
+                                </label>
+                            </div>
+                            <div>
+                                <label for="dns2">DNS 2:
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The secondary DNS server for the device.</span>
+                                    <input type="text" id="dns2" name="dns2" value="">
+                                </label>
+                            </div>
+                            </div>
+                            </div>
+                            </fieldset>
             </fieldset>
 
             <!-- MQTT Configuration Group -->
@@ -226,6 +275,13 @@
                             <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
                         </label>
                     </div>
+                    <div>
+                        <label for="mqttShowInCon">Show MQTT in Console:
+                            <input type="checkbox" id="mqttShowInCon" name="mqttShowInCon">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Show MQTT messages in the serial console. Useful for debugging
+                                MQTT connections.</span>
+                        </label>
                 </fieldset>
             </div>
 
@@ -284,7 +340,8 @@
                         <label for="autoSelfCalibration">Auto Self Calibration:
                             <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
                             <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor.</span>
+                            <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor. Not recommended
+                                if the sensor is not exposed to fresh air (~420ppm) at least once a week.</span>
                         </label>
                     </div>
 
@@ -359,6 +416,15 @@
                             frequency of sensor
                             readings.</span>
                         <input type="number" id="measurementInterval" name="measurementInterval" value="">
+                    </label>
+                </div>
+                <div>
+                    <label for="debugSensors">Debug Sensors:
+                        <input type="checkbox" id="debugSensors" name="debugSensors">
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Enable debug output for the sensors. This will print sensor data to
+                            the serial
+                            console.</span>
                     </label>
                 </div>
             </fieldset>
@@ -564,7 +630,7 @@
                     </label>
                 </div>
 
-                <div>
+                <div class="hidden"> <!-- for future use to hide CO2/PPM/etc. -->
                     <label for="showCO2">Show CO2:
                         <input type="checkbox" id="showCO2" name="showCO2">
                         <span class="tooltip-icon">ℹ️</span>
@@ -592,21 +658,6 @@
                         <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
                             of the display.</span>
                         <input type="number" id="DisplayBright" name="DisplayBright" value="">
-                    </label>
-                </div>
-            </fieldset>
-
-            <!-- Sensor Debug Group -->
-            <fieldset>
-                <legend>Sensor Debug</legend>
-
-                <div>
-                    <label for="debugSensors">Debug Sensors:
-                        <input type="checkbox" id="debugSensors" name="debugSensors">
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Enable debug output for the sensors. This will print sensor data to
-                            the serial
-                            console.</span>
                     </label>
                 </div>
             </fieldset>

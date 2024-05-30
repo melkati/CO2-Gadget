@@ -827,6 +827,9 @@ bool handleCaptivePortalSettings(String captivePortalPreferences) {
         Serial.println(error.c_str());
         return false;
     }
+#ifdef DEBUG_CAPTIVE_PORTAL
+    Serial.println("-->[CAPT] Received Captive Portal Settings: " + captivePortalPreferences);
+#endif
     if (doc.containsKey("captivePortalActive")) {
 #ifdef DEBUG_CAPTIVE_PORTAL
         // Serial.print("-->[CAPT] Received Captive Portal Settings: ");
@@ -932,7 +935,14 @@ void initWebServer() {
             if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
             if (request->hasParam("forceCaptivePortalActive")) forceCaptivePortalActive = true;
             if (request->hasParam("captivePortalNoTimeout")) captivePortalNoTimeout = true;
-
+#ifdef DEBUG_CAPTIVE_PORTAL
+            String debugText = "-->[WiFi] Loading preferences.html with parameters: ";
+            if (request->hasParam("captivePortalActive")) debugText += "captivePortalActive: " + String(captivePortalActive ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("forceCaptivePortalActive")) debugText += "forceCaptivePortalActive: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("captivePortalNoTimeout")) debugText += "captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("relaxedSecurity")) debugText += "relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("captivePortalActive") || request->hasParam("forceCaptivePortalActive") || request->hasParam("captivePortalNoTimeout") || request->hasParam("relaxedSecurity")) Serial.println(debugText);
+#endif
             if (WiFi.softAPgetStationNum() > 0) {
                 captivePortalActive = true;
                 Serial.println("-->[WiFi] Captive Portal active because there are connected stations");
@@ -1000,10 +1010,10 @@ void initWebServer() {
 
     server.on("/captiveportal.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            // /** GZIPPED CONTENT ***/
-            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
-            // response->addHeader("Content-Encoding", "gzip");
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
             request->send(response);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
@@ -1141,7 +1151,7 @@ void initWebServer() {
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            // 
+            //
             if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
             String preferencesJson = getActualSettingsAsJson(relaxedSecurity);
             request->send(200, "application/json", preferencesJson);
@@ -1230,6 +1240,24 @@ void initWebServer() {
         }
     });
 
+    // Define the endpoint for setting preferences
+    // Define the endpoint for setting preferences
+    server.on("/setPreferencesValue", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request->hasParam("key") && request->hasParam("value")) {
+            String key = request->getParam("key")->value();
+            String value = request->getParam("value")->value();
+            Serial.println("-->[WiFi] Received /setPreferencesValue command with key: " + key + " and value: " + value);
+            if (setPreferenceValue(key, value)) {
+                request->send(200, "text/plain", "OK. Setting " + key + " to " + value);
+            } else {
+                request->send(400, "text/plain", "Error. Invalid parameter or unsupported data type");
+            }
+        } else {
+            request->send(400, "text/plain", "Error. Missing parameters. Use 'key' and 'value'");
+        }
+    });
+
+
     AsyncCallbackJsonWebHandler *savePreferencesHandlerHandler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         if (request != nullptr) {
             StaticJsonDocument<2048> data;
@@ -1241,8 +1269,10 @@ void initWebServer() {
             String response;
             serializeJson(data, response);
             request->send(200, "application/json", response);
-            // Serial.print("-->[WiFi] Received /savePreferences command with parameter: ");
-            // Serial.println(response);
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.print("-->[WiFi] Received /savePreferences command with content: ");
+            Serial.println(response);
+#endif
             handleSavePreferencesFromJSON(response);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
@@ -1251,7 +1281,7 @@ void initWebServer() {
 
     AsyncCallbackJsonWebHandler *setCaptivePortalSettingsHandler = new AsyncCallbackJsonWebHandler("/setCaptivePortalSettings", [](AsyncWebServerRequest *request, JsonVariant &json) {
         if (request != nullptr) {
-            StaticJsonDocument<2048> data;
+            JsonDocument data;
             if (json.is<JsonArray>()) {
                 data = json.as<JsonArray>();
             } else if (json.is<JsonObject>()) {

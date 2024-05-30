@@ -144,13 +144,13 @@ String getCO2GadgetRevisionBranch() {
 void upgradePreferences() {
     if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
         batteryDischargedMillivolts = 3200;
-        Serial.println("-->[PREF] Upgrading preferences batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
+        Serial.println("-->[PREF] Upgrading preferences (" + String(__func__) + ") batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
         prefRevision = 1;
         putPreferences();
     }
 }
 
-void printPreferences() {
+void printActualSettings() {
     Serial.println("-->[PREF]");
     Serial.println("-->[PREF] LOADED PREFERENCES FROM NVR:");
     Serial.println("-->[PREF] prefVersion:\t #" + String(prefVersion) + "#");
@@ -179,6 +179,7 @@ void printPreferences() {
     Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
     Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
     Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");
+    Serial.println("-->[PREF] mqttShowInConsole:\t#" + String(mqttShowInConsole ? "Enabled" : "Disabled") + "# (" + String(mqttShowInConsole) + ")");
     Serial.println("-->[PREF] mqttBroker:\t#" + mqttBroker + "#");
     Serial.println("-->[PREF] mqttUser:\t#" + mqttUser + "#");
 #ifndef WIFI_PRIVACY
@@ -226,6 +227,14 @@ void printPreferences() {
     Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
     Serial.println("-->[PREF] durationBuzzerBeep is:\t#" + String(durationBuzzerBeep) + "#");
     Serial.println("-->[PREF] timeBetweenBuzzerBeeps is:\t#" + String(timeBetweenBuzzerBeeps) + "#");
+
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    Serial.println("-->[PREF] cpNoTimeout is:\t#" + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpRelaxedSec is:\t#" + String(relaxedSecurity ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpDebug is:\t#" + String(captivePortalDebug ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpWaitTime is:\t#" + String(timeToWaitForCaptivePortal) + "#");
+#endif
 
     Serial.println();
     delay(50);
@@ -275,6 +284,7 @@ void initPreferences() {
     activeOTA = preferences.getBool("activeOTA", activeOTA);
     rootTopic = preferences.getString("rootTopic", rootTopic);
     mqttClientId = preferences.getString("mqttClientId", mqttClientId);
+    mqttShowInConsole = preferences.getBool("mqttShowInCon", false);
     mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
     mqttUser = preferences.getString("mqttUser", mqttUser).c_str();
     mqttPass = preferences.getString("mqttPass", mqttPass).c_str();
@@ -335,6 +345,14 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
+// Retrieve Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    captivePortalNoTimeout = preferences.getBool("cpNoTimeout", false);
+    relaxedSecurity = preferences.getBool("cpRelaxedSec", false);
+    captivePortalDebug = preferences.getBool("cpDebug", false);
+    timeToWaitForCaptivePortal = preferences.getUInt("cpWaitTime", 60);
+#endif
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -346,7 +364,7 @@ void initPreferences() {
     preferences.end();
 // #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
     upgradePreferences();
 }
@@ -397,6 +415,7 @@ void putPreferences() {
     preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
     preferences.putUInt("vRef", vRef);
     preferences.putString("mqttClientId", mqttClientId);
+    preferences.putBool("mqttShowInCon", mqttShowInConsole);
     preferences.putString("mqttBroker", mqttBroker);
     preferences.putString("mqttUser", mqttUser);
     preferences.putString("mqttPass", mqttPass);
@@ -441,10 +460,18 @@ void putPreferences() {
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
     preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    preferences.putBool("cpNoTimeout", captivePortalNoTimeout);
+    preferences.putBool("cpRelaxedSec", relaxedSecurity);
+    preferences.putBool("cpDebug", captivePortalDebug);
+    preferences.putUInt("cpWaitTime", timeToWaitForCaptivePortal);
+#endif
+
     preferences.end();
 
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
 }
 
@@ -493,6 +520,7 @@ String getCO2GadgetVersionAsJson() {
 //     doc["batChargd"] = preferences.getInt("batChargd", 4200);
 //     doc["vRef"] = preferences.getInt("vRef", 930);
 //     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
+//     doc["mqttShowInCon"] = preferences.getBool("mqttShowInCon", false);
 //     doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
 //     doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
 //     // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
@@ -577,6 +605,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["batChargd"] = batteryFullyChargedMillivolts;
     doc["vRef"] = vRef;
     doc["mqttClientId"] = mqttClientId;
+    doc["mqttShowInCon"] = mqttShowInConsole;
     doc["mqttBroker"] = mqttBroker;
     doc["mqttUser"] = mqttUser;
     // if includePasswords is false, do not include the password
@@ -636,6 +665,16 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    doc["cpNoTimeout"] = captivePortalNoTimeout;
+    if (relaxedSecurity) {
+        doc["cpRelaxedSec"] = relaxedSecurity;
+    }
+    doc["cpDebug"] = captivePortalDebug;
+    doc["cpWaitTime"] = timeToWaitForCaptivePortal;
+#endif
+
     if (relaxedSecurity) {
         doc["relaxedSecurity"] = true;
     }
@@ -659,6 +698,11 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         // request->send(400, "text/plain", "Error in preferences format");
         return false;
     }
+
+#ifdef DEBUG_PREFERENCES
+    String debugMessage = "-->[PREF] JSON received (" + String(__func__) + "): " + jsonPreferences;
+    Serial.println(debugMessage);
+#endif
 
     // Save preferences to non-volatile memory (Preferences)
     try {
@@ -693,8 +737,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
-        vRef = JsonDocument["vRef"];
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
         mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
         timeToDisplayOff = JsonDocument["tToDispOff"];
@@ -721,6 +766,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             displayReverse = JsonDocument["displayReverse"];
             setDisplayReverse(displayReverse);
             reverseButtons(displayReverse);
+            if (inMenu) isMenuDirty = true;
         }
 #else
         displayReverse = JsonDocument["displayReverse"];
@@ -743,25 +789,76 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
         }
 
-        displayShowTemperature = JsonDocument["showTemp"];
-        displayShowHumidity = JsonDocument["showHumidity"];
-        displayShowBattery = JsonDocument["showBattery"];
-        displayShowBatteryVoltage = JsonDocument["showBattVolt"];
-        displayShowCO2 = JsonDocument["showCO2"];
-        displayShowPM25 = JsonDocument["showPM25"];
+        if (displayShowTemperature != JsonDocument["showTemp"]) {
+            displayShowTemperature = JsonDocument["showTemp"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowHumidity != JsonDocument["showHumidity"]) {
+            displayShowHumidity = JsonDocument["showHumidity"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBattery != JsonDocument["showBattery"]) {
+            displayShowBattery = JsonDocument["showBattery"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
+            displayShowBatteryVoltage = JsonDocument["showBattVolt"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowCO2 != JsonDocument["showCO2"]) {
+            displayShowCO2 = JsonDocument["showCO2"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowPM25 != JsonDocument["showPM25"]) {
+            displayShowPM25 = JsonDocument["showPM25"];
+            shouldRedrawDisplay = true;
+        }
 
         // Buzzer preferences
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
         durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
         timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
-        // If JsonDocument["wifiPass"] is present, update the wifiPass variable
-        if (JsonDocument.containsKey("wifiPass")) {
+        // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+        if (JsonDocument.containsKey("cpNoTimeout")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpNoTimeout is present. Setting value to: " + String(JsonDocument["cpNoTimeout"].as<String>()));
+#endif
+            captivePortalNoTimeout = JsonDocument["cpNoTimeout"];
+        }
+        if (JsonDocument.containsKey("cpRelaxedSec")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpRelaxedSec is present. Setting value to: " + String(JsonDocument["cpRelaxedSec"].as<String>()));
+#endif
+            relaxedSecurity = JsonDocument["cpRelaxedSec"];
+        }
+        if (JsonDocument.containsKey("cpDebug")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpDebug is present. Setting value to: " + String(JsonDocument["cpDebug"].as<String>()));
+#endif
+            captivePortalDebug = JsonDocument["cpDebug"];
+        }
+        if (JsonDocument.containsKey("cpWaitTime")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpWaitTime is present. Setting value to: " + String((long)JsonDocument["cpWaitTime"]));
+#endif
+            timeToWaitForCaptivePortal = JsonDocument["cpWaitTime"];
+        }
+#endif
+
+        // If JsonDocument["wifiPass"] is present and different from the current one, update the wifiPass variable
+        if (JsonDocument.containsKey("wifiPass") && wifiPass != JsonDocument["wifiPass"].as<String>().c_str()) {
             wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
             wifiChanged = true;
         }
-        // If JsonDocument["mqttPass"] is present, update the mqttPass variable
-        if (JsonDocument.containsKey("mqttPass")) {
+        // If JsonDocument["mqttPass"] is present and different from the current one, update the mqttPass variable
+        if (JsonDocument.containsKey("mqttPass") && mqttPass != JsonDocument["mqttPass"].as<String>().c_str()) {
             mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
             wifiChanged = true;
         }
@@ -779,6 +876,33 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
+}
+
+bool setPreferenceValue(String key, String value) {
+    preferences.begin("CO2-Gadget", false);
+
+    bool success = false;
+
+    // Determine the type of the value and store it accordingly
+    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+        bool boolValue = value.equalsIgnoreCase("true");
+        success = preferences.putBool(key.c_str(), boolValue);
+        Serial.println("-->[PREF] Setting boolean value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toInt() != 0 || value == "0") {
+        int intValue = value.toInt();
+        success = preferences.putInt(key.c_str(), intValue);
+        Serial.println("-->[PREF] Setting integer value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toFloat() != 0.0 || value == "0.0") {
+        float floatValue = value.toFloat();
+        success = preferences.putFloat(key.c_str(), floatValue);
+        Serial.println("-->[PREF] Setting float value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else {
+        success = preferences.putString(key.c_str(), value);
+        Serial.println("-->[PREF] Setting string value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    }
+
+    preferences.end();
+    return success;
 }
 
 #endif  // CO2_Gadget_Preferences_h
