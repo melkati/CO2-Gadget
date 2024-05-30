@@ -4,49 +4,199 @@
   --title-color: #96eeea;
   --icon-color: #6e6e6e;
   --circle-color: #eee;
-}
-
-[theme='light'] {
-  --font-color: #666;
-  --bg-color: #f4f4f4;
-  --title-color: #96eeea;
-  --icon-color: #6e6e6e;
-  --circle-color: #eee;
+  --navbar-background-color: #f8f9fa;
+  --navbar-text-color: #333333;
+  --navbar-hover-color: #0056b3;
+  --navbar-border-color: #e7e7e7;
+  --navbar-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --header-font-color: #333;
+  --header-border-color: #ddd;
+  --input-border-color: #ccc;
+  --input-background-color: #fff;
+  --button-background-color: #4caf50;
+  --button-hover-background-color: #45a049;
+  --tag-dark-bg-color: #2c3e50; /* Dark theme tag background color */
+  --popup-bg-color: #333;
+  --popup-text-color: #fff;
+  --tooltip-bg-color: #555;
+  --tooltip-text-color: #fff;
+  --debug-bg-color: rgba(135, 206, 250, 0.7);
+  --debug-border-color: #000;
+  --close-button-color: red;
+  --close-button-hover-color: darkred;
+  --status-bar-bg-color: #fbef83;
+  --status-bar-text-color: #333;
+  --navbar-height: 60px;
 }
 
 [theme='dark'] {
-  --font-color: #252525;
-  --bg-color: #000000;
-  --title-color: #29948f;
-  --icon-color: #d1d1d1;
-  --circle-color: #474747;
+  --font-color: #ecf0f1;
+  --bg-color: #2c3e50;
+  --title-color: #1abc9c;
+  --icon-color: #ecf0f1;
+  --circle-color: #34495e;
+  --navbar-background-color: #1f2d3d;
+  --navbar-text-color: #ecf0f1;
+  --navbar-hover-color: #1abc9c;
+  --navbar-border-color: #1c2833;
+  --navbar-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+  --header-font-color: #ecf0f1;
+  --header-border-color: #1c2833;
+  --input-border-color: #34495e;
+  --input-background-color: #3b4a5a;
+  --button-background-color: #1abc9c;
+  --button-hover-background-color: #16a085;
+  --tag-dark-bg-color: #34495e;
+  --popup-bg-color: #2c3e50;
+  --popup-text-color: #ecf0f1;
+  --tooltip-bg-color: #34495e;
+  --tooltip-text-color: #ecf0f1;
+  --debug-bg-color: rgba(39, 60, 117, 0.7);
+  --debug-border-color: #34495e;
+  --close-button-color: #e74c3c;
+  --close-button-hover-color: #c0392b;
+  --status-bar-bg-color: #34495e;
+  --status-bar-text-color: #ecf0f1;
+  --navbar-height: 60px;
 }
 
 /* Body Styles */
 body {
   font-family: 'Arial', sans-serif;
   background-color: var(--bg-color);
-  margin: 22px auto;
+  color: var(--font-color);
+  margin: 0;
+  padding-top: var(--navbar-height);
+}
+
+h1, h2, h3, h4 {
+  color: var(--header-font-color);
+  margin: 20px 0 10px;
+  border-bottom: 2px solid var(--header-border-color);
+  padding-bottom: 5px;
 }
 
 h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.75em;
+}
+
+h3 {
   font-size: 1.5em;
-  font-weight: bold;
-  color: #333;
+}
+
+h4 {
+  font-size: 1.25em;
+}
+
+/* Navigation Bar Styles */
+.navbar {
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  color: var(--navbar-text-color);
+  background-color: var(--navbar-background-color);
+  padding: 15px 10px;
+  border-bottom: 1px solid var(--navbar-border-color);
+  box-shadow: var(--navbar-shadow);
+  z-index: 1000;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: var(--navbar-text-color);
+  padding: 0px 20px;
+  transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+  color: var(--navbar-hover-color);
+}
+
+.navbar a.active {
+  color: #999;
+  pointer-events: none;
+}
+
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nav-links-left,
+.nav-links-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-links-right a {
+  margin-left: 1rem;
+}
+
+.iconDarkLight {
+  position: absolute;
+  top: 1.2%;
+  right: 2%;
+  background-color: transparent;
+  transition: transform 0.05s;
+  z-index: 1000;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  /* background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg%20style%3D%22width%3A24px%3Bheight%3A24px%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22var(--icon-color)%22%20d%3D%22M12%2C2A7%2C7%200%200%2C0%205%2C9C5%2C11.38%206.19%2C13.47%208%2C14.74V17A1%2C1%200%200%2C0%209%2C18H15A1%2C1%200%200%2C0%2016%2C17V14.74C17.81%2C13.47%2019%2C11.38%2019%2C9A7%2C7%200%200%2C0%2012%2C2M9%2C21A1%2C1%200%200%2C0%2010%2C22H14A1%2C1%200%200%2C0%2015%2C21V20H9V21Z%22%20%2F%3E%3C%2Fsvg%3E'); */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.iconDarkLight:hover {
+  transform: scale(1.1);
+}
+
+.iconDarkLight:active {
+  transform: scale(1.5);
+}
+
+/* Styles for the tag class */
+.tag {
+  font-size: 1.2em;
+  color: var(--bg-color);
+  background-color: var(--title-color);
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+  padding: 5px 15px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+[theme='dark'] .tag {
+  color: var(--title-color);
+  background-color: var(--tag-dark-bg-color);
 }
 
 /* Form Styles */
 #preferencesForm {
-  background-color: #ffffff;
+  background-color: var(--bg-color);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  color: var(--font-color);
 }
 
 fieldset {
-  border: 1px solid #ddd;
+  border: 1px solid var(--header-border-color);
   border-radius: 5px;
   margin-bottom: 15px;
   padding: 15px;
@@ -55,11 +205,13 @@ fieldset {
 legend {
   font-size: 1.2em;
   font-weight: bold;
-  color: #333;
+  color: var(--header-font-color);
 }
 
 label {
   display: inline-block;
+  margin-bottom: 5px;
+  color: var(--font-color);
 }
 
 select,
@@ -67,37 +219,40 @@ input[type="text"],
 input[type="password"],
 input[type="number"] {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
   border-radius: 4px;
   font-size: 14px;
+  color: var(--font-color);
 }
 
 input[type="checkbox"] {
   width: auto;
   margin-bottom: 10px;
   box-sizing: border-box;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
   border-radius: 4px;
   font-size: 14px;
 }
 
-/* Button Styles */
 button {
-  background-color: #4caf50;
+  background-color: var(--button-background-color);
   color: white;
-  padding: 10px 13px;
+  padding: 10px 15px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   margin-left: 10px;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: var(--button-hover-background-color);
 }
 
 #restartButton {
@@ -145,17 +300,23 @@ button:hover {
 .content {
   max-width: 600px;
   margin: 0 auto;
+  padding-top: var(--navbar-height); /* Add padding to ensure content is not hidden by navbar */
 }
 
 /* Circular Chart Styles */
 .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
+  justify-content: space-around;
+  align-items: center; /* Center items vertically */
 }
 
 .single-chart {
   width: 33%;
-  justify-content: space-around;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
 }
 
 .circular-chart {
@@ -203,18 +364,6 @@ button:hover {
   text-anchor: middle;
 }
 
-.iconDarkLight {
-  position: absolute;
-  top: 1.2%;
-  right: 2%;
-  background-color: transparent;
-  transition: transform .05s;
-}
-
-.iconDarkLight:active {
-  transform: scale(1.5);
-}
-
 @media only screen and (max-width: 639px) {
   .flex-wrapper {
     flex-flow: column wrap;
@@ -243,8 +392,8 @@ button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #333;
-  color: #fff;
+  background-color: var(--popup-bg-color);
+  color: var(--popup-text-color);
   padding: 15px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -287,8 +436,8 @@ button:hover {
 .tooltip-text {
   visibility: hidden;
   width: 180px;
-  background-color: #555;
-  color: #fff;
+  background-color: var(--tooltip-bg-color);
+  color: var(--tooltip-text-color);
   text-align: center;
   border-radius: 6px;
   padding: 8px 8px;
@@ -301,54 +450,11 @@ button:hover {
   visibility: visible;
 }
 
-/* Sticky navigation bar */
-.navbar {
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: #f2f2f2;
-  padding: 15px 10px;
-  z-index: 1000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar a {
-  text-decoration: none;
-  color: #333;
-  padding: 0px 20px;
-}
-
-.navbar a.active {
-  color: #999;
-  pointer-events: none;
-}
-
-.nav-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.nav-links-left {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-grow: 1;
-}
-
-.nav-links-right {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
+/* Captive Portal Status Bar */
 #captive-portal-status-bar {
   width: 100%;
-  background-color: #fbef83;
-  color: #333;
+  background-color: var(--status-bar-bg-color);
+  color: var(--status-bar-text-color);
   position: fixed;
   top: 45px;
   z-index: 999;
@@ -360,7 +466,7 @@ button:hover {
 
 @media (max-width: 600px) {
   #captive-portal-status-bar {
-      top: 45px;
+    top: 45px;
   }
 }
 
@@ -369,19 +475,19 @@ button:hover {
   margin-right: 10px;
   padding: 5px 10px;
   font-size: 0.7em;
-  cursor: pointer; /* Cambiar el cursor a una mano */
+  cursor: pointer;
 }
 
 #hide-captive-portal-status-bar-button svg {
   width: 20px;
   height: 20px;
   fill: none;
-  stroke: black;
+  stroke: var(--close-button-color);
   stroke-width: 2;
 }
 
 #hide-captive-portal-status-bar-button:hover svg {
-  stroke: red; /* Cambiar el color del ícono al pasar el cursor */
+  stroke: var(--close-button-hover-color);
 }
 
 .hidden-captive-portal-status-bar {
@@ -395,7 +501,6 @@ button:hover {
   border-radius: 50%;
   display: inline-block;
   margin-left: 10px;
-    /* Adjust as needed to position the dot */
   vertical-align: middle;
 }
 
@@ -415,10 +520,6 @@ button:hover {
   background-color: red;
 }
 
-.content {
-  margin-top: 120px;
-}
-
 .status-item {
   margin-bottom: 10px;
 }
@@ -430,19 +531,19 @@ button:hover {
 /* Add a fade animation effect */
 @keyframes fadeInOut {
   0% {
-      opacity: 0;
+    opacity: 0;
   }
 
   25% {
-      opacity: 1;
+    opacity: 1;
   }
 
   75% {
-      opacity: 1;
+    opacity: 1;
   }
 
   100% {
-      opacity: 0;
+    opacity: 0;
   }
 }
 
@@ -454,14 +555,14 @@ button:hover {
   height: auto;
   pointer-events: none;
   font-size: 0.9em;
-  background-color: rgba(135, 206, 250, 0.7);
-  border: 1px solid black;
+  background-color: var(--debug-bg-color);
+  border: 1px solid var(--debug-border-color);
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  display: none; /* Hidden by default */
-  overflow: auto; /* To handle overflow content */
-  z-index: 9998; /* Ensure it's behind the close button */
+  display: none;
+  overflow: auto;
+  z-index: 9998;
   animation: fadeInOut 2s ease-in-out;
 }
 
@@ -472,20 +573,19 @@ button:hover {
 #close-debug-window {
   background: none;
   border: none;
-  color: red;
+  color: var(--close-button-color);
   font-size: 14px;
   cursor: pointer;
   position: absolute;
   top: 0px;
   right: 0px;
-  z-index: 9999; /* Ensure it's in front of the debug window */
-  pointer-events: auto;
+  z-index: 9999;
 }
 
 #close-debug-window:hover {
-  color: darkred;
+  color: var(--close-button-hover-color);
 }
 
 #debug-content {
-  margin-top: 20px; /* Ensure content doesn't overlap with the close button */
+  margin-top: 20px;
 }
