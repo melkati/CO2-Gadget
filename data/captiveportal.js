@@ -3,6 +3,7 @@ var testCaptivePortal = false;
 var captivePortalStatusBarActive = false;
 var captivePortalDebug = false;
 var relaxedSecurity = false;
+var debugWindowActive = false;
 
 // Global variables to store the previous state
 var previousData = {
@@ -108,38 +109,30 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
  * @param {Object} data - The data to display in the debug window.
  */
 function updateDebugWindow(data) {
-    const debugContent = document.getElementById('debug-content');
-    if (debugContent) {
-        if (captivePortalDebug) console.log('Updating debug window with data:', data);
-        let content = `
+    if (debugWindowActive) {
+        const debugContent = document.getElementById('debug-content');
+        if (debugContent) {
+            if (captivePortalDebug) console.log('Updating debug window with data:', data);
+            let content = `
             <div>captivePortalActive: ${data.captivePortalActive}</div>
             <div>captivePortalNoTimeout: ${data.captivePortalNoTimeout}</div>
             <div>timeToWaitForCaptivePortal: ${data.timeToWaitForCaptivePortal}</div>
             <div>captivePortalTimeLeft: ${data.captivePortalTimeLeft}</div>
             <div>captivePortalDebug: ${data.captivePortalDebug}</div>
         `;
-        if (data.testCaptivePortal !== undefined) {
-            if (captivePortalDebug) console.log('Adding testCaptivePortal to debug window:', data.testCaptivePortal);
-            content += `<div>testCaptivePortal: ${data.testCaptivePortal}</div>`;
+            if (data.testCaptivePortal !== undefined) {
+                if (captivePortalDebug) console.log('Adding testCaptivePortal to debug window:', data.testCaptivePortal);
+                content += `<div>testCaptivePortal: ${data.testCaptivePortal}</div>`;
+            }
+            if (data.relaxedSecurity !== undefined) {
+                if (captivePortalDebug) console.log('Adding relaxedSecurity to debug window:', data.relaxedSecurity);
+                content += `<div>relaxedSecurity: ${data.relaxedSecurity}</div>`;
+            }
+            debugContent.innerHTML = content;
+            debugWindow.style.display = 'block';
         }
-        if (data.relaxedSecurity !== undefined) {
-            if (captivePortalDebug) console.log('Adding relaxedSecurity to debug window:', data.relaxedSecurity);
-            content += `<div>relaxedSecurity: ${data.relaxedSecurity}</div>`;
-        }
-        debugContent.innerHTML = content;
-    }
-}
-
-/**
- * Shows or hides the debug window based on the provided flag.
- * @param {boolean} show - Determines whether to show or hide the debug window.
- */
-function showDebugWindow(show) {
-    const debugWindow = document.getElementById('debug-window');
-    if (debugWindow) {
-        debugWindow.classList.toggle('hidden-debug-window', !show);
     } else {
-        console.error('Element with ID "debug-window" not found.');
+        debugWindow.style.display = 'none';
     }
 }
 
@@ -149,7 +142,7 @@ function showDebugWindow(show) {
  */
 function handleCaptivePortalData(data) {
     const changes = {};
-    const propertiesToCheck = ['captivePortalActive', 'forceCaptivePortalActive', 'captivePortalNoTimeout'];
+    const propertiesToCheck = ['captivePortalActive', 'forceCaptivePortalActive', 'captivePortalNoTimeout', 'captivePortalDebug', 'relaxedSecurity'];
 
     if (captivePortalDebug) console.log('Received captive portal data from server:', data);
 
@@ -163,11 +156,13 @@ function handleCaptivePortalData(data) {
 
     if (Object.keys(changes).length > 0 && captivePortalDebug) {
         console.log('Detected changes in captive portal data:', changes);
-    }
+    }    
 
     // Update debug mode if present in data
     if (data.captivePortalDebug !== undefined) {
         captivePortalDebug = data.captivePortalDebug;
+        debugWindowActive = captivePortalDebug;
+        console.log('Captive portal debug mode set to:', captivePortalDebug);
     }
 
     // Update active states
@@ -211,7 +206,9 @@ function handleCaptivePortalData(data) {
 
     updateServerStatusDot(); // Ensure the status dot is updated after handling captive portal data
 
-    updateDebugWindowIfNeeded(data); // Update the debug window if needed
+    if (debugWindowActive) {
+        updateDebugWindow(data);
+    }
 }
 
 /**
@@ -475,13 +472,6 @@ function initializeCaptivePortal() {
     setInterval(checkServerConnection, 1000);
 
     highlightCurrentPage(); // Highlight the current page in the navigation
-
-    const debugWindow = document.getElementById('debug-window');
-    if (debugWindow) {
-        createDebugWindow(debugWindow);
-    } else {
-        console.error('Debug window element not found');
-    }
 }
 
 /**
@@ -500,37 +490,6 @@ function createDebugWindow(debugWindow) {
     const debugContent = document.createElement('div');
     debugContent.id = 'debug-content';
     debugWindow.appendChild(debugContent);
-
-    if (captivePortalDebug) {
-        showDebugWindow(true);
-    }
-}
-
-/**
- * Show the debug window with the provided content.
- * @param {string} content - The content to display in the debug window.
- */
-function showDebugWindow2(content) {
-    const debugContent = document.getElementById('debug-content');
-    const debugWindow = document.getElementById('debug-window');
-
-    if (debugContent && debugWindow) {
-        debugContent.innerHTML = content;
-        debugWindow.style.display = 'block';
-    }
-}
-
-/**
- * Updates the debug window if needed.
- * @param {Object} data - The data to display in the debug window.
- */
-function updateDebugWindowIfNeeded(data) {
-    if (captivePortalDebug) {
-        updateDebugWindow(data);
-        showDebugWindow(true);
-    } else {
-        showDebugWindow(false);
-    }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -544,5 +503,19 @@ document.addEventListener("DOMContentLoaded", function () {
         initializeCaptivePortal();
     } else {
         if (captivePortalDebug) console.log('Not on preferences.html, skipping debug window initialization');
+    }
+
+    if (captivePortalDebug) {
+        const debugWindow = document.getElementById('debug-window');
+        if (debugWindow) {
+            createDebugWindow(debugWindow);
+            debugWindowActive = true;
+            debugWindow.style.display = 'block';
+        } else {
+            console.error('Element with ID "debug-window" not found.');
+        }
+    } else {
+        debugWindow.style.display = 'none';
+        debugWindowActive = true;
     }
 });
