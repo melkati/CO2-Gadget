@@ -1274,6 +1274,7 @@ void initWebServer() {
             Serial.println(response);
 #endif
             handleSavePreferencesFromJSON(response);
+            timeCaptivePortalStarted = millis();
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
