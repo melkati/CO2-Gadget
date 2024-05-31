@@ -475,8 +475,8 @@ void initDisplay(bool fastMode = false) {
 
 void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     publishMQTTLogData("-->[EINK] Battery Level: " + String(batteryLevel) + "%   Battery voltage: " + String(batteryVoltage) + "V");
-    // Serial.println("-->[EINK] Drawn battery icon at " + String(posX) + ", " + String(posY) + " with level " + String(batteryLevel) + "% and voltage " + String(batteryVoltage) + "V");
     display.fillRect(posX, posY, display.width() - posX, 16, GxEPD_WHITE);
+    if (!displayShowBattery) return;
     if (workingOnExternalPower) {
         // display.drawRoundRect(posX + 8, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
         display.drawBitmap(posX + 16, posY, iconUSB, 16, 16, GxEPD_WHITE, GxEPD_BLACK);
