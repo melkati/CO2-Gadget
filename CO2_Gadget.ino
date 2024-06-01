@@ -1,3 +1,45 @@
+/*****************************************************************************************************/
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐       ____ ___ ____     ____           _            _        ▌
+// ▐      / ___/ _ \___ \   / ___| __ _  __| | __ _  ___| |_      ▌
+// ▐     | |  | | | |__) | | |  _ / _` |/ _` |/ _` |/ _ \ __|     ▌
+// ▐     | |__| |_| / __/  | |_| | (_| | (_| | (_| |  __/ |_      ▌
+// ▐      \____\___/_____|  \____|\__,_|\__,_|\__, |\___|\__|     ▌
+// ▐                                          |___/               ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+// CO2 Gadget Advanced Firmware
+//
+// Copyright (C) 2021-2024 CO2 Gadget Contributors
+// Contact: https://emariete.com
+//
+// This file is part of the CO2 Gadget firmware.
+//
+// The CO2 Gadget firmware is free software: you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// The emariete.com Website and Documentation is distributed in the hope that
+// it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the emariete.com Website and Documentation. If not, see
+// <http://www.gnu.org/licenses/>
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐                                _      _                                 ▌
+// ▐       ___ _ __ ___   __ _ _ __(_) ___| |_ ___   ___ ___  _ __ ___       ▌
+// ▐      / _ \ '_ ` _ \ / _` | '__| |/ _ \ __/ _ \ / __/ _ \| '_ ` _ \      ▌
+// ▐     |  __/ | | | | | (_| | |  | |  __/ ||  __/| (_| (_) | | | | | |     ▌
+// ▐      \___|_| |_| |_|\__,_|_|  |_|\___|\__\___(_)___\___/|_| |_| |_|     ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+/*****************************************************************************************************/
+
 // Functions and enum definitions
 void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
 void outputsLoop();                       // Defined in CO2_Gadget_Main.h
