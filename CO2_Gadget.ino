@@ -11,7 +11,7 @@
 
 // CO2 Gadget Advanced Firmware
 //
-// Copyright (C) 2021-2024 CO2 Gadget Contributors
+// Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors
 // Contact: https://emariete.com
 //
 // This file is part of the CO2 Gadget firmware.
