@@ -24,6 +24,17 @@ int displayHeight = 64;
 // #define MENUFONT u8g2_font_6x10_mf
 #define MENUFONT u8g2_font_5x8_mf
 
+void setDisplayReverse(bool reverse) {
+    if (reverse) {
+        Serial.printf("-->[OLED] Set display reversed\n");
+        u8g2.setDisplayRotation(U8G2_R2);
+    } else {
+        Serial.printf("-->[OLED] Set display normal\n");
+        u8g2.setDisplayRotation(U8G2_R0);
+    }
+    shouldRedrawDisplay = true;
+}
+
 void setDisplayBrightness(uint32_t newBrightness) {
   Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
   u8g2.setContrast(newBrightness);
@@ -63,7 +74,7 @@ bool displayNotification(String notificationText, String notificationText2, noti
   return true;
 }
 
-void initDisplay() {
+void initDisplay(bool fastMode = false) { // fastMode not used in OLED display. Just for compatibility with TFT and other displays.
   Serial.printf("-->[OLED] Initialized: \t#%s#\n",
                 ((u8g2.begin()) ? "OK" : "Failed"));
   u8g2.firstPage();

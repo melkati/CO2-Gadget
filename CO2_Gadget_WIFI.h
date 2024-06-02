@@ -9,9 +9,10 @@
 /*****************************************************************************************************/
 // clang-format on
 
-#if !defined WIFI_SSID_CREDENTIALS || !defined WIFI_PW_CREDENTIALS
-// If not using enviroment variables, you must have a credentials.h file
-#include "credentials.h"
+#include <Arduino.h>
+
+#ifdef SUPPORT_CAPTIVE_PORTAL
+DNSServer dnsServer;
 #endif
 
 WiFiClient espClient;
@@ -245,11 +246,16 @@ void printLargeASCII(const char *text) {
 }
 
 void onWifiSettingsChanged(std::string ssid, std::string password) {
-    Serial.print("-->[WiFi] WifiSetup: SSID = ");
+#ifdef WIFI_PRIVACY
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
     Serial.print(ssid.c_str());
-#ifndef WIFI_PRIVACY
-    Serial.print(", Password = ");
-    Serial.println(password.c_str());
+    Serial.println(")");
+#else
+    Serial.print("-->[WiFi] onWifiSettingsChanged() (SSID: ");
+    Serial.print(ssid.c_str());
+    Serial.print(", Password: ");
+    Serial.print(password.c_str());
+    Serial.println(")");
 #endif
     WiFi.begin(ssid.c_str(), password.c_str());
 }
@@ -266,6 +272,100 @@ String getMACAddressAsString() {
                         String(mac[0], HEX);
 
     return macAddress;
+}
+
+void printDisconnectReason(int reasonCode) {
+#ifdef DEBUG_WIFI_EVENTS
+    switch (reasonCode) {
+        case WIFI_REASON_UNSPECIFIED:
+            Serial.println("-->[WiFi-event] Unspecified error");
+            break;
+        case WIFI_REASON_AUTH_EXPIRE:
+            Serial.println("-->[WiFi-event] Authentication expired");
+            break;
+        case WIFI_REASON_AUTH_LEAVE:
+            Serial.println("-->[WiFi-event] Authentication left");
+            break;
+        case WIFI_REASON_ASSOC_EXPIRE:
+            Serial.println("-->[WiFi-event] Association expired");
+            break;
+        case WIFI_REASON_ASSOC_TOOMANY:
+            Serial.println("-->[WiFi-event] Too many associations");
+            break;
+        case WIFI_REASON_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Not authenticated");
+            break;
+        case WIFI_REASON_NOT_ASSOCED:
+            Serial.println("-->[WiFi-event] Not associated");
+            break;
+        case WIFI_REASON_ASSOC_LEAVE:
+            Serial.println("-->[WiFi-event] Association left");
+            break;
+        case WIFI_REASON_ASSOC_NOT_AUTHED:
+            Serial.println("-->[WiFi-event] Association not authenticated");
+            break;
+        case WIFI_REASON_DISASSOC_PWRCAP_BAD:
+            Serial.println("-->[WiFi-event] Disassociation power capability invalid");
+            break;
+        case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
+            Serial.println("-->[WiFi-event] Disassociation supported channel invalid");
+            break;
+        case WIFI_REASON_IE_INVALID:
+            Serial.println("-->[WiFi-event] Invalid IE");
+            break;
+        case WIFI_REASON_MIC_FAILURE:
+            Serial.println("-->[WiFi-event] MIC failure");
+            break;
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] 4-way handshake timeout");
+            break;
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Group key update timeout");
+            break;
+        case WIFI_REASON_IE_IN_4WAY_DIFFERS:
+            Serial.println("-->[WiFi-event] IE in 4-way differs");
+            break;
+        case WIFI_REASON_GROUP_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid group cipher");
+            break;
+        case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
+            Serial.println("-->[WiFi-event] Invalid pairwise cipher");
+            break;
+        case WIFI_REASON_AKMP_INVALID:
+            Serial.println("-->[WiFi-event] Invalid AKMP");
+            break;
+        case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
+            Serial.println("-->[WiFi-event] Unsupported RSN IE version");
+            break;
+        case WIFI_REASON_INVALID_RSN_IE_CAP:
+            Serial.println("-->[WiFi-event] Invalid RSN IE capabilities");
+            break;
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+            Serial.println("-->[WiFi-event] 802.1X authentication failed");
+            break;
+        case WIFI_REASON_CIPHER_SUITE_REJECTED:
+            Serial.println("-->[WiFi-event] Cipher suite rejected");
+            break;
+        case WIFI_REASON_BEACON_TIMEOUT:
+            Serial.println("-->[WiFi-event] Beacon timeout");
+            break;
+        case WIFI_REASON_NO_AP_FOUND:
+            Serial.println("-->[WiFi-event] No AP found");
+            break;
+        case WIFI_REASON_AUTH_FAIL:
+            Serial.println("-->[WiFi-event] Authentication failed");
+            break;
+        case WIFI_REASON_ASSOC_FAIL:
+            Serial.println("-->[WiFi-event] Association failed");
+            break;
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+            Serial.println("-->[WiFi-event] Handshake timeout");
+            break;
+        default:
+            Serial.println("-->[WiFi-event] Unknown reason");
+            break;
+    }
+#endif  // DEBUG_WIFI_EVENTS
 }
 
 void printWiFiStatus() {  // Print wifi status on serial monitor
@@ -358,8 +458,71 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
   */
 }
 
+String getWiFiDisconnectReason(uint8_t reason) {
+    switch (reason) {
+        case WIFI_REASON_AUTH_EXPIRE:
+            return "Auth Expired";
+        case WIFI_REASON_AUTH_LEAVE:
+            return "Auth Leave";
+        case WIFI_REASON_ASSOC_EXPIRE:
+            return "Association Expired";
+        case WIFI_REASON_ASSOC_TOOMANY:
+            return "Too Many Associations";
+        case WIFI_REASON_NOT_AUTHED:
+            return "Not Authenticated";
+        case WIFI_REASON_NOT_ASSOCED:
+            return "Not Associated";
+        case WIFI_REASON_ASSOC_LEAVE:
+            return "Association Leave";
+        case WIFI_REASON_ASSOC_NOT_AUTHED:
+            return "Association not Authenticated";
+        case WIFI_REASON_DISASSOC_PWRCAP_BAD:
+            return "Disassociate Power Cap Bad";
+        case WIFI_REASON_DISASSOC_SUPCHAN_BAD:
+            return "Disassociate Supported Channel Bad";
+        case WIFI_REASON_IE_INVALID:
+            return "IE Invalid";
+        case WIFI_REASON_MIC_FAILURE:
+            return "Mic Failure";
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+            return "4-Way Handshake Timeout";
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            return "Group Key Update Timeout";
+        case WIFI_REASON_IE_IN_4WAY_DIFFERS:
+            return "IE In 4-Way Handshake Differs";
+        case WIFI_REASON_GROUP_CIPHER_INVALID:
+            return "Group Cipher Invalid";
+        case WIFI_REASON_PAIRWISE_CIPHER_INVALID:
+            return "Pairwise Cipher Invalid";
+        case WIFI_REASON_AKMP_INVALID:
+            return "AKMP Invalid";
+        case WIFI_REASON_UNSUPP_RSN_IE_VERSION:
+            return "Unsupported RSN IE version";
+        case WIFI_REASON_INVALID_RSN_IE_CAP:
+            return "Invalid RSN IE Cap";
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+            return "802.1x Authentication Failed";
+        case WIFI_REASON_CIPHER_SUITE_REJECTED:
+            return "Cipher Suite Rejected";
+        case WIFI_REASON_BEACON_TIMEOUT:
+            return "Beacon Timeout";
+        case WIFI_REASON_NO_AP_FOUND:
+            return "AP Not Found";
+        case WIFI_REASON_AUTH_FAIL:
+            return "Authentication Failed";
+        case WIFI_REASON_ASSOC_FAIL:
+            return "Association Failed";
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+            return "Handshake Failed";
+        case WIFI_REASON_CONNECTION_FAIL:
+            return "Connection Failed";
+        case WIFI_REASON_UNSPECIFIED:
+        default:
+            return "Unspecified";
+    }
+}
+
 void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
-// #define DEBUG_WIFI_EVENTS
 #ifdef DEBUG_WIFI_EVENTS
     Serial.printf("-->[WiFi-event] event: %d - ", event);
 
@@ -467,7 +630,7 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(true);  // Disconnect from the network
     WiFi.mode(WIFI_OFF);    // Switch WiFi off
-    Serial.println("-->[WiFi] WiFi dissabled!");
+    Serial.println("-->[WiFi] WiFi disabled!");
 }
 
 // Replaces placeholder with actual values
@@ -503,25 +666,35 @@ bool checkStringIsNumerical(String myString) {
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+#ifdef DEBUG_WIFI_EVENTS
+    Serial.println("-->[WiFi-event] Connected to WiFi access point");
+#endif
 }
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     WiFiConnectionRetries = 0;
     timeTroubledWIFI = 0;
     troubledMQTT = false;
+    troubledWIFI = false;
 #ifdef DEBUG_WIFI_EVENTS
-    Serial.println("-->[WiFi-event] WiFi connected");
+    Serial.println("-->[WiFi-event] WiFi got IP)");
     Serial.print("-->[WiFi-event] IP address: ");
     Serial.println(WiFi.localIP());
 #endif
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) return;
+#endif
     ++WiFiConnectionRetries;
+    Serial.println("-->[WiFi] Disconnected from WiFi access point. Reason: " + getWiFiDisconnectReason(info.wifi_sta_disconnected.reason) + " (" + String(info.wifi_sta_disconnected.reason) + ") Retries: " + String(WiFiConnectionRetries) + " of " + String(maxWiFiConnectionRetries));
 #ifdef DEBUG_WIFI_EVENTS
     Serial.println("-->[WiFi-event] Disconnected from WiFi access point");
-    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: ");
-    Serial.println(info.wifi_sta_disconnected.reason);
+    Serial.print("-->[WiFi-event] WiFi lost connection. Reason: (");
+    Serial.print(info.wifi_sta_disconnected.reason);
+    Serial.print(") ");
+    printDisconnectReason(info.wifi_sta_disconnected.reason);
     Serial.print("-->[WiFi-event] Retries: ");
     Serial.print(WiFiConnectionRetries);
     Serial.print(" of ");
@@ -531,116 +704,603 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     if (WiFiConnectionRetries >= maxWiFiConnectionRetries) {
         disableWiFi();
         troubledWIFI = true;
+        Serial.println("-->[WiFi-event] WiFi troubled");
+
         timeTroubledWIFI = millis();
 #ifdef DEBUG_WIFI_EVENTS
-        Serial.printf("-->[WiFi-event] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
+        Serial.println("-->[WiFi-event] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
 #endif
     }
 }
 
+String getCO2GadgetStatusAsJson() {
+    StaticJsonDocument<512> doc;
+    doc["mainDeviceSelected"] = mainDeviceSelected;
+    doc["CO2"] = co2;
+    doc["Temperature"] = temp;
+    doc["Humidity"] = hum;
+    doc["WiFiStatus"] = WiFi.status();
+    doc["SSID"] = WiFi.SSID();
+#ifndef WIFI_PRIVACY
+    doc["wifiPass"] = wifiPass;
+#endif
+    doc["IP"] = WiFi.localIP().toString();
+    doc["RSSI"] = WiFi.RSSI();
+    doc["MACAddress"] = MACAddress;
+    doc["hostName"] = hostName;
+    doc["useStaticIP"] = useStaticIP;
+    doc["staticIP"] = staticIP.toString();
+    doc["gateway"] = gateway.toString();
+    doc["subnet"] = subnet.toString();
+    doc["dns1"] = dns1.toString();
+    doc["dns2"] = dns2.toString();
+#ifdef SUPPORT_MQTT
+    doc["rootTopic"] = rootTopic;
+    doc["discoveryTopic"] = discoveryTopic;
+    doc["mqttClientId"] = mqttClientId;
+    doc["mqttBroker"] = mqttBroker;
+    doc["mqttUser"] = mqttUser;
+#ifndef WIFI_PRIVACY
+    doc["mqttPass"] = mqttPass;
+#endif
+#ifdef SUPPORT_ESPNOW
+    char peerAddressString[18];
+    snprintf(peerAddressString, sizeof(peerAddressString),
+             "%02X:%02X:%02X:%02X:%02X:%02X",
+             peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+             peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    doc["peerESPNowAddress"] = peerAddressString;
+#endif
+#endif
+    doc["activeWIFI"] = activeWIFI;
+#ifdef SUPPORT_MQTT
+    doc["activeMQTT"] = activeMQTT;
+#endif
+#ifdef SUPPORT_BLE
+    doc["activeBLE"] = activeBLE;
+#endif
+#ifdef SUPPORT_OTA
+    doc["activeOTA"] = activeOTA;
+#endif
+    doc["troubledWiFi"] = troubledWIFI;
+#ifdef SUPPORT_MQTT
+    doc["troubledMQTT"] = troubledMQTT;
+#endif
+#ifdef SUPPORT_ESPNOW
+    doc["troubledESPNOW"] = troubledESPNOW;
+#endif
+    doc["measurementInterval"] = measurementInterval;
+    doc["sampleInterval"] = sampleInterval;
+    doc["calibrationValue"] = calibrationValue;
+    doc["pendingCalibration"] = pendingCalibration;
+    doc["freeHeap"] = ESP.getFreeHeap();
+    doc["minFreeHeap"] = ESP.getMinFreeHeap();
+    doc["uptime"] = millis();
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+String getCaptivePortalStatusAsJson() {
+    StaticJsonDocument<256> doc;
+    doc["captivePortalActive"] = captivePortalActive;
+    doc["forceCaptivePortalActive"] = forceCaptivePortalActive;
+    doc["captivePortalNoTimeout"] = captivePortalNoTimeout;
+    doc["timeCaptivePortalStarted"] = timeCaptivePortalStarted;
+    doc["timeToWaitForCaptivePortal"] = timeToWaitForCaptivePortal;
+    if (relaxedSecurity) doc["relaxedSecurity"] = relaxedSecurity;
+    // timeToWaitForCaptivePortal in seconds timeCaptivePortalStarted in milliseconds captivePortalTimeLeft in seconds
+    if (captivePortalActive && !captivePortalNoTimeout) {  // If Captive Portal is active
+        doc["captivePortalTimeLeft"] = (timeToWaitForCaptivePortal - (millis() - timeCaptivePortalStarted) / 1000);
+    } else {
+        doc["captivePortalTimeLeft"] = 0;
+    }
+#ifdef DEBUG_CAPTIVE_PORTAL
+    doc["captivePortalDebug"] = true;
+#endif
+
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+String getWifiNetworksAsJson() {
+    StaticJsonDocument<1024> doc;
+    JsonArray networks = doc.createNestedArray("networks");
+    int numNetworks = WiFi.scanNetworks();
+    for (int i = 0; i < numNetworks; i++) {
+        JsonObject network = networks.createNestedObject();
+        network["SSID"] = WiFi.SSID(i);
+        network["RSSI"] = WiFi.RSSI(i);
+        network["Encryption"] = WiFi.encryptionType(i);
+    }
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+bool handleCaptivePortalSettings(String captivePortalPreferences) {
+    StaticJsonDocument<256> doc;
+    DeserializationError error = deserializeJson(doc, captivePortalPreferences);
+    if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return false;
+    }
+#ifdef DEBUG_CAPTIVE_PORTAL
+    Serial.println("-->[CAPT] Received Captive Portal Settings: " + captivePortalPreferences);
+#endif
+    if (doc.containsKey("captivePortalActive")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+        // Serial.print("-->[CAPT] Received Captive Portal Settings: ");
+        // Serial.println(captivePortalPreferences);
+        Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalActive:          " + String(doc["captivePortalActive"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalActive ? "Enabled" : "Disabled") + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting forceCaptivePortalActive:     " + String(doc["forceCaptivePortalActive"] ? "Enabled" : "Disabled") + " (Actual value: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalNoTimeout:       " + String(doc["captivePortalNoTimeout"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting timeCaptivePortalStarted:     " + String(doc["timeCaptivePortalStarted"].as<unsigned long>()) + " (Actual value: " + String(timeCaptivePortalStarted) + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting timeToWaitForCaptivePortal:   " + String(doc["timeToWaitForCaptivePortal"].as<unsigned long>()) + " (Actual value: " + String(timeToWaitForCaptivePortal) + ")");
+        Serial.println("-->[CAPT] Received Captive Portal Setting captivePortalDebug            " + String(doc["captivePortalDebug"] ? "Enabled" : "Disabled") + " (Actual value: " + String(captivePortalDebug ? "Enabled" : "Disabled") + ")");
+#endif
+        if ((doc["forceCaptivePortalActive"] == true) && (!forceCaptivePortalActive)) {  // If test captive portal is enabled and it was not enabled before
+            captivePortalActive = true;
+            forceCaptivePortalActive = true;
+            timeCaptivePortalStarted = millis();
+            Serial.println("-->[CAPT] *** Activating Captive Portal for testing");
+
+        } else if ((doc["forceCaptivePortalActive"] == false) && (forceCaptivePortalActive)) {  // If test captive portal is disabled and it was enabled before
+            captivePortalActive = false;
+            forceCaptivePortalActive = false;
+            Serial.println("-->[CAPT] *** Deactivating Captive Portal for testing");
+
+        } else if ((doc["captivePortalActive"] == true) && (!captivePortalActive)) {  // If captive portal is enabled and it was not enabled before
+            captivePortalActive = true;
+            timeCaptivePortalStarted = millis();
+            Serial.println("-->[CAPT] *** Activating Captive Portal");
+        }
+#ifdef DEBUG_CAPTIVE_PORTAL
+        Serial.println("-->[CAPT] Captive Portal enabled for testing: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled"));
+        Serial.println("-->[CAPT] Captive Portal Active: " + String(captivePortalActive ? "Enabled" : "Disabled"));
+#endif
+    }
+
+    if (doc.containsKey("captivePortalNoTimeout")) {
+        // if captivePortalNoTimeout is being disabled, reset the timeCaptivePortalStarted
+        if (captivePortalNoTimeout && !doc["captivePortalNoTimeout"]) {
+            timeCaptivePortalStarted = millis();
+        }
+        captivePortalNoTimeout = doc["captivePortalNoTimeout"];
+        // Print if captive portal timeout is enabled or disabled
+        Serial.println("-->[CAPT] Captive Portal captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled"));
+    }
+
+    if (doc.containsKey("captivePortalDebug")) {
+        captivePortalDebug = doc["captivePortalDebug"];
+        // Print if captive portal debug is enabled or disabled
+        Serial.println("-->[CAPT] Captive Portal Debug: " + String(captivePortalDebug ? "Enabled" : "Disabled"));
+    }
+    return true;
+}
+
 const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
+const char *PARAM_INPUT_3 = "SetVRef";
 
 void initWebServer() {
     SPIFFS.begin();
 
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+#ifdef DEBUG_WIFI_EVENTS
+    // Print to serial the free space in the SPIFFS
+    Serial.print("-->[WiFi] SPIFFS total bytes: ");
+    Serial.println(SPIFFS.totalBytes());
+    Serial.print("-->[WiFi] SPIFFS used bytes: ");
+    Serial.println(SPIFFS.usedBytes());
+    Serial.print("-->[WiFi] SPIFFS free bytes: ");
+    Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+#endif
 
-    server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/plain", String(co2));
-    });
+    // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    // server.serveStatic("/", SPIFFS, "/index.html");
+    // server.serveStatic("/index.html", SPIFFS, "/index.html");
+    // server.serveStatic("/preferences.html", SPIFFS, "/preferences.html");
+    // server.serveStatic("/status.html", SPIFFS, "/status.html");
+    // server.serveStatic("favicon.ico", SPIFFS, "/favicon.png");
+    // server.serveStatic("main.js", SPIFFS, "/main.js");
+    // server.serveStatic("style.css", SPIFFS, "/style.css");
+    // server.serveStatic("preferences.js", SPIFFS, "/preferences.js");
 
-    server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/plain", String(temp));
-    });
-
-    server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/plain", String(hum));
-    });
-
-    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String inputString;
-        // <CO2-GADGET_IP>/settings?MeasurementInterval=100
-        if (request->hasParam("MeasurementInterval")) {
-            inputString = request->getParam("MeasurementInterval")->value();
-            if (checkStringIsNumerical(inputString)) {
-                // Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
-                Serial.println("-->[WiFi] Received /settings command MeasurementInterval with parameter " + inputString);
-                measurementInterval = inputString.toInt();
-                request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
-            } else {
-                request->send(400, "text/plain", "Error. MeasurementInterval must have a number as parameter.");
-            }
-        };
-        // <CO2-GADGET_IP>/settings?CalibrateCO2=400
-        if (request->hasParam("CalibrateCO2")) {
-            inputString = request->getParam("CalibrateCO2")->value();
-            if (checkStringIsNumerical(inputString)) {
-                // Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
-                Serial.println("-->[WiFi] Received /settings command CalibrateCO2 with parameter: " + inputString);
-                if ((inputString.toInt() >= 400) && (inputString.toInt() <= 2000)) {
-                    calibrationValue = inputString.toInt();
-                    pendingCalibration = true;
-                    request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
-                } else {
-                    request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
-                }
-            }
-        };
-        // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
-        if (request->hasParam("displayShowBatteryVoltage")) {
-            String inputString = request->getParam("displayShowBatteryVoltage")->value();
-            if (inputString.equalsIgnoreCase("true") || inputString.equalsIgnoreCase("false")) {
-                bool newValue = inputString.equalsIgnoreCase("true");
-                displayShowBatteryVoltage = newValue;
-                // Serial.printf("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: %s\n", newValue ? "true" : "false");
-                Serial.println("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: " + inputString);
-                request->send(200, "text/plain", "OK. Setting displayShowBatteryVoltage to " + inputString);
-            } else {
-                request->send(400, "text/plain", "Error. Invalid parameter. Use 'true' or 'false'");
-            }
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
         }
     });
 
-    server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getPreferencesAsJson();
-    request->send(200, "application/json", preferencesJson); });
+    server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
+            if (request->hasParam("forceCaptivePortalActive")) forceCaptivePortalActive = true;
+            if (request->hasParam("captivePortalNoTimeout")) captivePortalNoTimeout = true;
+#ifdef DEBUG_CAPTIVE_PORTAL
+            String debugText = "-->[WiFi] Loading preferences.html with parameters: ";
+            if (request->hasParam("captivePortalActive")) debugText += "captivePortalActive: " + String(captivePortalActive ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("forceCaptivePortalActive")) debugText += "forceCaptivePortalActive: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("captivePortalNoTimeout")) debugText += "captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("relaxedSecurity")) debugText += "relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled") + ", ";
+            if (request->hasParam("captivePortalActive") || request->hasParam("forceCaptivePortalActive") || request->hasParam("captivePortalNoTimeout") || request->hasParam("relaxedSecurity")) Serial.println(debugText);
+#endif
+            if (WiFi.softAPgetStationNum() > 0) {
+                captivePortalActive = true;
+                Serial.println("-->[WiFi] Captive Portal active because there are connected stations");
+            }
+
+            if (forceCaptivePortalActive) captivePortalActive = true;
+            if (captivePortalActive) relaxedSecurity = true;
+
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[WiFi] Loading preferences.html with parameters: captivePortalActive: " + String(captivePortalActive ? "Enabled" : "Disabled") + ", forceCaptivePortalActive: " + String(forceCaptivePortalActive ? "Enabled" : "Disabled") + ", captivePortalNoTimeout: " + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + ", relaxedSecurity: " + String(relaxedSecurity ? "Enabled" : "Disabled"));
+#endif
+
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+        timeCaptivePortalStarted = millis();
+    });
+
+    server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/ota.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.html", "text/html");
+            response->addHeader("Content-Encoding", "text/html");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/preferences.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/captiveportal.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/style.css.gz", "text/css");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/favicon.png.gz", "image/png");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/readCO2", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(co2));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/readTemperature", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(temp));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/readHumidity", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(hum));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/readBatteryVoltage", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(batteryVoltage));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    // Route for /pingServer
+    server.on("/pingServer", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", "Server is running");
+    });
+
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String inputString;
+            // <CO2-GADGET_IP>/settings?MeasurementInterval=100
+            if (request->hasParam("MeasurementInterval")) {
+                inputString = request->getParam("MeasurementInterval")->value();
+                if (checkStringIsNumerical(inputString)) {
+                    // Serial.printf("-->[WiFi] Received /settings command MeasurementInterval with parameter %s\n", inputString);
+                    Serial.println("-->[WiFi] Received /settings command MeasurementInterval with parameter " + inputString);
+                    measurementInterval = inputString.toInt();
+                    request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+                } else {
+                    request->send(400, "text/plain", "Error. MeasurementInterval must have a number as parameter.");
+                }
+            };
+            // <CO2-GADGET_IP>/settings?CalibrateCO2=400
+            if (request->hasParam("CalibrateCO2")) {
+                inputString = request->getParam("CalibrateCO2")->value();
+                if (checkStringIsNumerical(inputString)) {
+                    // Serial.printf("-->[WiFi] Received /settings command CalibrateCO2 with parameter %s\n", inputString);
+                    Serial.println("-->[WiFi] Received /settings command CalibrateCO2 with parameter: " + inputString);
+                    if ((inputString.toInt() >= 400) && (inputString.toInt() <= 2000)) {
+                        calibrationValue = inputString.toInt();
+                        pendingCalibration = true;
+                        request->send(200, "text/plain", "OK. Recalibrating CO2 sensor to " + inputString);
+                    } else {
+                        request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
+                    }
+                }
+            };
+            // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
+            if (request->hasParam("displayShowBatteryVoltage")) {
+                String inputString = request->getParam("displayShowBatteryVoltage")->value();
+                if (inputString.equalsIgnoreCase("true") || inputString.equalsIgnoreCase("false")) {
+                    bool newValue = inputString.equalsIgnoreCase("true");
+                    displayShowBatteryVoltage = newValue;
+                    // Serial.printf("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: %s\n", newValue ? "true" : "false");
+                    Serial.println("-->[WiFi] Received /settings command displayShowBatteryVoltage with parameter: " + inputString);
+                    request->send(200, "text/plain", "OK. Setting displayShowBatteryVoltage to " + inputString);
+                } else {
+                    request->send(400, "text/plain", "Error. Invalid parameter. Use 'true' or 'false'");
+                }
+            }
+            // <CO2-GADGET_IP>/settings?SetVRef=930
+            if (request->hasParam("SetVRef")) {
+                inputString = request->getParam("SetVRef")->value();
+                if (checkStringIsNumerical(inputString)) {
+                    // Serial.printf("-->[WiFi] Received /settings command SetVRef with parameter %s\n", inputString);
+                    Serial.println("-->[WiFi] Received /settings command SetVRef with parameter: " + inputString);
+                    battery.begin(vRef, voltageDividerRatio, &asigmoidal);
+                    vRef = inputString.toFloat();
+                    request->send(200, "text/plain", "OK. Setting VRef to " + inputString);
+                } else {
+                    request->send(400, "text/plain", "Error. VRef must have a number as parameter.");
+                }
+            }
+        } else {
+            request->send(400, "text/plain", "Error. No parameters received.");
+        }
+    });
+
+    // server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
+    //     if (request != nullptr) {
+    //         String preferencesJson = getPreferencesAsJson();
+    //         request->send(200, "application/json", preferencesJson);
+    //     } else {
+    //         Serial.println("---> [WiFi] Error: request is null");
+    //     }
+    // });
 
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String preferencesJson = getActualSettingsAsJson();
-    request->send(200, "application/json", preferencesJson); });
+        if (request != nullptr) {
+            //
+            if (request->hasParam("relaxedSecurity")) relaxedSecurity = true;
+            String preferencesJson = getActualSettingsAsJson(relaxedSecurity);
+            request->send(200, "application/json", preferencesJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
 
-    // Serve the preferences page
-    server.on("/preferences.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/preferences.html", String(), false, processor);
+    server.on("/getWifiNetworksAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String wifiNetworksJson = getWifiNetworksAsJson();
+            request->send(200, "application/json", wifiNetworksJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    // getCaptivePortalStatusAsJson() returns a JSON with the status of the Captive Portal
+    server.on("/getCaptivePortalStatusAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String captivePortalStatusJson = getCaptivePortalStatusAsJson();
+            request->send(200, "application/json", captivePortalStatusJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String versionJson = getCO2GadgetVersionAsJson();
+            request->send(200, "application/json", versionJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/getMeasurementInterval", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(measurementInterval));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/getFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(ESP.getFreeHeap()));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/getMinFreeHeap", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", String(ESP.getMinFreeHeap()));
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String statusJson = getCO2GadgetStatusAsJson();
+            request->send(200, "application/json", statusJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
     });
 
     // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/plain", "ESP32 restart initiated");
-        delay(100);
-        ESP.restart();
+        if (request != nullptr) {
+            request->send(200, "text/plain", "ESP32 restart initiated");
+            delay(100);
+            ESP.restart();
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
     });
 
     server.onNotFound([](AsyncWebServerRequest *request) {
-        request->send(400, "text/plain", "Not found");
-    });
-    AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/savepreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
-        StaticJsonDocument<2048> data;
-        if (json.is<JsonArray>()) {
-            data = json.as<JsonArray>();
-        } else if (json.is<JsonObject>()) {
-            data = json.as<JsonObject>();
+        if (request != nullptr) {
+            request->send(400, "text/plain", "Not found");
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
         }
-        String response;
-        serializeJson(data, response);
-        request->send(200, "application/json", response);
-        // Serial.print("-->[WiFi] Received /savepreferences command with parameter: ");
-        // Serial.println(response);
-        handleSavePreferencesfromJSON(response);
     });
 
-    server.addHandler(handler);
+    // Define the endpoint for setting preferences
+    // Define the endpoint for setting preferences
+    server.on("/setPreferencesValue", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request->hasParam("key") && request->hasParam("value")) {
+            String key = request->getParam("key")->value();
+            String value = request->getParam("value")->value();
+            Serial.println("-->[WiFi] Received /setPreferencesValue command with key: " + key + " and value: " + value);
+            if (setPreferenceValue(key, value)) {
+                request->send(200, "text/plain", "OK. Setting " + key + " to " + value);
+            } else {
+                request->send(400, "text/plain", "Error. Invalid parameter or unsupported data type");
+            }
+        } else {
+            request->send(400, "text/plain", "Error. Missing parameters. Use 'key' and 'value'");
+        }
+    });
+
+
+    AsyncCallbackJsonWebHandler *savePreferencesHandlerHandler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (request != nullptr) {
+            StaticJsonDocument<2048> data;
+            if (json.is<JsonArray>()) {
+                data = json.as<JsonArray>();
+            } else if (json.is<JsonObject>()) {
+                data = json.as<JsonObject>();
+            }
+            String response;
+            serializeJson(data, response);
+            request->send(200, "application/json", response);
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.print("-->[WiFi] Received /savePreferences command with content: ");
+            Serial.println(response);
+#endif
+            handleSavePreferencesFromJSON(response);
+            timeCaptivePortalStarted = millis();
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    AsyncCallbackJsonWebHandler *setCaptivePortalSettingsHandler = new AsyncCallbackJsonWebHandler("/setCaptivePortalSettings", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (request != nullptr) {
+            JsonDocument data;
+            if (json.is<JsonArray>()) {
+                data = json.as<JsonArray>();
+            } else if (json.is<JsonObject>()) {
+                data = json.as<JsonObject>();
+            }
+            String response;
+            serializeJson(data, response);
+            request->send(200, "application/json", response);
+            Serial.print("-->[WiFi] Received /setCaptivePortalSettings command with parameter: ");
+            Serial.println(response);
+            handleCaptivePortalSettings(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.addHandler(savePreferencesHandlerHandler);
+    server.addHandler(setCaptivePortalSettingsHandler);
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -670,12 +1330,25 @@ bool connectToWiFi() {
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     delay(100);
     WiFi.mode(WIFI_STA);
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+
+    if (useStaticIP) {
+        if (!WiFi.config(staticIP, gateway, subnet, dns1, dns2)) {
+            Serial.println("-->[WiFi] Failed to configure static IP and DNS");
+            return false;
+        }
+        Serial.print("-->[WiFi] Configuring static IP: ");
+        Serial.println(staticIP);
+    } else {
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // Use DHCP
+    }
+
     WiFi.setHostname(hostName.c_str());
-    // Serial.printf("-->[WiFi] Setting hostname: %s\n", hostName.c_str());
     Serial.println("-->[WiFi] Setting hostname: " + hostName);
-    // Serial.printf("-->[WiFi] Connecting to WiFi (SSID: %s)\n", wifiSSID.c_str());
+#ifdef WIFI_PRIVACY
     Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + ")");
+#else
+    Serial.println("-->[WiFi] Connecting to WiFi (SSID: " + wifiSSID + " with password: " + wifiPass + ")");
+#endif
 
     WiFi.onEvent(WiFiStationConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(WiFiStationGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -706,14 +1379,15 @@ bool connectToWiFi() {
         troubledWIFI = true;
         timeTroubledWIFI = millis();
         // Serial.printf("-->[WiFi] Not possible to connect to WiFi after %d tries. Will try later.\n", WiFiConnectionRetries);
-        Serial.println("-->[WiFi] Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
+        Serial.println("-->[WiFi] Troubled. Not possible to connect to WiFi after " + String(WiFiConnectionRetries) + " tries. Will try later.");
     }
 
-    if (troubledWIFI) {
+    if ((troubledWIFI) || (WiFi.status() != WL_CONNECTED)) {
         Serial.println("");
         return false;
     } else {
         Serial.println("");
+        saveWifiCredentials();
         Serial.print("-->[WiFi] MAC: ");
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
@@ -730,6 +1404,10 @@ void initOTA() {
 }
 
 void initWifi() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) return;
+#endif
+
     if (wifiSSID == "") {
         activeWIFI = false;
     }
@@ -747,31 +1425,111 @@ void initWifi() {
         Serial.println("-->[WiFi] HTTP server started");
         printWiFiStatus();
 
-        // Try to connect to MQTT broker on next loop if needed
-        troubledMQTT = false;
-
-        wifiChanged = true;
+        troubledMQTT = false;  // Try to connect to MQTT broker on next loop if needed
     }
 }
 
+#ifdef SUPPORT_CAPTIVE_PORTAL
+class CaptiveRequestHandler : public AsyncWebHandler {
+   public:
+    CaptiveRequestHandler() {
+        Serial.println("-->[WiFi] CAPTIVE PORTAL STARTED");
+    }
+
+    virtual ~CaptiveRequestHandler() {}
+
+    bool canHandle(AsyncWebServerRequest *request) {
+        // request->addInterestingHeader("ANY");
+        return true;
+    }
+
+    void handleRequest(AsyncWebServerRequest *request) {
+        request->redirect("/preferences.html");
+#ifdef DEBUG_WIFI_EVENTS
+        Serial.println("-->[WiFi] Captive portal request");
+#endif
+        captivePortalActive = true;  // Set captive portal active to true
+        timeCaptivePortalStarted = millis();
+    }
+};
+
+static const void initCaptivePortal() {
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("-->[WiFi] Already connected to Wi-Fi");
+        return;
+    } else {
+        Serial.println("-->[WiFi] NOT CONNECTED TO WI-FI. STARTING CAPTIVE PORTAL FOR " + String(timeToWaitForCaptivePortal) + " SECONDS");
+    }
+    WiFi.disconnect(true);
+    delay(20);
+    WiFi.softAP("CO2-Gadget", "emariete");  // SSID, password
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server.end();
+    delay(20);
+    initWebServer();
+    server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);  // only when requested from AP
+
+    server.begin();
+    delay(100);
+    Serial.print("-->[WiFi] AP IP address: ");
+    Serial.println(WiFi.softAPIP());
+    captivePortalActive = true;
+    timeCaptivePortalStarted = millis();
+}
+#endif  // SUPPORT_CAPTIVE_PORTAL
+
+void wifiCaptivePortalLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) {
+        dnsServer.processNextRequest();
+
+        if (captivePortalNoTimeout) return;
+
+#ifdef DEBUG_CAPTIVE_PORTAL
+        static uint64_t lastPrintTime = 0;
+        if (millis() - lastPrintTime >= 5000) {
+            lastPrintTime = millis();
+            int connectedStations = WiFi.softAPgetStationNum();
+            if (connectedStations > 1) Serial.println("-->[CAPT] Captive portal active. Connected stations: " + String(connectedStations));
+            // Serial.println("-->[CAPT] Time to wait for Captive Portal: " + String(timeToWaitForCaptivePortal) + " seconds. ");
+            // Serial.println("-->[CAPT] Time Captive Portal started: " + String(timeCaptivePortalStarted) + " milliseconds. ");
+            Serial.println("-->[CAPT] Time left to disable captive portal: " + String((timeToWaitForCaptivePortal - (millis() - timeCaptivePortalStarted) / 1000)) + " seconds. ");
+        }
+#endif
+        if ((millis() > timeCaptivePortalStarted + timeToWaitForCaptivePortal * 1000)) {
+            captivePortalActive = false;
+            forceCaptivePortalActive = false;
+            Serial.println("-->[CAPT] CAPTIVE PORTAL TIMEOUT. DISABLE CAPTIVE PORTAL");
+        }
+    }
+#endif
+}
+
 void wifiClientLoop() {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) {
+        wifiCaptivePortalLoop();
+        return;
+    }
+#endif
+    if (isDownloadingBLE) return;
     if (activeWIFI && troubledWIFI && (millis() - timeTroubledWIFI >= timeToRetryTroubledWIFI * 1000)) {
         initWifi();
     }
 
-    // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
-    // Only checks for SSID changed (not password)
-    if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
-        Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
-        Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
-        Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
-        wifiSSID = WiFi.SSID();
-        activeWIFI = true;
-        if (wifiSSID != "") {
-            putPreferences();
-            wifiChanged = true;
-        }
-    }
+    // // This is a workaround until I can directly determine whether the Wi-Fi data has been changed via BLE
+    // // Only checks for SSID changed (not password)
+    // if ((WiFi.SSID() != wifiSSID) && (!inMenu) && (WiFi.SSID() != "")) {
+    //     Serial.println("-->[WiFi] Wi-Fi SSID changed. Old SSID: " + wifiSSID + ", new SSID: " + WiFi.SSID());
+    //     Serial.println("-->[WiFi] IP address: " + WiFi.localIP().toString());
+    //     Serial.println("-->[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
+    //     wifiSSID = WiFi.SSID();
+    //     activeWIFI = true;
+    //     if (wifiSSID != "") {
+    //         putPreferences();
+    //         wifiChanged = true;
+    //     }
+    // }
 
     if ((wifiChanged) && (!inMenu)) {
         wifiChanged = false;
@@ -781,6 +1539,10 @@ void wifiClientLoop() {
 
 void OTALoop() {
 #ifdef SUPPORT_OTA
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    if (captivePortalActive) return;
+#endif
+    if (isDownloadingBLE) return;
     if ((activeWIFI) && (activeOTA) && (!troubledWIFI) && (WiFi.status() == WL_CONNECTED)) {
         AsyncElegantOTA.loop();
     }

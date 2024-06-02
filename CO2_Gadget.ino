@@ -1,25 +1,55 @@
 /*****************************************************************************************************/
-/*********                   GENERAL GLOBAL DEFINITIONS AND OPTIONS                          *********/
-/*****************************************************************************************************/
-/* If you are NOT using PlatformIO (You are using Arduino IDE) you must define your options bellow   */
-/* If you ARE using PlarformIO (NOT Arduino IDE) you must define your options in platformio.ini file */
-/*  THIS SECTION IS OUTDATED, IF YOU WANT TO USE ARDUINO YOU WILL HAVE TO SHORT IT OUT BY YOURSELF   */
-/*            I WILL PREPARE THE CODE AND WRITE NEW INSTRUCTIONS AS TIME PERMITS.                    */
-/*                                                                                                   */
-#ifndef PLATFORMIO
-#define SUPPORT_OTA
-#define SUPPORT_TFT
-#define DEBUG_ARDUINOMENU
-#define UNITHOSTNAME "CO2-Gadget"
-// #define ALTERNATIVE_I2C_PINS   // For the compact build as shown at https://emariete.com/medidor-co2-display-tft-color-ttgo-t-display-sensirion-scd30/
-#endif
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐       ____ ___ ____     ____           _            _        ▌
+// ▐      / ___/ _ \___ \   / ___| __ _  __| | __ _  ___| |_      ▌
+// ▐     | |  | | | |__) | | |  _ / _` |/ _` |/ _` |/ _ \ __|     ▌
+// ▐     | |__| |_| / __/  | |_| | (_| | (_| | (_| |  __/ |_      ▌
+// ▐      \____\___/_____|  \____|\__,_|\__,_|\__, |\___|\__|     ▌
+// ▐                                          |___/               ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+// CO2 Gadget Advanced Firmware
+//
+// Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors
+// Contact: https://emariete.com
+//
+// This file is part of the CO2 Gadget firmware.
+//
+// The CO2 Gadget firmware is free software: you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// The emariete.com Website and Documentation is distributed in the hope that
+// it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the emariete.com Website and Documentation. If not, see
+// <http://www.gnu.org/licenses/>
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐                                _      _                                 ▌
+// ▐       ___ _ __ ___   __ _ _ __(_) ___| |_ ___   ___ ___  _ __ ___       ▌
+// ▐      / _ \ '_ ` _ \ / _` | '__| |/ _ \ __/ _ \ / __/ _ \| '_ ` _ \      ▌
+// ▐     |  __/ | | | | | (_| | |  | |  __/ ||  __/| (_| (_) | | | | | |     ▌
+// ▐      \___|_| |_| |_|\__,_|_|  |_|\___|\__\___(_)___\___/|_| |_| |_|     ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
 /*****************************************************************************************************/
 
+#define SUPPORT_CAPTIVE_PORTAL // Please, don't disable this.
+
 // Functions and enum definitions
-void reverseButtons(bool reversed);
-void outputsLoop();
-void publishMQTTLogData(String logData);
-void putPreferences();
+void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                       // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                          // Defined in CO2_Gadget_Menu.h
+void setDisplayReverse(bool reverse);     // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
+// void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -43,30 +73,60 @@ String mqttClientId = UNITHOSTNAME;
 String mqttBroker = MQTT_BROKER_SERVER;
 String mqttUser = "";
 String mqttPass = "";
-String wifiSSID = WIFI_SSID_CREDENTIALS;
-String wifiPass = WIFI_PW_CREDENTIALS;
+String wifiSSID = "";
+String wifiPass = "";
 String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
-// Communication options
+// BLE options
 bool activeBLE = true;
+bool isDownloadingBLE = false;
+
+// WIFI options
 bool activeWIFI = true;
-bool activeMQTT = true;
-bool activeESPNOW = false;
-bool activeOTA = false;
 bool troubledWIFI = false;               // There are problems connecting to WIFI. Temporary suspend WIFI
-bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
-bool  troubledESPNOW = false;            // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
 uint64_t timeTroubledWIFI = 0;           // Time since WIFI is troubled
-uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
 uint64_t timeToRetryTroubledWIFI = 300;  // Time in seconds to retry WIFI connection after it is troubled
-uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically after WiFi is connected)
 uint16_t WiFiConnectionRetries = 0;
-uint16_t maxWiFiConnectionRetries = 20;
-bool mqttDiscoverySent = false;
+uint16_t maxWiFiConnectionRetries = 10;
 bool wifiChanged = false;
+bool useStaticIP = false;              // Set to true if you want to use a static IP
+IPAddress staticIP(192, 168, 1, 199);  // Static IP address
+IPAddress gateway(192, 168, 1, 1);     // Network gateway
+IPAddress subnet(255, 255, 255, 0);    // Subnet mask
+IPAddress dns1(8, 8, 8, 8);            // DNS server
+IPAddress dns2(8, 8, 4, 4);            // DNS server
+
+// MQTT options
+bool activeMQTT = true;
+bool troubledMQTT = false;               // There are problems connecting to MQTT. Temporary suspend MQTT
+uint64_t timeTroubledMQTT = 0;           // Time since MQTT is troubled
+uint64_t timeToRetryTroubledMQTT = 900;  // Time in seconds to retry MQTT connection after it is troubled (no need to retry so often as it retries automatically everytime WiFi is connected)
+bool mqttDiscoverySent = false;
+uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
+uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
+uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
+bool mqttShowInConsole = false;
+
+// ESP-NOW options
+bool activeESPNOW = false;
+bool troubledESPNOW = false;  // There are problems connecting to ESP-NOW. Temporary suspend ESP-NOW
+uint8_t channelESPNow = 1;
+uint16_t boardIdESPNow = 0;
+uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
+uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
+uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
+
+// OTA options
+#ifdef SUPPORT_OTA
+bool activeOTA = true;
+#else
+bool activeOTA = false;
+#endif
 
 // Display and menu options
+bool mustInitMenu = false;
+bool menuInitialized = false;
 uint16_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
@@ -80,7 +140,9 @@ bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
 bool shouldRedrawDisplay = false;
+bool isMenuDirty = false;  // To know if we need to redraw the menu
 uint16_t measurementInterval = 10;
+uint16_t sampleInterval = 60;
 bool bleInitialized = false;
 int8_t selectedCO2Sensor = -1;
 bool outputsModeRelay = false;
@@ -91,8 +153,6 @@ uint16_t toneBuzzerBeep = BUZZER_TONE_MED;
 uint16_t durationBuzzerBeep = DURATION_BEEP_MEDIUM;
 int16_t timeBetweenBuzzerBeeps = -1;
 
-uint8_t channelESPNow = 1;
-uint16_t boardIdESPNow = 0;
 uint64_t timeInitializationCompleted = 0;
 
 // Variables for Battery reading
@@ -103,33 +163,30 @@ uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we co
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
-bool workingOnExternalPower = true;      // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 0;    // To know if it's on or off
+bool workingOnExternalPower = true;    // True if working on external power (USB connected)
+uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
-
-// Variables for MQTT timming
-uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
-uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
-uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
-
-// Variables for ESP-NOW timming
-uint16_t timeBetweenESPNowPublish = 60;  // Time in seconds between ESP-NOW transmissions
-uint16_t timeToKeepAliveESPNow = 3600;   // Maximum time in seconds between ESP-NOW transmissions - Default: 1 Hour
-uint64_t lastTimeESPNowPublished = 0;    // Time of last ESP-NOW transmission
 
 // Variables for color and output ranges
 uint16_t co2OrangeRange = 700;
 uint16_t co2RedRange = 1000;
 
 // Variables for Improv-Serial
-uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
+bool waitingForImprov = true;
+uint16_t timeToWaitForImprov = 0;  // Time in seconds to wait for improv serial
 
-#ifdef BUILD_GIT
-#undef BUILD_GIT
-#endif  // ifdef BUILD_GIT
-#define BUILD_GIT __DATE__
+// Variables for Captive Portal
+#ifdef SUPPORT_CAPTIVE_PORTAL
+bool captivePortalActive = false;
+bool forceCaptivePortalActive = false;
+bool captivePortalNoTimeout = false;
+bool relaxedSecurity = false;
+bool captivePortalDebug = false;
+uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+uint64_t timeCaptivePortalStarted = 0;
+#endif
 
 #ifdef CUSTOM_I2C_SDA
 #undef I2C_SDA
@@ -152,6 +209,9 @@ uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 #endif
 // #include <WiFiUdp.h>
 #include <AsyncTCP.h>
+#ifdef SUPPORT_CAPTIVE_PORTAL
+#include <DNSServer.h>
+#endif
 #include <ESPAsyncWebServer.h>
 
 #include "AsyncJson.h"
@@ -161,7 +221,12 @@ uint16_t timeToWaitForImprov = 5;  // Time in seconds to wait for improv serial
 #include <FS.h>
 #include <SPIFFS.h>
 
-// Stream& miSerialPort = Serial;
+#ifdef TIMEDEBUG
+#include "Timer.h"
+Timer timer;
+Timer timerAwake;
+Timer timerLightSleep;
+#endif
 
 enum notificationTypes { notifyNothing,
                          notifyInfo,
@@ -169,7 +234,7 @@ enum notificationTypes { notifyNothing,
                          notifyError };
 bool displayNotification(String notificationText, notificationTypes notificationType);
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType);
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#if (!SUPPORT_OLED && !SUPPORT_TFT && !SUPPORT_EINK)
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) { return true; }
 bool displayNotification(String notificationText, notificationTypes notificationType) { return true; }
 #endif
@@ -248,6 +313,15 @@ bool displayNotification(String notificationText, notificationTypes notification
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********               INCLUDE EINK DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#if defined SUPPORT_EINK
+#include <CO2_Gadget_EINK.h>
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********               INCLUDE OLED DISPLAY FUNCTIONALITY (UNFINISHED WIP)                 *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -304,6 +378,7 @@ void wakeUpDisplay() {
 }
 
 void processPendingCommands() {
+    if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
         if (calibrationValue != 0) {
             printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
@@ -391,6 +466,7 @@ void outputsRGBLeds() {
 }
 
 void outputsLoop() {
+    if (isDownloadingBLE) return;
     outputsRelays();
     outputsRGBLeds();
     neopixelLoop();
@@ -398,6 +474,7 @@ void outputsLoop() {
 }
 
 void readingsLoop() {
+    if (isDownloadingBLE) return;
     if (esp_timer_get_time() - lastReadingsCommunicationTime >= startCheckingAfterUs) {
         if (newReadingsAvailable) {
             lastReadingsCommunicationTime = esp_timer_get_time();
@@ -423,6 +500,7 @@ void readingsLoop() {
 
 void adjustBrightnessLoop() {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+    if (isDownloadingBLE) return;
 
     if (shouldWakeUpDisplay) {
         wakeUpDisplay();
@@ -444,7 +522,7 @@ void adjustBrightnessLoop() {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
             setDisplayBrightness(DisplayBrightness);
         }
-        if (timeToDisplayOff==0) {
+        if (timeToDisplayOff == 0) {
             setDisplayBrightness(DisplayBrightness);
         }
         return;
@@ -501,23 +579,33 @@ void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
 }
 
 void utilityLoop() {
+    if (isDownloadingBLE) return;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
     const int16_t highCpuFrequency = 240;
     const int16_t lowCpuFrequency = 80;
 
     if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
-        setCpuFrequencyAndReinitSerial(highCpuFrequency);
+        setCpuFrequencyMhz(highCpuFrequency);
     } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
-        Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
-        setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+        setCpuFrequencyMhz(lowCpuFrequency);
     }
+
+    // if (workingOnExternalPower && actualCPUFrequency != highCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Increasing CPU frequency to %dMHz\n", batteryVoltage, highCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(highCpuFrequency);
+    // } else if (!workingOnExternalPower && actualCPUFrequency != lowCpuFrequency) {
+    //     Serial.printf("-->[BATT] Battery voltage: %.2fV. Decreasing CPU frequency to %dMHz\n", batteryVoltage, lowCpuFrequency);
+    //     setCpuFrequencyAndReinitSerial(lowCpuFrequency);
+    // }
 }
 
 // application entry point
 void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
+    Serial.setDebugOutput(true);
+    Serial.setTxBufferSize(1024);
+    Serial.setRxBufferSize(512);
     Serial.begin(115200);
     delay(50);
 #ifdef AUTO_VERSION
@@ -525,11 +613,17 @@ void setup() {
 #else
     Serial.printf("\n-->[STUP] CO2 Gadget Version: %s%s Flavour: %s\n", CO2_GADGET_VERSION, CO2_GADGET_REV, FLAVOUR);
 #endif
-    Serial.printf("-->[STUP] Version compiled: %s at %s\n", __DATE__, __TIME__);
-    Serial.printf("-->[STUP] Total heap: %d\n", ESP.getHeapSize());
-    Serial.printf("-->[STUP] Free heap: %d\n", ESP.getFreeHeap());
-    Serial.printf("-->[STUP] Total PSRAM: %d\n", ESP.getPsramSize());
-    Serial.printf("-->[STUP] Free PSRAM: %d\n", ESP.getFreePsram());
+
+    Serial.println("-->[STUP] Version compiled: " __DATE__ " at " __TIME__);
+    Serial.println("-->[STUP] Total heap: " + String(ESP.getHeapSize()));
+    Serial.println("-->[STUP] Free heap: " + String(ESP.getFreeHeap()));
+    Serial.println("-->[STUP] Min Free heap: " + String(ESP.getMinFreeHeap()));
+    if (ESP.getPsramSize() > 0) {
+        Serial.println("-->[STUP] Total PSRAM: " + String(ESP.getPsramSize()));
+        Serial.println("-->[STUP] Free PSRAM: " + String(ESP.getFreePsram()));
+    } else {
+        Serial.println("-->[STUP] No PSRAM available");
+    }
 
     // Get the size of the flash memory
     // Serial.printf("-->[STUP] Flash size: %d\n", ESP.getFlashChipSize());
@@ -538,14 +632,13 @@ void setup() {
 
     Serial.printf("-->[STUP] Starting up...\n\n");
 
-    initImprov();
     initPreferences();
     initBattery();
     initGPIO();
     initNeopixel();
     initBuzzer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-    initDisplay();
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    initDisplay(false);
 #endif
 #ifdef SUPPORT_BLE
     initBLE();
@@ -559,21 +652,31 @@ void setup() {
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif
-    menu_init();
     initButtons();
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("");
         printLargeASCII(WiFi.localIP().toString().c_str());
         Serial.println("");
+    } else {
+#ifdef SUPPORT_CAPTIVE_PORTAL
+        initCaptivePortal();
+#endif
     }
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
+    initImprov();
+    if (timeToWaitForImprov > 0) {
+        Serial.println("-->[STUP] Waiting for Improv Serial " + String(timeToWaitForImprov) + " seconds...");
+    } else {
+        Serial.println("-->[STUP] Improv Serial enabled");
+    }
     Serial.println("-->[STUP] Ready.");
+    Serial.flush();
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
     timeInitializationCompleted = millis();
 }
 
 void loop() {
     batteryLoop();
-    utilityLoop();
+    // utilityLoop();
     improvLoop();
     wifiClientLoop();
     mqttClientLoop();
