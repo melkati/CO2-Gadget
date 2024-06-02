@@ -4,15 +4,15 @@
 [![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
 
-<table>
+<table align="center">
 	<tr>
 		<td>
-			Don't forget to star ⭐ this repository
+			Don't forget to star ⭐ this repository NOW!
 		</td>
 	</tr>
 </table>
 
-<table>
+<table align="center">
 	<tr>
 		<td>
 			<a href="https://github.com/melkati/CO2-Gadget/issues/198">🌟 Calling All Tech Enthusiasts! Join the CO2 Gadget Testing Adventure 🌟</a>
@@ -169,7 +169,6 @@ NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
 NOTE: DHT22 is supported but is not recommended
 
 Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canairio_sensorlib/)
-
 
 # Building from Repository
 
