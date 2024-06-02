@@ -108,7 +108,6 @@ These are the GPIOs used by each predefined board:
 | TDISPLAY_S3            | TFT 320x170      | 18/17   | 43/44 | 14/0 | 03 | 01 | 04 | 16 | 2
 | esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
-| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 19/0 | 32 | 33 | 34 | 26 | 2
 
 - Flavour: Name of the firmware variant.
@@ -170,6 +169,15 @@ NOTE: DHT22 is supported but is not recommended
 
 Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canairio_sensorlib/)
 
+# Installing
+
+Installing the CO2 Gadget advanced firmware on the board with the ESP32is super easy. You don't have to download or install anything on your PC.
+
+Just click the button corresponding to the version you want to install, select the port where your board is connected and click "Connect". It's as simple as that, the uploading into the ESP32 will be done in a few seconds without any further complication with only a few clicks...
+
+Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) to install from the comfort of your internet browser.
+
+
 # Building from Repository
 
 ## Using PlatformIO (Recommended)
@@ -198,10 +206,10 @@ Save the changes made to the `platformio.ini` file.
 For ease of use, PlatformIO is recommended over the Arduino IDE. After installing PlatformIO and its command line tools on your system (compatible with Windows, MacOS, and Linux), connect your compatible board via USB and execute the following command:
 
 ```bash
-pio run -e TTGO_TDISPLAY_SANDWICH --target upload
+pio run -e TTGO_TDISPLAY --target upload
 ```
 
-Ensure to replace "TTGO_TDISPLAY_SANDWICH" with the desired flavor of CO2 Gadget to be compiled and uploaded. You can find these flavors defined in the `platformio.ini` file or define your own.
+Ensure to replace "TTGO_TDISPLAY" with the desired flavor of CO2 Gadget to be compiled and uploaded. You can find these flavors defined in the `platformio.ini` file or define your own.
 
 If using the PlatformIO GUI, follow these steps to compile and upload CO2-Gadget onto your board: press the "Alien head" icon, navigate to Project tasks, select your desired flavor, and choose Upload and Monitor.
 
