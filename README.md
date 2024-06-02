@@ -33,7 +33,9 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
 
-![CO2_Gadget_DIY_CO2_Monitor](https://github.com/melkati/CO2-Gadget/assets/11509521/58e1f306-af46-416f-a399-5900965e8c10)
+<p align="center">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/8a81094c-5814-4246-955f-c48ef3087033">
+</p>
 
 # Features
 
@@ -66,7 +68,9 @@ This project support a large selection of ESP32 boards, displays and sensors.
 
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor (and battery support) [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
-![image](https://user-images.githubusercontent.com/11509521/146636210-ee11a49a-5ebc-4e3c-a11e-91e2d8676410.png)
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/6d577770-b83c-4f3e-9c87-a00ac28ae72c">
+</p>
 
 For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
 
@@ -74,9 +78,17 @@ For latest information on other hardware use (boards, sensors, displays, etc), p
 
 CO2 Gadget right now has support for a lot of different TFT displays. There are precompiled versions for TFT 240x135 and 320x170 pixels displays (included in ready made all in one boards as TTGO T-Display, T-Display S3 and others).
 
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/073d5f17-1e77-4692-833b-2cf2b838d72a">
+</p>
+
 ## E-INK Displays
 
 You can use many different E-INK displays. There are precompiled versions for most popular E-INK displays and all in one boards with E-INK displays as TTGO T5. Check support for your e-ink display at [CO2 Gadget installation page](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced)
+
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/643c08ae-6a17-427b-be10-0d11e8b75ca6">
+</p>
 
 ## OLED Displays
 
