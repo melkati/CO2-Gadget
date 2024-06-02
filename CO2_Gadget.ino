@@ -40,6 +40,8 @@
 
 /*****************************************************************************************************/
 
+#define SUPPORT_CAPTIVE_PORTAL // Please, don't disable this.
+
 // Functions and enum definitions
 void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
 void outputsLoop();                       // Defined in CO2_Gadget_Main.h
@@ -89,11 +91,11 @@ uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 10;
 bool wifiChanged = false;
 bool useStaticIP = false;              // Set to true if you want to use a static IP
-IPAddress staticIP(192, 168, 1, 199);  // Change this to the desired IP
-IPAddress gateway(192, 168, 1, 1);     // Change this to your network's gateway
-IPAddress subnet(255, 255, 255, 0);    // Change this to your network's subnet mask
-IPAddress dns1(8, 8, 8, 8);            // Change this to your preferred DNS server
-IPAddress dns2(8, 8, 4, 4);            // Change this to your secondary DNS server
+IPAddress staticIP(192, 168, 1, 199);  // Static IP address
+IPAddress gateway(192, 168, 1, 1);     // Network gateway
+IPAddress subnet(255, 255, 255, 0);    // Subnet mask
+IPAddress dns1(8, 8, 8, 8);            // DNS server
+IPAddress dns2(8, 8, 4, 4);            // DNS server
 
 // MQTT options
 bool activeMQTT = true;
