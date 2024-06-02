@@ -30,6 +30,14 @@ jobs:
           - TTGO_TDISPLAY_SANDWICH
           - TDISPLAY_S3
           - esp32dev_ST7789_240x320
+          - ttgo-t5-EINKBOARDGDEM0213B74
+          - ttgo-t5-EINKBOARDDEPG0213BN
+          - ttgo-t5-EINKBOARDGDEW0213M21
+          - ttgo-t7-EINKBOARDGDEM029T94
+          - ttgo-t7-WEACT_GDEH0154D67
+          - ttgo-t7-WEACT_DEPG0213BN
+          - ttgo-t7-WEACT_GxEPD2_290_BS
+          
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
@@ -94,20 +102,27 @@ jobs:
         if: steps.check_version.outputs.VERSION != ''
         id: create_betamanifest
         run: |
+          # Note: if you change the partition table, make sure to update the offsets
+          #       See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html
+          # Name,     Type,   SubType, Offset,    Size,     Flags
+          # nvs,      data,   nvs,     0x9000,    0x5000,   # nvs partition at at offset 20480 with size 36864 bytes (36KB)
+          # otadata,  data,   ota,     0xe000,    0x2000,   # otadata partition at offset 57344 with size 8192 bytes (8KB)
+          # app0,     app,    ota_0,   0x10000,   0x1B0000, # app0 partition at offset 65536 with size 1769472 bytes (1.68MB)
+          # app1,     app,    ota_1,   0x1C0000,  0x1B0000, # app1 partition at offset 1835008 with size 1769472 bytes (1.68MB)
+          # spiffs,   data,   spiffs,  0x370000,  0x4B000,  # spiffs partition at offset 3604480 with size 307200 bytes (476KB)
+          
           # Define offset values based on env.CHIP_FAMILY
           if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
             bootloader_offset=0
             partitions_offset=32768
-            app0_offset=57344
             firmware_offset=65536
-            spiffs_offset=13172736
+            spiffs_offset=3604480
           else
             # Default values for ESP32 or other environments
             bootloader_offset=4096
             partitions_offset=32768
-            app0_offset=57344
             firmware_offset=65536
-            spiffs_offset=3997696
+            spiffs_offset=3604480
           fi
 
           # Create beta manifest

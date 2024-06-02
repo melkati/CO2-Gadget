@@ -91,7 +91,7 @@ void publishIntMQTT(String topic, int64_t payload) {
 #ifdef SUPPORT_MQTT
     dtostrf(payload, 0, 0, charPublish);
     topic = rootTopic + topic;
-    if (!inMenu) {
+    if (!inMenu && mqttShowInConsole) {
         Serial.printf("-->[MQTT] Publishing %d to ", payload);
         Serial.println("topic: " + topic);
     }
@@ -103,7 +103,7 @@ void publishFloatMQTT(String topic, float payload) {
 #ifdef SUPPORT_MQTT
     dtostrf(payload, 0, 2, charPublish);
     topic = rootTopic + topic;
-    if (!inMenu) {
+    if (!inMenu && mqttShowInConsole) {
         Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
         Serial.println("topic: " + topic);
     }
@@ -114,7 +114,7 @@ void publishFloatMQTT(String topic, float payload) {
 void publishStrMQTT(String topic, String payload) {
 #ifdef SUPPORT_MQTT
     topic = rootTopic + topic;
-    if (!inMenu) {
+    if (!inMenu && mqttShowInConsole) {
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
     }
@@ -124,7 +124,7 @@ void publishStrMQTT(String topic, String payload) {
 
 void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
-    if (!inMenu) {
+    if (!inMenu && mqttShowInConsole) {
         // Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
         // Serial.println("topic: " + topic);
     }
@@ -321,6 +321,7 @@ void publishMQTT() {
 
 void mqttClientLoop() {
 #ifdef SUPPORT_MQTT
+    if (isDownloadingBLE) return;
     if (troubledMQTT && (millis() - timeTroubledMQTT >= timeToRetryTroubledMQTT * 1000)) {
         troubledMQTT = false;
         timeTroubledMQTT = 0;

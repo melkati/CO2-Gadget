@@ -1,33 +1,52 @@
-setInterval(function () {
-    // Call a function repetatively with 15 Second interval
-    getCO2Data();
-}, 15000); // 15000mS  update rate
+// Initialize intervals with default values
+let co2Interval = 15000; // 15 seconds
+let temperatureInterval = 30000; // 60 seconds
+let humidityInterval = 30000; // 60 seconds
 
-setInterval(function () {
-    // Call a function repetatively with 60 Second interval
-    getTemperatureData();
-}, 60000); // 60000mS  update rate
+// Define timers for data update functions
+let co2Timer = setInterval(getCO2Data, co2Interval);
+let temperatureTimer = setInterval(getTemperatureData, temperatureInterval);
+let humidityTimer = setInterval(getHumidityData, humidityInterval);
 
-setInterval(function () {
-    // Call a function repetatively with 60 Second interval
-    getHumidityData();
-}, 60000); // 60000mS  update rate
+// Function to set intervals based on values obtained from the server
+function setUpdateIntervals() {
+    // Clear current intervals
+    clearInterval(co2Timer);
+    clearInterval(temperatureTimer);
+    clearInterval(humidityTimer);
+    // Set new intervals
+    co2Timer = setInterval(getCO2Data, co2Interval);
+    temperatureTimer = setInterval(getTemperatureData, temperatureInterval);
+    humidityTimer = setInterval(getHumidityData, humidityInterval);
+}
 
-window.onload = function() {
-    getCO2Data();
-    getTemperatureData();
-    getHumidityData();
-};
+// Function to fetch measurement interval from the server
+function getMeasurementInterval() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log('CO2 Measurement Interval', this.responseText);
+            co2Interval = parseInt(this.responseText) * 1000;
+            setUpdateIntervals();
+        }
+    };
+    xhttp.onerror = function () {
+        console.error('Error fetching measurement interval');
+    };
+    xhttp.open("GET", "getMeasurementInterval", true);
+    xhttp.send();
+}
 
 function getCO2Data() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
-    if ((this.readyState == 4) && (this.status == 200)) {
-        document.querySelector('text#CO2Value').textContent=this.responseText;
-        // document.getElementById("text#CO2Value").textContent = this.responseText;
-        // document.getElementById("CO2Value").innerHTML =
-        // this.responseText;
-    }
+        if ((this.readyState == 4) && (this.status == 200)) {
+            let co2Value = parseFloat(this.responseText);
+            document.querySelector('text#CO2Value').textContent = co2Value.toFixed(0); // No decimals
+        }
+    };
+    xhttp.onerror = function () {
+        console.error('Error fetching CO2 data');
     };
     xhttp.open("GET", "readCO2", true);
     xhttp.send();
@@ -36,10 +55,13 @@ function getCO2Data() {
 function getTemperatureData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("TempValue").innerHTML =
-        this.responseText;
-    }
+        if (this.readyState == 4 && this.status == 200) {
+            let temperatureValue = parseFloat(this.responseText);
+            document.getElementById("TempValue").textContent = temperatureValue.toFixed(1); // One decimal
+        }
+    };
+    xhttp.onerror = function () {
+        console.error('Error fetching temperature data');
     };
     xhttp.open("GET", "readTemperature", true);
     xhttp.send();
@@ -48,26 +70,22 @@ function getTemperatureData() {
 function getHumidityData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("HumValue").innerHTML =
-        this.responseText;
-    }
+        if (this.readyState == 4 && this.status == 200) {
+            let humidityValue = parseFloat(this.responseText);
+            document.getElementById("HumValue").textContent = humidityValue.toFixed(0); // No decimals
+        }
+    };
+    xhttp.onerror = function () {
+        console.error('Error fetching humidity data');
     };
     xhttp.open("GET", "readHumidity", true);
     xhttp.send();
 }
 
-const colorSwitch = document.querySelector("#iconBulb");
-function changeTheme(ev){
-    let elementStyle = window.getComputedStyle(colorSwitch);
-    let elementColor = elementStyle.getPropertyValue('--icon-color');
-    //console.log(elementColor);
-    if(elementColor==' #6e6e6e') {
-    //console.log('cambiar a dark');
-    document.documentElement.setAttribute('theme', 'dark');
-    } else {
-    //console.log('cambiar a light');
-    document.documentElement.setAttribute('theme', 'light');
-    }
-};
-    colorSwitch.addEventListener('click', changeTheme);
+document.addEventListener('DOMContentLoaded', function () {
+    // Start the process by fetching the measurement intervals and data when the page loads
+    getCO2Data();
+    getTemperatureData();
+    getHumidityData();
+    getMeasurementInterval();
+});
