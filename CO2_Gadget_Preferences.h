@@ -7,94 +7,263 @@ Preferences preferences;
 
 uint8_t prefVersion = 0;
 uint8_t prefRevision = 0;
+uint8_t firmVersionMajor = 0;
+uint8_t firmVersionMinor = 0;
+uint8_t firmRevision = 0;
+String firmBranch = "";
+String firmFlavour = "";
+
+// Function to extract the major version number as an integer
+int getCO2GadgetMajorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Create a temporary buffer to hold the major version substring
+    char majorVersion[dotIndex + 1];
+    // Copy the characters until the dot into the buffer
+    strncpy(majorVersion, CO2_GADGET_VERSION, dotIndex);
+    // Null-terminate the string
+    majorVersion[dotIndex] = '\0';
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Major version: " + String(majorVersion));
+#endif
+    // Convert the substring to an integer
+    return atoi(majorVersion);
+#else
+    return false;
+#endif
+}
+
+// Function to extract the minor version number as an integer
+int getCO2GadgetMinorVersion() {
+#ifdef CO2_GADGET_VERSION
+    // Find the position of the first dot
+    int dotIndex = 0;
+    while (CO2_GADGET_VERSION[dotIndex] != '.' && CO2_GADGET_VERSION[dotIndex] != '\0') {
+        dotIndex++;
+    }
+    // Check if a dot was found
+    if (CO2_GADGET_VERSION[dotIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version not found.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Find the position of the second dot
+    int minorIndex = dotIndex + 1;
+    while (CO2_GADGET_VERSION[minorIndex] != '.' && CO2_GADGET_VERSION[minorIndex] != '\0') {
+        minorIndex++;
+    }
+    // Check if a second dot was found
+    if (CO2_GADGET_VERSION[minorIndex] == '\0') {
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Error: Minor version format error.");
+#endif
+        return -1;  // Sentinel value indicating error
+    }
+    // Extract the substring between the first and second dots and convert it to an integer
+    char minorVersionStr[minorIndex - dotIndex];
+    strncpy(minorVersionStr, CO2_GADGET_VERSION + dotIndex + 1, minorIndex - dotIndex - 1);
+    minorVersionStr[minorIndex - dotIndex - 1] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Minor version: " + String(minorVersionStr));
+#endif
+    return atoi(minorVersionStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision number as an integer
+int getCO2GadgetRevisionNumber() {
+#ifdef CO2_GADGET_REV
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] CO2 Gadget Revision: " + String(CO2_GADGET_REV));
+#endif
+    // Find the position of the dash
+    int dashIndex = 0;
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0') {
+        if (!isdigit(CO2_GADGET_REV[dashIndex])) {
+            // If the character is not a digit, return error
+            return -1;
+        }
+        dashIndex++;
+    }
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Dash index: " + String(dashIndex));
+#endif
+    // Extract the substring from the beginning to the dash
+    char revNumberStr[dashIndex + 1];  // Add 1 for the null terminator
+    strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
+    revNumberStr[dashIndex] = '\0';  // Null-terminate the string
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
+#endif
+    return atoi(revNumberStr);
+#else
+    return -1;  // Sentinel value indicating error
+#endif
+}
+
+// Function to extract the revision branch as a String
+String getCO2GadgetRevisionBranch() {
+#ifdef CO2_GADGET_REV
+    // Find the position of the first dash
+    int dashIndex = 0;
+    // Search for the dash character '-'
+    while (CO2_GADGET_REV[dashIndex] != '-' && CO2_GADGET_REV[dashIndex] != '\0') {
+        dashIndex++;
+    }
+    // If a dash is found, extract the substring after the dash
+    if (CO2_GADGET_REV[dashIndex] == '-') {
+        int branchIndex = dashIndex + 1;
+        // Create a new String to hold the branch name
+        String branchName = "";
+        // Copy characters after the dash to the branchName string
+        while (CO2_GADGET_REV[branchIndex] != '\0') {
+            branchName += CO2_GADGET_REV[branchIndex];
+            branchIndex++;
+        }
+#ifdef DEBUG_PREFERENCES
+        Serial.println("-->[PREF] Revision branch: " + branchName);
+#endif
+        return branchName;
+    } else {
+        // If no dash is found, return an empty string
+        return "";
+    }
+#else
+    // If CO2_GADGET_REV is not defined, return an empty string
+    return "";
+#endif
+}
 
 void upgradePreferences() {
     if ((batteryDischargedMillivolts == 3500) && (prefVersion == 0) && (prefRevision == 0)) {
         batteryDischargedMillivolts = 3200;
-        Serial.printf("-->[PREF] Upgrading preferences batteryDischargedMillivolts to %d\n", batteryDischargedMillivolts);
+        Serial.println("-->[PREF] Upgrading preferences (" + String(__func__) + ") batteryDischargedMillivolts to: " + String(batteryDischargedMillivolts));
         prefRevision = 1;
         putPreferences();
     }
 }
 
-void printPreferences() {
-    Serial.printf("-->[PREF] \n");
-    Serial.printf("-->[PREF] LOADED PREFERENCES FROM NVR:\n");
-    Serial.printf("-->[PREF] prefVersion:\t #%d#\n", prefVersion);
-    Serial.printf("-->[PREF] prefRevision:\t #%d#\n", prefRevision);
-    Serial.printf("-->[PREF] customCalValue: #%d#\n", customCalibrationValue);
-    Serial.printf("-->[PREF] tempOffset:\t #%.1f#\n", tempOffset);
-    Serial.printf("-->[PREF] altitudeMeters:\t #%d#\n", altitudeMeters);
-    Serial.printf("-->[PREF] autoSelfCalibration:\t #%s#\n",
-                  ((autoSelfCalibration) ? "Enabled" : "Disabled"));
-    Serial.printf("-->[PREF] co2OrangeRange:\t #%d#\n", co2OrangeRange);
-    Serial.printf("-->[PREF] co2RedRange:\t #%d#\n", co2RedRange);
-    Serial.printf("-->[PREF] DisplayBrightness:\t #%d#\n", DisplayBrightness);
-    Serial.printf("-->[PREF] neopixBright:\t #%d#\n", neopixelBrightness);
-    Serial.printf("-->[PREF] selNeopxType:\t #%d#\n", selectedNeopixelType);
-    Serial.printf("-->[PREF] activeBLE is:\t#%s# (%d)\n", ((activeBLE) ? "Enabled" : "Disabled"), activeBLE);
-    Serial.printf("-->[PREF] activeWIFI is:\t#%s# (%d)\n", ((activeWIFI) ? "Enabled" : "Disabled"), activeWIFI);
-    Serial.printf("-->[PREF] activeMQTT is:\t#%s# (%d)\n", ((activeMQTT) ? "Enabled" : "Disabled"), activeMQTT);
-    Serial.printf("-->[PREF] activeESPNOW is:\t#%s# (%d)\n", ((activeESPNOW) ? "Enabled" : "Disabled"), activeESPNOW);
-    Serial.printf("-->[PREF] activeOTA is:\t#%s# (%d)\n", ((activeOTA) ? "Enabled" : "Disabled"), activeOTA);
-    Serial.printf("-->[PREF] rootTopic:\t#%s#\n", rootTopic.c_str());
-    Serial.printf("-->[PREF] batDischgd:\t #%d#\n", batteryDischargedMillivolts);
-    Serial.printf("-->[PREF] batChargd:\t #%d#\n", batteryFullyChargedMillivolts);
-    Serial.printf("-->[PREF] vRef:\t #%d#\n", vRef);
-    Serial.printf("-->[PREF] mqttClientId:\t#%s#\n", mqttClientId.c_str());
-    Serial.printf("-->[PREF] mqttBroker:\t#%s#\n", mqttBroker.c_str());
-    Serial.printf("-->[PREF] mqttUser:\t#%s#\n", mqttUser.c_str());
+void printActualSettings() {
+    Serial.println("-->[PREF]");
+    Serial.println("-->[PREF] LOADED PREFERENCES FROM NVR:");
+    Serial.println("-->[PREF] prefVersion:\t #" + String(prefVersion) + "#");
+    Serial.println("-->[PREF] prefRevision:\t #" + String(prefRevision) + "#");
+    Serial.println("-->[PREF] firmVersionMajor:\t #" + String(firmVersionMajor) + "#");
+    Serial.println("-->[PREF] firmVersionMinor:\t #" + String(firmVersionMinor) + "#");
+    Serial.println("-->[PREF] firmRevision:\t #" + String(firmRevision) + "#");
+    Serial.println("-->[PREF] firmBranch:\t #" + firmBranch + "#");
+    Serial.println("-->[PREF] firmFlavour:\t #" + firmFlavour + "#");
+    Serial.println("-->[PREF] customCalValue: #" + String(customCalibrationValue) + "#");
+    Serial.println("-->[PREF] tempOffset:\t #" + String(tempOffset, 1) + "#");
+    Serial.println("-->[PREF] altitudeMeters:\t #" + String(altitudeMeters) + "#");
+    Serial.println("-->[PREF] autoSelfCalibration:\t #" + String(autoSelfCalibration ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] co2OrangeRange:\t #" + String(co2OrangeRange) + "#");
+    Serial.println("-->[PREF] co2RedRange:\t #" + String(co2RedRange) + "#");
+    Serial.println("-->[PREF] DisplayBrightness:\t #" + String(DisplayBrightness) + "#");
+    Serial.println("-->[PREF] neopixBright:\t #" + String(neopixelBrightness) + "#");
+    Serial.println("-->[PREF] selNeopxType:\t #" + String(selectedNeopixelType) + "#");
+    Serial.println("-->[PREF] activeBLE is:\t#" + String(activeBLE ? "Enabled" : "Disabled") + "# (" + String(activeBLE) + ")");
+    Serial.println("-->[PREF] activeWIFI is:\t#" + String(activeWIFI ? "Enabled" : "Disabled") + "# (" + String(activeWIFI) + ")");
+    Serial.println("-->[PREF] activeMQTT is:\t#" + String(activeMQTT ? "Enabled" : "Disabled") + "# (" + String(activeMQTT) + ")");
+    Serial.println("-->[PREF] activeESPNOW is:\t#" + String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(activeESPNOW) + ")");
+    Serial.println("-->[PREF] activeOTA is:\t#" + String(activeOTA ? "Enabled" : "Disabled") + "# (" + String(activeOTA) + ")");
+    Serial.println("-->[PREF] rootTopic:\t#" + rootTopic + "#");
+    Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
+    Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
+    Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
+    Serial.println("-->[PREF] mqttClientId:\t#" + mqttClientId + "#");
+    Serial.println("-->[PREF] mqttShowInConsole:\t#" + String(mqttShowInConsole ? "Enabled" : "Disabled") + "# (" + String(mqttShowInConsole) + ")");
+    Serial.println("-->[PREF] mqttBroker:\t#" + mqttBroker + "#");
+    Serial.println("-->[PREF] mqttUser:\t#" + mqttUser + "#");
 #ifndef WIFI_PRIVACY
-    Serial.printf("-->[PREF] mqttPass:\t#%s#\n", mqttPass.c_str());
+    Serial.println("-->[PREF] mqttPass:\t#" + mqttPass + "#");
 #endif
-    Serial.printf("-->[PREF] tToDispOff:\t #%d#\n", timeToDisplayOff);
-    Serial.printf("-->[PREF] tToPubMQTT:\t #%d#\n", timeBetweenMQTTPublish);
-    Serial.printf("-->[PREF] tToPubESPNow:\t #%d#\n", timeBetweenESPNowPublish);
-    Serial.printf("-->[PREF] tKeepAlMQTT:\t #%d#\n", timeToKeepAliveMQTT);
-    Serial.printf("-->[PREF] tKeepAlESPNow:\t #%d#\n", timeToKeepAliveESPNow);
-    Serial.printf("-->[PREF] dispOffOnExP:\t#%s# (%d)\n", ((displayOffOnExternalPower) ? "Enabled" : "Disabled"), displayOffOnExternalPower);
-    Serial.printf("-->[PREF] wifiSSID:\t#%s#\n", wifiSSID.c_str());
+    Serial.println("-->[PREF] tToDispOff:\t #" + String(timeToDisplayOff) + "#");
+    Serial.println("-->[PREF] tToPubMQTT:\t #" + String(timeBetweenMQTTPublish) + "#");
+    Serial.println("-->[PREF] tToPubESPNow:\t #" + String(timeBetweenESPNowPublish) + "#");
+    Serial.println("-->[PREF] tKeepAlMQTT:\t #" + String(timeToKeepAliveMQTT) + "#");
+    Serial.println("-->[PREF] tKeepAlESPNow:\t #" + String(timeToKeepAliveESPNow) + "#");
+    Serial.println("-->[PREF] dispOffOnExP:\t#" + String(displayOffOnExternalPower ? "Enabled" : "Disabled") + "# (" + String(displayOffOnExternalPower) + ")");
+    Serial.println("-->[PREF] wifiSSID:\t#" + wifiSSID + "#");
 #ifndef WIFI_PRIVACY
-    Serial.printf("-->[PREF] wifiPass:\t#%s#\n", wifiPass.c_str());
+    Serial.println("-->[PREF] wifiPass:\t#" + wifiPass + "#");
 #endif
-    Serial.printf("-->[PREF] hostName:\t#%s#\n", hostName.c_str());
-    Serial.printf("-->[PREF] selCO2Sensor:\t #%d#\n", selectedCO2Sensor);
-    Serial.printf("-->[PREF] debugSensors is:\t#%s# (%d)\n", ((debugSensors) ? "Enabled" : "Disabled"), debugSensors);
-    Serial.printf("-->[PREF] displayReverse is:\t#%s# (%d)\n", ((displayReverse) ? "Reversed" : "Normal"), displayReverse);
-    Serial.printf("-->[PREF] showFahrenheit is:\t#%s#\n", ((showFahrenheit) ? "Fahrenheit" : "Celsius"));
-    Serial.printf("-->[PREF] measInterval:\t #%d#\n", measurementInterval);
-    Serial.printf("-->[PREF] outModeRelay is:\t#%s#\n", ((outputsModeRelay) ? "Relay" : "RGB LED"));
-    Serial.printf("-->[PREF] channelESPNow:\t #%d#\n", channelESPNow);
-    Serial.printf("-->[PREF] boardIdESPNow:\t #%d#\n", boardIdESPNow);
-    Serial.printf("-->[PREF] peerESPNow:\t #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+    Serial.println("-->[PREF] hostName:\t#" + hostName + "#");
 
-    Serial.printf("-->[PREF] showTemp:\t #%s#\n", ((displayShowTemperature) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showHumidity:\t #%s#\n", ((displayShowHumidity) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showBattery:\t #%s#\n", ((displayShowBattery) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showBatteryVolt:\t #%s#\n", ((displayShowBatteryVoltage) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showCO2:\t #%s#\n", ((displayShowCO2) ? "Show" : "Hide"));
-    Serial.printf("-->[PREF] showPM25:\t #%s#\n", ((displayShowPM25) ? "Show" : "Hide"));
+    // Fixed IP
+    Serial.println("-->[PREF] useStaticIP:\t #" + String(useStaticIP) + "#");
+    Serial.println("-->[PREF] staticIP:\t #" + staticIP.toString() + "#");
+    Serial.println("-->[PREF] gateway:\t #" + gateway.toString() + "#");
+    Serial.println("-->[PREF] subnet:\t #" + subnet.toString() + "#");
+    Serial.println("-->[PREF] dns1:\t #" + dns1.toString() + "#");
+    Serial.println("-->[PREF] dns2:\t #" + dns2.toString() + "#");
+
+    Serial.println("-->[PREF] selCO2Sensor:\t #" + String(selectedCO2Sensor) + "#");
+    Serial.println("-->[PREF] debugSensors is:\t#" + String(debugSensors ? "Enabled" : "Disabled") + "# (" + String(debugSensors) + ")");
+    Serial.println("-->[PREF] displayReverse is:\t#" + String(displayReverse ? "Reversed" : "Normal") + "# (" + String(displayReverse) + ")");
+    Serial.println("-->[PREF] showFahrenheit is:\t#" + String(showFahrenheit ? "Fahrenheit" : "Celsius") + "#");
+    Serial.println("-->[PREF] measInterval:\t #" + String(measurementInterval) + "#");
+    Serial.println("-->[PREF] sampInterval:\t #" + String(sampleInterval) + "#");
+    Serial.println("-->[PREF] outModeRelay is:\t#" + String(outputsModeRelay ? "Relay" : "RGB LED") + "#");
+    Serial.println("-->[PREF] channelESPNow:\t #" + String(channelESPNow) + "#");
+    Serial.println("-->[PREF] boardIdESPNow:\t #" + String(boardIdESPNow) + "#");
+    Serial.println("-->[PREF] peerESPNow:\t #" + String(peerESPNowAddress[0], HEX) + ":" + String(peerESPNowAddress[1], HEX) + ":" + String(peerESPNowAddress[2], HEX) + ":" + String(peerESPNowAddress[3], HEX) + ":" + String(peerESPNowAddress[4], HEX) + ":" + String(peerESPNowAddress[5], HEX) + "#");
+
+    Serial.println("-->[PREF] showTemp:\t #" + String(displayShowTemperature ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showHumidity:\t #" + String(displayShowHumidity ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showBattery:\t #" + String(displayShowBattery ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showBatteryVolt:\t #" + String(displayShowBatteryVoltage ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showCO2:\t #" + String(displayShowCO2 ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showPM25:\t #" + String(displayShowPM25 ? "Show" : "Hide") + "#");
 
     // Buzzer preferences
-    Serial.printf("-->[PREF] toneBuzzerBeep is:\t#%d#\n", toneBuzzerBeep);
-    Serial.printf("-->[PREF] durationBuzzerBeep is:\t#%d#\n", durationBuzzerBeep);
-    Serial.printf("-->[PREF] timeBetweenBuzzerBeeps is:\t#%d#\n", timeBetweenBuzzerBeeps);
+    Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
+    Serial.println("-->[PREF] durationBuzzerBeep is:\t#" + String(durationBuzzerBeep) + "#");
+    Serial.println("-->[PREF] timeBetweenBuzzerBeeps is:\t#" + String(timeBetweenBuzzerBeeps) + "#");
 
-    Serial.printf("-->[PREF] \n");
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    Serial.println("-->[PREF] cpNoTimeout is:\t#" + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpRelaxedSec is:\t#" + String(relaxedSecurity ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpDebug is:\t#" + String(captivePortalDebug ? "Enabled" : "Disabled") + "#");
+    Serial.println("-->[PREF] cpWaitTime is:\t#" + String(timeToWaitForCaptivePortal) + "#");
+#endif
+
+    Serial.println();
+    delay(50);
 }
 
 void initPreferences() {
     // preferences.begin("CO2-Gadget", false);
     // if (preferences.clear()) {
-    //     Serial.printf("-->[PREF] Preferences cleared\n");
+    //     Serial.println("-->[PREF] Preferences cleared");
     // } else {
-    //     Serial.printf("-->[PREF] Preferences NOT cleared\n");
+    //     Serial.println("-->[PREF] Preferences NOT cleared");
     // }
     // preferences.end();
     // delay(000);
+
+    firmVersionMajor = getCO2GadgetMajorVersion();
+    firmVersionMinor = getCO2GadgetMinorVersion();
+    firmRevision = getCO2GadgetRevisionNumber();
+    firmBranch = getCO2GadgetRevisionBranch();
+    firmFlavour = FLAVOUR;
+
     preferences.begin("CO2-Gadget", false);
     prefVersion = preferences.getUInt("prefVersion", 0);
     prefRevision = preferences.getUInt("prefRevision", 0);
+    firmVersionMajor = preferences.getUInt("firmVerMajor", 0);
+    firmVersionMinor = preferences.getUInt("firmVerMinor", 0);
+    firmRevision = preferences.getUInt("firmRevision", 0);
+    firmBranch = preferences.getString("firmBranch", "");
+    firmFlavour = preferences.getString("firmFlavour", "");
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
@@ -112,9 +281,10 @@ void initPreferences() {
     activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
-    activeOTA = preferences.getBool("activeOTA", false);
+    activeOTA = preferences.getBool("activeOTA", activeOTA);
     rootTopic = preferences.getString("rootTopic", rootTopic);
     mqttClientId = preferences.getString("mqttClientId", mqttClientId);
+    mqttShowInConsole = preferences.getBool("mqttShowInCon", false);
     mqttBroker = preferences.getString("mqttBroker", mqttBroker).c_str();
     mqttUser = preferences.getString("mqttUser", mqttUser).c_str();
     mqttPass = preferences.getString("mqttPass", mqttPass).c_str();
@@ -135,11 +305,22 @@ void initPreferences() {
     wifiSSID = preferences.getString("wifiSSID", wifiSSID).c_str();
     wifiPass = preferences.getString("wifiPass", wifiPass).c_str();
     hostName = preferences.getString("hostName", hostName).c_str();
+
+    // Fixed IP
+    useStaticIP = preferences.getBool("useStaticIP", false);
+    staticIP.fromString(preferences.getString("staticIP", staticIP.toString()).c_str());
+    gateway.fromString(preferences.getString("gateway", gateway.toString()).c_str());
+    subnet.fromString(preferences.getString("subnet", subnet.toString()).c_str());
+    dns1.fromString(preferences.getString("dns1", dns1.toString()).c_str());
+    dns2.fromString(preferences.getString("dns2", dns2.toString()).c_str());
+
     selectedCO2Sensor = preferences.getUInt("selCO2Sensor", 0);
     debugSensors = preferences.getBool("debugSensors", false);
     displayReverse = preferences.getBool("displayReverse", false);
     showFahrenheit = preferences.getBool("showFahrenheit", false);
     measurementInterval = preferences.getUInt("measInterval", 10);
+    sampleInterval = preferences.getUInt("sampInterval", 60);
+    if (sampleInterval < 2) sampleInterval = 60;  // Default sample interval is 60 seconds
     outputsModeRelay = preferences.getBool("outModeRelay", false);
     channelESPNow = preferences.getUInt("channelESPNow", ESPNOW_WIFI_CH);
     boardIdESPNow = preferences.getUInt("boardIdESPNow", 0);
@@ -147,19 +328,6 @@ void initPreferences() {
     size_t key_size = preferences.getBytesLength("peerESPNow");
     uint8_t buffer[key_size];
     preferences.getBytes("peerESPNow", buffer, key_size);
-
-    // Serial.printf("-->[PREF] Current size of \"%s\": %d\n", "peerESPNow", key_size);
-    // if (key_size > 0) {
-    //   Serial.print("    Data");
-    //   uint8_t existingData[key_size];
-    //   size_t count = preferences.getBytes("peerESPNow", existingData, key_size);
-    //   Serial.printf("-->[PREF] [%d]:", count);
-    //   for (size_t i = 0; i < count; i++) {
-    //     Serial.printf("-->[PREF]  %02x", existingData[i]);
-    //   }
-    //   Serial.printf("\n");
-    // }
-    // Serial.printf("key_size = %d sizeof(peerESPNowAddress) = %d\n", key_size, sizeof(peerESPNowAddress));
 
     if (key_size = sizeof(peerESPNowAddress)) {
         memcpy(peerESPNowAddress, buffer, sizeof(peerESPNowAddress));
@@ -177,6 +345,14 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
+// Retrieve Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    captivePortalNoTimeout = preferences.getBool("cpNoTimeout", false);
+    relaxedSecurity = preferences.getBool("cpRelaxedSec", false);
+    captivePortalDebug = preferences.getBool("cpDebug", false);
+    timeToWaitForCaptivePortal = preferences.getUInt("cpWaitTime", 60);
+#endif
+
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -188,14 +364,21 @@ void initPreferences() {
     preferences.end();
 // #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
     upgradePreferences();
 }
 
+void saveWifiCredentials() {
+    Serial.println("-->[PREF] Saving WiFi credentials to NVR");
+    preferences.begin("CO2-Gadget", false);
+    preferences.putString("wifiSSID", wifiSSID);
+    preferences.putString("wifiPass", wifiPass);
+    preferences.end();
+}
+
 void putPreferences() {
-    Serial.printf("-->[PREF] \n");
-    Serial.printf("-->[PREF] Saving preferences to NVR\n");
+    Serial.println("-->[PREF] Saving preferences to NVR");
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();
@@ -204,8 +387,15 @@ void putPreferences() {
     wifiSSID.trim();
     wifiPass.trim();
     hostName.trim();
-    preferences.end();
+    // preferences.end();
     preferences.begin("CO2-Gadget", false);
+    preferences.putUInt("prefVersion", prefVersion);
+    preferences.putUInt("prefRevision", prefRevision);
+    preferences.putUInt("firmVerMajor", firmVersionMajor);
+    preferences.putUInt("firmVerMinor", firmVersionMinor);
+    preferences.putUInt("firmRevision", firmRevision);
+    preferences.putString("firmBranch", firmBranch);
+    preferences.putString("firmFlavour", firmFlavour);
     preferences.putUInt("customCalValue", customCalibrationValue);
     preferences.putFloat("tempOffset", tempOffset);
     preferences.putUInt("altitudeMeters", altitudeMeters);
@@ -225,6 +415,7 @@ void putPreferences() {
     preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
     preferences.putUInt("vRef", vRef);
     preferences.putString("mqttClientId", mqttClientId);
+    preferences.putBool("mqttShowInCon", mqttShowInConsole);
     preferences.putString("mqttBroker", mqttBroker);
     preferences.putString("mqttUser", mqttUser);
     preferences.putString("mqttPass", mqttPass);
@@ -237,11 +428,21 @@ void putPreferences() {
     preferences.putString("wifiSSID", wifiSSID);
     preferences.putString("wifiPass", wifiPass);
     preferences.putString("hostName", hostName);
+
+    // Fixed IP
+    preferences.putBool("useStaticIP", useStaticIP);
+    preferences.putString("staticIP", staticIP.toString());
+    preferences.putString("gateway", gateway.toString());
+    preferences.putString("subnet", subnet.toString());
+    preferences.putString("dns1", dns1.toString());
+    preferences.putString("dns2", dns2.toString());
+
     preferences.putUInt("selCO2Sensor", selectedCO2Sensor);
     preferences.putBool("debugSensors", debugSensors);
     preferences.putBool("displayReverse", displayReverse);
     preferences.putBool("showFahrenheit", showFahrenheit);
     preferences.putUInt("measInterval", measurementInterval);
+    preferences.putUInt("sampInterval", sampleInterval);
     preferences.putBool("outModeRelay", outputsModeRelay);
     preferences.putUInt("channelESPNow", channelESPNow);
     preferences.putUInt("boardIdESPNow", boardIdESPNow);
@@ -259,81 +460,132 @@ void putPreferences() {
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
     preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    preferences.putBool("cpNoTimeout", captivePortalNoTimeout);
+    preferences.putBool("cpRelaxedSec", relaxedSecurity);
+    preferences.putBool("cpDebug", captivePortalDebug);
+    preferences.putUInt("cpWaitTime", timeToWaitForCaptivePortal);
+#endif
+
     preferences.end();
 
 #ifdef DEBUG_PREFERENCES
-    printPreferences();
+    printActualSettings();
 #endif
 }
 
-String getPreferencesAsJson() {
-    preferences.begin("CO2-Gadget", false);
-
-    DynamicJsonDocument doc(1024);
-
-    doc["customCalValue"] = preferences.getInt("customCalValue", 415);
-    doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
-    doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
-    doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
-    doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
-    doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
-    doc["DisplayBright"] = preferences.getInt("DisplayBright", 100);
-    doc["neopixBright"] = preferences.getInt("neopixBright", 50);
-    doc["selNeopxType"] = preferences.getInt("selNeopxType", NEO_GRB + NEO_KHZ800);
-    doc["activeBLE"] = preferences.getBool("activeBLE", true);
-    doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
-    doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
-    doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
-    doc["activeOTA"] = preferences.getBool("activeOTA", false);
-    doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
-    doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
-    doc["batChargd"] = preferences.getInt("batChargd", 4200);
-    doc["vRef"] = preferences.getInt("vRef", 930);
-    doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
-    doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
-    doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
-    // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
-    doc["tToDispOff"] = preferences.getInt("tToDispOff", 60);
-    doc["tKeepAlMQTT"] = preferences.getInt("tKeepAlMQTT", 300);
-    doc["tKeepAlESPNow"] = preferences.getInt("tKeepAlESPNow", 300);
-    doc["tToPubMQTT"] = preferences.getInt("tToPubMQTT", 60);
-    doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
-    doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
-    doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
-    // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
-    doc["hostName"] = preferences.getString("hostName", hostName);
-    doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
-    doc["debugSensors"] = preferences.getBool("debugSensors", false);
-    doc["displayReverse"] = preferences.getBool("displayReverse", false);
-    doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
-    doc["measurementInterval"] = preferences.getInt("measInterval", 10);
-    doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
-    doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
-    doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
-    doc["peerESPNowAddress"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
-    doc["showTemp"] = preferences.getBool("showTemp", true);
-    doc["showHumidity"] = preferences.getBool("showHumidity", true);
-    doc["showBattery"] = preferences.getBool("showBattery", true);
-    doc["showCO2"] = preferences.getBool("showCO2", true);
-    doc["showPM25"] = preferences.getBool("showPM25", true);
-    doc["measInterval"] = preferences.getInt("measInterval", 10);
-
-    // Buzzer preferences
-    doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
-    doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
-    doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
-
-    preferences.end();
-
-    String preferencesJson;
-    serializeJson(doc, preferencesJson);
-    // Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
-    return preferencesJson;
+String getCO2GadgetVersionAsJson() {
+    String versionJson;
+    JsonDocument doc;
+    doc["firmVerMajor"] = getCO2GadgetMajorVersion();
+    doc["firmVerMinor"] = getCO2GadgetMinorVersion();
+    doc["firmRevision"] = getCO2GadgetRevisionNumber();
+    doc["firmBranch"] = getCO2GadgetRevisionBranch();
+    doc["firmFlavour"] = FLAVOUR;
+    serializeJson(doc, versionJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.println("-->[PREF] CO2 Gadget Version JSON: " + versionJson);
+#endif
+    return versionJson;
 }
 
-String getActualSettingsAsJson() {
+// String getPreferencesAsJson() {
+//     preferences.begin("CO2-Gadget", false);
+
+//     JsonDocument doc;
+
+//     doc["prefVersion"] = preferences.getUInt("prefVersion", 0);
+//     doc["prefRevision"] = preferences.getUInt("prefRevision", 0);
+//     doc["firmVerMajor"] = preferences.getUInt("firmVerMajor", 0);
+//     doc["firmRevision"] = preferences.getUInt("firmRevision", 0);
+//     doc["firmBranch"] = preferences.getString("firmBranch", "");
+//     doc["firmFlavour"] = preferences.getString("firmFlavour", "");
+//     doc["customCalValue"] = preferences.getInt("customCalValue", 415);
+//     doc["tempOffset"] = preferences.getFloat("tempOffset", 0);
+//     doc["altitudeMeters"] = preferences.getInt("altitudeMeters", 0);
+//     doc["autoSelfCal"] = preferences.getBool("autoSelfCal", false);
+//     doc["co2OrangeRange"] = preferences.getInt("co2OrangeRange", 700);
+//     doc["co2RedRange"] = preferences.getInt("co2RedRange", 1000);
+//     doc["DisplayBright"] = preferences.getInt("DisplayBright", 100);
+//     doc["neopixBright"] = preferences.getInt("neopixBright", 50);
+//     doc["selNeopxType"] = preferences.getInt("selNeopxType", NEO_GRB + NEO_KHZ800);
+//     doc["activeBLE"] = preferences.getBool("activeBLE", true);
+//     doc["activeWIFI"] = preferences.getBool("activeWIFI", false);
+//     doc["activeMQTT"] = preferences.getBool("activeMQTT", false);
+//     doc["activeESPNOW"] = preferences.getBool("activeESPNOW", false);
+//     doc["activeOTA"] = preferences.getBool("activeOTA", false);
+//     doc["rootTopic"] = preferences.getString("rootTopic", rootTopic);
+//     doc["batDischgd"] = preferences.getInt("batDischgd", 3200);
+//     doc["batChargd"] = preferences.getInt("batChargd", 4200);
+//     doc["vRef"] = preferences.getInt("vRef", 930);
+//     doc["mqttClientId"] = preferences.getString("mqttClientId", mqttClientId);
+//     doc["mqttShowInCon"] = preferences.getBool("mqttShowInCon", false);
+//     doc["mqttBroker"] = preferences.getString("mqttBroker", mqttBroker);
+//     doc["mqttUser"] = preferences.getString("mqttUser", mqttUser);
+//     // doc["mqttPass"] = preferences.getString("mqttPass", mqttPass);
+//     doc["tToDispOff"] = preferences.getInt("tToDispOff", 60);
+//     doc["tKeepAlMQTT"] = preferences.getInt("tKeepAlMQTT", 300);
+//     doc["tKeepAlESPNow"] = preferences.getInt("tKeepAlESPNow", 300);
+//     doc["tToPubMQTT"] = preferences.getInt("tToPubMQTT", 60);
+//     doc["tToPubESPNow"] = preferences.getInt("tToPubESPNow", 60);
+//     doc["dispOffOnExP"] = preferences.getBool("dispOffOnExP", false);
+//     doc["wifiSSID"] = preferences.getString("wifiSSID", wifiSSID);
+//     // doc["wifiPass"] = preferences.getString("wifiPass", wifiPass);
+//     doc["hostName"] = preferences.getString("hostName", hostName);
+
+//     // Fixed IP
+//     doc["useStaticIP"] = preferences.getBool("useStaticIP", false);
+//     doc["staticIP"] = preferences.getString("staticIP", staticIP.toString());
+//     doc["gateway"] = preferences.getString("gateway", gateway.toString());
+//     doc["subnet"] = preferences.getString("subnet", subnet.toString());
+//     doc["dns1"] = preferences.getString("dns1", dns1.toString());
+//     doc["dns2"] = preferences.getString("dns2", dns2.toString());
+
+//     doc["selCO2Sensor"] = preferences.getInt("selCO2Sensor", 0);
+//     doc["debugSensors"] = preferences.getBool("debugSensors", false);
+//     doc["displayReverse"] = preferences.getBool("displayReverse", false);
+//     doc["showFahrenheit"] = preferences.getBool("showFahrenheit", false);
+//     doc["measurementInterval"] = preferences.getInt("measInterval", 10);
+//     doc["outModeRelay"] = preferences.getBool("outModeRelay", false);
+//     doc["channelESPNow"] = preferences.getInt("channelESPNow", ESPNOW_WIFI_CH);
+//     doc["boardIdESPNow"] = preferences.getInt("boardIdESPNow", 0);
+//     doc["peerESPNowAddress"] = preferences.getString("peerESPNow", "00:00:00:00:00:00");
+//     doc["showTemp"] = preferences.getBool("showTemp", true);
+//     doc["showHumidity"] = preferences.getBool("showHumidity", true);
+//     doc["showBattery"] = preferences.getBool("showBattery", true);
+//     doc["showCO2"] = preferences.getBool("showCO2", true);
+//     doc["showPM25"] = preferences.getBool("showPM25", true);
+//     doc["measInterval"] = preferences.getInt("measInterval", 10);
+//     doc["sampInterval"] = preferences.getInt("sampInterval", 60);
+
+//     // Buzzer preferences
+//     doc["toneBzrBeep"] = preferences.getUInt("toneBzrBeep", 1000);   // Buzzer frequency
+//     doc["durBzrBeep"] = preferences.getUInt("durBzrBeep", 100);      // Buzzer duration
+//     doc["timeBtwnBzr"] = preferences.getUInt("timeBtwnBzr", 65535);  // Time between beeps
+
+//     preferences.end();
+
+//     if (relaxedSecurity) {
+//         doc["relaxedSecurity"] = true;
+//     }
+
+//     String preferencesJson;
+//     serializeJson(doc, preferencesJson);
+//     // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+//     return preferencesJson;
+// }
+
+String getActualSettingsAsJson(bool includePasswords = false) {
     JsonDocument doc;
 
+    doc["prefVersion"] = prefVersion;
+    doc["prefRevision"] = prefRevision;
+    doc["firmVerMajor"] = firmVersionMajor;
+    doc["firmVerMinor"] = firmVersionMinor;
+    doc["firmRevision"] = firmRevision;
+    doc["firmBranch"] = firmBranch;
+    doc["firmFlavour"] = firmFlavour;
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = tempOffset;
     doc["altitudeMeters"] = altitudeMeters;
@@ -353,9 +605,13 @@ String getActualSettingsAsJson() {
     doc["batChargd"] = batteryFullyChargedMillivolts;
     doc["vRef"] = vRef;
     doc["mqttClientId"] = mqttClientId;
+    doc["mqttShowInCon"] = mqttShowInConsole;
     doc["mqttBroker"] = mqttBroker;
     doc["mqttUser"] = mqttUser;
-    // doc["mqttPass"] = mqttPass;
+    // if includePasswords is false, do not include the password
+    if (includePasswords) {
+        doc["mqttPass"] = mqttPass;
+    }
     doc["tToDispOff"] = timeToDisplayOff;
     doc["tKeepAlMQTT"] = timeToKeepAliveMQTT;
     doc["tKeepAlESPNow"] = timeToKeepAliveESPNow;
@@ -363,8 +619,20 @@ String getActualSettingsAsJson() {
     doc["tToPubESPNow"] = timeBetweenESPNowPublish;
     doc["dispOffOnExP"] = displayOffOnExternalPower;
     doc["wifiSSID"] = wifiSSID;
-    // doc["wifiPass"] = wifiPass;
+    // if includePasswords is false, do not include the password
+    if (includePasswords) {
+        doc["wifiPass"] = wifiPass;
+    }
     doc["hostName"] = hostName;
+
+    // Fixed IP
+    doc["useStaticIP"] = useStaticIP;
+    doc["staticIP"] = staticIP.toString();
+    doc["gateway"] = gateway.toString();
+    doc["subnet"] = subnet.toString();
+    doc["dns1"] = dns1.toString();
+    doc["dns2"] = dns2.toString();
+
     doc["selCO2Sensor"] = selectedCO2Sensor;
     doc["debugSensors"] = debugSensors;
     doc["displayReverse"] = displayReverse;
@@ -390,19 +658,34 @@ String getActualSettingsAsJson() {
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
     doc["measInterval"] = measurementInterval;
+    doc["sampInterval"] = sampleInterval;
 
     // Buzzer preferences
     doc["toneBzrBeep"] = toneBuzzerBeep;          // Buzzer frequency
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    doc["cpNoTimeout"] = captivePortalNoTimeout;
+    if (relaxedSecurity) {
+        doc["cpRelaxedSec"] = relaxedSecurity;
+    }
+    doc["cpDebug"] = captivePortalDebug;
+    doc["cpWaitTime"] = timeToWaitForCaptivePortal;
+#endif
+
+    if (relaxedSecurity) {
+        doc["relaxedSecurity"] = true;
+    }
+
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.printf("-->[PREF] Preferences JSON: %s\n", preferencesJson.c_str());
+    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
     return preferencesJson;
 }
 
-bool handleSavePreferencesfromJSON(String jsonPreferences) {
+bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Create a JSON object to store preferences
     JsonDocument JsonDocument;
 
@@ -415,6 +698,11 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         // request->send(400, "text/plain", "Error in preferences format");
         return false;
     }
+
+#ifdef DEBUG_PREFERENCES
+    String debugMessage = "-->[PREF] JSON received (" + String(__func__) + "): " + jsonPreferences;
+    Serial.println(debugMessage);
+#endif
 
     // Save preferences to non-volatile memory (Preferences)
     try {
@@ -449,8 +737,9 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
-        vRef = JsonDocument["vRef"];
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
+        mqttShowInConsole = JsonDocument["mqttShowInCon"];
         mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
         mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
         timeToDisplayOff = JsonDocument["tToDispOff"];
@@ -461,11 +750,32 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
         displayOffOnExternalPower = JsonDocument["dispOffOnExP"];
         wifiSSID = JsonDocument["wifiSSID"].as<String>().c_str();
         hostName = JsonDocument["hostName"].as<String>().c_str();
+
+        // Fixed IP
+        useStaticIP = JsonDocument["useStaticIP"];
+        staticIP.fromString(JsonDocument["staticIP"].as<String>());
+        gateway.fromString(JsonDocument["gateway"].as<String>());
+        subnet.fromString(JsonDocument["subnet"].as<String>());
+        dns1.fromString(JsonDocument["dns1"].as<String>());
+        dns2.fromString(JsonDocument["dns2"].as<String>());
+
         selectedCO2Sensor = JsonDocument["selCO2Sensor"];
         debugSensors = JsonDocument["debugSensors"];
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+        if (displayReverse != JsonDocument["displayReverse"]) {
+            displayReverse = JsonDocument["displayReverse"];
+            setDisplayReverse(displayReverse);
+            reverseButtons(displayReverse);
+            if (inMenu) isMenuDirty = true;
+        }
+#else
         displayReverse = JsonDocument["displayReverse"];
+        reverseButtons(displayReverse);
+#endif
+        // displayReverse = JsonDocument["displayReverse"];
         showFahrenheit = JsonDocument["showFahrenheit"];
         measurementInterval = JsonDocument["measurementInterval"];
+        sampleInterval = JsonDocument["sampleInterval"];
         outputsModeRelay = JsonDocument["outModeRelay"];
         channelESPNow = JsonDocument["channelESPNow"];
         boardIdESPNow = JsonDocument["boardIdESPNow"];
@@ -479,20 +789,79 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
             peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
         }
 
-        displayShowTemperature = JsonDocument["showTemp"];
-        displayShowHumidity = JsonDocument["showHumidity"];
-        displayShowBattery = JsonDocument["showBattery"];
-        displayShowBatteryVoltage = JsonDocument["showBattVolt"];
-        displayShowCO2 = JsonDocument["showCO2"];
-        displayShowPM25 = JsonDocument["showPM25"];
+        if (displayShowTemperature != JsonDocument["showTemp"]) {
+            displayShowTemperature = JsonDocument["showTemp"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowHumidity != JsonDocument["showHumidity"]) {
+            displayShowHumidity = JsonDocument["showHumidity"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBattery != JsonDocument["showBattery"]) {
+            displayShowBattery = JsonDocument["showBattery"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
+            displayShowBatteryVoltage = JsonDocument["showBattVolt"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowCO2 != JsonDocument["showCO2"]) {
+            displayShowCO2 = JsonDocument["showCO2"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (displayShowPM25 != JsonDocument["showPM25"]) {
+            displayShowPM25 = JsonDocument["showPM25"];
+            shouldRedrawDisplay = true;
+        }
 
         // Buzzer preferences
         toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
         durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
         timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
 
-        // mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
-        // wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+        // Captive Portal preferences
+#ifdef SUPPORT_CAPTIVE_PORTAL
+        if (JsonDocument.containsKey("cpNoTimeout")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpNoTimeout is present. Setting value to: " + String(JsonDocument["cpNoTimeout"].as<String>()));
+#endif
+            captivePortalNoTimeout = JsonDocument["cpNoTimeout"];
+        }
+        if (JsonDocument.containsKey("cpRelaxedSec")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpRelaxedSec is present. Setting value to: " + String(JsonDocument["cpRelaxedSec"].as<String>()));
+#endif
+            relaxedSecurity = JsonDocument["cpRelaxedSec"];
+        }
+        if (JsonDocument.containsKey("cpDebug")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpDebug is present. Setting value to: " + String(JsonDocument["cpDebug"].as<String>()));
+#endif
+            captivePortalDebug = JsonDocument["cpDebug"];
+        }
+        if (JsonDocument.containsKey("cpWaitTime")) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+            Serial.println("-->[CAPT] cpWaitTime is present. Setting value to: " + String((long)JsonDocument["cpWaitTime"]));
+#endif
+            timeToWaitForCaptivePortal = JsonDocument["cpWaitTime"];
+        }
+#endif
+
+        // If JsonDocument["wifiPass"] is present and different from the current one, update the wifiPass variable
+        if (JsonDocument.containsKey("wifiPass") && wifiPass != JsonDocument["wifiPass"].as<String>().c_str()) {
+            wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
+            wifiChanged = true;
+        }
+        // If JsonDocument["mqttPass"] is present and different from the current one, update the mqttPass variable
+        if (JsonDocument.containsKey("mqttPass") && mqttPass != JsonDocument["mqttPass"].as<String>().c_str()) {
+            mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
+            wifiChanged = true;
+        }
         preferences.end();
     } catch (const std::exception& e) {
         // Manage error while storing preferences
@@ -504,9 +873,36 @@ bool handleSavePreferencesfromJSON(String jsonPreferences) {
 
     // Send a successful response
     // request->send(200, "text/plain", "Preferences saved successfully");
-    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesfromJSON()");
+    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
+}
+
+bool setPreferenceValue(String key, String value) {
+    preferences.begin("CO2-Gadget", false);
+
+    bool success = false;
+
+    // Determine the type of the value and store it accordingly
+    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+        bool boolValue = value.equalsIgnoreCase("true");
+        success = preferences.putBool(key.c_str(), boolValue);
+        Serial.println("-->[PREF] Setting boolean value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toInt() != 0 || value == "0") {
+        int intValue = value.toInt();
+        success = preferences.putInt(key.c_str(), intValue);
+        Serial.println("-->[PREF] Setting integer value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else if (value.toFloat() != 0.0 || value == "0.0") {
+        float floatValue = value.toFloat();
+        success = preferences.putFloat(key.c_str(), floatValue);
+        Serial.println("-->[PREF] Setting float value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    } else {
+        success = preferences.putString(key.c_str(), value);
+        Serial.println("-->[PREF] Setting string value for preference key: " + key + " with value: " + value + " (Success: " + String(success) + ")");
+    }
+
+    preferences.end();
+    return success;
 }
 
 #endif  // CO2_Gadget_Preferences_h
