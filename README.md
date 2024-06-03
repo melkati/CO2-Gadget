@@ -1,16 +1,18 @@
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
+[![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
 
-<table>
+<table align="center">
 	<tr>
 		<td>
-			Don't forget to star ⭐ this repository
+			Don't forget to star ⭐ this repository NOW!
 		</td>
 	</tr>
 </table>
 
-<table>
+<table align="center">
 	<tr>
 		<td>
 			<a href="https://github.com/melkati/CO2-Gadget/issues/198">🌟 Calling All Tech Enthusiasts! Join the CO2 Gadget Testing Adventure 🌟</a>
@@ -21,7 +23,9 @@
 
 # CO2-Gadget
 
-An advanced fimware for CO2 Monitor/Meter. It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99,99% of them).
+**CO2-Gadget** is an advanced firmware for CO2 Monitors/Meters based on ESP32. It's designed for flexibility, supporting a variety of popular sensors, displays, and communication protocols. With features like real-time visualization, data logging, and over-the-air updates, CO2-Gadget is perfect for both developers and end-users looking to monitor air quality effectively.
+
+It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99% of them).
 
 With cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
 
@@ -29,19 +33,23 @@ This repository is mainly addressed at developers. If you are an end user willin
 
 If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
 
-![CO2_Gadget_DIY_CO2_Monitor](https://github.com/melkati/CO2-Gadget/assets/11509521/58e1f306-af46-416f-a399-5900965e8c10)
+<p align="center">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/8a81094c-5814-4246-955f-c48ef3087033">
+</p>
 
 # Features
 
-- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106
+- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106 & CM1106SL-NS (ultra low power)
 - Support for popular color and monochrome displays
 - Fully functional without display (display not needed)
 - Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
 - Real time visualization on display, serial port and web page
 - Management and configuration via on screen menu, internal web page and console (USB/serial port)
 - Local data logger with upload to phone by BLE
+- CO2 Sensor calibration via via on screen menu, internal web page, console (USB/serial port), Bluetooth or MQTT
 - WIFI connection
-- Sending of data via MQTT
+- Easy configuration of WIFI from your phone via Bluetooth or from the web page (Captive Portal)
+- Sending of data via MQTT (measurement, battery, alarms, etc)
 - Receiving remote commands via MQTT
 - MQTT Discovery protocol for Home Assistant (and others supporting it as HomeSeer with mcsMQTT)
 - Easy installing via web browser
@@ -60,9 +68,27 @@ This project support a large selection of ESP32 boards, displays and sensors.
 
 As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor (and battery support) [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
 
-![image](https://user-images.githubusercontent.com/11509521/146636210-ee11a49a-5ebc-4e3c-a11e-91e2d8676410.png)
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/6d577770-b83c-4f3e-9c87-a00ac28ae72c">
+</p>
 
 For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
+
+## TFT Displays
+
+CO2 Gadget right now has support for a lot of different TFT displays. There are precompiled versions for TFT 240x135 and 320x170 pixels displays (included in ready made all in one boards as TTGO T-Display, T-Display S3 and others).
+
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/073d5f17-1e77-4692-833b-2cf2b838d72a">
+</p>
+
+## E-INK Displays
+
+You can use many different E-INK displays. There are precompiled versions for most popular E-INK displays and all in one boards with E-INK displays as TTGO T5. Check support for your e-ink display at [CO2 Gadget installation page](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced)
+
+<p align="center">
+	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/643c08ae-6a17-427b-be10-0d11e8b75ca6">
+</p>
 
 ## OLED Displays
 
@@ -82,7 +108,6 @@ These are the GPIOs used by each predefined board:
 | TDISPLAY_S3            | TFT 320x170      | 18/17   | 43/44 | 14/0 | 03 | 01 | 04 | 16 | 2
 | esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
-| esp32dev-sandwich      | No display       | 17/16	  | 22/21 | 15/0 | 32 | 33 | 34 | 26 | 2
 | esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 19/0 | 32 | 33 | 34 | 26 | 2
 
 - Flavour: Name of the firmware variant.
@@ -144,54 +169,61 @@ NOTE: DHT22 is supported but is not recommended
 
 Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canairio_sensorlib/)
 
+# Installing
 
-# Building from repository
+Installing the CO2 Gadget advanced firmware on the board with the ESP32is super easy. You don't have to download or install anything on your PC.
 
-## With PlatformIO (recommended)
+Just click the button corresponding to the version you want to install, select the port where your board is connected and click "Connect". It's as simple as that, the uploading into the ESP32 will be done in a few seconds without any further complication with only a few clicks...
 
-**Note:** If all you want is to install CO2 Gadget into your board go [here:](https://emariete.com/en/meter-co2-gadget/). You can install it from your web browser and don't need to compile the firmware.
+Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) to install from the comfort of your internet browser.
 
-### Install PlatformIO
 
-You can use PlatfomIO CLI or VSCode with PlatformIO GUI (recomended). For installation see [PlatformIO installation instructions:](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
-### Prepare PlatformIO
+# Building from Repository
 
-First you must edit the file platformio.ini to setup your preferences.
+## Using PlatformIO (Recommended)
 
-If necessary adjust the upload and monitoring port configuration to match your situation.
+If you're looking to compile and install CO2 Gadget from its repository, PlatformIO is the preferred method. However, if you only aim to install CO2 Gadget onto your board, you can do so directly from [here](https://emariete.com/en/meter-co2-gadget/) without compiling the firmware.
 
-  ```
-  upload_speed = 921600
-  monitor_speed = 115200
-  upload_port = COM13
-  monitor_port = COM13
-  ```
-  
-Save the file platformio.ini
+### Installation Steps
 
-#### Compiling and Installing
+You have two options for utilizing PlatformIO: either through its Command Line Interface (CLI) or via Visual Studio Code (VSCode) with PlatformIO's Graphical User Interface (GUI). Detailed installation instructions can be found [here](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 
-I recommend PlatformIO because it is more easy than Arduino IDE. For this, please install first [PlatformIO](http://platformio.org/) and its command line tools (Windows, MacOs and Linux), **pio** command, then connect your compatible board to the USB and run the next command:
+### Preparing PlatformIO
 
-```python
-pio run pio run -e TTGO_TDISPLAY_SANDWICH --target upload
+Before proceeding, make sure to configure your preferences by editing the `platformio.ini` file, which is well-documented for easy customization. If required, adjust the upload and monitoring port configurations to match your setup.
+
+```ini
+upload_speed = 921600
+monitor_speed = 115200
+upload_port = COM13
+monitor_port = COM13
 ```
-You must replace "TTGO_TDISPLAY_SANDWICH" with the flavour of CO2 Gadget you want compiled and uploaded (they are defined in platformio.ini or you can define your own).
 
-If using PlatformIO **GUI**, to compile and upload CO2-Gadget into your board, press the "Alien head" -> Project tasks -> Choose flavour -> Upload and Monitor .
+Save the changes made to the `platformio.ini` file.
 
-## With Arduino
+#### Compiling and Installation Process
 
-**NOTE:**
-Currently Arduino IDE is not supported. If you want to compile with the Arduino IDE, you will have to solve includes, dependencies and defines yourself.
+For ease of use, PlatformIO is recommended over the Arduino IDE. After installing PlatformIO and its command line tools on your system (compatible with Windows, MacOS, and Linux), connect your compatible board via USB and execute the following command:
 
-I recommend that you use VS Code with PlatformIO. You have many tutorials on the internet, and it is not as difficult at all as it seems.
+```bash
+pio run -e TTGO_TDISPLAY --target upload
+```
 
+Ensure to replace "TTGO_TDISPLAY" with the desired flavor of CO2 Gadget to be compiled and uploaded. You can find these flavors defined in the `platformio.ini` file or define your own.
+
+If using the PlatformIO GUI, follow these steps to compile and upload CO2-Gadget onto your board: press the "Alien head" icon, navigate to Project tasks, select your desired flavor, and choose Upload and Monitor.
+
+## Using Arduino
+
+**Note:**
+At present, Arduino IDE is not supported. Should you wish to compile using the Arduino IDE, you will need to address includes, dependencies, and defines independently.
+
+It's recommended to utilize VS Code with PlatformIO instead. Numerous tutorials are available online, simplifying the process considerably.
 # Getting Involved
 
 Everyone is welcome to contribute to CO2 Gadget, regardless of their skill level or background. Whether you're tech-savvy, passionate about community development, or simply want to make a difference, there’s a role for you.
 
-Contribute: See our Issues section to find current tasks or share your project ideas. Join us in creating the world's more advanced firmware for CO2 Meter/Monitor.
+Contribute: See our Issues section to find current tasks or share your project ideas. Join us in creating the world's more advanced firmware for CO2 Monitoring.
 
 If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
 
@@ -206,12 +238,11 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description and code is a must
 - Target your pull request to be merged with the `development` branch
 
-There are also private groups for committed and dedicated Alpha and Beta Testers
+There are also private groups for committed and dedicated Alpha and Beta Testers. Read more about it [here](https://github.com/melkati/CO2-Gadget/issues/198) 🌟 We need testers! 🌟
 
 # Supporting the project
 
-Do you want to maka e acontribution to support the CO2 Gadget project? If so, **thank you!**
-I don't want money but I will accept material donations so I can move forward with CO2 Gadget development. I always need some development board, some sensor or some tool.
+Do you want to support the CO2-Gadget project? Thank you! While financial contributions are not requested, material donations are highly appreciated to aid further development. You can also help by spreading the word about CO2-Gadget and sharing your experiences with others.
 
 <a href=https://s.click.aliexpress.com/e/_DmqesWN target="_blank"><img src=//ae01.alicdn.com/kf/Sd1a317e7b72f425b92032c780d79d89a2.jpg_140x140.jpg /></a>
 <a href=https://s.click.aliexpress.com/e/_DmJQ1VX target="_blank"><img src=//ae01.alicdn.com/kf/H308d07827d0e44d9a9609f47092b8885V.jpg_140x140.jpg /></a>
@@ -219,9 +250,7 @@ I don't want money but I will accept material donations so I can move forward wi
 # TO DO
 
 - [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
-- [ ] [Add support for epaper displays (e-Ink or Electronic Ink)](https://github.com/melkati/CO2-Gadget/issues/190)
 - [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
-- [ ] [Unify and improve the existing web pages](https://github.com/melkati/CO2-Gadget/issues/166)
 
 # Useful information
 
@@ -248,7 +277,17 @@ All the [contributors that helped improving CO2 Gadget](https://github.com/melka
 ---
 ## License
 
-    Copyright (C) 2021-2024 CO2 Gadget Contributors
+
+    ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    ▐       ____ ___ ____     ____           _            _        ▌
+    ▐      / ___/ _ \___ \   / ___| __ _  __| | __ _  ___| |_      ▌
+    ▐     | |  | | | |__) | | |  _ / _` |/ _` |/ _` |/ _ \ __|     ▌
+    ▐     | |__| |_| / __/  | |_| | (_| | (_| | (_| |  __/ |_      ▌
+    ▐      \____\___/_____|  \____|\__,_|\__,_|\__, |\___|\__|     ▌
+    ▐                                          |___/               ▌
+    ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+    
+    Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors
     Contact: https://emariete.com
 
     This file is part of the CO2 Gadget firmware.
@@ -266,3 +305,11 @@ All the [contributors that helped improving CO2 Gadget](https://github.com/melka
     You should have received a copy of the GNU Lesser General Public License
     along with the emariete.com Website and Documentation. If not, see
     <http://www.gnu.org/licenses/>.
+
+    ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    ▐                                _      _                                 ▌
+    ▐       ___ _ __ ___   __ _ _ __(_) ___| |_ ___   ___ ___  _ __ ___       ▌
+    ▐      / _ \ '_ ` _ \ / _` | '__| |/ _ \ __/ _ \ / __/ _ \| '_ ` _ \      ▌
+    ▐     |  __/ | | | | | (_| | |  | |  __/ ||  __/| (_| (_) | | | | | |     ▌
+    ▐      \___|_| |_| |_|\__,_|_|  |_|\___|\__\___(_)___\___/|_| |_| |_|     ▌
+    ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌

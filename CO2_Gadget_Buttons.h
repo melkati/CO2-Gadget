@@ -57,6 +57,10 @@ void initButtons() {
         nav.doNav(upCmd);
     });
 
+    if (displayReverse) {
+        reverseButtons(true);
+    }
+
     // btnDwn.setDoubleClickHandler(doubleClick);
 }
 

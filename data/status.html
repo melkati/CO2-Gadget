@@ -1,26 +1,54 @@
 <!-- https://www.zickty.com/filetogzip -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Page</title>
+    <script>
+        // Immediately set the theme based on localStorage before the CSS is loaded
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('theme', savedTheme);
+            }
+        })();
+    </script>
+    <title>CO2 Gadget Status</title>
     <link rel="stylesheet" type="text/css" href="./style.css">
+    <script defer type="text/javascript" src="./captiveportal.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar -->
     <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="preferences.html">Preferences</a>
-        <a href="status.html" class="active">Status</a>
-        <a href="low_power.html">Thresholds</a>        
-        <div id="otaLink">
-            <a href="ota.html">OTA</a>
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+                <a href="low_power.html">Thresholds</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden"
+                        title="Captive portal inactive"></span>
+                </a>
+                <!-- Theme Switch Icon -->
+                <div class="iconDarkLight" id="iconBulb">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="var(--icon-color)"
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Captive Portal Status Container -->
+    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
 
     <div class="content">
         <div class="status-item" id="mainDeviceSelectedItem">
@@ -140,7 +168,25 @@
         <div class="status-item" id="uptimeItem">
             <span class="status-label">Uptime:</span> <span id="uptime"></span>
         </div>
-
+        <div class="status-item" id="captivePortalActiveItem">
+            <span class="status-label">Captive Portal Active:</span> <span id="captivePortalActive"></span>
+        </div>
+        <div class="status-item" id="timeCaptivePortalStartedItem">
+            <span class="status-label">Time Captive Portal Started:</span> <span id="timeCaptivePortalStarted"></span>
+        </div>
+        <div class="status-item" id="timeToWaitForCaptivePortalItem">
+            <span class="status-label">Time To Wait For Captive Portal:</span> <span
+                id="timeToWaitForCaptivePortal"></span>
+        </div>
+        <div class="status-item" id="captivePortalTimeLeftItem">
+            <span class="status-label">Captive Portal Time Left:</span> <span id="captivePortalTimeLeft"></span>
+        </div>
+        <div class="status-item" id="captivePortalDebugItem">
+            <span class="status-label">Captive Portal Debug:</span> <span id="captivePortalDebug"></span>
+        </div>
+        <div class="status-item" id="relaxedSecurityItem">
+            <span class="status-label">Relaxed Security:</span> <span id="relaxedSecurity"></span>
+        </div>
         <!-- Status line to display CO2 Gadget version -->
         <div id="statusLineContainer">
             <span id="co2GadgetVersion"></span>
@@ -158,6 +204,54 @@
                 })
                 .catch(error => console.error('Error fetching version information:', error));
         }
+
+        // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
+        function LoadCaptivePortalStatusFromServer() {
+            fetch('/getCaptivePortalStatusAsJson')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Fetching data successful!');
+                    // Update DOM with status data
+                    if (data.captivePortalActive !== undefined) {
+                        document.getElementById('captivePortalActive').textContent = data.captivePortalActive;
+                    } else {
+                        document.getElementById('captivePortalActiveItem').style.display = 'none';
+                    }
+
+                    if (data.timeCaptivePortalStarted !== undefined) {
+                        document.getElementById('timeCaptivePortalStarted').textContent = data.timeCaptivePortalStarted;
+                    } else {
+                        document.getElementById('timeCaptivePortalStartedItem').style.display = 'none';
+                    }
+
+                    if (data.timeToWaitForCaptivePortal !== undefined) {
+                        document.getElementById('timeToWaitForCaptivePortal').textContent = data.timeToWaitForCaptivePortal;
+                    } else {
+                        document.getElementById('timeToWaitForCaptivePortalItem').style.display = 'none';
+                    }
+
+                    if (data.captivePortalTimeLeft !== undefined) {
+                        document.getElementById('captivePortalTimeLeft').textContent = data.captivePortalTimeLeft;
+                    } else {
+                        document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
+                    }
+
+                    if (data.captivePortalDebug !== undefined) {
+                        document.getElementById('captivePortalDebug').textContent = data.captivePortalDebug;
+                    } else {
+                        document.getElementById('captivePortalDebugItem').style.display = 'none';
+                    }
+
+                    if (data.relaxedSecurity !== undefined) {
+                        document.getElementById('relaxedSecurity').textContent = data.relaxedSecurity;
+                    } else {
+                        document.getElementById('relaxedSecurityItem').style.display = 'none';
+                    }
+
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+
 
         // Function to Fetch status data from /status endpoint and populate the form
         function loadStatusFromServer() {
@@ -434,24 +528,25 @@
             xhttp.send();
         }
 
-            function getMinFreeHeap() {
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function () {
-                    console.log(this.responseText);
-                    if (this.readyState == 4 && this.status == 200) {
-                        document.getElementById("minFreeHeap").innerHTML =
-                            this.responseText;
-                    }
-                };
-                xhttp.open("GET", "getMinFreeHeap", true);
-                xhttp.send();
-            }
+        function getMinFreeHeap() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                console.log(this.responseText);
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("minFreeHeap").innerHTML =
+                        this.responseText;
+                }
+            };
+            xhttp.open("GET", "getMinFreeHeap", true);
+            xhttp.send();
+        }
 
         setInterval(function () {
             // Call a function repetatively with 1 Second interval
             getBatteryVoltage();
             getFreeHeap();
             getMinFreeHeap();
+            LoadCaptivePortalStatusFromServer();
         }, 1000); // 1000mS  update rate
 
         window.onload = function () {
@@ -461,6 +556,8 @@
         // Set initial values when the page loads
         document.addEventListener("DOMContentLoaded", loadStatusFromServer);
         document.addEventListener("DOMContentLoaded", fetchVersion);
+        document.addEventListener("DOMContentLoaded", LoadCaptivePortalStatusFromServer);
+
     </script>
 </body>
 
