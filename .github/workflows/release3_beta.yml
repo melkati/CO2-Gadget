@@ -24,19 +24,19 @@ jobs:
     strategy:
       matrix:
         environment:
-          - esp32dev
-          - esp32dev_OLED
-          - TTGO_TDISPLAY
-          - TTGO_TDISPLAY_SANDWICH
+          # - esp32dev
+          # - esp32dev_OLED
+          # - TTGO_TDISPLAY
+          # - TTGO_TDISPLAY_SANDWICH
           - TDISPLAY_S3
-          - esp32dev_ST7789_240x320
-          - ttgo-t5-EINKBOARDGDEM0213B74
-          - ttgo-t5-EINKBOARDDEPG0213BN
-          - ttgo-t5-EINKBOARDGDEW0213M21
-          - ttgo-t7-EINKBOARDGDEM029T94
-          - ttgo-t7-WEACT_GDEH0154D67
-          - ttgo-t7-WEACT_DEPG0213BN
-          - ttgo-t7-WEACT_GxEPD2_290_BS
+          # - esp32dev_ST7789_240x320
+          # - ttgo-t5-EINKBOARDGDEM0213B74
+          # - ttgo-t5-EINKBOARDDEPG0213BN
+          # - ttgo-t5-EINKBOARDGDEW0213M21
+          # - ttgo-t7-EINKBOARDGDEM029T94
+          # - ttgo-t7-WEACT_GDEH0154D67
+          # - ttgo-t7-WEACT_DEPG0213BN
+          # - ttgo-t7-WEACT_GxEPD2_290_BS
           
 
     env:
@@ -112,11 +112,12 @@ jobs:
           # spiffs,   data,   spiffs,  0x370000,  0x4B000,  # spiffs partition at offset 3604480 with size 307200 bytes (476KB)
           
           # Define offset values based on env.CHIP_FAMILY
+          # SPIFFS at 0x370000 (3604480) for ESP32 and 0xc90000 (1310720) for ESP32-S3
           if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
             bootloader_offset=0
             partitions_offset=32768
             firmware_offset=65536
-            spiffs_offset=3604480
+            spiffs_offset=1310720
           else
             # Default values for ESP32 or other environments
             bootloader_offset=4096
