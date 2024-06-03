@@ -1,3 +1,47 @@
+/*****************************************************************************************************/
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐       ____ ___ ____     ____           _            _        ▌
+// ▐      / ___/ _ \___ \   / ___| __ _  __| | __ _  ___| |_      ▌
+// ▐     | |  | | | |__) | | |  _ / _` |/ _` |/ _` |/ _ \ __|     ▌
+// ▐     | |__| |_| / __/  | |_| | (_| | (_| | (_| |  __/ |_      ▌
+// ▐      \____\___/_____|  \____|\__,_|\__,_|\__, |\___|\__|     ▌
+// ▐                                          |___/               ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+// CO2 Gadget Advanced Firmware
+//
+// Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors
+// Contact: https://emariete.com
+//
+// This file is part of the CO2 Gadget firmware.
+//
+// The CO2 Gadget firmware is free software: you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// The emariete.com Website and Documentation is distributed in the hope that
+// it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the emariete.com Website and Documentation. If not, see
+// <http://www.gnu.org/licenses/>
+
+// ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+// ▐                                _      _                                 ▌
+// ▐       ___ _ __ ___   __ _ _ __(_) ___| |_ ___   ___ ___  _ __ ___       ▌
+// ▐      / _ \ '_ ` _ \ / _` | '__| |/ _ \ __/ _ \ / __/ _ \| '_ ` _ \      ▌
+// ▐     |  __/ | | | | | (_| | |  | |  __/ ||  __/| (_| (_) | | | | | |     ▌
+// ▐      \___|_| |_| |_|\__,_|_|  |_|\___|\__\___(_)___\___/|_| |_| |_|     ▌
+// ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+/*****************************************************************************************************/
+
+#define SUPPORT_CAPTIVE_PORTAL // Please, don't disable this.
+
 // Functions and enum definitions
 void reverseButtons(bool reversed);             // Defined in CO2_Gadget_Buttons.h
 void outputsLoop();                             // Defined in CO2_Gadget_Main.h
@@ -7,6 +51,8 @@ void menuLoop();                                // Defined in CO2_Gadget_Menu.h
 void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 String getLowPowerModeName(uint16_t mode);      // Defined in CO2_Gadget_DeepSleep.h
 void restartTimerToDeepSleep();                 // Defined in CO2_Gadget_DeepSleep.h
+void setDisplayReverse(bool reverse);           // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
+// void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
 enum ToneBuzzerBeep {
@@ -48,11 +94,11 @@ uint16_t WiFiConnectionRetries = 0;
 uint16_t maxWiFiConnectionRetries = 10;
 bool wifiChanged = false;
 bool useStaticIP = false;              // Set to true if you want to use a static IP
-IPAddress staticIP(192, 168, 1, 199);  // Change this to the desired IP
-IPAddress gateway(192, 168, 1, 1);     // Change this to your network's gateway
-IPAddress subnet(255, 255, 255, 0);    // Change this to your network's subnet mask
-IPAddress dns1(8, 8, 8, 8);            // Change this to your preferred DNS server
-IPAddress dns2(8, 8, 4, 4);            // Change this to your secondary DNS server
+IPAddress staticIP(192, 168, 1, 199);  // Static IP address
+IPAddress gateway(192, 168, 1, 1);     // Network gateway
+IPAddress subnet(255, 255, 255, 0);    // Subnet mask
+IPAddress dns1(8, 8, 8, 8);            // DNS server
+IPAddress dns2(8, 8, 4, 4);            // DNS server
 
 // MQTT options
 bool activeMQTT = true;
@@ -63,6 +109,7 @@ bool mqttDiscoverySent = false;
 uint16_t timeBetweenMQTTPublish = 60;  // Time in seconds between MQTT transmissions
 uint16_t timeToKeepAliveMQTT = 3600;   // Maximum time in seconds between MQTT transmissions - Default: 1 Hour
 uint64_t lastTimeMQTTPublished = 0;    // Time of last MQTT transmission
+bool mqttShowInConsole = false;
 
 // ESP-NOW options
 bool activeESPNOW = false;
@@ -96,6 +143,7 @@ bool debugSensors = false;
 bool inMenu = false;
 bool shouldWakeUpDisplay = false;
 bool shouldRedrawDisplay = false;
+bool isMenuDirty = false;  // To know if we need to redraw the menu
 uint16_t measurementInterval = 10;
 uint16_t sampleInterval = 60;
 bool bleInitialized = false;
@@ -186,7 +234,12 @@ RTC_DATA_ATTR deepSleepData_t deepSleepData;
 // Variables for Captive Portal
 #ifdef SUPPORT_CAPTIVE_PORTAL
 bool captivePortalActive = false;
+bool forceCaptivePortalActive = false;
+bool captivePortalNoTimeout = false;
+bool relaxedSecurity = false;
+bool captivePortalDebug = false;
 uint16_t timeToWaitForCaptivePortal = 60;  // Time in seconds to wait for captive portal
+uint64_t timeCaptivePortalStarted = 0;
 #endif
 
 #ifdef CUSTOM_I2C_SDA
