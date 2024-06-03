@@ -360,14 +360,14 @@ button:hover {
 }
 
 .value {
-  fill: #666;
+  fill: var(--font-color);
   font-family: sans-serif;
   font-size: 0.7em;
   text-anchor: middle;
 }
 
 .unit {
-  fill: #666;
+  fill: var(--font-color);
   font-family: sans-serif;
   font-size: 0.3em;
   text-anchor: middle;
