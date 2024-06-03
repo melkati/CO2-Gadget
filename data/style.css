@@ -15,7 +15,7 @@
   --input-background-color: #fff;
   --button-background-color: #4caf50;
   --button-hover-background-color: #45a049;
-  --tag-dark-bg-color: #2c3e50; /* Dark theme tag background color */
+  --tag-dark-bg-color: #2c3e50;
   --popup-bg-color: #333;
   --popup-text-color: #fff;
   --tooltip-bg-color: #555;
@@ -26,7 +26,6 @@
   --close-button-hover-color: darkred;
   --status-bar-bg-color: #fbef83;
   --status-bar-text-color: #333;
-  --navbar-height: 60px;
 }
 
 [theme='dark'] {
@@ -57,16 +56,13 @@
   --close-button-hover-color: #c0392b;
   --status-bar-bg-color: #34495e;
   --status-bar-text-color: #ecf0f1;
-  --navbar-height: 60px;
 }
 
-/* Body Styles */
 body {
   font-family: 'Arial', sans-serif;
   background-color: var(--bg-color);
   color: var(--font-color);
   margin: 0;
-  padding-top: var(--navbar-height);
 }
 
 h1, h2, h3, h4 {
@@ -92,21 +88,24 @@ h4 {
   font-size: 1.25em;
 }
 
-/* Navigation Bar Styles */
 .navbar {
-  overflow: hidden;
-  position: fixed;
-  top: 0;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  color: var(--navbar-text-color);
   background-color: var(--navbar-background-color);
-  padding: 15px 10px;
+  padding: 0;
   border-bottom: 1px solid var(--navbar-border-color);
   box-shadow: var(--navbar-shadow);
   z-index: 1000;
+  position: relative;
+}
+
+.nav-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  padding: 15px 10px;
 }
 
 .navbar a {
@@ -125,13 +124,6 @@ h4 {
   pointer-events: none;
 }
 
-.nav-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
 .nav-links-left,
 .nav-links-right {
   display: flex;
@@ -143,19 +135,11 @@ h4 {
 }
 
 .iconDarkLight {
-  position: absolute;
-  top: 1.2%;
-  right: 2%;
-  background-color: transparent;
-  transition: transform 0.05s;
-  z-index: 1000;
+  margin-left: 10px;
+  margin-right: 1rem;
   cursor: pointer;
   width: 24px;
   height: 24px;
-  /* background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg%20style%3D%22width%3A24px%3Bheight%3A24px%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22var(--icon-color)%22%20d%3D%22M12%2C2A7%2C7%200%200%2C0%205%2C9C5%2C11.38%206.19%2C13.47%208%2C14.74V17A1%2C1%200%200%2C0%209%2C18H15A1%2C1%200%200%2C0%2016%2C17V14.74C17.81%2C13.47%2019%2C11.38%2019%2C9A7%2C7%200%200%2C0%2012%2C2M9%2C21A1%2C1%200%200%2C0%2010%2C22H14A1%2C1%200%200%2C0%2015%2C21V20H9V21Z%22%20%2F%3E%3C%2Fsvg%3E'); */
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
 }
 
 .iconDarkLight:hover {
@@ -166,7 +150,6 @@ h4 {
   transform: scale(1.5);
 }
 
-/* Styles for the tag class */
 .tag {
   font-size: 1.2em;
   color: var(--bg-color);
@@ -186,7 +169,6 @@ h4 {
   background-color: var(--tag-dark-bg-color);
 }
 
-/* Form Styles */
 #preferencesForm {
   background-color: var(--bg-color);
   border-radius: 8px;
@@ -247,7 +229,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin: 5px; /* Ajuste del margen para un espaciado uniforme */
+  margin: 5px;
   transition: background-color 0.3s ease;
 }
 
@@ -264,12 +246,12 @@ button:hover {
 .buttonGroup {
   display: flex;
   justify-content: space-between;
-  flex-wrap: nowrap; /* Mantener los botones en una fila en pantallas anchas */
+  flex-wrap: nowrap;
 }
 
 .buttonsBackupRestore, .buttonsRestartSave {
   display: flex;
-  gap: 10px; /* Añadir espacio entre los botones */
+  gap: 10px;
 }
 
 #backupButton, #restoreButton {
@@ -282,21 +264,21 @@ button:hover {
 
 @media screen and (max-width: 600px) {
   .buttonGroup {
-    display: grid; /* Usar grid layout para pantallas estrechas */
-    grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
-    gap: 20px; /* Espacio entre columnas y filas */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
   }
 
   .buttonsBackupRestore, .buttonsRestartSave {
     flex-direction: column;
     width: auto;
     margin-bottom: 0;
-    align-items: center; /* Centrar los botones en cada columna */
+    align-items: center;
   }
 
   .buttonsBackupRestore button, .buttonsRestartSave button {
-    width: 100%; /* Asegurar que los botones ocupen todo el ancho de la columna */
-    margin-bottom: 10px; /* Mayor separación vertical entre botones */
+    width: 100%;
+    margin-bottom: 10px;
   }
 
   .buttonGroup button {
@@ -319,19 +301,16 @@ button:hover {
   }
 }
 
-
 .content {
   max-width: 600px;
   margin: 0 auto;
-  padding-top: var(--navbar-height); /* Add padding to ensure content is not hidden by navbar */
 }
 
-/* Circular Chart Styles */
 .flex-wrapper {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-around;
-  align-items: center; /* Center items vertically */
+  align-items: center;
 }
 
 .single-chart {
@@ -339,7 +318,7 @@ button:hover {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center items horizontally */
+  align-items: center;
 }
 
 .circular-chart {
@@ -381,14 +360,14 @@ button:hover {
 }
 
 .value {
-  fill: #666;
+  fill: var(--font-color);
   font-family: sans-serif;
   font-size: 0.7em;
   text-anchor: middle;
 }
 
 .unit {
-  fill: #666;
+  fill: var(--font-color);
   font-family: sans-serif;
   font-size: 0.3em;
   text-anchor: middle;
@@ -415,7 +394,6 @@ button:hover {
   }
 }
 
-/* Popup Styles */
 #popup {
   display: none;
   position: fixed;
@@ -480,24 +458,19 @@ button:hover {
   visibility: visible;
 }
 
-/* Captive Portal Status Bar */
 #captive-portal-status-bar {
   width: 100%;
   background-color: var(--status-bar-bg-color);
   color: var(--status-bar-text-color);
-  position: fixed;
-  top: 45px;
-  z-index: 999;
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.7em;
-}
-
-@media (max-width: 600px) {
-  #captive-portal-status-bar {
-    top: 45px;
-  }
+  padding: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 #hide-captive-portal-status-bar-button {
@@ -506,6 +479,8 @@ button:hover {
   padding: 5px 10px;
   font-size: 0.7em;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 #hide-captive-portal-status-bar-button svg {
@@ -524,7 +499,6 @@ button:hover {
   display: none !important;
 }
 
-/* Status Dot Styles */
 .status-dot {
   width: 10px;
   height: 10px;
@@ -540,6 +514,10 @@ button:hover {
 
 .status-dot-white {
   background-color: white;
+}
+
+.status-dot-cyan {
+  background-color: cyan;
 }
 
 .status-dot-blue {
@@ -558,7 +536,6 @@ button:hover {
   font-weight: bold;
 }
 
-/* Add a fade animation effect */
 @keyframes fadeInOut {
   0% {
     opacity: 0;
@@ -583,21 +560,21 @@ button:hover {
   right: 10px;
   width: auto;
   height: auto;
-  pointer-events: none;
+  pointer-events: auto; /* Ensure interaction is possible */
   font-size: 0.9em;
   background-color: var(--debug-bg-color);
   border: 1px solid var(--debug-border-color);
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  display: none;
+  display: none; /* Default state is hidden */
   overflow: auto;
   z-index: 9998;
   animation: fadeInOut 2s ease-in-out;
 }
 
 .hidden-debug-window {
-  display: none;
+  display: none !important;
 }
 
 #close-debug-window {
