@@ -274,6 +274,16 @@ All the [contributors that helped improving CO2 Gadget](https://github.com/melka
   <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" />
 </a>
 
+
+# ⭐ Please star this project
+
+If you like this project, please give it a star on GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget?style=social)](https://github.com/melkati/CO2-Gadget/stargazers)
+
+If you read this far, would you please star this repository?
+It will help other people find it. Thanks!
+
 ---
 ## License
 
