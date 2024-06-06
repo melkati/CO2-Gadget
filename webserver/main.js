@@ -81,5 +81,6 @@ document.addEventListener('DOMContentLoaded', function () {
         getTemperatureData();
         getHumidityData();
         getMeasurementInterval();
+        highlightCurrentPage(); // Highlight the current page in the navigation bar
     }
 });

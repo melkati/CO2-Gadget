@@ -319,6 +319,64 @@ function loadStatusFromServer() {
         .catch(error => console.error('Error fetching status:', error));
 }
 
+function loadFeaturesFromServer() {
+    fetch('/getFeaturesAsJson')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Fetching loadFeaturesFromServer successful!');
+            // Update DOM with status data
+            if (data.BLE !== undefined) {
+                features.SUPPORT_BLE = data.BLE;
+                document.getElementById('featureBLE').textContent = data.BLE;
+            } else {
+                document.getElementById('featureBLEItem').style.display = 'none';
+            }
+            if (data.Buzzer !== undefined) {
+                features.SUPPORT_BUZZER = data.Buzzer;
+                document.getElementById('featureBuzzer').textContent = data.Buzzer;
+            } else {
+                document.getElementById('featureBuzzerItem').style.display = 'none';
+            }
+            if (data.ESPNow !== undefined) {
+                features.SUPPORT_ESPNOW = data.ESPNow;
+                document.getElementById('featureESPNow').textContent = data.ESPNow;
+            } else {
+                document.getElementById('featureESPNowItem').style.display = 'none';
+            }
+            if (data.MDNS !== undefined) {
+                features.SUPPORT_MDNS = data.MDNS;
+                document.getElementById('featureMDNS').textContent = data.MDNS;
+            } else {
+                document.getElementById('featureMDNSItem').style.display = 'none';
+            }
+            if (data.MQTT !== undefined) {
+                features.SUPPORT_MQTT = data.MQTT;
+                document.getElementById('featureMQTT').textContent = data.MQTT;
+            } else {
+                document.getElementById('featureMQTTItem').style.display = 'none';
+            }
+            if (data.MQTTDiscovery !== undefined) {
+                features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery;
+                document.getElementById('featureMQTTDiscovery').textContent = data.MQTTDiscovery;
+            } else {
+                document.getElementById('featureMQTTDiscoveryItem').style.display = 'none';
+            }
+            if (data.OTA !== undefined) {
+                features.SUPPORT_OTA = data.OTA;
+                document.getElementById('featureOTA').textContent = data.OTA;
+            } else {
+                document.getElementById('featureOTAItem').style.display = 'none';
+            }
+            if (data.mDNS !== undefined) {
+                document.getElementById('mDNSName').textContent = data.mDNS;
+            } else {
+                document.getElementById('mDNSNameItem').style.display = 'none';
+            }
+        }
+        )
+        .catch(error => console.error('Error fetching features:', error));
+}
+
 function getBatteryVoltage() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -376,11 +434,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Check if the current URL contains "status.html"
     if (currentURL.includes("status.html")) {
+        highlightCurrentPage(); // Highlight the current page in the navigation bar
         // Set initial values when the page loads
-        setTimeout(loadStatusFromServer(), 100);
-        setTimeout(fetchVersion, 200);
-        setTimeout(loadCaptivePortalStatusFromServer(), 300);
-        setTimeout(getFeaturesAsJson(), 400);
-        setTimeout(showCO2GadgetFeatures(), 500);
+        loadStatusFromServer();
+        fetchVersion;
+        loadCaptivePortalStatusFromServer();
+        loadFeaturesFromServer();        
     }
 });

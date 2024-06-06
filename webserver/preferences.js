@@ -469,6 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Check if the current URL contains "preferences.html"
     if (currentURL.includes("preferences.html")) {
+        highlightCurrentPage(); // Highlight the current page in the navigation bar
         relaxedSecurity = currentURL.includes("relaxedSecurity");
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
