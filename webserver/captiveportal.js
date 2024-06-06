@@ -186,15 +186,8 @@ function updateActiveStates(data) {
  * Handles the features data and updates the SUPPORT_* properties accordingly.
  * @param {Object} features - The features data object.
  */
-function handleFeaturesData(features) {
-    features.SUPPORT_BLE = features.BLE;
-    features.SUPPORT_BUZZER = features.Buzzer;
-    features.SUPPORT_ESPNOW = features.ESPNow;
-    features.SUPPORT_MDNS = features.mDNS;
-    features.SUPPORT_MQTT = features.MQTT;
-    features.SUPPORT_MQTT_DISCOVERY = features.MQTTDiscovery;
-    features.SUPPORT_OTA = features.OTA;
-
+function handleFeaturesData(data) {
+    features = data;
     if (captivePortalDebug) console.log('Features:', features);
 }
 
@@ -211,9 +204,10 @@ function getFeaturesAsJson() {
             }
             return response.json();
         })
-        .then(features => {
-            console.log("Received JSON:", features);
-            handleFeaturesData(features);
+        .then(data => {
+            console.log("Received JSON:", data);
+            handleFeaturesData(data);
+            showCO2GadgetFeatures();
         })
         .catch(error => {
             console.error("Error fetching CO2 Gadget features:", error);
@@ -307,8 +301,6 @@ function initializeCaptivePortal() {
     setupInitialSettings();
 
     setInterval(getCaptivePortalSettings, 1000);
-
-    highlightCurrentPage(); // Highlight the current page in the navigation
 }
 
 
@@ -336,6 +328,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (currentPage === "preferences.html") {
         initializeCaptivePortal();
+        highlightCurrentPage(); // Highlight the current page in the navigation bar
     } else {
         if (captivePortalDebug) console.log('Not on preferences.html, skipping debug window initialization');
     }
