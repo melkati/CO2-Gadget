@@ -1026,8 +1026,9 @@ void initWebServer() {
 
     server.on("/ota.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.html", "text/html");
-            response->addHeader("Content-Encoding", "text/html");
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.html.gz", "text/html");
+            response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
@@ -1060,62 +1061,6 @@ void initWebServer() {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
             AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/captiveportal.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            // AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js", "application/javascript");
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captiveportal.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/captivePortalStatusBar.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/captivePortalStatusBar.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/debugWindow.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/debugWindow.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/serverStatusDot.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/serverStatusDot.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/themes.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/themes.js.gz", "application/javascript");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
@@ -1188,7 +1133,6 @@ void initWebServer() {
         }
     });
 
-    // Route for /pingServer
     server.on("/pingServer", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "Server is running");
     });
@@ -1254,15 +1198,6 @@ void initWebServer() {
         }
     });
 
-    // server.on("/getPreferences", HTTP_GET, [](AsyncWebServerRequest *request) {
-    //     if (request != nullptr) {
-    //         String preferencesJson = getPreferencesAsJson();
-    //         request->send(200, "application/json", preferencesJson);
-    //     } else {
-    //         Serial.println("---> [WiFi] Error: request is null");
-    //     }
-    // });
-
     server.on("/getActualSettingsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             //
@@ -1283,7 +1218,6 @@ void initWebServer() {
         }
     });
 
-    // getCaptivePortalStatusAsJson() returns a JSON with the status of the Captive Portal
     server.on("/getCaptivePortalStatusAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             String captivePortalStatusJson = getCaptivePortalStatusAsJson();
@@ -1326,11 +1260,9 @@ void initWebServer() {
         }
     });
 
-    // Get a JSON with true or false for each one of the following CO2 Gadget features or options
-    // SUPPORT_BLE, SUPPORT_BUZZER, SUPPORT_ESPNOW, SUPPORT_MDNS, SUPPORT_MQTT, SUPPORT_MQTT_DISCOVERY, SUPPORT_OTA
     server.on("/getFeaturesAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            String featuresJson = getCO2GadgetFeaturesAsJson();            
+            String featuresJson = getCO2GadgetFeaturesAsJson();
             request->send(200, "application/json", featuresJson);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
@@ -1346,7 +1278,6 @@ void initWebServer() {
         }
     });
 
-    // Trigger a software reset
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             request->send(200, "text/plain", "ESP32 restart initiated");
@@ -1366,8 +1297,6 @@ void initWebServer() {
         }
     });
 
-    // Define the endpoint for setting preferences
-    // Define the endpoint for setting preferences
     server.on("/setPreferencesValue", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request->hasParam("key") && request->hasParam("value")) {
             String key = request->getParam("key")->value();

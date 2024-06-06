@@ -99,7 +99,14 @@ function initializeDebugWindowUrlParameters() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    initializeDebugWindowUrlParameters();
-    createDebugWindow();
-    // setInterval(updateStatusBar, 1000);
+    // Get actual page name
+    var currentFileName = window.location.pathname.split("/").pop();
+
+    // Verify if the current page is preferences.html
+    if (currentFileName === "preferences.html") {
+        // Ejecutar el código si el archivo es preferences.html
+        initializeDebugWindowUrlParameters();
+        createDebugWindow();
+        // setInterval(updateStatusBar, 1000);
+    }
 });

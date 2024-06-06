@@ -464,16 +464,22 @@ function handlePasswordFields() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    relaxedSecurity = window.location.href.includes("relaxedSecurity");
-    forceCaptivePortalActive = window.location.href.includes("forceCaptivePortalActive");
-    handlePasswordFields();
-    loadPreferencesFromServer();
-    fetchVersion();
-    toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
-        document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
-    });
-    toggleVisibility('activeMQTT', 'mqttConfig');
-    toggleVisibility('activeESPNOW', 'espNowConfig');
-    toggleVisibility('useStaticIP', 'staticIPSettings');
-    handleWiFiMQTTDependency();
+    // Get the current URL
+    var currentURL = window.location.href;
+
+    // Check if the current URL contains "preferences.html"
+    if (currentURL.includes("preferences.html")) {
+        relaxedSecurity = currentURL.includes("relaxedSecurity");
+        forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
+        handlePasswordFields();
+        loadPreferencesFromServer();
+        fetchVersion();
+        toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
+            document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
+        });
+        toggleVisibility('activeMQTT', 'mqttConfig');
+        toggleVisibility('activeESPNOW', 'espNowConfig');
+        toggleVisibility('useStaticIP', 'staticIPSettings');
+        handleWiFiMQTTDependency();
+    }
 });
