@@ -1,6 +1,3 @@
-<!-- https://www.zickty.com/filetogzip -->
-
-
 <!DOCTYPE html>
 <html lang="en" theme="light">
 
@@ -8,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
@@ -17,8 +13,13 @@
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script defer type="text/javascript" src="./combined.js"></script>
+    <!-- <script defer type="text/javascript" src="./preferences.js"></script>
+            <script defer type="text/javascript" src="./themes.js"></script>
     <script defer type="text/javascript" src="./captiveportal.js"></script>
-    <script defer type="text/javascript" src="./preferences.js"></script>
+    <script defer type="text/javascript" src="./captivePortalStatusBar.js"></script>
+    <script defer type="text/javascript" src="./serverStatusDot.js"></script>
+    <script defer type="text/javascript" src="./debugWindow.js"></script> -->
     <title>CO2 Gadget Configuration</title>
 </head>
 
@@ -32,7 +33,7 @@
                 <a href="status.html">Status</a>
             </div>
             <div class="nav-links-right">
-                <a href="ota.html">OTA</a>
+                <a href="ota.html" class="hidden" id="otaLink">OTA</a>
                 <a href="/getCaptivePortalStatusAsJson">
                     <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
                 </a>
