@@ -370,11 +370,17 @@ window.onload = function () {
     getBatteryVoltage();
 };
 
-// Set initial values when the page loads
 document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(loadStatusFromServer(), 100);
-    setTimeout(fetchVersion, 200);
-    setTimeout(loadCaptivePortalStatusFromServer(), 300);
-    setTimeout(getFeaturesAsJson(), 400);
-    setTimeout(showCO2GadgetFeatures(), 500);
+    // Get the current URL
+    var currentURL = window.location.href;
+
+    // Check if the current URL contains "status.html"
+    if (currentURL.includes("status.html")) {
+        // Set initial values when the page loads
+        setTimeout(loadStatusFromServer(), 100);
+        setTimeout(fetchVersion, 200);
+        setTimeout(loadCaptivePortalStatusFromServer(), 300);
+        setTimeout(getFeaturesAsJson(), 400);
+        setTimeout(showCO2GadgetFeatures(), 500);
+    }
 });

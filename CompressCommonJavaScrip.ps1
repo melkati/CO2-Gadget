@@ -85,6 +85,11 @@ Get-ChildItem -Path $sourceDirectory | Where-Object { $_.Extension -in @(".html"
                     $compressedFileName = "$($outputDirectory)\$($file.BaseName).js.gz"
                 
                     Write-Host "Compressing minified JavaScript file to $compressedFileName..."
+
+                    # Remove existing .gz file if it exists
+                    if (Test-Path $compressedFileName) {
+                        Remove-Item $compressedFileName -ErrorAction SilentlyContinue
+                    }
                     
                     # Compress the minified file using 7-Zip
                     & $zipExecutable a -tgzip $compressedFileName $minifiedFileName
@@ -134,5 +139,12 @@ Remove-Item $tempCombinedFileNew -ErrorAction SilentlyContinue
 
 # Remove the combined.min.js file
 Remove-Item "$sourceDirectory\combined.min.js" -ErrorAction SilentlyContinue
+
+# If file exist, compress favicon.ico to the output directory
+if (Test-Path "$sourceDirectory\favicon.ico") {
+    $outputFileName = "$outputDirectory\favicon.ico.gz"
+    Write-Host "Compressing favicon.ico to $outputFileName..."
+    & $zipExecutable a -tgzip "$outputFileName" "$sourceDirectory\favicon.ico"
+}
 
 Write-Host "Combination, minification, and compression process completed."
