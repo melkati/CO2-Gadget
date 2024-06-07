@@ -759,8 +759,8 @@ String getCO2GadgetStatusAsJson() {
     StaticJsonDocument<512> doc;
     doc["mainDeviceSelected"] = mainDeviceSelected;
     doc["CO2"] = co2;
-    doc["Temperature"] = temp;
-    doc["Humidity"] = hum;
+    doc["Temperature"] = String(temp, 2);
+    doc["Humidity"] = String(hum, 0);
     doc["WiFiStatus"] = WiFi.status();
     doc["SSID"] = WiFi.SSID();
 #ifndef WIFI_PRIVACY
