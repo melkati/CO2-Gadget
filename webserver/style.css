@@ -26,6 +26,7 @@
   --close-button-hover-color: darkred;
   --status-bar-bg-color: #fbef83;
   --status-bar-text-color: #333;
+  --unchecked-font-color: orange;
 }
 
 [theme='dark'] {
@@ -56,6 +57,7 @@
   --close-button-hover-color: #c0392b;
   --status-bar-bg-color: #34495e;
   --status-bar-text-color: #ecf0f1;
+  --unchecked-font-color: yellow;
 }
 
 body {
@@ -439,6 +441,7 @@ button:hover {
 
 .tooltip-icon {
   cursor: pointer;
+  margin-left: 5px;
 }
 
 .tooltip-text {
@@ -458,6 +461,46 @@ button:hover {
   visibility: visible;
 }
 
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: var(--popup-bg-color);
+  margin: auto;
+  padding: 20px;
+  border: 1px solid var(--input-border-color);
+  width: 80%;
+  color: var(--popup-text-color);
+}
+
+.unchecked-text {
+  color: var(--unchecked-font-color);
+}
+
+
+.close {
+  color: var(--close-button-color);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--close-button-hover-color);
+  text-decoration: none;
+  cursor: pointer;
+}
 #captive-portal-status-bar {
   width: 100%;
   background-color: var(--status-bar-bg-color);
