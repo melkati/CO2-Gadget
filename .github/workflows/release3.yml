@@ -1,4 +1,4 @@
-name: Release V2.93
+name: Release V2.94
 
 # # # # # # # # # # #
 # To create new release, just push a new tag with the format v* (v1.0, v2.0, v2.1, v2.2, etc)
@@ -93,11 +93,12 @@ jobs:
         run: |
 
           # Define offset values based on env.CHIP_FAMILY
+          # SPIFFS at 0x370000 (3604480) for ESP32 and 0xc90000 (13172736) for ESP32-S3
           if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
             bootloader_offset=0
             partitions_offset=32768
             firmware_offset=65536
-            spiffs_offset=3604480
+            spiffs_offset=13172736
           else
             # Default values for ESP32 or other environments
             bootloader_offset=4096

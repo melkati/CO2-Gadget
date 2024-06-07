@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CO2 Gadget Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // Immediately set the theme based on localStorage before the CSS is loaded
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('theme', savedTheme);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script defer type="text/javascript" src="./status.js"></script>
+    <script defer type="text/javascript" src="./combined.js"></script>
+</head>
+
+<body>
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="status.html">Status</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html" class="hidden">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden"
+                        title="Captive portal inactive"></span>
+                </a>
+                <!-- Theme Switch Icon -->
+                <div class="iconDarkLight" id="iconBulb">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="var(--icon-color)"
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Captive Portal Status Container -->
+    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+
+    <div class="content">
+        <h1>CO2 Gadget Status</h1>
+
+        <fieldset>
+            <legend>CO2 Gadget Sensors:</legend>
+            <div class="status-item" id="mainDeviceSelectedItem">
+                <span class="status-label">Sensor Selected:</span> <span id="mainDeviceSelected"></span>
+            </div>
+            <div class="status-item" id="co2Item">
+                <span class="status-label">CO2:</span> <span id="co2"></span>
+            </div>
+            <div class="status-item" id="temperatureItem">
+                <span class="status-label">Temperature:</span> <span id="temperature"></span>
+            </div>
+            <div class="status-item" id="humidityItem">
+                <span class="status-label">Humidity:</span> <span id="humidity"></span>
+            </div>
+            <div class="status-item" id="measurementIntervalItem">
+                <span class="status-label">Measurement Interval:</span> <span id="measurementInterval"></span>
+            </div>
+            <div class="status-item" id="sampleIntervalItem">
+                <span class="status-label">Sample Interval:</span> <span id="sampleInterval"></span>
+            </div>
+        </fieldset>
+
+        <!-- Communications Group -->
+        <fieldset>
+            <legend>CO2 Gadget Communications:</legend>
+            <div class="status-item" id="wifiStatusItem">
+                <span class="status-label">WiFi Status:</span> <span id="wifiStatus"></span>
+            </div>
+            <div class="status-item" id="ssidItem">
+                <span class="status-label">SSID:</span> <span id="ssid"></span>
+            </div>
+            <div class="status-item" id="wifiPassItem">
+                <span class="status-label">WiFi Password:</span> <span id="wifiPass"></span>
+            </div>
+            <div class="status-item" id="ipItem">
+                <span class="status-label">IP Address:</span> <span id="ip"></span>
+            </div>
+            <div class="status-item" id="rssiItem">
+                <span class="status-label">RSSI:</span> <span id="rssi"></span>
+            </div>
+            <div class="status-item" id="macAddressItem">
+                <span class="status-label">MAC Address:</span> <span id="macAddress"></span>
+            </div>
+            <div class="status-item" id="hostNameItem">
+                <span class="status-label">Host Name:</span> <span id="hostName"></span>
+            </div>
+            <div class="status-item" id="useStaticIPItem">
+                <span class="status-label">Use Static IP:</span> <span id="useStaticIP"></span>
+            </div>
+            <div class="status-item" id="staticIPItem">
+                <span class="status-label">Static IP:</span> <span id="staticIP"></span>
+            </div>
+            <div class="status-item" id="gatewayItem">
+                <span class="status-label">Gateway:</span> <span id="gateway"></span>
+            </div>
+            <div class="status-item" id="subnetItem">
+                <span class="status-label">Subnet:</span> <span id="subnet"></span>
+            </div>
+            <div class="status-item" id="dns1Item">
+                <span class="status-label">DNS1:</span> <span id="dns1"></span>
+            </div>
+            <div class="status-item" id="dns2Item">
+                <span class="status-label">DNS2:</span> <span id="dns2"></span>
+            </div>
+            <div class="status-item" id="rootTopicItem">
+                <span class="status-label">Root Topic:</span> <span id="rootTopic"></span>
+            </div>
+            <div class="status-item" id="discoveryTopicItem">
+                <span class="status-label">Discovery Topic:</span> <span id="discoveryTopic"></span>
+            </div>
+            <div class="status-item" id="mqttClientIdItem">
+                <span class="status-label">MQTT Client ID:</span> <span id="mqttClientId"></span>
+            </div>
+            <div class="status-item" id="mqttBrokerItem">
+                <span class="status-label">MQTT Broker:</span> <span id="mqttBroker"></span>
+            </div>
+            <div class="status-item" id="mqttUserItem">
+                <span class="status-label">MQTT User:</span> <span id="mqttUser"></span>
+            </div>
+            <div class="status-item" id="mqttPassItem">
+                <span class="status-label">MQTT Password:</span> <span id="mqttPass"></span>
+            </div>
+            <div class="status-item" id="peerESPNowAddressItem">
+                <span class="status-label">Peer ESPNow Address:</span> <span id="peerESPNowAddress"></span>
+            </div>
+            <div class="status-item" id="activeWiFiItem">
+                <span class="status-label">Active WiFi:</span> <span id="activeWiFi"></span>
+            </div>
+            <div class="status-item" id="activeMQTTItem">
+                <span class="status-label">Active MQTT:</span> <span id="activeMQTT"></span>
+            </div>
+            <div class="status-item" id="activeBLEItem">
+                <span class="status-label">Active BLE:</span> <span id="activeBLE"></span>
+            </div>
+            <div class="status-item" id="activeOTAItem">
+                <span class="status-label">Active OTA:</span> <span id="activeOTA"></span>
+            </div>
+            <div class="status-item" id="troubledWiFiItem">
+                <span class="status-label">Troubled WiFi:</span> <span id="troubledWiFi"></span>
+            </div>
+            <div class="status-item" id="troubledMQTTItem">
+                <span class="status-label">Troubled MQTT:</span> <span id="troubledMQTT"></span>
+            </div>
+            <div class="status-item" id="troubledESPNowItem">
+                <span class="status-label">Troubled ESPNow:</span> <span id="troubledESPNow"></span>
+            </div>
+        </fieldset>
+
+        <!-- Calibration Group -->
+        <fieldset>
+            <legend>CO2 Gadget Calibration:</legend>
+            <div class="status-item" id="calibrationValueItem">
+                <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span>
+            </div>
+            <div class="status-item" id="pendingCalibrationItem">
+                <span class="status-label">Pending Calibration:</span> <span id="pendingCalibration"></span>
+            </div>
+        </fieldset>
+
+        <!-- System Group -->
+        <fieldset>
+            <legend>CO2 Gadget System:</legend>
+            <div class="status-item" id="freeHeapItem">
+                <span class="status-label">Free Heap:</span> <span id="freeHeap"></span>
+            </div>
+            <div class="status-item" id="minFreeHeapItem">
+                <span class="status-label">Min Free Heap:</span> <span id="minFreeHeap"></span>
+            </div>
+            <div class="status-item" id="uptimeItem">
+                <span class="status-label">Uptime:</span> <span id="uptime"></span>
+            </div>
+            <div class="status-item" id="batVoltageItem">
+                <span class="status-label">Battery Voltage:</span> <span id="batVoltage"></span>
+            </div>
+        </fieldset>
+
+        <!-- Captive Portal Group -->
+        <fieldset>
+            <legend>Captive Portal:</legend>
+            <div class="status-item" id="captivePortalActiveItem">
+                <span class="status-label">Captive Portal Active:</span> <span id="captivePortalActive"></span>
+            </div>
+            <div class="status-item" id="timeCaptivePortalStartedItem">
+                <span class="status-label">Time Captive Portal Started:</span> <span
+                    id="timeCaptivePortalStarted"></span>
+            </div>
+            <div class="status-item" id="timeToWaitForCaptivePortalItem">
+                <span class="status-label">Time To Wait For Captive Portal:</span> <span
+                    id="timeToWaitForCaptivePortal"></span>
+            </div>
+            <div class="status-item" id="captivePortalTimeLeftItem">
+                <span class="status-label">Captive Portal Time Left:</span> <span id="captivePortalTimeLeft"></span>
+            </div>
+            <div class="status-item" id="captivePortalDebugItem">
+                <span class="status-label">Captive Portal Debug:</span> <span id="captivePortalDebug"></span>
+            </div>
+            <div class="status-item" id="relaxedSecurityItem">
+                <span class="status-label">Relaxed Security:</span> <span id="relaxedSecurity"></span>
+            </div>
+        </fieldset>
+
+        <!-- Features Group -->
+        <fieldset>
+            <legend>CO2 Gadget Features (compilation time):</legend>
+            <div class="feature-item" id="featureBLEItem">
+                <span class="feature-label">BLE:</span> <span id="featureBLE"></span>
+            </div>
+            <div class="feature-item" id="featureBuzzerItem">
+                <span class="feature-label">Buzzer:</span> <span id="featureBuzzer"></span>
+            </div>
+            <div class="feature-item" id="featureESPNowItem">
+                <span class="feature-label">ESPNow:</span> <span id="featureESPNow"></span>
+            </div>
+            <div class="feature-item" id="featureMDNSItem">
+                <span class="feature-label">mDNS:</span> <span id="featureMDNS"></span>
+            </div>
+            <div class="feature-item" id="featureMQTTItem">
+                <span class="feature-label">MQTT:</span> <span id="featureMQTT"></span>
+            </div>
+            <div class="feature-item" id="featureMQTTDiscoveryItem">
+                <span class="feature-label">Discovery:</span> <span id="featureMQTTDiscovery"></span>
+            </div>
+            <div class="feature-item" id="featureOTAItem">
+                <span class="feature-label">OTA:</span> <span id="featureOTA"></span>
+            </div>
+            <div class="feature-item" id="mDNSNameItem">
+                <span class="feature-label">mDNS:</span> <span id="mDNSName"></span>
+            </div>
+        </fieldset>
+    </div>
+
+    <!-- Status line to display CO2 Gadget version -->
+    <div id="statusLineContainer">
+        <span id="co2GadgetVersion"></span>
+    </div>
+</body>
+
+</html>
