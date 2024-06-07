@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO2 Gadget OTA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
@@ -14,12 +15,9 @@
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./captiveportal.js"></script>
-    <title>CO2 Gadget Over The Air Update</title>
-    <style>
-        /* Custom styles for the main page if needed */
-    </style>
+    <script defer type="text/javascript" src="./combined.js"></script>
 </head>
+
 <body>
     <!-- Navigation bar -->
     <!-- Navigation bar -->
@@ -31,7 +29,7 @@
                 <a href="status.html">Status</a>
             </div>
             <div class="nav-links-right">
-                <a href="ota.html">OTA</a>
+                <a href="ota.html" class="hidden">OTA</a>
                 <a href="/getCaptivePortalStatusAsJson">
                     <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
                 </a>
