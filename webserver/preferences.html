@@ -273,7 +273,7 @@
                         </label>
                     </div>
                     <div>
-                        <label for="mqttShowInCon">Show MQTT in Console:
+                        <label for="mqttShowInCon">Show MQTT trafic in serial console:
                             <input type="checkbox" id="mqttShowInCon" name="mqttShowInCon">
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">Show MQTT messages in the serial console. Useful for debugging
@@ -343,14 +343,15 @@
                         </label>
                     </div>
 
-                    <div>
-                        <label for="customCalValue">Custom Calibration Value:
+                    <div style="display: flex; align-items: center;">
+                        <label for="customCalValue" style="flex-grow: 1;">Custom Calibration Value:
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">Custom calibration value for the CO2 sensor. This value is used
                                 to adjust the sensor
                                 readings. Set to ~415 to calibrate the sensor to outdoor air. Use with caution.</span>
                             <input type="number" id="customCalValue" name="customCalValue" value="">
                         </label>
+                        <button type="button" id="calibrateButton" style="margin-left: 10px;">Calibrate</button>
                     </div>
 
                     <div>
@@ -426,6 +427,30 @@
                     </label>
                 </div>
             </fieldset>
+
+            <!-- Modal for Calibration Instructions -->
+            <div id="calibrationModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Calibration Instructions</h2>
+                    <p>Please place the sensor outside for a few minutes to stabilize.</p>
+                    <p>Calibration Value: <span id="customCalibrationValue"></span> ppm</p>
+                    <p>Current CO2 Value: <span id="currentCO2Value"></span> ppm</p>
+                    <label id="acknowledgeLabel" for="acknowledgeCheckbox">I have read and understand the
+                        instructions.</label>
+                    <input type="checkbox" id="acknowledgeCheckbox">
+                    <button type="button" id="calibrateNowButton">Calibrate Now</button>
+                </div>
+            </div>
+            
+            <!-- Modal for Countdown -->
+            <div id="countdownModal" class="modal">
+                <div class="modal-content">
+                    <h2>Calibration in Progress</h2>
+                    <p>Please do not disturb the sensor. Calibration will complete in <span id="countdown">30</span>
+                        seconds.</p>
+                </div>
+            </div>
 
             <!-- Outputs Group -->
             <fieldset>

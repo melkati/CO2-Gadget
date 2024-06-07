@@ -10,6 +10,31 @@ function fetchVersion() {
 }
 
 /**
+ * Receive a ESP32 numeric code for WiFi Status.
+ * Returns a string with the WiFi Status text for ESP32 numeric codes.
+ */
+function getWiFiStatusText(wifiStatus) {
+    switch (wifiStatus) {
+        case 0:
+            return "WL_IDLE_STATUS (WiFi is in process of changing between statuses)";
+        case 1:
+            return "WL_NO_SSID_AVAIL (No SSID is available)";
+        case 2:
+            return "WL_SCAN_COMPLETED (Scan has completed)";
+        case 3:
+            return "WL_CONNECTED (Connected to a WiFi network)";
+        case 4:
+            return "WL_CONNECT_FAILED (Failed to connect to a WiFi network)";
+        case 5:
+            return "WL_CONNECTION_LOST (Connection lost)";
+        case 6:
+            return "WL_DISCONNECTED (Disconnected from a WiFi network)";
+        default:
+            return "Unknown WiFi Status";
+    }
+}
+
+/**
  * Updates the DOM with feature data for CO2 Gadget.
  */
 function showCO2GadgetFeatures() {
@@ -47,7 +72,7 @@ function loadCaptivePortalStatusFromServer() {
                 document.getElementById('timeToWaitForCaptivePortalItem').style.display = 'none';
             }
 
-            if (data.captivePortalTimeLeft !== undefined) {
+            if (data.captivePortalTimeLeft !== undefined && data.captivePortalActive) {
                 document.getElementById('captivePortalTimeLeft').textContent = data.captivePortalTimeLeft;
             } else {
                 document.getElementById('captivePortalTimeLeftItem').style.display = 'none';
@@ -101,7 +126,7 @@ function loadStatusFromServer() {
             }
 
             if (data.WiFiStatus !== undefined) {
-                document.getElementById('wifiStatus').textContent = data.WiFiStatus;
+                document.getElementById('wifiStatus').textContent = getWiFiStatusText(data.WiFiStatus) + " (" + data.WiFiStatus + ")";
             } else {
                 document.getElementById('wifiStatusItem').style.display = 'none';
             }
