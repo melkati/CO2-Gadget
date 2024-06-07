@@ -434,7 +434,8 @@
                     <span class="close">&times;</span>
                     <h2>Calibration Instructions</h2>
                     <p>Please place the sensor outside for a few minutes to stabilize.</p>
-                    <p>Calibration Value: <span id="customCalibrationValue"></span> ppm</p>
+                    <p>Calibration Value: <span id="modalCalibrationValueContainer"><input type="number"
+                                id="modalCustomCalibrationValueInput" value="0" min="400" max="2000"> ppm</span></p>
                     <p>Current CO2 Value: <span id="currentCO2Value"></span> ppm</p>
                     <label id="acknowledgeLabel" for="acknowledgeCheckbox">I have read and understand the
                         instructions.</label>
@@ -442,12 +443,13 @@
                     <button type="button" id="calibrateNowButton">Calibrate Now</button>
                 </div>
             </div>
-            
+
+
             <!-- Modal for Countdown -->
             <div id="countdownModal" class="modal">
                 <div class="modal-content">
                     <h2>Calibration in Progress</h2>
-                    <p>Please do not disturb the sensor. Calibration will complete in <span id="countdown">30</span>
+                    <p>Please do not disturb the sensor. Calibration will complete in <span id="countdown">15</span>
                         seconds.</p>
                 </div>
             </div>
