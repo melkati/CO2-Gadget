@@ -1056,21 +1056,10 @@ void initWebServer() {
         }
     });
 
-    server.on("/combined.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/combined.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.js.gz", "application/javascript");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
@@ -1093,6 +1082,17 @@ void initWebServer() {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
             AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/ota.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.js.gz", "application/javascript");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
