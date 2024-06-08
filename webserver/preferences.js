@@ -431,14 +431,6 @@ function updateVRef() {
         .catch(error => console.error('Error updating VRef:', error));
 }
 
-// Update the battery voltage every second
-setInterval(updateVoltage, 1000);
-
-// Listen for input events on the voltage reference field with a delay of 100ms
-document.getElementById('vRef').addEventListener('input', () => {
-    setTimeout(updateVRef, 100);
-});
-
 /**
  * Enables or disables password fields based on the relaxed security mode.
  */
@@ -464,123 +456,122 @@ function handlePasswordFields() {
 }
 
 function calibrateSensor(calibrationValue) {
-  // Implement the calibration logic here
-  if (calibrationValue > 400 && calibrationValue < 2000) {
-    console.log("Calibration process started...");
-    console.log("Calibration value:", calibrationValue);
-    Call the calibration endpoint with the calibration value settings?CalibrateCO2=400
+    // Implement the calibration logic here
+    if (calibrationValue > 400 && calibrationValue < 2000) {
+        console.log("Calibration process started...");
+        console.log("Calibration value:", calibrationValue);
     fetch(`/settings?CalibrateCO2=${calibrationValue}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Error calibrating CO2 sensor');
-            console.log('CO2 sensor calibrated successfully');
-        })
-        .catch(error => console.error('Error calibrating CO2 sensor:', error));
-  } else {
-    console.error(
-      "Invalid calibration value, please enter a value between 400 and 2000 ppm"
-    );
-    console.log("Calibration value:", calibrationValue);
-  }
+            .then(response => {
+                if (!response.ok) throw new Error('Error calibrating CO2 sensor');
+                console.log('CO2 sensor calibrated successfully');
+            })
+            .catch(error => console.error('Error calibrating CO2 sensor:', error));
+    } else {
+        console.error(
+            "Invalid calibration value, please enter a value between 400 and 2000 ppm"
+        );
+        console.log("Calibration value:", calibrationValue);
+    }
 }
 
 /**
  * Handles the calibration wizard functionality.
  */
 function handleCalibrationWizard() {
-  const calibrateButton = document.getElementById("calibrateButton");
-  const calibrationModal = document.getElementById("calibrationModal");
-  const countdownModal = document.getElementById("countdownModal");
-  const closeSpan = document.querySelector(".close");
-  const acknowledgeCheckbox = document.getElementById("acknowledgeCheckbox");
-  const acknowledgeLabel = document.getElementById("acknowledgeLabel");
-  const calibrateNowButton = document.getElementById("calibrateNowButton");
-  const countdownSpan = document.getElementById("countdown");
-  const currentCO2ValueSpan = document.getElementById("currentCO2Value");
+    const calibrateButton = document.getElementById("calibrateButton");
+    const calibrationModal = document.getElementById("calibrationModal");
+    const countdownModal = document.getElementById("countdownModal");
+    const closeSpan = document.querySelector(".close");
+    const acknowledgeCheckbox = document.getElementById("acknowledgeCheckbox");
+    const acknowledgeLabel = document.getElementById("acknowledgeLabel");
+    const calibrateNowButton = document.getElementById("calibrateNowButton");
+    const countdownSpan = document.getElementById("countdown");
+    const currentCO2ValueSpan = document.getElementById("currentCO2Value");
 
-  // Function to fetch current CO2 value from /readCO2 endpoint as text
-  function getCurrentCO2Value() {
-    fetch("/readCO2")
-      .then((response) => response.text())
-      .then((data) => {
-        let co2Value = parseFloat(data);
-        document.getElementById("currentCO2Value").textContent =
-          co2Value.toFixed(0);
-      })
-      .catch((error) => {
-        console.error("Error fetching CO2 data", error);
-      });
-  }
-
-  // Function to change text color when "Calibrate Now" button is clicked without acknowledging
-  function changeTextColor() {
-    acknowledgeLabel.style.color = "var(--unchecked-font-color)";
-  }
-
-  calibrateButton.addEventListener("click", () => {
-    // Uncheck the acknowledge checkbox when modal is opened
-    acknowledgeCheckbox.checked = false;
-    calibrationModal.style.display = "block";
-    // Set the custom calibration value input to the current custom calibration value
-    const customCalibrationValueInput = document.getElementById(
-      "modalCustomCalibrationValueInput"
-    );
-    customCalibrationValueInput.value =
-      document.getElementById("customCalValue").value;
-    // Fetch current CO2 value when modal is opened
-    getCurrentCO2Value();
-    // Start interval to update CO2 value every 5 seconds
-    updateCO2Interval = setInterval(getCurrentCO2Value, 5000);
-  });
-
-  closeSpan.addEventListener("click", () => {
-    calibrationModal.style.display = "none";
-    // Clear interval when modal is closed
-    clearInterval(updateCO2Interval);
-  });
-
-  acknowledgeCheckbox.addEventListener("change", () => {
-    // Reset text color when checkbox is checked
-    if (acknowledgeCheckbox.checked) {
-      acknowledgeLabel.style.color = ""; // Reset to default color
-    }
-  });
-
-  calibrateNowButton.addEventListener("click", () => {
-    if (!acknowledgeCheckbox.checked) {
-      changeTextColor(); // Call the function to change text color
-      return; // Exit function if checkbox is not acknowledged
+    // Function to fetch current CO2 value from /readCO2 endpoint as text
+    function getCurrentCO2Value() {
+        fetch("/readCO2")
+            .then((response) => response.text())
+            .then((data) => {
+                let co2Value = parseFloat(data);
+                document.getElementById("currentCO2Value").textContent =
+                    co2Value.toFixed(0);
+            })
+            .catch((error) => {
+                console.error("Error fetching CO2 data", error);
+            });
     }
 
-    calibrationModal.style.display = "none";
-    countdownModal.style.display = "block";
-
-    const customCalValue = parseInt(
-      document.getElementById("modalCustomCalibrationValueInput").value,
-      10
-    );
-    calibrateSensor(customCalValue);
-
-    let countdown = 15;
-    countdownSpan.textContent = countdown;
-
-    const interval = setInterval(() => {
-      countdown -= 1;
-      countdownSpan.textContent = countdown;
-
-      if (countdown <= 0) {
-        clearInterval(interval);
-        countdownModal.style.display = "none";
-      }
-    }, 1000);
-  });
-
-  window.addEventListener("click", (event) => {
-    if (event.target == calibrationModal) {
-      calibrationModal.style.display = "none";
-      // Clear interval when modal is closed
-      clearInterval(updateCO2Interval);
+    // Function to change text color when "Calibrate Now" button is clicked without acknowledging
+    function changeTextColor() {
+        acknowledgeLabel.style.color = "var(--unchecked-font-color)";
     }
-  });
+
+    calibrateButton.addEventListener("click", () => {
+        // Uncheck the acknowledge checkbox when modal is opened
+        acknowledgeCheckbox.checked = false;
+        calibrationModal.style.display = "block";
+        // Set the custom calibration value input to the current custom calibration value
+        const customCalibrationValueInput = document.getElementById(
+            "modalCustomCalibrationValueInput"
+        );
+        customCalibrationValueInput.value =
+            document.getElementById("customCalValue").value;
+        // Fetch current CO2 value when modal is opened
+        getCurrentCO2Value();
+        // Start interval to update CO2 value every 5 seconds
+        updateCO2Interval = setInterval(getCurrentCO2Value, 5000);
+    });
+
+    closeSpan.addEventListener("click", () => {
+        calibrationModal.style.display = "none";
+        // Clear interval when modal is closed
+        clearInterval(updateCO2Interval);
+    });
+
+    acknowledgeCheckbox.addEventListener("change", () => {
+        // Reset text color when checkbox is checked
+        if (acknowledgeCheckbox.checked) {
+            acknowledgeLabel.style.color = ""; // Reset to default color
+        }
+    });
+
+    calibrateNowButton.addEventListener("click", () => {
+        if (!acknowledgeCheckbox.checked) {
+            changeTextColor(); // Call the function to change text color
+            return; // Exit function if checkbox is not acknowledged
+        }
+
+        calibrationModal.style.display = "none";
+        countdownModal.style.display = "block";
+
+        const customCalValue = parseInt(
+            document.getElementById("modalCustomCalibrationValueInput").value,
+            10
+        );
+        calibrateSensor(customCalValue);
+
+        let countdown = 15;
+        countdownSpan.textContent = countdown;
+
+        const interval = setInterval(() => {
+            countdown -= 1;
+            countdownSpan.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(interval);
+                countdownModal.style.display = "none";
+            }
+        }, 1000);
+    });
+
+    window.addEventListener("click", (event) => {
+        if (event.target == calibrationModal) {
+            calibrationModal.style.display = "none";
+            // Clear interval when modal is closed
+            clearInterval(updateCO2Interval);
+        }
+    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -593,8 +584,8 @@ document.addEventListener("DOMContentLoaded", () => {
         relaxedSecurity = currentURL.includes("relaxedSecurity");
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
-        loadPreferencesFromServer();
-        fetchVersion();
+        setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
+        setTimeout(() => { fetchVersion(); }, 100); // Delay of 100ms
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
         });
@@ -602,6 +593,14 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
         handleWiFiMQTTDependency();
-        handleCalibrationWizard(); // Ensure this is called
+        setTimeout(() => { handleCalibrationWizard(); }, 200); // Delay of 500ms
+
+        // Update the battery voltage every second
+        setInterval(updateVoltage, 1000);
+
+        // Listen for input events on the voltage reference field with a delay of 100ms
+        document.getElementById('vRef').addEventListener('input', () => {
+            setTimeout(updateVRef, 100);
+        });
     }
 });
