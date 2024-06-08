@@ -8,7 +8,7 @@ var forceCaptivePortalActive = false;
 var preferencesDebug = false;
 
 /**
- * Fetches version information from the server and updates the version display.
+ * Fetches version information from the server and updates the version displayed
  */
 function fetchVersion() {
     fetch('/getVersion')
@@ -18,6 +18,19 @@ function fetchVersion() {
             const versionElement = document.getElementById("co2GadgetVersion");
             const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
             versionElement.innerText = versionText;
+
+            // Adjust preferences.html for specific versions
+            if (versionInfo.firmFlavour == 'T-Display S3') {
+                const displayBrightInput = document.getElementById("DisplayBright");
+                displayBrightInput.min = "1";
+                displayBrightInput.max = "16";
+            }
+
+            if (versionInfo.firmFlavour == 'GDEM0213B74' || versionInfo.firmFlavour == 'DEPG0213BN' || versionInfo.firmFlavour == 'GDEW0213M21' || versionInfo.firmFlavour == 'GDEM029T94' || versionInfo.firmFlavour == 'GDEH0154D67-WeAct' || versionInfo.firmFlavour == 'DEPG0213BN-WeAct' || versionInfo.firmFlavour == 'GDEW0213M21-WeAct' || versionInfo.firmFlavour == 'GDEMGxEPD2_290_BS-WeAct') {
+                document.getElementById("displayBrightDiv").classList.add("hidden");
+                document.getElementById("dispOffOnExPDiv").classList.add("hidden");
+                document.getElementById("tToDispOffDiv").classList.add("hidden");
+            }
         })
         .catch(error => console.error('Error fetching version information:', error));
 }
@@ -460,7 +473,7 @@ function calibrateSensor(calibrationValue) {
     if (calibrationValue > 400 && calibrationValue < 2000) {
         console.log("Calibration process started...");
         console.log("Calibration value:", calibrationValue);
-    fetch(`/settings?CalibrateCO2=${calibrationValue}`)
+        fetch(`/settings?CalibrateCO2=${calibrationValue}`)
             .then(response => {
                 if (!response.ok) throw new Error('Error calibrating CO2 sensor');
                 console.log('CO2 sensor calibrated successfully');

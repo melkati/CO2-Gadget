@@ -496,6 +496,7 @@ button:hover {
 }
 
 .modal-content {
+  max-width: 450px;
   background-color: var(--modal-bg-color);
   margin: auto;
   padding: 20px;

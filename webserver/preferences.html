@@ -333,16 +333,6 @@
                         </label>
                     </div>
 
-                    <div>
-                        <label for="autoSelfCalibration">Auto Self Calibration:
-                            <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor. Not
-                                recommended
-                                if the sensor is not exposed to fresh air (~420ppm) at least once a week.</span>
-                        </label>
-                    </div>
-
                     <div style="display: flex; align-items: center;">
                         <label for="customCalValue" style="flex-grow: 1;">Custom Calibration Value:
                             <span class="tooltip-icon">ℹ️</span>
@@ -352,6 +342,16 @@
                             <input type="number" id="customCalValue" name="customCalValue" value="">
                         </label>
                         <button type="button" id="calibrateButton" style="margin-left: 10px;">Calibrate</button>
+                    </div>
+
+                    <div>
+                        <label for="autoSelfCalibration">Auto Self Calibration:
+                            <input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration">
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor. Not
+                                recommended
+                                if the sensor is not exposed to fresh air (~420ppm) at least once a week.</span>
+                        </label>
                     </div>
 
                     <div>
@@ -577,7 +577,7 @@
             <fieldset>
                 <legend>Time Settings</legend>
 
-                <div>
+                <div id="tToDispOffDiv">
                     <label for="tToDispOff">Time to Display Off (seconds):
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
@@ -662,7 +662,7 @@
                         <span class="tooltip-text">Show CO2 readings on the display.</span>
                     </label>
                 </div>
-                <div>
+                <div id="dispOffOnExPDiv">
                     <label for="dispOffOnExP">Turn Off on USB Power:
                         <input type="checkbox" id="dispOffOnExP" name="dispOffOnExP">
                         <span class="tooltip-icon">ℹ️</span>
@@ -677,7 +677,7 @@
                         <span class="tooltip-text">Reverse the display orientation.</span>
                     </label>
                 </div>
-                <div>
+                <div id="displayBrightDiv">
                     <label for="DisplayBright">Display Brightness:
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
