@@ -718,6 +718,23 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         co2OrangeRange = JsonDocument["co2OrangeRange"];
         co2RedRange = JsonDocument["co2RedRange"];
         if (DisplayBrightness != JsonDocument["DisplayBright"]) {
+#ifdef LILYGO_T_DISPLAY_S3
+            // If JsonDocument["DisplayBright"] is > 16 set it to 16. If JsonDocument["DisplayBright"] is < 1 set it to 1
+            if (JsonDocument["DisplayBright"] > 16) {
+                JsonDocument["DisplayBright"] = 16;
+            }
+            if (JsonDocument["DisplayBright"] < 1) {
+                JsonDocument["DisplayBright"] = 1;
+            }
+#else
+            // If JsonDocument["DisplayBright"] is > 255 set it to 255. If JsonDocument["DisplayBright"] is < 1 set it to 1
+            if (JsonDocument["DisplayBright"] > 255) {
+                JsonDocument["DisplayBright"] = 255;
+            }
+            if (JsonDocument["DisplayBright"] < 1) {
+                JsonDocument["DisplayBright"] = 1;
+            }
+#endif
             DisplayBrightness = JsonDocument["DisplayBright"];
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
             // setDisplayBrightness(DisplayBrightness);
