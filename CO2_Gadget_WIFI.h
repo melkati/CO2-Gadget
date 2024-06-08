@@ -750,6 +750,27 @@ String getCO2GadgetFeaturesAsJson() {
     #else
     doc["OTA"] = false;
 #endif
+#ifdef SUPPORT_TFT
+    doc["TFT"] = true;
+    #else
+    doc["TFT"] = false;
+#endif
+#ifdef SUPPORT_EINK
+    doc["EINK"] = true;
+    #else
+    doc["EINK"] = false;
+#endif
+#ifdef SUPPORT_OLED
+    doc["OLED"] = true;
+    #else
+    doc["OLED"] = false;
+#endif
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    doc["CaptivePortal"] = true;
+    #else
+    doc["CaptivePortal"] = false;
+#endif
+
     String output;
     serializeJson(doc, output);
     return output;
