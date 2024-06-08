@@ -1,12 +1,10 @@
-<!-- https://www.zickty.com/filetogzip -->
-
-
 <!DOCTYPE html>
 <html lang="en" theme="light">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
@@ -17,9 +15,8 @@
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./captiveportal.js"></script>
     <script defer type="text/javascript" src="./preferences.js"></script>
-    <title>CO2 Gadget Configuration</title>
+    <!-- <script defer type="text/javascript" src="./combined.js"></script> -->
 </head>
 
 <body>
@@ -32,9 +29,10 @@
                 <a href="status.html">Status</a>
             </div>
             <div class="nav-links-right">
-                <a href="ota.html">OTA</a>
+                <a href="ota.html" class="hidden" id="otaLink">OTA</a>
                 <a href="/getCaptivePortalStatusAsJson">
-                    <span id="server-status-dot" class="status-dot status-dot-hidden" title="Captive portal inactive"></span>
+                    <span id="server-status-dot" class="status-dot status-dot-hidden"
+                        title="Captive portal inactive"></span>
                 </a>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
@@ -219,8 +217,8 @@
                                 </label>
                             </div>
                         </div>
-                        </div>
-                        </fieldset>
+                    </div>
+                </fieldset>
             </fieldset>
 
             <!-- MQTT Configuration Group -->
@@ -274,13 +272,34 @@
                             <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
                         </label>
                     </div>
+
                     <div>
-                        <label for="mqttShowInCon">Show MQTT in Console:
+                        <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
+                                frequency of MQTT
+                                messages.</span>
+                            <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
+                                connection to drop.</span>
+                            <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="mqttShowInCon">Show MQTT trafic in serial console:
                             <input type="checkbox" id="mqttShowInCon" name="mqttShowInCon">
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">Show MQTT messages in the serial console. Useful for debugging
                                 MQTT connections.</span>
                         </label>
+                    </div>
                 </fieldset>
             </div>
 
@@ -316,6 +335,26 @@
                             <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
                         </label>
                     </div>
+
+                    <div>
+                        <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
+                                frequency of ESPNOW
+                                messages.</span>
+                            <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
+                        </label>
+                    </div>
+    
+                    <div>
+                        <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
+                                connection to
+                                drop.</span>
+                            <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
+                        </label>
+                    </div>
                 </fieldset>
             </div>
 
@@ -326,13 +365,24 @@
                 <fieldset>
                     <legend>CO2 Sensor</legend>
 
-                    <div>
+                    <div class="hidden">
                         <label for="selCO2Sensor">Selected Sensor:
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">Only automatic detection is supported at the moment. Please do
                                 not change this value.</span>
                             <input type="number" id="selCO2Sensor" name="selCO2Sensor" value="">
                         </label>
+                    </div>
+
+                    <div style="display: flex; align-items: center;">
+                        <label for="customCalValue" style="flex-grow: 1;">Custom Calibration Value:
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Custom calibration value for the CO2 sensor. This value is used
+                                to adjust the sensor
+                                readings. Set to ~415 to calibrate the sensor to outdoor air. Use with caution.</span>
+                            <input type="number" id="customCalValue" name="customCalValue" value="">
+                        </label>
+                        <button type="button" id="calibrateButton" style="margin-left: 10px;">Calibrate</button>
                     </div>
 
                     <div>
@@ -342,16 +392,6 @@
                             <span class="tooltip-text">Enable automatic self-calibration of the CO2 sensor. Not
                                 recommended
                                 if the sensor is not exposed to fresh air (~420ppm) at least once a week.</span>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label for="customCalValue">Custom Calibration Value:
-                            <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Custom calibration value for the CO2 sensor. This value is used
-                                to adjust the sensor
-                                readings. Set to ~415 to calibrate the sensor to outdoor air. Use with caution.</span>
-                            <input type="number" id="customCalValue" name="customCalValue" value="">
                         </label>
                     </div>
 
@@ -428,6 +468,32 @@
                     </label>
                 </div>
             </fieldset>
+
+            <!-- Modal for Calibration Instructions -->
+            <div id="calibrationModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Calibration Instructions</h2>
+                    <p>Please place the sensor outside for a few minutes to stabilize.</p>
+                    <p>Calibration Value: <span id="modalCalibrationValueContainer"><input type="number"
+                                id="modalCustomCalibrationValueInput" value="0" min="400" max="2000"> ppm</span></p>
+                    <p>Current CO2 Value: <span id="currentCO2Value"></span> ppm</p>
+                    <label id="acknowledgeLabel" for="acknowledgeCheckbox">I have read and understand the
+                        instructions.</label>
+                    <input type="checkbox" id="acknowledgeCheckbox">
+                    <button type="button" id="calibrateNowButton">Calibrate Now</button>
+                </div>
+            </div>
+
+
+            <!-- Modal for Countdown -->
+            <div id="countdownModal" class="modal">
+                <div class="modal-content">
+                    <h2>Calibration in Progress</h2>
+                    <p>Please do not disturb the sensor. Calibration will complete in <span id="countdown">15</span>
+                        seconds.</p>
+                </div>
+            </div>
 
             <!-- Outputs Group -->
             <fieldset>
@@ -548,60 +614,6 @@
                 </div>
             </fieldset>
 
-            <!-- Time Settings Group -->
-            <fieldset>
-                <legend>Time Settings</legend>
-
-                <div>
-                    <label for="tToDispOff">Time to Display Off (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
-                            disable this
-                            feature.</span>
-                        <input type="number" id="tToDispOff" name="tToDispOff" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
-                            frequency of MQTT
-                            messages.</span>
-                        <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
-                            frequency of ESPNOW
-                            messages.</span>
-                        <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
-                            connection to drop.</span>
-                        <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
-                            connection to
-                            drop.</span>
-                        <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
-                    </label>
-                </div>
-            </fieldset>
-
             <!-- Display Preferences Group -->
             <fieldset>
                 <legend>Display Preferences</legend>
@@ -637,7 +649,18 @@
                         <span class="tooltip-text">Show CO2 readings on the display.</span>
                     </label>
                 </div>
-                <div>
+
+                <div id="tToDispOffDiv">
+                    <label for="tToDispOff">Time to Display Off (seconds):
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
+                            disable this
+                            feature.</span>
+                        <input type="number" id="tToDispOff" name="tToDispOff" value="">
+                    </label>
+                </div>
+
+                <div id="dispOffOnExPDiv">
                     <label for="dispOffOnExP">Turn Off on USB Power:
                         <input type="checkbox" id="dispOffOnExP" name="dispOffOnExP">
                         <span class="tooltip-icon">ℹ️</span>
@@ -652,12 +675,12 @@
                         <span class="tooltip-text">Reverse the display orientation.</span>
                     </label>
                 </div>
-                <div>
+                <div id="displayBrightDiv">
                     <label for="DisplayBright">Display Brightness:
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
                             of the display.</span>
-                        <input type="number" id="DisplayBright" name="DisplayBright" value="">
+                        <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5">
                     </label>
                 </div>
             </fieldset>

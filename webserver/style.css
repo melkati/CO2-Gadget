@@ -26,9 +26,12 @@
   --close-button-hover-color: darkred;
   --status-bar-bg-color: #fbef83;
   --status-bar-text-color: #333;
+  --modal-bg-color: #f1f1f1;
+  --modal-overlay-bg-color: rgba(0, 0, 0, 0.4);
+  --unchecked-font-color: orange;
 }
 
-[theme='dark'] {
+[theme="dark"] {
   --font-color: #ecf0f1;
   --bg-color: #2c3e50;
   --title-color: #1abc9c;
@@ -56,16 +59,31 @@
   --close-button-hover-color: #c0392b;
   --status-bar-bg-color: #34495e;
   --status-bar-text-color: #ecf0f1;
+  --modal-bg-color: #3b4a5a;
+  --modal-overlay-bg-color: rgba(0, 0, 0, 0.8);
+  --unchecked-font-color: yellow;
+}
+
+/* For small screens */
+@media screen and (max-width: 600px) {
+  .content {
+    max-width: 100%;
+    padding: 0 10px;
+  }
 }
 
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   background-color: var(--bg-color);
   color: var(--font-color);
   margin: 0;
+  overflow-x: hidden;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   color: var(--header-font-color);
   margin: 20px 0 10px;
   border-bottom: 2px solid var(--header-border-color);
@@ -164,7 +182,7 @@ h4 {
   transition: background-color 0.3s, color 0.3s;
 }
 
-[theme='dark'] .tag {
+[theme="dark"] .tag {
   color: var(--title-color);
   background-color: var(--tag-dark-bg-color);
 }
@@ -249,12 +267,14 @@ button:hover {
   flex-wrap: nowrap;
 }
 
-.buttonsBackupRestore, .buttonsRestartSave {
+.buttonsBackupRestore,
+.buttonsRestartSave {
   display: flex;
   gap: 10px;
 }
 
-#backupButton, #restoreButton {
+#backupButton,
+#restoreButton {
   margin-right: 10px;
 }
 
@@ -269,14 +289,16 @@ button:hover {
     gap: 20px;
   }
 
-  .buttonsBackupRestore, .buttonsRestartSave {
+  .buttonsBackupRestore,
+  .buttonsRestartSave {
     flex-direction: column;
     width: auto;
     margin-bottom: 0;
     align-items: center;
   }
 
-  .buttonsBackupRestore button, .buttonsRestartSave button {
+  .buttonsBackupRestore button,
+  .buttonsRestartSave button {
     width: 100%;
     margin-bottom: 10px;
   }
@@ -304,6 +326,7 @@ button:hover {
 .content {
   max-width: 600px;
   margin: 0 auto;
+  overflow-x: auto;
 }
 
 .flex-wrapper {
@@ -352,7 +375,7 @@ button:hover {
 }
 
 .circular-chart.temp .circle {
-  stroke: #4CC790;
+  stroke: #4cc790;
 }
 
 .circular-chart.humi .circle {
@@ -439,6 +462,7 @@ button:hover {
 
 .tooltip-icon {
   cursor: pointer;
+  margin-left: 5px;
 }
 
 .tooltip-text {
@@ -454,8 +478,62 @@ button:hover {
   animation: fadeInOut 2s ease-in-out;
 }
 
-.tooltip-icon:hover+.tooltip-text {
+.tooltip-icon:hover + .tooltip-text {
   visibility: visible;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: var(--modal-overlay-bg-color);
+}
+
+.modal-content {
+  max-width: 450px;
+  background-color: var(--modal-bg-color);
+  margin: auto;
+  padding: 20px;
+  border: 1px solid var(--input-border-color);
+  width: 80%;
+  color: var(--modal-text-color);
+}
+
+#modalCalibrationValueContainer {
+  display: inline-block; /* Ensure the elements are on the same line */
+}
+
+#modalCustomCalibrationValueInput {
+  width: 80px; /* Increase width for better visibility */
+  padding: 8px; /* Add padding for better visual appeal */
+  border: 1px solid #ccc; /* Add border for visual distinction */
+  border-radius: 4px; /* Add border-radius for a softer look */
+  font-size: 16px; /* Increase font size for better readability */
+  box-sizing: border-box; /* Include padding and border in the width */
+}
+
+.unchecked-text {
+  color: var(--unchecked-font-color);
+}
+
+.close {
+  color: var(--close-button-color);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--close-button-hover-color);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 #captive-portal-status-bar {
