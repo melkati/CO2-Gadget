@@ -16,7 +16,7 @@
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./preferences.js"></script>
-    <script defer type="text/javascript" src="./combined.js"></script>
+    <!-- <script defer type="text/javascript" src="./combined.js"></script> -->
 </head>
 
 <body>
@@ -680,7 +680,7 @@
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
                             of the display.</span>
-                        <input type="number" id="DisplayBright" name="DisplayBright" value="">
+                        <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5">
                     </label>
                 </div>
             </fieldset>

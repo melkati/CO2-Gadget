@@ -24,8 +24,10 @@ function fetchVersion() {
                 const displayBrightInput = document.getElementById("DisplayBright");
                 displayBrightInput.min = "1";
                 displayBrightInput.max = "16";
+                displayBrightInput.step = "1";
             }
 
+            // TO-DO: Change to use getFeaturesAsJson endpoint to check for "EINK" instead of firmFlavour to reduce complexity
             if (versionInfo.firmFlavour == 'GDEM0213B74' || versionInfo.firmFlavour == 'DEPG0213BN' || versionInfo.firmFlavour == 'GDEW0213M21' || versionInfo.firmFlavour == 'GDEM029T94' || versionInfo.firmFlavour == 'GDEH0154D67-WeAct' || versionInfo.firmFlavour == 'DEPG0213BN-WeAct' || versionInfo.firmFlavour == 'GDEW0213M21-WeAct' || versionInfo.firmFlavour == 'GDEMGxEPD2_290_BS-WeAct') {
                 document.getElementById("displayBrightDiv").classList.add("hidden");
                 document.getElementById("dispOffOnExPDiv").classList.add("hidden");
