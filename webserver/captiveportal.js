@@ -22,26 +22,6 @@ var previousData = {
     captivePortalNoTimeout: false
 };
 
-// CO2 Gadget Features: SUPPORT_BLE, SUPPORT_BUZZER, SUPPORT_ESPNOW, SUPPORT_MDNS, SUPPORT_MQTT, SUPPORT_MQTT_DISCOVERY, SUPPORT_OTA
-// {
-//     "BLE": true,
-//     "Buzzer": true,
-//     "ESPNow": false,
-//     "mDNS": true,
-//     "MQTT": true,
-//     "MQTTDiscovery": true,
-//     "OTA": true
-// }
-var features = {
-    SUPPORT_BLE: false,
-    SUPPORT_BUZZER: false,
-    SUPPORT_ESPNOW: false,
-    SUPPORT_MDNS: false,
-    SUPPORT_MQTT: false,
-    SUPPORT_MQTT_DISCOVERY: false,
-    SUPPORT_OTA: false
-};
-
 /**
  * Sets the captive portal settings and sends them to the server.
  * @param {number} timeToWait - The time to wait for the captive portal.
@@ -268,20 +248,6 @@ function setupInitialSettings() {
 }
 
 /**
- * Adds the 'active' class to the current page link in the navigation bar.
- */
-function highlightCurrentPage() {
-    const currentPage = window.location.pathname.split("/").pop();
-    const navLinks = document.querySelectorAll(".navbar .nav-content a");
-
-    navLinks.forEach(link => {
-        if (link.getAttribute("href") === currentPage) {
-            link.classList.add("active");
-        }
-    });
-}
-
-/**
  * Initialize the captive portal for preferences.html.
  */
 function initializeCaptivePortal() {
@@ -329,23 +295,25 @@ document.addEventListener("DOMContentLoaded", function () {
     if (currentPage === "preferences.html") {
         initializeCaptivePortal();
         highlightCurrentPage(); // Highlight the current page in the navigation bar
+
+        const debugWindow = document.getElementById('debug-window');
+        if (captivePortalDebug || debugWindowActive) {
+            if (debugWindow) {
+                createDebugWindow(debugWindow);
+                debugWindowActive = true;
+                debugWindow.style.display = 'block';
+            } else {
+                console.error('Element with ID "debug-window" not found.');
+            }
+        } else {
+            if (debugWindow) {
+                debugWindow.style.display = 'none';
+                debugWindowActive = false;
+            }
+        }
     } else {
         if (captivePortalDebug) console.log('Not on preferences.html, skipping debug window initialization');
     }
 
-    const debugWindow = document.getElementById('debug-window');
-    if (captivePortalDebug || debugWindowActive) {
-        if (debugWindow) {
-            createDebugWindow(debugWindow);
-            debugWindowActive = true;
-            debugWindow.style.display = 'block';
-        } else {
-            console.error('Element with ID "debug-window" not found.');
-        }
-    } else {
-        if (debugWindow) {
-            debugWindow.style.display = 'none';
-            debugWindowActive = false;
-        }
-    }
+
 });
