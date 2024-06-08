@@ -1,12 +1,3 @@
-// https://www.zickty.com/filetogzip
-
-// Global variable to control relaxed security mode
-var relaxedSecurity = false;
-// Global variable to control captive portal test mode
-var forceCaptivePortalActive = false;
-// Set to true to enable debug output in the console
-var preferencesDebug = false;
-
 /**
  * Fetches version information from the server and updates the version displayed
  */
@@ -25,6 +16,19 @@ function fetchVersion() {
                 displayBrightInput.min = "1";
                 displayBrightInput.max = "16";
                 displayBrightInput.step = "1";
+                const tooltipText = document.querySelector('.tooltip-text');
+                let currentText = tooltipText.textContent;
+                currentText += ' Valid brightness values: 1-16.';
+
+            } else {
+                // Add to tooltip text: Valid brightness values: displayBrightInput.min to displayBrightInput.max
+                const displayBrightInput = document.getElementById("DisplayBright");
+                let min = displayBrightInput.min;
+                let max = displayBrightInput.max;
+                const tooltipText = document.querySelector('.tooltip-text');
+                let currentText = tooltipText.textContent;
+                currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
+                tooltipText.textContent = currentText;                
             }
 
             // TO-DO: Change to use getFeaturesAsJson endpoint to check for "EINK" instead of firmFlavour to reduce complexity
