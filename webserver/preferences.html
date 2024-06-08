@@ -272,6 +272,26 @@
                             <input type="password" id="mqttPass" name="mqttPass" value="" disabled>
                         </label>
                     </div>
+
+                    <div>
+                        <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
+                                frequency of MQTT
+                                messages.</span>
+                            <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
+                                connection to drop.</span>
+                            <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
+                        </label>
+                    </div>
+
                     <div>
                         <label for="mqttShowInCon">Show MQTT trafic in serial console:
                             <input type="checkbox" id="mqttShowInCon" name="mqttShowInCon">
@@ -279,6 +299,7 @@
                             <span class="tooltip-text">Show MQTT messages in the serial console. Useful for debugging
                                 MQTT connections.</span>
                         </label>
+                    </div>
                 </fieldset>
             </div>
 
@@ -312,6 +333,26 @@
                                 be unique for each
                                 device.</span>
                             <input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value="">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
+                                frequency of ESPNOW
+                                messages.</span>
+                            <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
+                        </label>
+                    </div>
+    
+                    <div>
+                        <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
+                            <span class="tooltip-icon">ℹ️</span>
+                            <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
+                                connection to
+                                drop.</span>
+                            <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
                         </label>
                     </div>
                 </fieldset>
@@ -573,60 +614,6 @@
                 </div>
             </fieldset>
 
-            <!-- Time Settings Group -->
-            <fieldset>
-                <legend>Time Settings</legend>
-
-                <div id="tToDispOffDiv">
-                    <label for="tToDispOff">Time to Display Off (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
-                            disable this
-                            feature.</span>
-                        <input type="number" id="tToDispOff" name="tToDispOff" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tToPubMQTT">Time Between MQTT Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between MQTT publish events. Lower values will increase the
-                            frequency of MQTT
-                            messages.</span>
-                        <input type="number" id="tToPubMQTT" name="tToPubMQTT" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
-                            frequency of ESPNOW
-                            messages.</span>
-                        <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
-                            connection to drop.</span>
-                        <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
-                    </label>
-                </div>
-
-                <div>
-                    <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
-                        <span class="tooltip-icon">ℹ️</span>
-                        <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
-                            connection to
-                            drop.</span>
-                        <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
-                    </label>
-                </div>
-            </fieldset>
-
             <!-- Display Preferences Group -->
             <fieldset>
                 <legend>Display Preferences</legend>
@@ -662,6 +649,17 @@
                         <span class="tooltip-text">Show CO2 readings on the display.</span>
                     </label>
                 </div>
+
+                <div id="tToDispOffDiv">
+                    <label for="tToDispOff">Time to Display Off (seconds):
+                        <span class="tooltip-icon">ℹ️</span>
+                        <span class="tooltip-text">Time to turn off the display after the last button press. Set to 0 to
+                            disable this
+                            feature.</span>
+                        <input type="number" id="tToDispOff" name="tToDispOff" value="">
+                    </label>
+                </div>
+
                 <div id="dispOffOnExPDiv">
                     <label for="dispOffOnExP">Turn Off on USB Power:
                         <input type="checkbox" id="dispOffOnExP" name="dispOffOnExP">
