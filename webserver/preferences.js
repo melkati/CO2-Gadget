@@ -673,7 +673,7 @@ function sanityData() {
         inputco2OrangeRange.classList.add('valid');
         inputco2RedRange.classList.add('valid');
     }
-    console.log(txt_error);
+    if (preferencesDebug) console.log(txt_error);
     return true;
 }
 /**
@@ -684,7 +684,7 @@ function toggleDisplayReverse() {
     fetch("/settings?ToggleDisplayReverse")
         .then(response => {
             if (!response.ok) throw new Error('Error reversing display');
-            console.log('Toggle Display Reverse successfully');
+            if (preferencesDebug) console.log('Toggle Display Reverse successfully');
         })
         .catch(error => console.error('Error Toggling Display Reverse:', error));
 }
@@ -697,7 +697,7 @@ function setDisplayBrightness() {
     fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
         .then(response => {
             if (!response.ok) throw new Error('Error setting display brightness');
-            console.log('Set Display brightness successfully');
+            if (preferencesDebug) console.log('Set Display brightness successfully');
         })
         .catch(error => console.error('Error Setting Display brightness:', error));
 }
