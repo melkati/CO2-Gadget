@@ -1207,8 +1207,19 @@ void initWebServer() {
                 Serial.println("-->[DISP] Set display brightness");
                 DisplayBrightness = inputString.toInt();
                 setDisplayBrightness(DisplayBrightness);
+                if (inMenu) isMenuDirty = true;
                 request->send(200, "text/plain", "OK. Set Display brightness");
             };
+            // <CO2-GADGET_IP>/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}
+            if (request->hasParam("showTemp")) {
+                displayShowTemperature = (request->getParam("showTemp")->value() == "true" || request->getParam("showTemp")->value() == "1");
+                displayShowHumidity = (request->getParam("showHumidity")->value() == "true" || request->getParam("showHumidity")->value() == "1");
+                displayShowBattery = (request->getParam("showBattery")->value() == "true" || request->getParam("showBattery")->value() == "1");
+                Serial.println("-->[DISP] showTemp(" + request->getParam("showTemp")->value() + ") - showHumidity(" + request->getParam("showHumidity")->value() + ") - showBAttery(" + request->getParam("showBattery")->value() + ") in display");
+                if (!inMenu) shouldRedrawDisplay = true;
+                request->send(200, "text/plain", "OK.  show/hide Temp/Humidity/Battery in display");
+            };
+
             // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
             if (request->hasParam("displayShowBatteryVoltage")) {
                 String inputString = request->getParam("displayShowBatteryVoltage")->value();
