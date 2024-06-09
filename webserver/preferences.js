@@ -679,7 +679,7 @@ function sanityData() {
  * Runtime display reverse 
  */
 function toggleDisplayReverse() {
-    console.log("Toggle Display Reverse");
+    if (preferencesDebug) console.log("Toggle Display Reverse");
     fetch("/settings?ToggleDisplayReverse")
         .then(response => {
             if (!response.ok) throw new Error('Error reversing display');
@@ -692,11 +692,26 @@ function toggleDisplayReverse() {
  */
 function setDisplayBrightness() {
     const inputDisplayBrightness = document.getElementById("DisplayBright").value;
-    console.log("Set Display Brightness = " + inputDisplayBrightness);
+    if (preferencesDebug) console.log("Set Display Brightness = " + inputDisplayBrightness);
     fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
         .then(response => {
             if (!response.ok) throw new Error('Error setting display brightness');
             if (preferencesDebug) console.log('Set Display brightness successfully');
         })
         .catch(error => console.error('Error Setting Display brightness:', error));
+}
+/**
+* Runtime show/hide Temp/Humidity/Battery in display
+*/
+function showTempHumBatt() {
+    const inputShowTemp = document.getElementById("showTemp").checked;
+    const inputShowHumidity = document.getElementById("showHumidity").checked;
+    const inputShowBattery = document.getElementById("showBattery").checked;
+    if (preferencesDebug) console.log("show/hide Temp/Humidity/BAttery in display");
+    fetch(`/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting show/hide Temp/Humidity/Battery in display');
+            if (preferencesDebug) console.log('Set show/hide Temp/Humidity/Battery in display successfully');
+        })
+        .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
 }
