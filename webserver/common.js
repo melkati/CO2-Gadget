@@ -5,6 +5,7 @@ var forcedCaptivePortal = false;
 var captivePortalNoTimeout = false;
 var forcedCaptivePortalNoTimeout = false;
 var relaxedSecurity = false; // Flag to control relaxed security mode
+var forcedRelaxedSecurity = false; // Enadled by url parameter "relaxedSecurity"
 
 // Global variable to control captive portal test mode
 var forceCaptivePortalActive = false; // Flag to indicate url parameters include "forceCaptivePortalActive"
