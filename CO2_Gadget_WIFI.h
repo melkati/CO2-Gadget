@@ -950,9 +950,6 @@ const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
 
-// Predeclaration
-void setDisplayBrightness(uint16_t newBrightness);
-
 void initWebServer() {
     SPIFFS.begin();
 
