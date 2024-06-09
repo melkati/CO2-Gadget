@@ -8,7 +8,7 @@ Button2 btnUp(BTN_UP);         // Initialize the up button
 Button2 btnDwn(BTN_DWN);       // Initialize the down button
 
 void IRAM_ATTR buttonUpISR() {
-    if (actualDisplayBrightness == 0) {  // Turn on the display only if it's OFF
+    if (!displayOn) {  // Turn on the display only if it's OFF
         shouldWakeUpDisplay = true;
         lastTimeButtonPressed = millis();
     }
@@ -19,7 +19,7 @@ void IRAM_ATTR buttonUpISR() {
 }
 
 void IRAM_ATTR buttonDownISR() {
-    if (actualDisplayBrightness == 0) {  // Turn on the display only if it's OFF
+    if (!displayOn) {  // Turn on the display only if it's OFF
         shouldWakeUpDisplay = true;
         lastTimeButtonPressed = millis();
     }
@@ -35,13 +35,13 @@ void IRAM_ATTR buttonDownISR() {
 // }
 
 void initButtons() {
-    // Set Interrupt Service Routine to turn on the display on button UP or DOWN press (nothing to do with the button functionality for the menu itself)
-    #if BTN_UP != -1
+// Set Interrupt Service Routine to turn on the display on button UP or DOWN press (nothing to do with the button functionality for the menu itself)
+#if BTN_UP != -1
     attachInterrupt(BTN_UP, buttonUpISR, RISING);
-    #endif
-    #if BTN_DWN != -1
-    // attachInterrupt(BTN_DWN, buttonUpISR, RISING); // Conflicts with Improv because of GPIO 0 
-    #endif
+#endif
+#if BTN_DWN != -1
+// attachInterrupt(BTN_DWN, buttonUpISR, RISING); // Conflicts with Improv because of GPIO 0
+#endif
 
     btnUp.setLongClickTime(LONGCLICK_TIME_MS);
     btnUp.setLongClickHandler([](Button2 &b) { nav.doNav(enterCmd); });

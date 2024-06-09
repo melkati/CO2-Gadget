@@ -225,7 +225,26 @@ void setDisplayBrightness(uint16_t newBrightness) {
 }
 
 void turnOffDisplay() {
-    setDisplayBrightness(0);  // Turn off the display
+    tft.writecommand(TFT_DISPOFF);  // Comando para apagar la pantalla
+    tft.writecommand(TFT_SLPIN);
+    digitalWrite(TFT_BACKLIGHT, LOW);  // turn of lcd backlight
+#ifdef TTGO_TDISPLAY
+    setDisplayBrightness(0);
+#endif
+    displayOn = false;
+}
+
+void turnOnDisplay() {
+    //    tft.init();
+    tft.writecommand(TFT_SLPOUT);
+    delay(120);
+    tft.writecommand(TFT_DISPON);       // turn on display
+    digitalWrite(TFT_BACKLIGHT, HIGH);  // turn on lcd backlight
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+    actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
+#endif
+    setDisplayBrightness(DisplayBrightness);
+    displayOn = true;
 }
 
 void displaySplashScreen() {

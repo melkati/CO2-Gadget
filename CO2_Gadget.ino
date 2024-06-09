@@ -128,6 +128,7 @@ bool activeOTA = false;
 bool mustInitMenu = false;
 bool menuInitialized = false;
 uint16_t DisplayBrightness = 100;
+bool displayOn = true;
 bool displayReverse = false;
 bool showFahrenheit = false;
 bool displayShowTemperature = true;
@@ -366,11 +367,12 @@ static int64_t lastReadingsCommunicationTime = 0;
 static int startCheckingAfterUs = 1900000;
 
 void wakeUpDisplay() {
-    if (actualDisplayBrightness == 0) {
+    if (!displayOn) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-        setDisplayBrightness(DisplayBrightness);
-        // publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
-        // Serial.println("-->[MAIN] Display woken up. Setting display brightness to " + String(DisplayBrightness));
+        turnOnDisplay();
+//        setDisplayBrightness(DisplayBrightness);
+// publishMQTTLogData("Display woken up. Setting display brightness to " + String(DisplayBrightness));
+// Serial.println("-->[MAIN] Display woken up. Setting display brightness to " + String(DisplayBrightness));
 #endif
         lastTimeButtonPressed = millis();
     }
@@ -513,17 +515,21 @@ void adjustBrightnessLoop() {
     }
 
     if (inMenu) {
-        setDisplayBrightness(DisplayBrightness);
+        wakeUpDisplay();
+        //        setDisplayBrightness(DisplayBrightness);
         return;
     }
 
     // Display backlight IS sleeping
-    if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
+    //    if ((actualDisplayBrightness == 0) && (actualDisplayBrightness != DisplayBrightness)) {
+    if (!displayOn) {
         if ((!displayOffOnExternalPower) && (workingOnExternalPower)) {
-            setDisplayBrightness(DisplayBrightness);
+            wakeUpDisplay();
+            //            setDisplayBrightness(DisplayBrightness);
         }
         if (timeToDisplayOff == 0) {
-            setDisplayBrightness(DisplayBrightness);
+            wakeUpDisplay();
+            //            setDisplayBrightness(DisplayBrightness);
         }
         return;
     }
@@ -536,18 +542,19 @@ void adjustBrightnessLoop() {
 
     // If configured not to turn off the display on external power and it's working on external power, do nothing and return (except if DisplayBrightness is 0, then turn on display))
     if ((workingOnExternalPower) && (!displayOffOnExternalPower)) {
-        if (actualDisplayBrightness == 0) {
-            setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
-            // publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
-            // Serial.println("-->[MAIN] Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
-            // delay(10);
-        }
+        wakeUpDisplay();
+        //  if (actualDisplayBrightness == 0) {
+        // setDisplayBrightness(DisplayBrightness);  // Exception: When USB connected (just connected) & TFT is OFF -> Turn Display ON
+        // publishMQTTLogData("Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+        // Serial.println("-->[MAIN] Turning on display on external power. Actual brightness: " + String(actualDisplayBrightness));
+        // delay(10);
+        //}
         return;
     }
 
     if (timeToDisplayOff == 0) return;  // If timeToDisplayOff is 0, don't turn off the display
 
-    if ((actualDisplayBrightness != 0) && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
+    if (displayOn && (millis() - lastTimeButtonPressed >= timeToDisplayOff * 1000) && DisplayBrightness > 0) {
         if ((workingOnExternalPower) && (displayOffOnExternalPower)) {
             Serial.println("-->[MAIN] Turning off display on external power to save power. Actual brightness: " + String(actualDisplayBrightness));
             turnOffDisplay();

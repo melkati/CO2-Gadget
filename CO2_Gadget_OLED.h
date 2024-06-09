@@ -13,6 +13,7 @@
 // clang-format on
 // #include <U8x8lib.h>
 #include <U8g2lib.h>
+
 #include "bootlogo.h"
 #include "icons.h"
 U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);  // Frame Buffer: clearBuffer/sendBuffer. More RAM usage, Faster
@@ -36,25 +37,30 @@ void setDisplayReverse(bool reverse) {
 }
 
 void setDisplayBrightness(uint32_t newBrightness) {
-  Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
-  u8g2.setContrast(newBrightness);
-  actualDisplayBrightness = newBrightness;
+    Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
+    u8g2.setContrast(newBrightness);
+    actualDisplayBrightness = newBrightness;
 }
 
 void turnOffDisplay() {
-  setDisplayBrightness(0); // Turn off the display  
+    setDisplayBrightness(0);  // Turn off the display
+    displayOn = false;
+}
+void turnOnDisplay() {
+    setDisplayBrightness(DisplayBrightness);  // Turn off the display
+    displayOn = true;
 }
 
 void displaySplashScreen() {
-  u8g2.clearDisplay();
-  u8g2.firstPage();
-  do {
-    // u8g2.drawXBMP(30, 0, 59, 20, eMarieteLogo);
-    // u8g2.drawXBM(7, 23, 46, 36, CO2Logo);
-    // u8g2.drawXBM(60, 32, 61, 23, GadgetLogo);
-    u8g2.drawXBM(0, 0, 128, 64, splash);
-  } while (u8g2.nextPage());
-  u8g2.setFont(MENUFONT);
+    u8g2.clearDisplay();
+    u8g2.firstPage();
+    do {
+        // u8g2.drawXBMP(30, 0, 59, 20, eMarieteLogo);
+        // u8g2.drawXBM(7, 23, 46, 36, CO2Logo);
+        // u8g2.drawXBM(60, 32, 61, 23, GadgetLogo);
+        u8g2.drawXBM(0, 0, 128, 64, splash);
+    } while (u8g2.nextPage());
+    u8g2.setFont(MENUFONT);
 }
 
 /***************************************************************************************
@@ -65,37 +71,37 @@ void displaySplashScreen() {
 //      notificationText = string to display.
 //      notificationTypes one of enum notificationTypes notifyNothing, notifyInfo, notifyWarning, notifyError
 bool displayNotification(String notificationText, notificationTypes notificationType) {
-  uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
-  return true;
+    uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+    return true;
 }
 
 bool displayNotification(String notificationText, String notificationText2, notificationTypes notificationType) {
-  uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
-  return true;
+    uint16_t textColor, boxColor, backgroundColor, boxMarging = 15;
+    return true;
 }
 
-void initDisplay(bool fastMode = false) { // fastMode not used in OLED display. Just for compatibility with TFT and other displays.
-  Serial.printf("-->[OLED] Initialized: \t#%s#\n",
-                ((u8g2.begin()) ? "OK" : "Failed"));
-  u8g2.firstPage();
-  do {
-    u8g2.setFont(u8g2_font_ncenB12_tr);
-    u8g2.drawStr(0, 15, "  eMariete.com");
-    u8g2.drawStr(0, 33, "   CO2 Gadget");
-    u8g2.drawStr(0, 51, "  Air  Quality");
-  } while (u8g2.nextPage());
-  u8g2.setFont(MENUFONT);
-  if (displayReverse) {
-    u8g2.setDisplayRotation(U8G2_R2);
-  } else {
-    u8g2.setDisplayRotation(U8G2_R0);
-  }
-  setDisplayBrightness(DisplayBrightness);
-  displaySplashScreen();
-  delay(1000);
+void initDisplay(bool fastMode = false) {  // fastMode not used in OLED display. Just for compatibility with TFT and other displays.
+    Serial.printf("-->[OLED] Initialized: \t#%s#\n",
+                  ((u8g2.begin()) ? "OK" : "Failed"));
+    u8g2.firstPage();
+    do {
+        u8g2.setFont(u8g2_font_ncenB12_tr);
+        u8g2.drawStr(0, 15, "  eMariete.com");
+        u8g2.drawStr(0, 33, "   CO2 Gadget");
+        u8g2.drawStr(0, 51, "  Air  Quality");
+    } while (u8g2.nextPage());
+    u8g2.setFont(MENUFONT);
+    if (displayReverse) {
+        u8g2.setDisplayRotation(U8G2_R2);
+    } else {
+        u8g2.setDisplayRotation(U8G2_R0);
+    }
+    setDisplayBrightness(DisplayBrightness);
+    displaySplashScreen();
+    delay(1000);
 }
 
-void displayShowValues(bool forceRedraw = false) {  
+void displayShowValues(bool forceRedraw = false) {
     if ((co2 == 0) || (co2 > 9999)) return;
     String co2Str = String(co2);
     if (co2Str.length() < 4) {
