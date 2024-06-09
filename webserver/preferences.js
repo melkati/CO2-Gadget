@@ -48,8 +48,11 @@ function fetchVersion() {
 function populateFormWithPreferences(preferences) {
     // Update relaxedSecurity if present in data
     if (preferences.relaxedSecurity !== undefined) {
-        if (preferencesDebug) console.log(`Setting relaxedSecurity to:`, preferences.relaxedSecurity);
+        if (preferencesDebug) console.log(`Setting relaxedSecurity field to:`, preferences.relaxedSecurity);
+        // If forcedRelaxedSecurity is set because the current URL does contains the "relaxedSecurity" parameter, do not overide the value with the one from the server
+        if (!forcedRelaxedSecurity) {
         relaxedSecurity = preferences.relaxedSecurity;
+        }
     }
 
     handlePasswordFields();
@@ -460,10 +463,12 @@ function handlePasswordFields() {
     passwordFields.forEach(field => {
         if (relaxedSecurity) {
             field.removeAttribute('disabled');
+            if (preferencesDebug) console.log(`Field ${field.id} enabled`);
         } else {
             field.disabled = true;
             field.value = '';
             field.placeholder = "Password (disabled)";
+            if (preferencesDebug) console.log(`Field ${field.id} disabled`);
         }
     });
 
@@ -600,7 +605,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check if the current URL contains "preferences.html"
     if (currentURL.includes("preferences.html")) {
         highlightCurrentPage(); // Highlight the current page in the navigation bar
-        relaxedSecurity = currentURL.includes("relaxedSecurity");
+        forcedRelaxedSecurity = currentURL.includes("relaxedSecurity");
+        relaxedSecurity = forcedRelaxedSecurity;
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
         setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
