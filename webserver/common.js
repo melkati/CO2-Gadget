@@ -51,3 +51,61 @@ function highlightCurrentPage() {
         }
     });
 }
+
+function loadFeaturesFromServer() {
+    fetch('/getFeaturesAsJson')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Fetching loadFeaturesFromServer successful!');
+            // Update DOM with status data
+            if (data.BLE !== undefined) {
+                features.SUPPORT_BLE = data.BLE;
+            } else {
+                features.SUPPORT_BLE = false;
+            }
+
+            if (data.Buzzer !== undefined) {
+                features.SUPPORT_BUZZER = data.Buzzer;
+            }
+            else {
+                features.SUPPORT_BUZZER = false;
+            }
+
+            if (data.EspNow !== undefined) {
+                features.SUPPORT_ESPNOW = data.EspNow;
+            }
+            else {
+                features.SUPPORT_ESPNOW = false;
+            }
+
+            if (data.MDNS !== undefined) {
+                features.SUPPORT_MDNS = data.MDNS;
+            }
+            else {
+                features.SUPPORT_MDNS = false;
+            }
+
+            if (data.MQTT !== undefined) {
+                features.SUPPORT_MQTT = data.MQTT;
+            }
+            else {
+                features.SUPPORT_MQTT = false;
+            }
+
+            if (data.MQTTDiscovery !== undefined) {
+                features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery;
+            }
+            else {
+                features.SUPPORT_MQTT_DISCOVERY = false;
+            }
+
+            if (data.OTA !== undefined) {
+                features.SUPPORT_OTA = data.OTA;
+            }
+            else {
+                features.SUPPORT_OTA = false;
+            }
+        }
+        )
+        .catch(error => console.error('Error fetching features:', error));
+}
