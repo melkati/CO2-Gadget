@@ -717,57 +717,57 @@ String getCO2GadgetFeaturesAsJson() {
     JsonDocument doc;
 #ifdef SUPPORT_BLE
     doc["BLE"] = true;
-    #else
+#else
     doc["BLE"] = false;
 #endif
 #ifdef SUPPORT_BUZZER
     doc["Buzzer"] = true;
-    #else
+#else
     doc["Buzzer"] = false;
 #endif
 #ifdef SUPPORT_ESPNOW
     doc["ESPNow"] = true;
-    #else
+#else
     doc["ESPNow"] = false;
 #endif
 #ifdef SUPPORT_MDNS
     doc["mDNS"] = true;
-    #else
+#else
     doc["mDNS"] = false;
 #endif
 #ifdef SUPPORT_MQTT
     doc["MQTT"] = true;
-    #else
+#else
     doc["MQTT"] = false;
 #endif
 #ifdef SUPPORT_MQTT_DISCOVERY
     doc["MQTTDiscovery"] = true;
-    #else
+#else
     doc["MQTTDiscovery"] = false;
 #endif
 #ifdef SUPPORT_OTA
     doc["OTA"] = true;
-    #else
+#else
     doc["OTA"] = false;
 #endif
 #ifdef SUPPORT_TFT
     doc["TFT"] = true;
-    #else
+#else
     doc["TFT"] = false;
 #endif
 #ifdef SUPPORT_EINK
     doc["EINK"] = true;
-    #else
+#else
     doc["EINK"] = false;
 #endif
 #ifdef SUPPORT_OLED
     doc["OLED"] = true;
-    #else
+#else
     doc["OLED"] = false;
 #endif
 #ifdef SUPPORT_CAPTIVE_PORTAL
     doc["CaptivePortal"] = true;
-    #else
+#else
     doc["CaptivePortal"] = false;
 #endif
 
@@ -861,7 +861,7 @@ String getCaptivePortalStatusAsJson() {
     if (captivePortalDebug) doc["captivePortalDebug"] = captivePortalDebug;
 
 #ifdef DEBUG_CAPTIVE_PORTAL
-    // doc["captivePortalDebug"] = true;
+        // doc["captivePortalDebug"] = true;
 #endif
 
     String output;
@@ -949,6 +949,9 @@ bool handleCaptivePortalSettings(String captivePortalPreferences) {
 const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
+
+// Predeclaration
+void setDisplayBrightness(uint16_t newBrightness);
 
 void initWebServer() {
     SPIFFS.begin();
@@ -1187,6 +1190,27 @@ void initWebServer() {
                         request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
                     }
                 }
+            };
+            // <CO2-GADGET_IP>/settings?ToggleDisplayReverse
+            if (request->hasParam("ToggleDisplayReverse")) {
+                Serial.println("-->[DISP] Toggle display reverse");
+                displayReverse = !displayReverse;
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+                setDisplayReverse(displayReverse);
+                reverseButtons(displayReverse);
+                if (inMenu) isMenuDirty = true;
+#else
+                reverseButtons(displayReverse);
+#endif
+                request->send(200, "text/plain", "OK. Display reversed");
+            };
+            // <CO2-GADGET_IP>/settings?setDisplayBrightness
+            if (request->hasParam("setDisplayBrightness")) {
+                inputString = request->getParam("setDisplayBrightness")->value();
+                Serial.println("-->[DISP] Set display brightness");
+                DisplayBrightness = inputString.toInt();
+                setDisplayBrightness(DisplayBrightness);
+                request->send(200, "text/plain", "OK. Set Display brightness");
             };
             // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
             if (request->hasParam("displayShowBatteryVoltage")) {
