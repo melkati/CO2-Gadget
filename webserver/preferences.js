@@ -635,13 +635,13 @@ function sanityData() {
         if (parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) inputDisplayBrightness.value = inputDisplayBrightness.min;
 
         txt_error = "Display Brightness value must be >=" + inputDisplayBrightness.min + " and <=" + inputDisplayBrightness.max;
-        if (!errorMessage) {
-            errorMessage = document.createElement('div');
-            errorMessage.id = 'error-message';
-            errorMessage.className = 'form-error';
-            errorMessage.textContent = txt_error;
-            inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
-        }
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
         return false;
     } else {
         if (errorMessage) errorMessage.remove();
@@ -658,13 +658,13 @@ function sanityData() {
         inputco2OrangeRange.classList.add('error');
         inputco2RedRange.classList.add('error');
         txt_error = "Red level must be greater than Orange level";
-        if (!errorMessage) {
-            errorMessage = document.createElement('div');
-            errorMessage.id = 'error-message';
-            errorMessage.className = 'form-error';
-            errorMessage.textContent = txt_error;
-            inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
-        }
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
         return false;
     } else {
         if (errorMessage) errorMessage.remove();
@@ -673,7 +673,6 @@ function sanityData() {
         inputco2OrangeRange.classList.add('valid');
         inputco2RedRange.classList.add('valid');
     }
-    if (preferencesDebug) console.log(txt_error);
     return true;
 }
 /**
