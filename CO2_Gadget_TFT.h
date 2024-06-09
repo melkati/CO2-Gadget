@@ -655,6 +655,7 @@ void displayShowValues(bool forceRedraw = false) {
     if (forceRedraw) {
         // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
         tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
+        spr.fillSprite(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
     showCO2units(elementPosition.co2UnitsX, elementPosition.co2UnitsY, forceRedraw);

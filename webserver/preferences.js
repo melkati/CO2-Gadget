@@ -629,3 +629,99 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+/**
+ * Sanity Data form before Save 
+ */
+function sanityData() {
+    var txt_error = "";
+    let errorMessage = document.getElementById('error-message');
+    const inputDisplayBrightness = document.getElementById("DisplayBright");
+    if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max) || parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) {
+        inputDisplayBrightness.classList.remove('valid');
+        inputDisplayBrightness.classList.add('error');
+
+        if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max)) inputDisplayBrightness.value = inputDisplayBrightness.max;
+        if (parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) inputDisplayBrightness.value = inputDisplayBrightness.min;
+
+        txt_error = "Display Brightness value must be >=" + inputDisplayBrightness.min + " and <=" + inputDisplayBrightness.max;
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputDisplayBrightness.classList.remove('error');
+        inputDisplayBrightness.classList.add('valid');
+    }
+
+    const inputco2OrangeRange = document.getElementById("co2OrangeRange");
+    const inputco2RedRange = document.getElementById("co2RedRange");
+    if (parseInt(inputco2OrangeRange.value) > parseInt(inputco2RedRange.value)) {
+        inputco2RedRange.value = parseInt(inputco2OrangeRange.value) + 1;
+        inputco2OrangeRange.classList.remove('valid');
+        inputco2RedRange.classList.remove('valid');
+        inputco2OrangeRange.classList.add('error');
+        inputco2RedRange.classList.add('error');
+        txt_error = "Red level must be greater than Orange level";
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputco2OrangeRange.classList.remove('error');
+        inputco2RedRange.classList.remove('error');
+        inputco2OrangeRange.classList.add('valid');
+        inputco2RedRange.classList.add('valid');
+    }
+    return true;
+}
+/**
+ * Runtime display reverse 
+ */
+function toggleDisplayReverse() {
+    if (preferencesDebug) console.log("Toggle Display Reverse");
+    fetch("/settings?ToggleDisplayReverse")
+        .then(response => {
+            if (!response.ok) throw new Error('Error reversing display');
+            if (preferencesDebug) console.log('Toggle Display Reverse successfully');
+        })
+        .catch(error => console.error('Error Toggling Display Reverse:', error));
+}
+/**
+ * Runtime display brightness 
+ */
+function setDisplayBrightness() {
+    const inputDisplayBrightness = document.getElementById("DisplayBright").value;
+    if (preferencesDebug) console.log("Set Display Brightness = " + inputDisplayBrightness);
+    fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting display brightness');
+            if (preferencesDebug) console.log('Set Display brightness successfully');
+        })
+        .catch(error => console.error('Error Setting Display brightness:', error));
+}
+/**
+* Runtime show/hide Temp/Humidity/Battery in display
+*/
+function showTempHumBatt() {
+    const inputShowTemp = document.getElementById("showTemp").checked;
+    const inputShowHumidity = document.getElementById("showHumidity").checked;
+    const inputShowBattery = document.getElementById("showBattery").checked;
+    if (preferencesDebug) console.log("show/hide Temp/Humidity/BAttery in display");
+    fetch(`/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting show/hide Temp/Humidity/Battery in display');
+            if (preferencesDebug) console.log('Set show/hide Temp/Humidity/Battery in display successfully');
+        })
+        .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
+}
