@@ -626,52 +626,52 @@ document.addEventListener("DOMContentLoaded", () => {
 function sanityData() {
     var txt_error = "";
     let errorMessage = document.getElementById('error-message');
-    const displayB = document.getElementById("DisplayBright");
-    if (parseInt(displayB.value) > displayB.max || parseInt(displayB.value) < displayB.min) {
-        displayB.classList.remove('valid');
-        displayB.classList.add('error');
+    const inputDisplayBrightness = document.getElementById("DisplayBright");
+    if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max) || parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) {
+        inputDisplayBrightness.classList.remove('valid');
+        inputDisplayBrightness.classList.add('error');
 
-        if (parseInt(displayB.value) > displayB.max) displayB.value = displayB.max;
-        if (parseInt(displayB.value) < displayB.min) displayB.value = displayB.min;
+        if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max)) inputDisplayBrightness.value = inputDisplayBrightness.max;
+        if (parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) inputDisplayBrightness.value = inputDisplayBrightness.min;
 
-        txt_error = "Display Brightness value must be >=" + displayB.min + " and <=" + displayB.max;
+        txt_error = "Display Brightness value must be >=" + inputDisplayBrightness.min + " and <=" + inputDisplayBrightness.max;
         if (!errorMessage) {
             errorMessage = document.createElement('div');
             errorMessage.id = 'error-message';
             errorMessage.className = 'form-error';
             errorMessage.textContent = txt_error;
-            displayB.insertAdjacentElement('afterend', errorMessage);
+            inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
         }
         return false;
     } else {
         if (errorMessage) errorMessage.remove();
-        displayB.classList.remove('error');
-        displayB.classList.add('valid');
+        inputDisplayBrightness.classList.remove('error');
+        inputDisplayBrightness.classList.add('valid');
     }
 
-    const co2O = document.getElementById("co2OrangeRange");
-    const co2R = document.getElementById("co2RedRange");
-    if (parseInt(co2O.value) > parseInt(co2R.value)) {
-        co2R.value = parseInt(co2O.value) + 1;
-        co2O.classList.remove('valid');
-        co2O.classList.add('error');
-        co2R.classList.remove('valid');
-        co2R.classList.add('error');
+    const inputco2OrangeRange = document.getElementById("co2OrangeRange");
+    const inputco2RedRange = document.getElementById("co2RedRange");
+    if (parseInt(inputco2OrangeRange.value) > parseInt(inputco2RedRange.value)) {
+        inputco2RedRange.value = parseInt(inputco2OrangeRange.value) + 1;
+        inputco2OrangeRange.classList.remove('valid');
+        inputco2RedRange.classList.remove('valid');
+        inputco2OrangeRange.classList.add('error');
+        inputco2RedRange.classList.add('error');
         txt_error = "Red level must be greater than Orange level";
         if (!errorMessage) {
             errorMessage = document.createElement('div');
             errorMessage.id = 'error-message';
             errorMessage.className = 'form-error';
             errorMessage.textContent = txt_error;
-            co2R.insertAdjacentElement('afterend', errorMessage);
+            inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
         }
         return false;
     } else {
         if (errorMessage) errorMessage.remove();
-        co2O.classList.remove('error');
-        co2O.classList.add('valid');
-        co2R.classList.remove('error');
-        co2R.classList.add('valid');
+        inputco2OrangeRange.classList.remove('error');
+        inputco2RedRange.classList.remove('error');
+        inputco2OrangeRange.classList.add('valid');
+        inputco2RedRange.classList.add('valid');
     }
     console.log(txt_error);
     return true;
@@ -692,9 +692,9 @@ function toggleDisplayReverse() {
  * Runtime display brightness 
  */
 function setDisplayBrightness() {
-    const displayB = document.getElementById("DisplayBright").value;
-    console.log("Set Display Brightness = " + displayB);
-    fetch(`/settings?setDisplayBrightness=${displayB}`)
+    const inputDisplayBrightness = document.getElementById("DisplayBright").value;
+    console.log("Set Display Brightness = " + inputDisplayBrightness);
+    fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
         .then(response => {
             if (!response.ok) throw new Error('Error setting display brightness');
             console.log('Set Display brightness successfully');
