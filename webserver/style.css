@@ -530,7 +530,7 @@ button:hover {
   animation: fadeInOut 2s ease-in-out;
 }
 
-.tooltip-icon:hover + .tooltip-text {
+.tooltip-icon:hover+.tooltip-text {
   visibility: visible;
 }
 
@@ -558,16 +558,23 @@ button:hover {
 }
 
 #modalCalibrationValueContainer {
-  display: inline-block; /* Ensure the elements are on the same line */
+  display: inline-block;
+  /* Ensure the elements are on the same line */
 }
 
 #modalCustomCalibrationValueInput {
-  width: 80px; /* Increase width for better visibility */
-  padding: 8px; /* Add padding for better visual appeal */
-  border: 1px solid #ccc; /* Add border for visual distinction */
-  border-radius: 4px; /* Add border-radius for a softer look */
-  font-size: 16px; /* Increase font size for better readability */
-  box-sizing: border-box; /* Include padding and border in the width */
+  width: 80px;
+  /* Increase width for better visibility */
+  padding: 8px;
+  /* Add padding for better visual appeal */
+  border: 1px solid #ccc;
+  /* Add border for visual distinction */
+  border-radius: 4px;
+  /* Add border-radius for a softer look */
+  font-size: 16px;
+  /* Increase font size for better readability */
+  box-sizing: border-box;
+  /* Include padding and border in the width */
 }
 
 .unchecked-text {
@@ -690,14 +697,16 @@ button:hover {
   right: 10px;
   width: auto;
   height: auto;
-  pointer-events: auto; /* Ensure interaction is possible */
+  pointer-events: auto;
+  /* Ensure interaction is possible */
   font-size: 0.9em;
   background-color: var(--debug-bg-color);
   border: 1px solid var(--debug-border-color);
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  display: none; /* Default state is hidden */
+  display: none;
+  /* Default state is hidden */
   overflow: auto;
   z-index: 9998;
   animation: fadeInOut 2s ease-in-out;
@@ -729,4 +738,30 @@ button:hover {
 
 .hidden {
   display: none;
+}
+
+input.valid {
+  border-color: #468847;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAgVBMVEUAAABetV5buFtcuFxcuVxdu11cuFxbuFtcuFxcuFxbtltcuFxbtltetl5cuFxct1xduV1fuF9cuFxcuFxbultcuFxduF1gtWBduV1cuFxcuVxcuFxcuFxcuFxet15dt11cuFxcuFxbt1teuF5duV1euF5cuVxcuFxcuFxcuFwAAADG3XcxAAAAKXRSTlMAJrDPRSnn1OjCKvM4MamLFivp8jvI1xgs6jpL++w5UvrxUU83RMe6MlhBCPsAAAABYktHRACIBR1IAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4AwTFzUBkZPjhwAAAHBJREFUGNNjYCAJMDIxsyDzWdk0NdmR+RyampqcCD4XiM/Nw8DLxy8A4gsKAfnCIgwMopqaYuIMDBIwPgOzJkhEQhLElwIplZYBMmWFQXw5iGHyCppgoCgHM14JLKLIg7BQGSiiqILsRFU1dQ3iPQgAPhMLEPHXqSUAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTItMTlUMjM6NTM6MDErMDE6MDCbiS6WAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTEyLTE5VDIzOjUzOjAxKzAxOjAw6tSWKgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII=);
+  background-position: right 5px center;
+  background-repeat: no-repeat;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+input.error {
+  border-color: #ff0000;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAARCAYAAAA/mJfHAAAA4UlEQVQ4Ed2TwRXCIAyGu4ILeJCEevHkCl3BFVzBFVzBFXosubmCK7gCK+ALJTzKC+3zqL0kkOTrTwhd91MfHc2Z0FxboqmHG532u1Y87zPIWfDOQuCiHEiOs+bJMWfhTYiHOr5Yc1JK5oIwIdwloQDFGK8lplpWU8KSPzqEV71PPVxUSLnZACY18YiBEIeyZtXnC6iVyPorEP+Fm6sdbbNPtcQIqi5CVM12o/ECbIDiqNTAzVlTjubnIcZhCYsXMYoI1U4WH0VRBEkiN76IqUMtudkmoDrhCejXnlsG/afzAYJhvyckpo4NAAAAAElFTkSuQmCC);
+  background-position: right 5px center;
+  background-repeat: no-repeat;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.form-error {
+  display: block;
+  color: #ff0000;
+  margin: 0 0 1em;
+  font-size: 0.9em;
+  text-align: center;
 }
