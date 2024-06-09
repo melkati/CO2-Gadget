@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Check if the current URL contains "preferences.html"
     if (currentURL.includes("preferences.html")) {
-        highlightCurrentPage(); // Highlight the current page in the navigation bar
+        //        highlightCurrentPage(); // Highlight the current page in the navigation bar
         relaxedSecurity = currentURL.includes("relaxedSecurity");
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
@@ -619,3 +619,85 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+/**
+ * Sanity Data form before Save 
+ */
+function sanityData() {
+    var txt_error = "";
+    let errorMessage = document.getElementById('error-message');
+    const displayB = document.getElementById("DisplayBright");
+    if (parseInt(displayB.value) > displayB.max || parseInt(displayB.value) < displayB.min) {
+        displayB.classList.remove('valid');
+        displayB.classList.add('error');
+
+        if (parseInt(displayB.value) > displayB.max) displayB.value = displayB.max;
+        if (parseInt(displayB.value) < displayB.min) displayB.value = displayB.min;
+
+        txt_error = "Display Brightness value must be >=" + displayB.min + " and <=" + displayB.max;
+        if (!errorMessage) {
+            errorMessage = document.createElement('div');
+            errorMessage.id = 'error-message';
+            errorMessage.className = 'form-error';
+            errorMessage.textContent = txt_error;
+            displayB.insertAdjacentElement('afterend', errorMessage);
+        }
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        displayB.classList.remove('error');
+        displayB.classList.add('valid');
+    }
+
+    const co2O = document.getElementById("co2OrangeRange");
+    const co2R = document.getElementById("co2RedRange");
+    if (parseInt(co2O.value) > parseInt(co2R.value)) {
+        co2R.value = parseInt(co2O.value) + 1;
+        co2O.classList.remove('valid');
+        co2O.classList.add('error');
+        co2R.classList.remove('valid');
+        co2R.classList.add('error');
+        txt_error = "Red level must be greater than Orange level";
+        if (!errorMessage) {
+            errorMessage = document.createElement('div');
+            errorMessage.id = 'error-message';
+            errorMessage.className = 'form-error';
+            errorMessage.textContent = txt_error;
+            co2R.insertAdjacentElement('afterend', errorMessage);
+        }
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        co2O.classList.remove('error');
+        co2O.classList.add('valid');
+        co2R.classList.remove('error');
+        co2R.classList.add('valid');
+    }
+    console.log(txt_error);
+    return true;
+}
+/**
+ * Runtime display reverse 
+ */
+function toggleDisplayReverse() {
+    console.log("Toggle Display Reverse");
+    fetch("/settings?ToggleDisplayReverse")
+        .then(response => {
+            if (!response.ok) throw new Error('Error reversing display');
+            console.log('Toggle Display Reverse successfully');
+        })
+        .catch(error => console.error('Error Toggling Display Reverse:', error));
+}
+/**
+ * Runtime display brightness 
+ */
+function setDisplayBrightness() {
+    const displayB = document.getElementById("DisplayBright").value;
+    console.log("Set Display Brightness = " + displayB);
+    fetch(`/settings?setDisplayBrightness=${displayB}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting display brightness');
+            console.log('Set Display brightness successfully');
+        })
+        .catch(error => console.error('Error Setting Display brightness:', error));
+}

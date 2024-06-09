@@ -286,7 +286,8 @@
                     <div>
                         <label for="tKeepAlMQTT">Time to Keep Alive MQTT (seconds):
                             <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause the
+                            <span class="tooltip-text">Time to keep the MQTT connection alive. Lower values may cause
+                                the
                                 connection to drop.</span>
                             <input type="number" id="tKeepAlMQTT" name="tKeepAlMQTT" value="">
                         </label>
@@ -339,17 +340,19 @@
                     <div>
                         <label for="tToPubESPNow">Time Between ESPNOW Publish (seconds):
                             <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase the
+                            <span class="tooltip-text">Time between ESPNOW publish events. Lower values will increase
+                                the
                                 frequency of ESPNOW
                                 messages.</span>
                             <input type="number" id="tToPubESPNow" name="tToPubESPNow" value="">
                         </label>
                     </div>
-    
+
                     <div>
                         <label for="tKeepAlESPNow">Time to Keep Alive ESPNOW (seconds):
                             <span class="tooltip-icon">ℹ️</span>
-                            <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause the
+                            <span class="tooltip-text">Time to keep the ESPNOW connection alive. Lower values may cause
+                                the
                                 connection to
                                 drop.</span>
                             <input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value="">
@@ -399,7 +402,8 @@
                         <label for="co2OrangeRange">Orange level:
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">CO2 level to be considered "warning".</span>
-                            <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="">
+                            <input type="number" id="co2OrangeRange" name="co2OrangeRange" value=""
+                                onchange="sanityData()">
                         </label>
                     </div>
 
@@ -407,7 +411,7 @@
                         <label for="co2RedRange">Red level:
                             <span class="tooltip-icon">ℹ️</span>
                             <span class="tooltip-text">CO2 level to be considered "danger".</span>
-                            <input type="number" id="co2RedRange" name="co2RedRange" value="">
+                            <input type="number" id="co2RedRange" name="co2RedRange" value="" onchange="sanityData()">
                         </label>
                     </div>
                 </fieldset>
@@ -670,7 +674,8 @@
 
                 <div>
                     <label for="displayReverse">Display Reverse:
-                        <input type="checkbox" id="displayReverse" name="displayReverse">
+                        <input type="checkbox" id="displayReverse" name="displayReverse"
+                            onchange="toggleDisplayReverse()">
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Reverse the display orientation.</span>
                     </label>
@@ -680,7 +685,8 @@
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness
                             of the display.</span>
-                        <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5">
+                        <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5"
+                            onchange="if(sanityData()) setDisplayBrightness();">
                     </label>
                 </div>
             </fieldset>
