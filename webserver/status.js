@@ -34,19 +34,6 @@ function getWiFiStatusText(wifiStatus) {
     }
 }
 
-/**
- * Updates the DOM with feature data for CO2 Gadget.
- */
-function showCO2GadgetFeatures() {
-    document.getElementById('featureBLE').textContent = features.SUPPORT_BLE;
-    document.getElementById('featureBuzzer').textContent = features.SUPPORT_BUZZER;
-    document.getElementById('featureESPNow').textContent = features.SUPPORT_ESPNOW;
-    document.getElementById('featureMDNS').textContent = features.SUPPORT_MDNS;
-    document.getElementById('featureMQTT').textContent = features.SUPPORT_MQTT;
-    document.getElementById('featureMQTTDiscovery').textContent = features.SUPPORT_MQTT_DISCOVERY;
-    document.getElementById('featureOTA').textContent = features.SUPPORT_OTA;
-}
-
 // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
 function loadCaptivePortalStatusFromServer() {
     fetch('/getCaptivePortalStatusAsJson')
@@ -294,6 +281,8 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchVersion;
         loadCaptivePortalStatusFromServer();
         loadFeaturesFromServer();
-        fillFeaturesFromServer();
+        setTimeout(function () {
+            fillFeaturesFromServer();
+        }, 500);        
     }
 });
