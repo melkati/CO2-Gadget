@@ -623,81 +623,152 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Save preferences to non-volatile memory (Preferences)
     try {
         preferences.begin("CO2-Gadget", false);
-        customCalibrationValue = JsonDocument["customCalValue"];
-        if (tempOffset != float(JsonDocument["tempOffset"])) {
+
+        if (JsonDocument.containsKey("customCalValue")) {
+            customCalibrationValue = JsonDocument["customCalValue"];
+        }
+        if (JsonDocument.containsKey("tempOffset") && tempOffset != float(JsonDocument["tempOffset"])) {
             Serial.println("-->[PREF] Temp Offset changed from " + String(tempOffset) + " to " + String(JsonDocument["tempOffset"].as<String>()));
             tempOffset = float(JsonDocument["tempOffset"]);
             sensors.setTempOffset(tempOffset);
         }
-        altitudeMeters = JsonDocument["altitudeMeters"];
-        autoSelfCalibration = JsonDocument["autoSelfCal"];
-        co2OrangeRange = JsonDocument["co2OrangeRange"];
-        co2RedRange = JsonDocument["co2RedRange"];
-        if (DisplayBrightness != JsonDocument["DisplayBright"]) {
-#ifdef LILYGO_T_DISPLAY_S3
-            // If JsonDocument["DisplayBright"] is > 16 set it to 16. If JsonDocument["DisplayBright"] is < 1 set it to 1
-            if (JsonDocument["DisplayBright"] > 16) {
-                JsonDocument["DisplayBright"] = 16;
-            }
-            if (JsonDocument["DisplayBright"] < 1) {
-                JsonDocument["DisplayBright"] = 1;
-            }
-#else
-            // If JsonDocument["DisplayBright"] is > 255 set it to 255. If JsonDocument["DisplayBright"] is < 1 set it to 1
-            if (JsonDocument["DisplayBright"] > 255) {
-                JsonDocument["DisplayBright"] = 255;
-            }
-            if (JsonDocument["DisplayBright"] < 1) {
-                JsonDocument["DisplayBright"] = 1;
-            }
-#endif
-            DisplayBrightness = JsonDocument["DisplayBright"];
-#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
-            // setDisplayBrightness(DisplayBrightness);
-#endif
+        if (JsonDocument.containsKey("altitudeMeters")) {
+            altitudeMeters = JsonDocument["altitudeMeters"];
         }
-        neopixelBrightness = JsonDocument["neopixBright"];
-        selectedNeopixelType = JsonDocument["selNeopxType"];
-        activeBLE = JsonDocument["activeBLE"];
-        activeWIFI = JsonDocument["activeWIFI"];
-        activeMQTT = JsonDocument["activeMQTT"];
-        activeESPNOW = JsonDocument["activeESPNOW"];
-        activeOTA = JsonDocument["activeOTA"];
-        rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
-        batteryDischargedMillivolts = JsonDocument["batDischgd"];
-        batteryFullyChargedMillivolts = JsonDocument["batChargd"];
-        if (vRef != JsonDocument["vRef"]) {  // If battery reference changed, apply it
+        if (JsonDocument.containsKey("autoSelfCal")) {
+            autoSelfCalibration = JsonDocument["autoSelfCal"];
+        }
+        if (JsonDocument.containsKey("co2OrangeRange")) {
+            co2OrangeRange = JsonDocument["co2OrangeRange"];
+        }
+        if (JsonDocument.containsKey("co2RedRange")) {
+            co2RedRange = JsonDocument["co2RedRange"];
+        }
+        if (JsonDocument.containsKey("DisplayBright")) {
+            if (DisplayBrightness != JsonDocument["DisplayBright"]) {
+#ifdef LILYGO_T_DISPLAY_S3
+                if (JsonDocument["DisplayBright"] > 16) {
+                    JsonDocument["DisplayBright"] = 16;
+                }
+                if (JsonDocument["DisplayBright"] < 1) {
+                    JsonDocument["DisplayBright"] = 1;
+                }
+#else
+                if (JsonDocument["DisplayBright"] > 255) {
+                    JsonDocument["DisplayBright"] = 255;
+                }
+                if (JsonDocument["DisplayBright"] < 1) {
+                    JsonDocument["DisplayBright"] = 1;
+                }
+#endif
+                DisplayBrightness = JsonDocument["DisplayBright"];
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+                // setDisplayBrightness(DisplayBrightness);
+#endif
+            }
+        }
+        if (JsonDocument.containsKey("neopixBright")) {
+            neopixelBrightness = JsonDocument["neopixBright"];
+        }
+        if (JsonDocument.containsKey("selNeopxType")) {
+            selectedNeopixelType = JsonDocument["selNeopxType"];
+        }
+        if (JsonDocument.containsKey("activeBLE")) {
+            activeBLE = JsonDocument["activeBLE"];
+        }
+        if (JsonDocument.containsKey("activeWIFI")) {
+            activeWIFI = JsonDocument["activeWIFI"];
+        }
+        if (JsonDocument.containsKey("activeMQTT")) {
+            activeMQTT = JsonDocument["activeMQTT"];
+        }
+        if (JsonDocument.containsKey("activeESPNOW")) {
+            activeESPNOW = JsonDocument["activeESPNOW"];
+        }
+        if (JsonDocument.containsKey("activeOTA")) {
+            activeOTA = JsonDocument["activeOTA"];
+        }
+        if (JsonDocument.containsKey("rootTopic")) {
+            rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("batDischgd")) {
+            batteryDischargedMillivolts = JsonDocument["batDischgd"];
+        }
+        if (JsonDocument.containsKey("batChargd")) {
+            batteryFullyChargedMillivolts = JsonDocument["batChargd"];
+        }
+        if (JsonDocument.containsKey("vRef") && vRef != JsonDocument["vRef"]) {
             Serial.println("-->[PREF] vRef changed from " + String(vRef) + " to " + String(JsonDocument["vRef"].as<String>()));
             vRef = JsonDocument["vRef"];
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
             readBatteryVoltage();
         }
-        mqttShowInConsole = JsonDocument["mqttShowInCon"];
-        mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
-        mqttShowInConsole = JsonDocument["mqttShowInCon"];
-        mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
-        mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
-        timeToDisplayOff = JsonDocument["tToDispOff"];
-        timeToKeepAliveMQTT = JsonDocument["tKeepAlMQTT"];
-        timeToKeepAliveESPNow = JsonDocument["tKeepAlESPNow"];
-        timeBetweenMQTTPublish = JsonDocument["tToPubMQTT"];
-        timeBetweenESPNowPublish = JsonDocument["tToPubESPNow"];
-        displayOffOnExternalPower = JsonDocument["dispOffOnExP"];
-        wifiSSID = JsonDocument["wifiSSID"].as<String>().c_str();
-        hostName = JsonDocument["hostName"].as<String>().c_str();
+        if (JsonDocument.containsKey("mqttShowInCon")) {
+            mqttShowInConsole = JsonDocument["mqttShowInCon"];
+        }
+        if (JsonDocument.containsKey("mqttClientId")) {
+            mqttClientId = JsonDocument["mqttClientId"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("mqttBroker")) {
+            mqttBroker = JsonDocument["mqttBroker"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("mqttUser")) {
+            mqttUser = JsonDocument["mqttUser"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("tToDispOff")) {
+            timeToDisplayOff = JsonDocument["tToDispOff"];
+        }
+        if (JsonDocument.containsKey("tKeepAlMQTT")) {
+            timeToKeepAliveMQTT = JsonDocument["tKeepAlMQTT"];
+        }
+        if (JsonDocument.containsKey("tKeepAlESPNow")) {
+            timeToKeepAliveESPNow = JsonDocument["tKeepAlESPNow"];
+        }
+        if (JsonDocument.containsKey("tToPubMQTT")) {
+            timeBetweenMQTTPublish = JsonDocument["tToPubMQTT"];
+        }
+        if (JsonDocument.containsKey("tToPubESPNow")) {
+            timeBetweenESPNowPublish = JsonDocument["tToPubESPNow"];
+        }
+        if (JsonDocument.containsKey("dispOffOnExP")) {
+            displayOffOnExternalPower = JsonDocument["dispOffOnExP"];
+        }
+        if (JsonDocument.containsKey("wifiSSID")) {
+            wifiSSID = JsonDocument["wifiSSID"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("hostName")) {
+            hostName = JsonDocument["hostName"].as<String>().c_str();
+        }
 
         // Fixed IP
-        useStaticIP = JsonDocument["useStaticIP"];
-        staticIP.fromString(JsonDocument["staticIP"].as<String>());
-        gateway.fromString(JsonDocument["gateway"].as<String>());
-        subnet.fromString(JsonDocument["subnet"].as<String>());
-        dns1.fromString(JsonDocument["dns1"].as<String>());
-        dns2.fromString(JsonDocument["dns2"].as<String>());
+        if (JsonDocument.containsKey("useStaticIP")) {
+            useStaticIP = JsonDocument["useStaticIP"];
+        }
+        if (JsonDocument.containsKey("staticIP")) {
+            staticIP.fromString(JsonDocument["staticIP"].as<String>());
+        }
+        if (JsonDocument.containsKey("gateway")) {
+            gateway.fromString(JsonDocument["gateway"].as<String>());
+        }
+        if (JsonDocument.containsKey("subnet")) {
+            subnet.fromString(JsonDocument["subnet"].as<String>());
+        }
+        if (JsonDocument.containsKey("dns1")) {
+            dns1.fromString(JsonDocument["dns1"].as<String>());
+        }
+        if (JsonDocument.containsKey("dns2")) {
+            dns2.fromString(JsonDocument["dns2"].as<String>());
+        }
 
-        selectedCO2Sensor = JsonDocument["selCO2Sensor"];
-        debugSensors = JsonDocument["debugSensors"];
+        if (JsonDocument.containsKey("selCO2Sensor")) {
+            selectedCO2Sensor = JsonDocument["selCO2Sensor"];
+        }
+        if (JsonDocument.containsKey("debugSensors")) {
+            debugSensors = JsonDocument["debugSensors"];
+        }
+
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-        if (displayReverse != JsonDocument["displayReverse"]) {
+        if (JsonDocument.containsKey("displayReverse") && displayReverse != JsonDocument["displayReverse"]) {
             Serial.println("-->[PREF] Display Reverse changed from " + String(displayReverse) + " to " + String(JsonDocument["displayReverse"].as<String>()));
             displayReverse = JsonDocument["displayReverse"];
             setDisplayReverse(displayReverse);
@@ -705,66 +776,87 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             if (inMenu) isMenuDirty = true;
         }
 #else
-        displayReverse = JsonDocument["displayReverse"];
-        reverseButtons(displayReverse);
+        if (JsonDocument.containsKey("displayReverse")) {
+            displayReverse = JsonDocument["displayReverse"];
+            reverseButtons(displayReverse);
+        }
 #endif
-        // displayReverse = JsonDocument["displayReverse"];
-        showFahrenheit = JsonDocument["showFahrenheit"];
-        measurementInterval = JsonDocument["measurementInterval"];
-        sampleInterval = JsonDocument["sampleInterval"];
-        outputsModeRelay = JsonDocument["outModeRelay"];
-        channelESPNow = JsonDocument["channelESPNow"];
-        boardIdESPNow = JsonDocument["boardIdESPNow"];
-
-        // Get the MAC address for peerESPNowAddress as a string from JSON
-        String peerESPNowAddressStr = JsonDocument["peerESPNowAddress"].as<String>();
-        // Convert the string to an array of uint8_t
-        uint8_t peerESPNowAddress[6];
-        const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
-        for (int i = 0; i < 6; i++) {
-            peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
+        if (JsonDocument.containsKey("showFahrenheit")) {
+            showFahrenheit = JsonDocument["showFahrenheit"];
+        }
+        if (JsonDocument.containsKey("measurementInterval")) {
+            measurementInterval = JsonDocument["measurementInterval"];
+        }
+        if (JsonDocument.containsKey("sampleInterval")) {
+            sampleInterval = JsonDocument["sampleInterval"];
+        }
+        if (JsonDocument.containsKey("outModeRelay")) {
+            outputsModeRelay = JsonDocument["outModeRelay"];
+        }
+        if (JsonDocument.containsKey("channelESPNow")) {
+            channelESPNow = JsonDocument["channelESPNow"];
+        }
+        if (JsonDocument.containsKey("boardIdESPNow")) {
+            boardIdESPNow = JsonDocument["boardIdESPNow"];
         }
 
-        if (displayShowTemperature != JsonDocument["showTemp"]) {
+        // Get the MAC address for peerESPNowAddress as a string from JSON
+        if (JsonDocument.containsKey("peerESPNowAddress")) {
+            String peerESPNowAddressStr = JsonDocument["peerESPNowAddress"].as<String>();
+            // Convert the string to an array of uint8_t
+            uint8_t peerESPNowAddress[6];
+            const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
+            for (int i = 0; i < 6; i++) {
+                peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
+            }
+        }
+
+        if (JsonDocument.containsKey("showTemp") && displayShowTemperature != JsonDocument["showTemp"]) {
             Serial.println("-->[PREF] Display Temperature changed from " + String(displayShowTemperature) + " to " + String(JsonDocument["showTemp"].as<String>()));
             displayShowTemperature = JsonDocument["showTemp"];
             shouldRedrawDisplay = true;
         }
 
-        if (displayShowHumidity != JsonDocument["showHumidity"]) {
+        if (JsonDocument.containsKey("showHumidity") && displayShowHumidity != JsonDocument["showHumidity"]) {
             Serial.println("-->[PREF] Display Humidity changed from " + String(displayShowHumidity) + " to " + String(JsonDocument["showHumidity"].as<String>()));
             displayShowHumidity = JsonDocument["showHumidity"];
             shouldRedrawDisplay = true;
         }
 
-        if (displayShowBattery != JsonDocument["showBattery"]) {
+        if (JsonDocument.containsKey("showBattery") && displayShowBattery != JsonDocument["showBattery"]) {
             Serial.println("-->[PREF] Display Battery changed from " + String(displayShowBattery) + " to " + String(JsonDocument["showBattery"].as<String>()));
             displayShowBattery = JsonDocument["showBattery"];
             shouldRedrawDisplay = true;
         }
 
-        if (displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
+        if (JsonDocument.containsKey("showBattVolt") && displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
             Serial.println("-->[PREF] Display Battery Voltage changed from " + String(displayShowBatteryVoltage) + " to " + String(JsonDocument["showBattVolt"].as<String>()));
             displayShowBatteryVoltage = JsonDocument["showBattVolt"];
             shouldRedrawDisplay = true;
         }
 
-        if (displayShowCO2 != JsonDocument["showCO2"]) {
+        if (JsonDocument.containsKey("showCO2") && displayShowCO2 != JsonDocument["showCO2"]) {
             Serial.println("-->[PREF] Display CO2 changed from " + String(displayShowCO2) + " to " + String(JsonDocument["showCO2"].as<String>()));
             displayShowCO2 = JsonDocument["showCO2"];
             shouldRedrawDisplay = true;
         }
 
-        if (displayShowPM25 != JsonDocument["showPM25"]) {
+        if (JsonDocument.containsKey("showPM25") && displayShowPM25 != JsonDocument["showPM25"]) {
             Serial.println("-->[PREF] Display PM2.5 changed from " + String(displayShowPM25) + " to " + String(JsonDocument["showPM25"].as<String>()));
             displayShowPM25 = JsonDocument["showPM25"];
             shouldRedrawDisplay = true;
         }
 
         // Buzzer preferences
-        toneBuzzerBeep = JsonDocument["toneBzrBeep"];          // Buzzer frequency
-        durationBuzzerBeep = JsonDocument["durBzrBeep"];       // Buzzer duration
-        timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];  // Time between beeps
+        if (JsonDocument.containsKey("toneBzrBeep")) {
+            toneBuzzerBeep = JsonDocument["toneBzrBeep"];
+        }
+        if (JsonDocument.containsKey("durBzrBeep")) {
+            durationBuzzerBeep = JsonDocument["durBzrBeep"];
+        }
+        if (JsonDocument.containsKey("timeBtwnBzr")) {
+            timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];
+        }
 
         // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
