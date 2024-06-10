@@ -651,9 +651,17 @@ void showCO2units(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void displayShowValues(bool forceRedraw = false) {
     uint8_t currentDatum = tft.getTextDatum();
+    if (redrawDisplayOnNextLoop) {
+        shouldRedrawDisplay = true;
+        redrawDisplayOnNextLoop = false;
+    }
+    if (shouldRedrawDisplay) {
+        forceRedraw = true;
+        Serial.println("-->[TFT ] Forcing display redraw");        
+    }
     tft.unloadFont();
     if (forceRedraw) {
-        // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
         tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
@@ -667,6 +675,7 @@ void displayShowValues(bool forceRedraw = false) {
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     forceRedraw = false;
+    shouldRedrawDisplay = false;
 
     // Revert the datum setting
     tft.loadFont(SMALL_FONT);

@@ -683,6 +683,10 @@ void testRedrawValues(bool randomNumbers = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
+    if (redrawDisplayOnNextLoop) {
+        shouldRedrawDisplay = true;
+        redrawDisplayOnNextLoop = false;
+    }
     if (shouldRedrawDisplay) {
         forceRedraw = true;
         shouldRedrawDisplay = false;
@@ -743,6 +747,10 @@ void displayShowValues(bool forceRedraw = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
+    if (redrawDisplayOnNextLoop) {
+        shouldRedrawDisplay = true;
+        redrawDisplayOnNextLoop = false;
+    }
     if (shouldRedrawDisplay) {
         forceRedraw = true;
         shouldRedrawDisplay = false;
