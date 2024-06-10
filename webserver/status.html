@@ -42,10 +42,12 @@
                 </div>
             </div>
         </div>
+        <!-- Captive Portal Status Container -->
+        <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
     </div>
-
-    <!-- Captive Portal Status Container -->
-    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+    
+    <!-- Debug Window Container -->
+    <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
         <h1>CO2 Gadget Status</h1>
@@ -179,7 +181,7 @@
                 <span class="status-label">Min Free Heap:</span> <span id="minFreeHeap"></span> bytes
             </div>
             <div class="status-item" id="uptimeItem">
-                <span class="status-label">Uptime:</span> <span id="uptime"></span> ms.
+                <span class="status-label">Uptime:</span> <span id="uptime"></span>
             </div>
             <div class="status-item" id="batVoltageItem">
                 <span class="status-label">Battery Voltage:</span> <span id="batVoltage"></span> Volts.
@@ -213,7 +215,7 @@
 
         <!-- Features Group -->
         <fieldset>
-            <legend>CO2 Gadget Features (compilation time):</legend>
+            <legend>Features (compilation time):</legend>
             <div class="feature-item" id="featureBLEItem">
                 <span class="feature-label">BLE:</span> <span id="featureBLE"></span>
             </div>
@@ -234,9 +236,6 @@
             </div>
             <div class="feature-item" id="featureOTAItem">
                 <span class="feature-label">OTA:</span> <span id="featureOTA"></span>
-            </div>
-            <div class="feature-item" id="mDNSNameItem">
-                <span class="feature-label">mDNS:</span> <span id="mDNSName"></span>
             </div>
         </fieldset>
     </div>
