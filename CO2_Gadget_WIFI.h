@@ -1221,7 +1221,9 @@ void initWebServer() {
                 displayShowBattery = (request->getParam("showBattery")->value() == "true" || request->getParam("showBattery")->value() == "1");
                 Serial.println("-->[WEBS] showTemp(" + request->getParam("showTemp")->value() + ") - showHumidity(" + request->getParam("showHumidity")->value() + ") - showBAttery(" + request->getParam("showBattery")->value() + ") in display");
                 if (!inMenu) {
+#ifdef DEBUG_CAPTIVE_PORTAL
                     Serial.println("-->[WEBS] Set shouldRedrawDisplay to true");
+#endif
                     redrawDisplayOnNextLoop = true;
                 }
                 request->send(200, "text/plain", "OK. Showing/hidding Temp/Humidity/Battery in display");
