@@ -444,26 +444,21 @@ void processPendingCommands() {
     if (pendingCalibration == true) {
         if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
             Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
-            // Serial.printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
         } else {
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
-            // Serial.printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
             pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
         if (ambientPressureValue != 0) {
-            Serial.printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
+            Serial.println("-->[MAIN] Setting AmbientPressure for CO2 sensor at " + String(ambientPressureValue) + " mbar\n");
             pendingAmbientPressure = false;
             // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
         } else {
-            Serial.printf(
-                "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
-                "value at %d mbar\n",
-                ambientPressureValue);
+            Serial.println("-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid value at " + String(ambientPressureValue) + " mbar\n");
             pendingAmbientPressure = false;
         }
     }

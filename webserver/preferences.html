@@ -15,7 +15,6 @@
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./preferences.js"></script>
-    <!-- <script defer type="text/javascript" src="./combined.js"></script> -->
 </head>
 
 <body>
@@ -611,13 +610,13 @@
                     <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness of
                         the display.</span>
                 </div>
-            </fieldset>            
+            </fieldset>
 
+            <!-- Buttons -->
             <div class="buttonGroup">
                 <div class="buttonsBackupRestore">
                     <button id="backupButton" type="button" onclick="backupPreferences()">Backup Preferences</button>
-                    <input type="file" id="fileInput" accept=".json" style="display:none"
-                        onchange="handleFileSelection(event)">
+                    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleFileSelection(event)">
                     <button id="restoreButton" type="button" onclick="chooseFileAndRestore()">Restore
                         Preferences</button>
                 </div>
