@@ -25,14 +25,21 @@ int displayHeight = 64;
 // #define MENUFONT u8g2_font_6x10_mf
 #define MENUFONT u8g2_font_5x8_mf
 
-void setDisplayBrightness(uint32_t newBrightness) {
-    Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
-    u8g2.setContrast(newBrightness);
-    actualDisplayBrightness = newBrightness;
+void setDisplayReverse(bool reverse) {
+    if (reverse) {
+        Serial.printf("-->[OLED] Set display reversed\n");
+        u8g2.setDisplayRotation(U8G2_R2);
+    } else {
+        Serial.printf("-->[OLED] Set display normal\n");
+        u8g2.setDisplayRotation(U8G2_R0);
+    }
+    shouldRedrawDisplay = true;
 }
 
-void displaySleep(bool value = true) {
-    // u8g2.setPowerSave(number);  // Turn off the display
+void setDisplayBrightness(uint16_t newBrightness) {
+  Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
+  u8g2.setContrast(newBrightness);
+  actualDisplayBrightness = newBrightness;
 }
 
 void turnOffDisplay() {

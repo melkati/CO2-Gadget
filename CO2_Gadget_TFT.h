@@ -296,17 +296,25 @@ void initBacklight() {
 #endif
 }
 
+void setDisplayReverse(bool reverse) {
+    if (reverse) {
+        Serial.printf("-->[TFT ] Set display reversed\n");
+        tft.setRotation(3);
+    } else {
+        Serial.printf("-->[TFT ] Set display normal\n");
+        tft.setRotation(1);
+    }
+    tft.fillScreen(TFT_BLACK);
+    shouldRedrawDisplay = true;
+}
+
 void initDisplay(bool fastMode = false) {
     if (!fastMode) Serial.printf("-->[TFT ] Initializing display\n");
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
     tft.init();
-    if (displayReverse) {
-        tft.setRotation(3);
-    } else {
-        tft.setRotation(1);
-    }
+    setDisplayReverse(displayReverse);
     setElementLocations();
     tft.setTextSize(2);
     if (!fastMode) {
@@ -451,12 +459,18 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
-    // If captivePortalActive = true; draw a white circle instead of the WiFi icon
+    // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If forceCaptivePortalActive is also true, draw it blue
+
     if (captivePortalActive) {
-        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-        tft.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);
+        tft.drawRect(posX - 2, posY - 2, 16 + 4, 16 + 4, TFT_BLACK);
+        if (forceCaptivePortalActive) {
+            tft.fillCircle(posX + 8, posY + 8, 6, TFT_BLUE);
+        } else {
+            tft.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);
+        }
         return;
     }
+    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     int8_t rssi = WiFi.RSSI();
     if (troubledWIFI) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
@@ -656,9 +670,17 @@ void displayShowValues(bool forceRedraw = false) {
         if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
     }
     uint8_t currentDatum = tft.getTextDatum();
+    if (redrawDisplayOnNextLoop) {
+        shouldRedrawDisplay = true;
+        redrawDisplayOnNextLoop = false;
+    }
+    if (shouldRedrawDisplay) {
+        forceRedraw = true;
+        Serial.println("-->[TFT ] Forcing display redraw");        
+    }
     tft.unloadFont();
     if (forceRedraw) {
-        // Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
+        Serial.println("-->[TFT ] Displaying values. Force Redraw: " + String(forceRedraw ? "true" : "false"));
         tft.fillScreen(TFT_BLACK);  // Remove previous remains in the screen
     }
     showCO2(co2, elementPosition.co2X, elementPosition.co2Y, elementPosition.pixelsToBaseline, forceRedraw);
@@ -672,6 +694,7 @@ void displayShowValues(bool forceRedraw = false) {
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
     forceRedraw = false;
+    shouldRedrawDisplay = false;
 
     // Revert the datum setting
     tft.loadFont(SMALL_FONT);

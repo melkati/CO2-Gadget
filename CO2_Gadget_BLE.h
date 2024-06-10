@@ -9,7 +9,7 @@
 
 NimBLELibraryWrapper lib;
 WifiMultiLibraryWrapper wifi;
-DataProvider provider(lib, DataType::T_RH_CO2_ALT, true, true, true, &wifi);
+DataProvider provider(lib, DataType::T_RH_CO2, true, true, true, &wifi);
 #endif
 
 void setBLEHistoryInterval(uint64_t interval) {
