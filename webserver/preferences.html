@@ -340,14 +340,14 @@
         
                     <div class="form-group flex-align-center">
                         <label for="co2OrangeRange">Orange level:</label>
-                        <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="" onchange="sanityData()">
+                        <input type="number" id="co2OrangeRange" name="co2OrangeRange" value="" onchange="sanityCheckData()">
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">CO2 level to be considered "warning".</span>
                     </div>
         
                     <div class="form-group flex-align-center">
                         <label for="co2RedRange">Red level:</label>
-                        <input type="number" id="co2RedRange" name="co2RedRange" value="" onchange="sanityData()">
+                        <input type="number" id="co2RedRange" name="co2RedRange" value="" onchange="sanityCheckData()">
                         <span class="tooltip-icon">ℹ️</span>
                         <span class="tooltip-text">CO2 level to be considered "danger".</span>
                     </div>
@@ -510,21 +510,21 @@
         
                 <div class="form-group flex-align-center">
                     <label for="showTemp">Show Temperature:</label>
-                    <input type="checkbox" id="showTemp" name="showTemp" onchange="showTempHumBatt()>
+                    <input type="checkbox" id="showTemp" name="showTemp" onchange="showTempHumBatt()">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Show temperature readings on the display.</span>
                 </div>
         
                 <div class="form-group flex-align-center">
                     <label for="showHumidity">Show Humidity:</label>
-                    <input type="checkbox" id="showHumidity" name="showHumidity" onchange="showTempHumBatt()>
+                    <input type="checkbox" id="showHumidity" name="showHumidity" onchange="showTempHumBatt()">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Show humidity readings on the display.</span>
                 </div>
         
                 <div class="form-group flex-align-center">
                     <label for="showBattery">Show Battery:</label>
-                    <input type="checkbox" id="showBattery" name="showBattery" onchange="showTempHumBatt()>
+                    <input type="checkbox" id="showBattery" name="showBattery" onchange="showTempHumBatt()">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Show battery level on the display.</span>
                 </div>
@@ -559,7 +559,8 @@
                 </div>
         <div class="form-group flex-align-center" id="displayBrightDiv">
             <label for="DisplayBright">Display Brightness:</label>
-            <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5" onchange="if(sanityData()) setDisplayBrightness();">
+            <input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5"
+                onchange="if(sanityCheckData()) setDisplayBrightness();">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Set the display brightness. Lower values will decrease the brightness of the display.</span>
                 </div>
