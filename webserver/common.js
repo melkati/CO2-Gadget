@@ -78,8 +78,8 @@ function loadFeaturesFromServer() {
                 features.SUPPORT_ESPNOW = false;
             }
 
-            if (data.MDNS !== undefined) {
-                features.SUPPORT_MDNS = data.MDNS;
+            if (data.mDNS !== undefined) {
+                features.SUPPORT_MDNS = data.mDNS;
             }
             else {
                 features.SUPPORT_MDNS = false;

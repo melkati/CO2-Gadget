@@ -34,19 +34,6 @@ function getWiFiStatusText(wifiStatus) {
     }
 }
 
-/**
- * Updates the DOM with feature data for CO2 Gadget.
- */
-function showCO2GadgetFeatures() {
-    document.getElementById('featureBLE').textContent = features.SUPPORT_BLE;
-    document.getElementById('featureBuzzer').textContent = features.SUPPORT_BUZZER;
-    document.getElementById('featureESPNow').textContent = features.SUPPORT_ESPNOW;
-    document.getElementById('featureMDNS').textContent = features.SUPPORT_MDNS;
-    document.getElementById('featureMQTT').textContent = features.SUPPORT_MQTT;
-    document.getElementById('featureMQTTDiscovery').textContent = features.SUPPORT_MQTT_DISCOVERY;
-    document.getElementById('featureOTA').textContent = features.SUPPORT_OTA;
-}
-
 // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
 function loadCaptivePortalStatusFromServer() {
     fetch('/getCaptivePortalStatusAsJson')
@@ -94,7 +81,6 @@ function loadCaptivePortalStatusFromServer() {
         .catch(error => console.error('Error fetching status:', error));
 }
 
-
 // Function to Fetch status data from /status endpoint and populate the form
 function loadStatusFromServer() {
     fetch('/status')
@@ -102,246 +88,123 @@ function loadStatusFromServer() {
         .then(data => {
             console.log('Fetching data successful!');
             // Update DOM with status data
-            if (data.mainDeviceSelected !== undefined) {
-                document.getElementById('mainDeviceSelected').textContent = data.mainDeviceSelected;
+            const elements = {
+                mainDeviceSelected: 'mainDeviceSelected',
+                CO2: 'co2',
+                Temperature: 'temperature',
+                Humidity: 'humidity',
+                WiFiStatus: 'wifiStatus',
+                SSID: 'ssid',
+                WiFiPassword: 'wifiPass',
+                IP: 'ip',
+                RSSI: 'rssi',
+                MACAddress: 'macAddress',
+                hostName: 'hostName',
+                useStaticIP: 'useStaticIP',
+                staticIP: 'staticIP',
+                gateway: 'gateway',
+                subnet: 'subnet',
+                dns1: 'dns1',
+                dns2: 'dns2',
+                rootTopic: 'rootTopic',
+                discoveryTopic: 'discoveryTopic',
+                mqttClientId: 'mqttClientId',
+                mqttBroker: 'mqttBroker',
+                mqttUser: 'mqttUser',
+                mqttPassword: 'mqttPass',
+                peerESPNowAddress: 'peerESPNowAddress',
+                activeWiFi: 'activeWiFi',
+                activeMQTT: 'activeMQTT',
+                activeBLE: 'activeBLE',
+                activeOTA: 'activeOTA',
+                troubledWiFi: 'troubledWiFi',
+                troubledMQTT: 'troubledMQTT',
+                troubledESPNow: 'troubledESPNow',
+                measurementInterval: 'measurementInterval',
+                sampleInterval: 'sampleInterval',
+                calibrationValue: 'calibrationValue',
+                pendingCalibration: 'pendingCalibration',
+                freeHeap: 'freeHeap',
+                minFreeHeap: 'minFreeHeap',
+                uptime: 'uptime',
+                lowPowerMode: 'lowPowerMode',
+                waitToDeep: 'waitToDeep',
+                timeSleeping: 'timeSleeping',
+                cyclsWifiConn: 'cyclsWifiConn',
+                cycRedrawDis: 'cycRedrawDis',
+                actBLEOnWake: 'actBLEOnWake',
+                actWifiOnWake: 'actWifiOnWake',
+                actMQTTOnWake: 'actMQTTOnWake',
+                actESPnowWake: 'actESPnowWake',
+                displayOnWake: 'displayOnWake'
+            };
+
+            Object.keys(elements).forEach(key => {
+                const elementId = elements[key];
+                const element = document.getElementById(elementId);
+                const itemElement = document.getElementById(`${elementId}Item`);
+
+                if (!element) {
+                    console.warn(`Element with id ${elementId} not found.`);
+                    return;
+                }
+
+                if (data[key] !== undefined) {
+                    if (key === 'WiFiStatus') {
+                        element.textContent = getWiFiStatusText(data[key]) + " (" + data[key] + ")";
+                    } else if (key === 'uptime') {
+                        updateUptime(element, data[key]);
+                    } else if (key === 'lowPowerMode') {
+                        switch (data[key]) {
+                            case 0:
+                                element.textContent = "Disabled";
+                                break;
+                            case 2:
+                                element.textContent = "Enabled";
+                                break;
+                            default:
+                                element.textContent = "Unknown";
+                        }
+                    } else if (typeof data[key] === 'boolean') {
+                        element.textContent = data[key] ? 'Yes' : 'No';
             } else {
-                document.getElementById('mainDeviceSelected').style.display = 'none';
-            }
-            if (data.CO2 !== undefined) {
-                document.getElementById('co2').textContent = data.CO2;
+                        element.textContent = data[key];
+                    }
             } else {
-                document.getElementById('co2Item').style.display = 'none';
+                    if (itemElement) itemElement.style.display = 'none';
             }
-
-            if (data.Temperature !== undefined) {
-                document.getElementById('temperature').textContent = data.Temperature;
-            } else {
-                document.getElementById('temperatureItem').style.display = 'none';
-            }
-
-            if (data.Humidity !== undefined) {
-                document.getElementById('humidity').textContent = data.Humidity;
-            } else {
-                document.getElementById('humidityItem').style.display = 'none';
-            }
-
-            if (data.WiFiStatus !== undefined) {
-                document.getElementById('wifiStatus').textContent = getWiFiStatusText(data.WiFiStatus) + " (" + data.WiFiStatus + ")";
-            } else {
-                document.getElementById('wifiStatusItem').style.display = 'none';
-            }
-
-            if (data.SSID !== undefined) {
-                document.getElementById('ssid').textContent = data.SSID;
-            } else {
-                document.getElementById('ssidItem').style.display = 'none';
-            }
-
-            if (data.WiFiPassword !== undefined) {
-                document.getElementById('wifiPass').textContent = data.WiFiPassword;
-            } else {
-                document.getElementById('wifiPassItem').style.display = 'none';
-            }
-
-            if (data.IP !== undefined) {
-                document.getElementById('ip').textContent = data.IP;
-            } else {
-                document.getElementById('ipItem').style.display = 'none';
-            }
-
-            if (data.RSSI !== undefined) {
-                document.getElementById('rssi').textContent = data.RSSI;
-            } else {
-                document.getElementById('rssiItem').style.display = 'none';
-            }
-
-            if (data.MACAddress !== undefined) {
-                document.getElementById('macAddress').textContent = data.MACAddress;
-            } else {
-                document.getElementById('macAddressItem').style.display = 'none';
-            }
-
-            if (data.hostName !== undefined) {
-                document.getElementById('hostName').textContent = data.hostName;
-            } else {
-                document.getElementById('hostNameItem').style.display = 'none';
-            }
-
-            if (data.useStaticIP !== undefined) {
-                document.getElementById('useStaticIP').textContent = data.useStaticIP;
-            } else {
-                document.getElementById('useStaticIPItem').style.display = 'none';
-            }
-
-            if (data.staticIP !== undefined) {
-                document.getElementById('staticIP').textContent = data.staticIP;
-            } else {
-                document.getElementById('staticIPItem').style.display = 'none';
-            }
-
-            if (data.gateway !== undefined) {
-                document.getElementById('gateway').textContent = data.gateway;
-            } else {
-                document.getElementById('gatewayItem').style.display = 'none';
-            }
-
-            if (data.subnet !== undefined) {
-                document.getElementById('subnet').textContent = data.subnet;
-            } else {
-                document.getElementById('subnetItem').style.display = 'none';
-            }
-
-            if (data.dns1 !== undefined) {
-                document.getElementById('dns1').textContent = data.dns1;
-            } else {
-                document.getElementById('dns1Item').style.display = 'none';
-            }
-
-            if (data.dns2 !== undefined) {
-                document.getElementById('dns2').textContent = data.dns2;
-            } else {
-                document.getElementById('dns2Item').style.display = 'none';
-            }
-
-            if (data.rootTopic !== undefined) {
-                document.getElementById('rootTopic').textContent = data.rootTopic;
-            } else {
-                document.getElementById('rootTopicItem').style.display = 'none';
-            }
-
-            if (data.discoveryTopic !== undefined) {
-                document.getElementById('discoveryTopic').textContent = data.discoveryTopic;
-            } else {
-                document.getElementById('discoveryTopicItem').style.display = 'none';
-            }
-
-            if (data.mqttClientId !== undefined) {
-                document.getElementById('mqttClientId').textContent = data.mqttClientId;
-            } else {
-                document.getElementById('mqttClientIdItem').style.display = 'none';
-            }
-
-            if (data.mqttBroker !== undefined) {
-                document.getElementById('mqttBroker').textContent = data.mqttBroker;
-            } else {
-                document.getElementById('mqttBrokerItem').style.display = 'none';
-            }
-
-            if (data.mqttUser !== undefined) {
-                document.getElementById('mqttUser').textContent = data.mqttUser;
-            } else {
-                document.getElementById('mqttUserItem').style.display = 'none';
-            }
-
-            if (data.mqttPassword !== undefined) {
-                document.getElementById('mqttPass').textContent = data.mqttPassword;
-            } else {
-                document.getElementById('mqttPassItem').style.display = 'none';
-            }
-
-            if (data.peerESPNowAddress !== undefined) {
-                document.getElementById('peerESPNowAddress').textContent = data.peerESPNowAddress;
-            } else {
-                document.getElementById('peerESPNowAddressItem').style.display = 'none';
-            }
-
-            if (data.activeWiFi !== undefined) {
-                document.getElementById('activeWiFi').textContent = data.activeWiFi;
-            } else {
-                document.getElementById('activeWiFiItem').style.display = 'none';
-            }
-
-            if (data.activeMQTT !== undefined) {
-                document.getElementById('activeMQTT').textContent = data.activeMQTT;
-            } else {
-                document.getElementById('activeMQTTItem').style.display = 'none';
-            }
-
-            if (data.activeBLE !== undefined) {
-                document.getElementById('activeBLE').textContent = data.activeBLE;
-            } else {
-                document.getElementById('activeBLEItem').style.display = 'none';
-            }
-
-            if (data.activeOTA !== undefined) {
-                document.getElementById('activeOTA').textContent = data.activeOTA;
-            } else {
-                document.getElementById('activeOTAItem').style.display = 'none';
-            }
-
-            if (data.troubledWiFi !== undefined) {
-                document.getElementById('troubledWiFi').textContent = data.troubledWiFi;
-            } else {
-                document.getElementById('troubledWiFiItem').style.display = 'none';
-            }
-
-            if (data.troubledMQTT !== undefined) {
-                document.getElementById('troubledMQTT').textContent = data.troubledMQTT;
-            } else {
-                document.getElementById('troubledMQTTItem').style.display = 'none';
-            }
-
-            if (data.troubledESPNow !== undefined) {
-                document.getElementById('troubledESPNow').textContent = data.troubledESPNow;
-            } else {
-                document.getElementById('troubledESPNowItem').style.display = 'none';
-            }
-
-            if (data.measurementInterval !== undefined) {
-                document.getElementById('measurementInterval').textContent = data.measurementInterval;
-            } else {
-                document.getElementById('measurementIntervalItem').style.display = 'none';
-            }
-
-            if (data.sampleInterval !== undefined) {
-                document.getElementById('sampleInterval').textContent = data.sampleInterval;
-            } else {
-                document.getElementById('sampleIntervalItem').style.display = 'none';
-            }
-
-            if (data.calibrationValue !== undefined) {
-                document.getElementById('calibrationValue').textContent = data.calibrationValue;
-            } else {
-                document.getElementById('calibrationValueItem').style.display = 'none';
-            }
-
-            if (data.pendingCalibration !== undefined) {
-                document.getElementById('pendingCalibration').textContent = data.pendingCalibration;
-            } else {
-                document.getElementById('pendingCalibrationItem').style.display = 'none';
-            }
-
-            if (data.freeHeap !== undefined) {
-                document.getElementById('freeHeap').textContent = data.freeHeap;
-            } else {
-                document.getElementById('freeHeapItem').style.display = 'none';
-            }
-
-            if (data.minFreeHeap !== undefined) {
-                document.getElementById('minFreeHeap').textContent = data.minFreeHeap;
-            } else {
-                document.getElementById('minFreeHeapItem').style.display = 'none';
-            }
-
-            if (data.uptime !== undefined) {
-                // Convert data.uptime (in melliseconds) to human readable format (HH:MM:SS)
-                var seconds = Math.floor(data.uptime / 1000);
-                var minutes = Math.floor(seconds / 60);
-                var hours = Math.floor(minutes / 60);
-                var days = Math.floor(hours / 24);
-
-                hours = hours - (days * 24);
-                minutes = minutes - (days * 24 * 60) - (hours * 60);
-                seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
-
-
-                document.getElementById('uptime').textContent = data.uptime;
-            } else {
-                document.getElementById('uptimeItem').style.display = 'none';
-            }
-
+            });
         })
         .catch(error => console.error('Error fetching status:', error));
+}
+
+function updateUptime(element, initialUptime) {
+    const startTime = Date.now();
+    const initialUptimeMs = initialUptime;
+
+    function formatUptime(uptimeMs) {
+        const seconds = Math.floor(uptimeMs / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        const formattedHours = hours - (days * 24);
+        const formattedMinutes = minutes - (days * 24 * 60) - (hours * 60);
+        const formattedSeconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+
+        return `${days}d ${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
+    }
+
+    function update() {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
+        const currentUptime = initialUptimeMs + elapsedTime;
+
+        element.textContent = formatUptime(currentUptime);
+    }
+
+    update(); // Initial update
+    setInterval(update, 1000); // Update every second
 }
 
 function fillFeaturesFromServer() {
@@ -418,6 +281,8 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchVersion;
         loadCaptivePortalStatusFromServer();
         loadFeaturesFromServer();
-        fillFeaturesFromServer();
+        setTimeout(function () {
+            fillFeaturesFromServer();
+        }, 500);        
     }
 });
