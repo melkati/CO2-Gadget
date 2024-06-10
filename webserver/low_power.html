@@ -1,28 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario con Tabs</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        // Immediately set the theme based on localStorage before the CSS is loaded
+        (function () {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("theme", savedTheme);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script defer type="text/javascript" src="./low_power.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar -->
-    <div class="navbar">
-        <a href="index.html">Home</a>
-        <a href="preferences.html">Preferences</a>
-        <a href="status.html">Status</a>
-        <a href="low_power.html" class="active">Thresholds</a>        
-        <div id="otaLink">
-            <a href="ota.html">OTA</a>
+    <div class="navbar" id="navbar">
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">Home</a>
+                <a href="preferences.html">Preferences</a>
+                <a href="low_power.html">Low power</a>
+                <a href="status.html">Status</a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html" class="hidden" id="otaLink">OTA</a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden"
+                        title="Captive portal inactive"></span>
+                </a>
+                <!-- Theme Switch Icon -->
+                <div class="iconDarkLight" id="iconBulb">
+                    <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+                        <path fill="var(--icon-color)"
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1,0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                    </svg>
+                </div>
+            </div>
         </div>
+        <!-- Captive Portal Status Container -->
+        <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
     </div>
 
+    <!-- Debug Window Container -->
+    <div id="debug-window" class="debug-window hidden-debug-window"></div>
+
     <div class="content">
-        <h1>CO2 Gadget Low Power Configuration</h1>
-        <form id="preferencesForm">           
+        <h1>Low Power Settings</h1>
+        <form id="preferencesForm">
+            <!-- Low Power Options Group -->
+            <fieldset>
+                <legend>Low Power Options</legend>
+
+                <div class="form-group flex-align-center">
+                    <label for="lowPowerMode">Low Power Mode:</label>
+                    <select id="lowPowerMode" name="lowPowerMode">
+                        <option value="0">Disabled</option>
+                        <!-- <option value="2">Basic Low Power (Not implemented)</option> -->
+                        <option value="2">Enabled</option>
+                        <!-- <option value="2">Maximum Low Power (Not implemented)</option> -->
+                    </select>
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Select if you want to use low power mode. This will reduce the power
+                        consumption of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="waitToDeep">Wait Time Before Low Power Mode (secs):</label>
+                    <input type="number" id="waitToDeep" name="waitToDeep" value="" min="15" max="900">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to wait before entering low power mode. This will give you time to
+                        interact with the device before it enters low power mode.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="timeSleeping">Time to be in Low Power Mode (secs):</label>
+                    <input type="number" id="timeSleeping" name="timeSleeping" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to be in low power mode after a measurement. This will reduce the
+                        power consumption of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="cyclsWifiConn">Connect to WiFi Every (Cycles):</label>
+                    <input type="number" id="cyclsWifiConn" name="cyclsWifiConn" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Connect to WiFi every X cycles. This will reduce the power consumption of
+                        the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="cycRedrawDis">Redraw Display Every (Cycles):</label>
+                    <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Redraw the display every X cycles. This will reduce the power consumption
+                        of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Activate BLE on wakeup. This will allow CO2 Gadget to send data to your
+                        phone or other BLE devices.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
+                    <input type="checkbox" id="actWifiOnWake" name="actWifiOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Activate WiFi on wakeup. This will allow CO2 Gadget to send data to your
+                        network (this is needed for MQTT).</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
+                    <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Send data via MQTT on wakeup. This will allow CO2 Gadget to send data to
+                        your network (this is needed for Home Assistant).</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
+                    <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Send data via ESPNow on wakeup. This will allow CO2 Gadget to send data
+                        to other ESP32 devices.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="deepSleepData.displayOnWake">Momentary Display on Wakeup:</label>
+                    <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Turn on the display for a moment when the device wakes up. This will
+                        allow you to see the current readings.</span>
+                </div>
+            </fieldset>
 
             <!-- Thresholds Options Group -->
             <fieldset>
@@ -54,7 +172,9 @@
                             <div>
                                 <label for="keepAliveTimeDisplay">Keep Alive Time
                                     <span class="tooltip-icon">ℹ️</span>
-                                    <span class="tooltip-text">Maximum time in seconds to update values if the threshold is not met. CO2 Gadget will update the display regardless of the threshold if this time has passed since the last update.</span>
+                                    <span class="tooltip-text">Maximum time in seconds to update values if the threshold
+                                        is not met. CO2 Gadget will update the display regardless of the threshold if
+                                        this time has passed since the last update.</span>
                                 </label>
                                 <input type="number" id="keepAliveTimeDisplay" name="keepAliveTimeDisplay" value="0">
                             </div>
@@ -81,15 +201,18 @@
                                         trigger
                                         the
                                         threshold. The display will not be updated until the threshold is met.</span>
-                                    <input type="number" id="co2ThresholdAbsDisplay" name="co2ThresholdAbsDisplay" value="">
+                                    <input type="number" id="co2ThresholdAbsDisplay" name="co2ThresholdAbsDisplay"
+                                        value="">
                                 </div>
                                 <div>
-                                    <label for="co2ThresholdPctDisplay">CO2 Threshold Percentage (ppm percentage):</label>
+                                    <label for="co2ThresholdPctDisplay">CO2 Threshold Percentage (ppm
+                                        percentage):</label>
                                     <span class="tooltip-icon">ℹ️</span>
                                     <span class="tooltip-text">The percentage difference of CO2 in ppm that will trigger
                                         the
                                         threshold. The display will not be updated until the threshold is met.</span>
-                                    <input type="number" id="co2ThresholdPctDisplay" name="co2ThresholdPctDisplay" value="">
+                                    <input type="number" id="co2ThresholdPctDisplay" name="co2ThresholdPctDisplay"
+                                        value="">
                                 </div>
                                 <div>
                                     <label for="co2ThresholdAndOr">Combine with:</label>
@@ -115,16 +238,19 @@
                                         will
                                         trigger the threshold. The display will not be updated until the threshold is
                                         met.</span>
-                                    <input type="number" step="any" id="tempThresholdAbsDisplay" name="tempThresholdAbsDisplay" value="">
+                                    <input type="number" step="any" id="tempThresholdAbsDisplay"
+                                        name="tempThresholdAbsDisplay" value="">
                                 </div>
                                 <div>
-                                    <label for="tempThresholdPctDisplay">Temp Threshold Percentage (°C percentage):</label>
+                                    <label for="tempThresholdPctDisplay">Temp Threshold Percentage (°C
+                                        percentage):</label>
                                     <span class="tooltip-icon">ℹ️</span>
                                     <span class="tooltip-text">The percentage difference of temperature in °C that will
                                         trigger
                                         the threshold. The display will not be updated until the threshold is
                                         met.</span>
-                                    <input type="number" id="tempThresholdPctDisplay" name="tempThresholdPctDisplay" value="">
+                                    <input type="number" id="tempThresholdPctDisplay" name="tempThresholdPctDisplay"
+                                        value="">
                                 </div>
                                 <div>
                                     <label for="tempThresholdAndOr">Combine with:</label>
@@ -150,16 +276,19 @@
                                         trigger
                                         the threshold. The display will not be updated until the threshold is
                                         met.</span>
-                                    <input type="number" id="humThresholdAbsDisplay" name="humThresholdAbsDisplay" value="">
+                                    <input type="number" id="humThresholdAbsDisplay" name="humThresholdAbsDisplay"
+                                        value="">
                                 </div>
                                 <div>
-                                    <label for="humThresholdPctDisplay">Hum Threshold Percentage (%rH percentage):</label>
+                                    <label for="humThresholdPctDisplay">Hum Threshold Percentage (%rH
+                                        percentage):</label>
                                     <span class="tooltip-icon">ℹ️</span>
                                     <span class="tooltip-text">The percentage difference of humidity in %rH that will
                                         trigger
                                         the threshold. The display will not be updated until the threshold is
                                         met.</span>
-                                    <input type="number" id="humThresholdPctDisplay" name="humThresholdPctDisplay" value="">
+                                    <input type="number" id="humThresholdPctDisplay" name="humThresholdPctDisplay"
+                                        value="">
                                 </div>
                                 <div>
                                     <label for="humThresholdAndOr">Combine with:</label>
@@ -256,7 +385,8 @@
                                         threshold
                                         is
                                         met.</span>
-                                    <input type="number" step="any" id="tempThresholdAbsBluetooth" name="tempThresholdAbsBluetooth" value="">
+                                    <input type="number" step="any" id="tempThresholdAbsBluetooth"
+                                        name="tempThresholdAbsBluetooth" value="">
                                 </div>
                                 <div>
                                     <label for="tempThresholdPctBluetooth">Temp Threshold Percentage (°C
@@ -391,7 +521,8 @@
                                         will
                                         trigger the threshold. The value will not be sent by MQTT until the threshold is
                                         met.</span>
-                                    <input type="number" step="any" id="tempThresholdAbsMQTT" name="tempThresholdAbsMQTT" value="">
+                                    <input type="number" step="any" id="tempThresholdAbsMQTT"
+                                        name="tempThresholdAbsMQTT" value="">
                                 </div>
                                 <div>
                                     <label for="tempThresholdPctMQTT">Temp Threshold Percentage (°C percentage):</label>
@@ -400,7 +531,8 @@
                                         trigger
                                         the threshold. The value will not be sent by MQTT until the threshold is
                                         met.</span>
-                                    <input type="number" step="any" id="tempThresholdPctMQTT" name="tempThresholdPctMQTT" value="">
+                                    <input type="number" step="any" id="tempThresholdPctMQTT"
+                                        name="tempThresholdPctMQTT" value="">
                                 </div>
                                 <div>
                                     <label for="tempThresholdAndOrMQTT">Combine with:</label>
@@ -532,7 +664,8 @@
                                         trigger the threshold. The value will not be sent by ESPNOW until the threshold
                                         is
                                         met.</span>
-                                    <input type="number" step="any" id="tempThresholdAbsESPNOW" name="tempThresholdAbsESPNOW" value="">
+                                    <input type="number" step="any" id="tempThresholdAbsESPNOW"
+                                        name="tempThresholdAbsESPNOW" value="">
                                 </div>
                                 <div>
                                     <label for="tempThresholdPctESPNOW">Temp Threshold Percentage (°C
@@ -604,10 +737,11 @@
                     </div>
                 </div>
             </fieldset>
-
-            <div id="resetSaveButtons">
-                <button type="button" id="resetButton" onclick="restartESP32()">Restart device</button>        
-                <button type="button" id="savePreferencesButton" onclick="saveThresholdsToServer()">Save</button>
+            <div class="buttonsAlignRight">
+                <div class="buttonsRestartSave">
+                    <button id="restartButton" type="button" onclick="restartESP32()">Restart device</button>
+                    <button id="savePreferencesButton" type="button" onclick="saveLowPowerToServer()">Save</button>
+                </div>
             </div>
         </form>
     </div>
@@ -622,246 +756,6 @@
         <span id="co2GadgetVersion"></span>
     </div>
 
-    <script>
-        function openTab(evt, tabName) {
-            var i, tabContent, tabLinks;
-            tabContent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabContent.length; i++) {
-                tabContent[i].style.display = "none";
-            }
-            tabLinks = document.getElementsByClassName("tab");
-            for (i = 0; i < tabLinks.length; i++) {
-                tabLinks[i].className = tabLinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-
-        function toggleTab(tabName) {
-            var tabContent = document.getElementById(tabName);
-            var checkbox = document.getElementById("chk" + tabName);
-            if (checkbox.checked) {
-                tabContent.style.display = "block";
-            } else {
-                tabContent.style.display = "none";
-            }
-        }
-
-        function toggle(checkboxId, elementId) {
-            const checkbox = document.getElementById(checkboxId);
-            if (!checkbox) {
-                console.error('Checkbox with id ' + checkboxId + ' is not found.');
-                return;                
-            }
-            const element = document.getElementById(elementId);
-            
-            if (!element) {
-                console.error('Element with id ' + elementId + ' is not found.');
-                return;
-            }
-
-            // Function to toggle element visibility
-            function toggleElement() {
-                element.style.display = checkbox.checked ? 'block' : 'none';
-                // if (checkbox.checked) {
-                //     element.style.display = 'block'; // Show the element if checkbox is checked
-                // } else {
-                //     element.style.display = 'none'; // Hide the element if checkbox is unchecked
-                // }
-            }
-
-            // Call toggleElement initially to set initial state
-            toggleElement();
-    
-            // Add event listener to checkbox to update visibility when checkbox state changes
-            checkbox.addEventListener('change', toggleElement);
-        }
-
-        function loadThresholdsFromServer() {
-            fetch('/getThresholdsAsJson')
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    document.getElementById("chkDisplay").checked = data[0].enabled;
-                    document.getElementById("keepAliveTimeDisplay").value = data[0].thrKeepAlive;
-                    document.getElementById("thrOnlyInLowPDisplay").checked = data[0].thrOnlyInLowP;
-                    document.getElementById("co2ThresholdAbsDisplay").value = data[0].thrCo2Abs;
-                    document.getElementById("co2ThresholdPctDisplay").value = data[0].thrCo2Per;
-                    document.getElementById("tempThresholdAbsDisplay").value = data[0].thrTempAbs;
-                    document.getElementById("tempThresholdPctDisplay").value = data[0].thrTempPer;
-                    document.getElementById("humThresholdAbsDisplay").value = data[0].thrHumAbs;
-                    document.getElementById("humThresholdPctDisplay").value = data[0].thrHumPer;
-                    if (data[0].thrCo2CombAnd = true) {
-                        document.getElementById("co2ThresholdAnd").checked = true;
-                    } else {
-                        document.getElementById("co2ThresholdOr").checked = true;
-                    }
-                    if (data[0].thrTempCombAnd = true) {
-                        document.getElementById("tempThresholdAnd").checked = true;
-                    } else {
-                        document.getElementById("tempThresholdOr").checked = true;
-                    }
-                    if (data[0].thrHumCombAnd = true) {
-                        document.getElementById("humThresholdAnd").checked = true;
-                    } else {
-                        document.getElementById("humThresholdOr").checked = true;
-                    }
-
-                    document.getElementById("chkBluetooth").checked = data[1].enabled;
-                    document.getElementById("keepAliveTimeBluetooth").value = data[1].thrKeepAlive;
-                    document.getElementById("thrOnlyInLowPBluetooth").checked = data[1].thrOnlyInLowP;
-                    document.getElementById("co2ThresholdAbsBluetooth").value = data[1].thrCo2Abs;
-                    document.getElementById("co2ThresholdPctBluetooth").value = data[1].thrCo2Per;
-                    document.getElementById("tempThresholdAbsBluetooth").value = data[1].thrTempAbs;
-                    document.getElementById("tempThresholdPctBluetooth").value = data[1].thrTempPer;
-                    document.getElementById("humThresholdAbsBluetooth").value = data[1].thrHumAbs;
-                    document.getElementById("humThresholdPctBluetooth").value = data[1].thrHumPer;
-                    document.getElementById("co2ThresholdAndBluetooth").value = data[1].thrCo2CombAnd ? "and" : "or";
-                    document.getElementById("tempThresholdAndBluetooth").value = data[1].thrTempCombAnd ? "and" : "or";
-                    document.getElementById("humThresholdAndBluetooth").value = data[1].thrHumCombAnd ? "and" : "or";
-
-                    document.getElementById("chkMQTT").checked = data[2].enabled;
-                    document.getElementById("keepAliveTimeMQTT").value = data[2].thrKeepAlive;
-                    document.getElementById("thrOnlyInLowPMQTT").checked = data[2].thrOnlyInLowP;
-                    document.getElementById("co2ThresholdAbsMQTT").value = data[2].thrCo2Abs;
-                    document.getElementById("co2ThresholdPctMQTT").value = data[2].thrCo2Per;
-                    document.getElementById("tempThresholdAbsMQTT").value = data[2].thrTempAbs;
-                    document.getElementById("tempThresholdPctMQTT").value = data[2].thrTempPer;
-                    document.getElementById("humThresholdAbsMQTT").value = data[2].thrHumAbs;
-                    document.getElementById("humThresholdPctMQTT").value = data[2].thrHumPer;
-                    document.getElementById("co2ThresholdAndMQTT").value = data[2].thrCo2CombAnd ? "and" : "or";
-                    document.getElementById("tempThresholdAndMQTT").value = data[2].thrTempCombAnd ? "and" : "or";
-                    document.getElementById("humThresholdAndMQTT").value = data[2].thrHumCombAnd ? "and" : "or";
-
-                    document.getElementById("chkESPNOW").checked = data[3].enabled;
-                    document.getElementById("keepAliveTimeESPNOW").value = data[3].thrKeepAlive;
-                    document.getElementById("thrOnlyInLowPESPNOW").checked = data[3].thrOnlyInLowP;
-                    document.getElementById("co2ThresholdAbsESPNOW").value = data[3].thrCo2Abs;
-                    document.getElementById("co2ThresholdPctESPNOW").value = data[3].thrCo2Per;
-                    document.getElementById("tempThresholdAbsESPNOW").value = data[3].thrTempAbs;
-                    document.getElementById("tempThresholdPctESPNOW").value = data[3].thrTempPer;
-                    document.getElementById("humThresholdAbsESPNOW").value = data[3].thrHumAbs;
-                    document.getElementById("humThresholdPctESPNOW").value = data[3].thrHumPer;
-                    document.getElementById("co2ThresholdAndESPNOW").value = data[3].thrCo2CombAnd ? "and" : "or";
-                    document.getElementById("tempThresholdAndESPNOW").value = data[3].thrTempCombAnd ? "and" : "or";
-                    document.getElementById("humThresholdAndESPNOW").value = data[3].thrHumCombAnd ? "and" : "or";
-
-                    // Toggle visibility of elements based on checkbox state
-                    // toggle('activeWIFI', 'wifiNetworks');
-                    // toggle('activeMQTT', 'mqttConfig');
-                    // toggle('activeESPNOW', 'espNowConfig');
-                });
-        }
-
-        function collectThresholdsData() {
-            // Collect preferences data from the form
-            var thresholdsData = {
-                "thresholds": [
-                    {
-                        "enabled": document.getElementById("chkDisplay").checked,
-                        "thrOnlyInLowP": document.getElementById("thrOnlyInLowPDisplay").checked,
-                        "thrKeepAlive": document.getElementById("keepAliveTimeDisplay").value,
-                        "thrCo2Abs": document.getElementById("co2ThresholdAbsDisplay").value,
-                        "thrTempAbs": document.getElementById("tempThresholdAbsDisplay").value,
-                        "thrHumAbs": document.getElementById("humThresholdAbsDisplay").value,
-                        "thrCo2Per": document.getElementById("co2ThresholdPctDisplay").value,
-                        "thrTempPer": document.getElementById("tempThresholdPctDisplay").value,
-                        "thrHumPer": document.getElementById("humThresholdPctDisplay").value,
-                        "thrCo2CombAnd": document.getElementById("co2ThresholdAnd").checked,
-                        "thrTempCombAnd": document.getElementById("tempThresholdAnd").checked,
-                        "thrHumCombAnd": document.getElementById("humThresholdAnd").checked
-                    },
-                    {
-                        "enabled": document.getElementById("chkBluetooth").checked,
-                        "thrOnlyInLowP": document.getElementById("thrOnlyInLowPBluetooth").checked,
-                        "thrKeepAlive": document.getElementById("keepAliveTimeBluetooth").value,
-                        "thrCo2Abs": document.getElementById("co2ThresholdAbsBluetooth").value,
-                        "thrTempAbs": document.getElementById("tempThresholdAbsBluetooth").value,
-                        "thrHumAbs": document.getElementById("humThresholdAbsBluetooth").value,
-                        "thrCo2Per": document.getElementById("co2ThresholdPctBluetooth").value,
-                        "thrTempPer": document.getElementById("tempThresholdPctBluetooth").value,
-                        "thrHumPer": document.getElementById("humThresholdPctBluetooth").value,
-                        "thrCo2CombAnd": document.getElementById("co2ThresholdAndBluetooth").checked,
-                        "thrTempCombAnd": document.getElementById("tempThresholdAndBluetooth").checked,
-                        "thrHumCombAnd": document.getElementById("humThresholdAndBluetooth").checked
-                    },
-                    {
-                        "enabled": document.getElementById("chkMQTT").checked,
-                        "thrOnlyInLowP": document.getElementById("thrOnlyInLowPMQTT").checked,
-                        "thrKeepAlive": document.getElementById("keepAliveTimeMQTT").value,
-                        "thrCo2Abs": document.getElementById("co2ThresholdAbsMQTT").value,
-                        "thrTempAbs": document.getElementById("tempThresholdAbsMQTT").value,
-                        "thrHumAbs": document.getElementById("humThresholdAbsMQTT").value,
-                        "thrCo2Per": document.getElementById("co2ThresholdPctMQTT").value,
-                        "thrTempPer": document.getElementById("tempThresholdPctMQTT").value,
-                        "thrHumPer": document.getElementById("humThresholdPctMQTT").value,
-                        "thrCo2CombAnd": document.getElementById("co2ThresholdAndMQTT").checked,
-                        "thrTempCombAnd": document.getElementById("tempThresholdAndMQTT").checked,
-                        "thrHumCombAnd": document.getElementById("humThresholdAndMQTT").checked
-                    },
-                    {
-                        "enabled": document.getElementById("chkESPNOW").checked,
-                        "thrOnlyInLowP": document.getElementById("thrOnlyInLowPESPNOW").checked,
-                        "thrKeepAlive": document.getElementById("keepAliveTimeESPNOW").value,
-                        "thrCo2Abs": document.getElementById("co2ThresholdAbsESPNOW").value,
-                        "thrTempAbs": document.getElementById("tempThresholdAbsESPNOW").value,
-                        "thrHumAbs": document.getElementById("humThresholdAbsESPNOW").value,
-                        "thrCo2Per": document.getElementById("co2ThresholdPctESPNOW").value,
-                        "thrTempPer": document.getElementById("tempThresholdPctESPNOW").value,
-                        "thrHumPer": document.getElementById("humThresholdPctESPNOW").value,
-                        "thrCo2CombAnd": document.getElementById("co2ThresholdAndESPNOW").checked,
-                        "thrTempCombAnd": document.getElementById("tempThresholdAndESPNOW").checked,
-                        "thrHumCombAnd": document.getElementById("humThresholdAndESPNOW").checked
-                    }
-                ]
-            };
-            return thresholdsData;
-        }
-
-        function showSavingPopup() {
-            // Show the popup
-            document.getElementById("popup").style.display = "block";
-            console.log("Show popup");
-
-            // After 2 seconds, hide the popup
-            setTimeout(function () {
-                // Oculta el popup
-                document.getElementById("popup").style.display = "none";
-                console.log("Hide popup");
-            }, 2000);
-}
-        function saveThresholdsToServer() {
-            // Show a popup to indicate that the preferences are being saved
-            showSavingPopup();
-            // Collect preferences data from the form
-            var ThresholdsData = collectThresholdsData();
-            console.log("Sending Thresholds to server:", ThresholdsData);
-
-            // Send the preferences data to the server
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/saveThresholds", true);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.send(JSON.stringify(ThresholdsData));
-
-            // Handle the response from the server
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log("Thresholds updated successfully!");
-                } else {
-                    alert("Error updating thresholds. Please try again.");
-                }
-            };
-        }
-
-
-        // Open the first tab by default
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("Display").style.display = "block";
-            var tab = document.querySelector(".tab");
-            tab.className += " active";
-            loadThresholdsFromServer();
-        });
-    </script>
 
 </body>
 

@@ -717,39 +717,60 @@ String getCO2GadgetFeaturesAsJson() {
     JsonDocument doc;
 #ifdef SUPPORT_BLE
     doc["BLE"] = true;
-    #else
+#else
     doc["BLE"] = false;
 #endif
 #ifdef SUPPORT_BUZZER
     doc["Buzzer"] = true;
-    #else
+#else
     doc["Buzzer"] = false;
 #endif
 #ifdef SUPPORT_ESPNOW
     doc["ESPNow"] = true;
-    #else
+#else
     doc["ESPNow"] = false;
 #endif
 #ifdef SUPPORT_MDNS
     doc["mDNS"] = true;
-    #else
+#else
     doc["mDNS"] = false;
 #endif
 #ifdef SUPPORT_MQTT
     doc["MQTT"] = true;
-    #else
+#else
     doc["MQTT"] = false;
 #endif
 #ifdef SUPPORT_MQTT_DISCOVERY
     doc["MQTTDiscovery"] = true;
-    #else
+#else
     doc["MQTTDiscovery"] = false;
 #endif
 #ifdef SUPPORT_OTA
     doc["OTA"] = true;
-    #else
+#else
     doc["OTA"] = false;
 #endif
+#ifdef SUPPORT_TFT
+    doc["TFT"] = true;
+#else
+    doc["TFT"] = false;
+#endif
+#ifdef SUPPORT_EINK
+    doc["EINK"] = true;
+#else
+    doc["EINK"] = false;
+#endif
+#ifdef SUPPORT_OLED
+    doc["OLED"] = true;
+#else
+    doc["OLED"] = false;
+#endif
+#ifdef SUPPORT_CAPTIVE_PORTAL
+    doc["CaptivePortal"] = true;
+#else
+    doc["CaptivePortal"] = false;
+#endif
+
     String output;
     serializeJson(doc, output);
     return output;
@@ -759,8 +780,8 @@ String getCO2GadgetStatusAsJson() {
     StaticJsonDocument<512> doc;
     doc["mainDeviceSelected"] = mainDeviceSelected;
     doc["CO2"] = co2;
-    doc["Temperature"] = temp;
-    doc["Humidity"] = hum;
+    doc["Temperature"] = String(temp, 2);
+    doc["Humidity"] = String(hum, 0);
     doc["WiFiStatus"] = WiFi.status();
     doc["SSID"] = WiFi.SSID();
 #ifndef WIFI_PRIVACY
@@ -818,6 +839,19 @@ String getCO2GadgetStatusAsJson() {
     doc["freeHeap"] = ESP.getFreeHeap();
     doc["minFreeHeap"] = ESP.getMinFreeHeap();
     doc["uptime"] = millis();
+
+    // Low power preferences
+    doc["lowPowerMode"] = deepSleepData.lowPowerMode;
+    doc["waitToDeep"] = deepSleepData.waitToGoDeepSleepOn1stBoot;
+    doc["timeSleeping"] = deepSleepData.timeSleeping;
+    doc["cyclsWifiConn"] = deepSleepData.cyclesLeftToWiFiConnect;
+    doc["cycRedrawDis"] = deepSleepData.cyclesLeftToRedrawDisplay;
+    doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
+    doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
+    doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
+    doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
+    doc["displayOnWake"] = deepSleepData.displayOnWake;
+
     String output;
     serializeJson(doc, output);
     return output;
@@ -840,7 +874,7 @@ String getCaptivePortalStatusAsJson() {
     if (captivePortalDebug) doc["captivePortalDebug"] = captivePortalDebug;
 
 #ifdef DEBUG_CAPTIVE_PORTAL
-    // doc["captivePortalDebug"] = true;
+        // doc["captivePortalDebug"] = true;
 #endif
 
     String output;
@@ -1024,12 +1058,6 @@ void initWebServer() {
         }
     });
 
-    // server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    //     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html", "text/html");
-    //     response->addHeader("Content-Encoding", "text/html");
-    //     request->send(response);
-    // });
-
     server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         /** GZIPPED CONTENT ***/
         AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html.gz", "text/html");
@@ -1048,21 +1076,10 @@ void initWebServer() {
         }
     });
 
-    server.on("/combined.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/combined.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        } else {
-            Serial.println("---> [WiFi] Error: request is null");
-        }
-    });
-
-    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/main.js.gz", "application/javascript");
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.js.gz", "application/javascript");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
@@ -1081,10 +1098,28 @@ void initWebServer() {
         }
     });
 
+    server.on("/low_power.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
     server.on("/status.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
             AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.js.gz", "application/javascript");
+            response->addHeader("Content-Encoding", "gzip");
+            request->send(response);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/ota.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            /** GZIPPED CONTENT ***/
+            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.js.gz", "application/javascript");
             response->addHeader("Content-Encoding", "gzip");
             request->send(response);
         } else {
@@ -1179,7 +1214,47 @@ void initWebServer() {
                         request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
                     }
                 }
-            }
+            };
+            // <CO2-GADGET_IP>/settings?ToggleDisplayReverse
+            if (request->hasParam("ToggleDisplayReverse")) {
+                Serial.println("-->[WEBS] Toggle display reverse");
+                displayReverse = !displayReverse;
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+                setDisplayReverse(displayReverse);
+                reverseButtons(displayReverse);
+                if (inMenu) isMenuDirty = true;
+#else
+                reverseButtons(displayReverse);
+#endif
+                request->send(200, "text/plain", "OK. Display reversed");
+            };
+            // <CO2-GADGET_IP>/settings?setDisplayBrightness
+            if (request->hasParam("setDisplayBrightness")) {
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+                inputString = request->getParam("setDisplayBrightness")->value();
+                Serial.println("-->[WEBS] Set display brightness");
+                DisplayBrightness = inputString.toInt();
+                setDisplayBrightness(DisplayBrightness);
+                if (inMenu) isMenuDirty = true;
+#else
+                Serial.println("-->[WEBS] Display brightness not supported");
+#endif
+                request->send(200, "text/plain", "OK. Set Display brightness");
+            };
+            // <CO2-GADGET_IP>/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}
+            if (request->hasParam("showTemp") || request->hasParam("showHumidity") || request->hasParam("showBattery")) {
+                displayShowTemperature = (request->getParam("showTemp")->value() == "true" || request->getParam("showTemp")->value() == "1");
+                displayShowHumidity = (request->getParam("showHumidity")->value() == "true" || request->getParam("showHumidity")->value() == "1");
+                displayShowBattery = (request->getParam("showBattery")->value() == "true" || request->getParam("showBattery")->value() == "1");
+                Serial.println("-->[WEBS] showTemp(" + request->getParam("showTemp")->value() + ") - showHumidity(" + request->getParam("showHumidity")->value() + ") - showBAttery(" + request->getParam("showBattery")->value() + ") in display");
+                if (!inMenu) {
+#ifdef DEBUG_CAPTIVE_PORTAL
+                    Serial.println("-->[WEBS] Set shouldRedrawDisplay to true");
+#endif
+                    redrawDisplayOnNextLoop = true;
+                }
+                request->send(200, "text/plain", "OK. Showing/hidding Temp/Humidity/Battery in display");
+            };
             // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
             if (request->hasParam("displayShowBatteryVoltage")) {
                 String inputString = request->getParam("displayShowBatteryVoltage")->value();

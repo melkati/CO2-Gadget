@@ -1,14 +1,5 @@
-// https://www.zickty.com/filetogzip
-
-// Global variable to control relaxed security mode
-var relaxedSecurity = false;
-// Global variable to control captive portal test mode
-var forceCaptivePortalActive = false;
-// Set to true to enable debug output in the console
-var preferencesDebug = false;
-
 /**
- * Fetches version information from the server and updates the version display.
+ * Fetches version information from the server and updates the version displayed
  */
 function fetchVersion() {
     fetch('/getVersion')
@@ -18,6 +9,34 @@ function fetchVersion() {
             const versionElement = document.getElementById("co2GadgetVersion");
             const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
             versionElement.innerText = versionText;
+
+            // Adjust preferences.html for specific versions
+            if (versionInfo.firmFlavour == 'T-Display S3') {
+                const displayBrightInput = document.getElementById("DisplayBright");
+                displayBrightInput.min = "1";
+                displayBrightInput.max = "16";
+                displayBrightInput.step = "1";
+                const tooltipText = document.querySelector('.tooltip-text');
+                let currentText = tooltipText.textContent;
+                currentText += ' Valid brightness values: 1-16.';
+
+            } else {
+                // Add to tooltip text: Valid brightness values: displayBrightInput.min to displayBrightInput.max
+                const displayBrightInput = document.getElementById("DisplayBright");
+                let min = displayBrightInput.min;
+                let max = displayBrightInput.max;
+                const tooltipText = document.querySelector('.tooltip-text');
+                let currentText = tooltipText.textContent;
+                currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
+                tooltipText.textContent = currentText;
+            }
+
+            // TO-DO: Change to use getFeaturesAsJson endpoint to check for "EINK" instead of firmFlavour to reduce complexity
+            if (versionInfo.firmFlavour == 'GDEM0213B74' || versionInfo.firmFlavour == 'DEPG0213BN' || versionInfo.firmFlavour == 'GDEW0213M21' || versionInfo.firmFlavour == 'GDEM029T94' || versionInfo.firmFlavour == 'GDEH0154D67-WeAct' || versionInfo.firmFlavour == 'DEPG0213BN-WeAct' || versionInfo.firmFlavour == 'GDEW0213M21-WeAct' || versionInfo.firmFlavour == 'GDEMGxEPD2_290_BS-WeAct') {
+                document.getElementById("displayBrightDiv").classList.add("hidden");
+                document.getElementById("dispOffOnExPDiv").classList.add("hidden");
+                document.getElementById("tToDispOffDiv").classList.add("hidden");
+            }
         })
         .catch(error => console.error('Error fetching version information:', error));
 }
@@ -29,8 +48,11 @@ function fetchVersion() {
 function populateFormWithPreferences(preferences) {
     // Update relaxedSecurity if present in data
     if (preferences.relaxedSecurity !== undefined) {
-        if (preferencesDebug) console.log(`Setting relaxedSecurity to:`, preferences.relaxedSecurity);
-        relaxedSecurity = preferences.relaxedSecurity;
+        if (preferencesDebug) console.log(`Setting relaxedSecurity field to:`, preferences.relaxedSecurity);
+        // If forcedRelaxedSecurity is set because the current URL does contains the "relaxedSecurity" parameter, do not overide the value with the one from the server
+        if (!forcedRelaxedSecurity) {
+            relaxedSecurity = preferences.relaxedSecurity;
+        }
     }
 
     handlePasswordFields();
@@ -443,14 +465,6 @@ function updateVRef() {
         .catch(error => console.error('Error updating VRef:', error));
 }
 
-// Update the battery voltage every second
-setInterval(updateVoltage, 1000);
-
-// Listen for input events on the voltage reference field with a delay of 100ms
-document.getElementById('vRef').addEventListener('input', () => {
-    setTimeout(updateVRef, 100);
-});
-
 /**
  * Enables or disables password fields based on the relaxed security mode.
  */
@@ -461,10 +475,12 @@ function handlePasswordFields() {
     passwordFields.forEach(field => {
         if (relaxedSecurity) {
             field.removeAttribute('disabled');
+            if (preferencesDebug) console.log(`Field ${field.id} enabled`);
         } else {
             field.disabled = true;
             field.value = '';
             field.placeholder = "Password (disabled)";
+            if (preferencesDebug) console.log(`Field ${field.id} disabled`);
         }
     });
 
@@ -475,6 +491,227 @@ function handlePasswordFields() {
     }
 }
 
+function calibrateSensor(calibrationValue) {
+    // Implement the calibration logic here
+    if (calibrationValue > 400 && calibrationValue < 2000) {
+        console.log("Calibration process started...");
+        console.log("Calibration value:", calibrationValue);
+        fetch(`/settings?CalibrateCO2=${calibrationValue}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Error calibrating CO2 sensor');
+                console.log('CO2 sensor calibrated successfully');
+            })
+            .catch(error => console.error('Error calibrating CO2 sensor:', error));
+    } else {
+        console.error(
+            "Invalid calibration value, please enter a value between 400 and 2000 ppm"
+        );
+        console.log("Calibration value:", calibrationValue);
+    }
+}
+
+/**
+ * Handles the calibration wizard functionality.
+ */
+function handleCalibrationWizard() {
+    const calibrateButton = document.getElementById("calibrateButton");
+    const calibrationModal = document.getElementById("calibrationModal");
+    const countdownModal = document.getElementById("countdownModal");
+    const closeSpan = document.querySelector(".close");
+    const acknowledgeCheckbox = document.getElementById("acknowledgeCheckbox");
+    const acknowledgeLabel = document.getElementById("acknowledgeLabel");
+    const calibrateNowButton = document.getElementById("calibrateNowButton");
+    const countdownSpan = document.getElementById("countdown");
+    const currentCO2ValueSpan = document.getElementById("currentCO2Value");
+
+    // Function to fetch current CO2 value from /readCO2 endpoint as text
+    function getCurrentCO2Value() {
+        fetch("/readCO2")
+            .then((response) => response.text())
+            .then((data) => {
+                let co2Value = parseFloat(data);
+                document.getElementById("currentCO2Value").textContent =
+                    co2Value.toFixed(0);
+            })
+            .catch((error) => {
+                console.error("Error fetching CO2 data", error);
+            });
+    }
+
+    // Function to change text color when "Calibrate Now" button is clicked without acknowledging
+    function changeTextColor() {
+        acknowledgeLabel.style.color = "var(--unchecked-font-color)";
+    }
+
+    calibrateButton.addEventListener("click", () => {
+        // Uncheck the acknowledge checkbox when modal is opened
+        acknowledgeCheckbox.checked = false;
+        calibrationModal.style.display = "block";
+        // Set the custom calibration value input to the current custom calibration value
+        const customCalibrationValueInput = document.getElementById(
+            "modalCustomCalibrationValueInput"
+        );
+        customCalibrationValueInput.value =
+            document.getElementById("customCalValue").value;
+        // Fetch current CO2 value when modal is opened
+        getCurrentCO2Value();
+        // Start interval to update CO2 value every 5 seconds
+        updateCO2Interval = setInterval(getCurrentCO2Value, 5000);
+    });
+
+    closeSpan.addEventListener("click", () => {
+        calibrationModal.style.display = "none";
+        // Clear interval when modal is closed
+        clearInterval(updateCO2Interval);
+    });
+
+    acknowledgeCheckbox.addEventListener("change", () => {
+        // Reset text color when checkbox is checked
+        if (acknowledgeCheckbox.checked) {
+            acknowledgeLabel.style.color = ""; // Reset to default color
+        }
+    });
+
+    calibrateNowButton.addEventListener("click", () => {
+        if (!acknowledgeCheckbox.checked) {
+            changeTextColor(); // Call the function to change text color
+            return; // Exit function if checkbox is not acknowledged
+        }
+
+        calibrationModal.style.display = "none";
+        countdownModal.style.display = "block";
+
+        const customCalValue = parseInt(
+            document.getElementById("modalCustomCalibrationValueInput").value,
+            10
+        );
+        calibrateSensor(customCalValue);
+
+        let countdown = 15;
+        countdownSpan.textContent = countdown;
+
+        const interval = setInterval(() => {
+            countdown -= 1;
+            countdownSpan.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(interval);
+                countdownModal.style.display = "none";
+            }
+        }, 1000);
+    });
+
+    window.addEventListener("click", (event) => {
+        if (event.target == calibrationModal) {
+            calibrationModal.style.display = "none";
+            // Clear interval when modal is closed
+            clearInterval(updateCO2Interval);
+        }
+    });
+}
+
+/**
+ * Sanity Data form before Save 
+ */
+function sanityCheckData() {
+    var txt_error = "";
+    let errorMessage = document.getElementById('error-message');
+
+    // Sanyty check for display brightness
+    const inputDisplayBrightness = document.getElementById("DisplayBright");
+    if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max) || parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) {
+        inputDisplayBrightness.classList.remove('valid');
+        inputDisplayBrightness.classList.add('error');
+
+        if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max)) inputDisplayBrightness.value = inputDisplayBrightness.max;
+        if (parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) inputDisplayBrightness.value = inputDisplayBrightness.min;
+
+        txt_error = "Display Brightness value must be >=" + inputDisplayBrightness.min + " and <=" + inputDisplayBrightness.max;
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputDisplayBrightness.classList.remove('error');
+        inputDisplayBrightness.classList.add('valid');
+    }
+
+    // Sanyty check for CO2 Orange and Red Range
+    const inputco2OrangeRange = document.getElementById("co2OrangeRange");
+    const inputco2RedRange = document.getElementById("co2RedRange");
+    if (parseInt(inputco2OrangeRange.value) > parseInt(inputco2RedRange.value)) {
+        inputco2RedRange.value = parseInt(inputco2OrangeRange.value) + 1;
+        inputco2OrangeRange.classList.remove('valid');
+        inputco2RedRange.classList.remove('valid');
+        inputco2OrangeRange.classList.add('error');
+        inputco2RedRange.classList.add('error');
+        txt_error = "Red level must be greater than Orange level";
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputco2OrangeRange.classList.remove('error');
+        inputco2RedRange.classList.remove('error');
+        inputco2OrangeRange.classList.add('valid');
+        inputco2RedRange.classList.add('valid');
+    }
+    return true;
+}
+
+/**
+ * Runtime display reverse 
+ */
+function toggleDisplayReverse() {
+    if (preferencesDebug) console.log("Toggle Display Reverse");
+    fetch("/settings?ToggleDisplayReverse")
+        .then(response => {
+            if (!response.ok) throw new Error('Error reversing display');
+            if (preferencesDebug) console.log('Toggle Display Reverse successfully');
+        })
+        .catch(error => console.error('Error Toggling Display Reverse:', error));
+}
+
+/**
+ * Runtime display brightness 
+ */
+function setDisplayBrightness() {
+    const inputDisplayBrightness = document.getElementById("DisplayBright").value;
+    if (preferencesDebug) console.log("Set Display Brightness = " + inputDisplayBrightness);
+    fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting display brightness');
+            if (preferencesDebug) console.log('Set Display brightness successfully');
+        })
+        .catch(error => console.error('Error Setting Display brightness:', error));
+}
+
+/**
+* Runtime show/hide Temp/Humidity/Battery in display
+*/
+function showTempHumBatt() {
+    const inputShowTemp = document.getElementById("showTemp").checked;
+    const inputShowHumidity = document.getElementById("showHumidity").checked;
+    const inputShowBattery = document.getElementById("showBattery").checked;
+    if (preferencesDebug) console.log("Show/hide Temp/Humidity/Battery in display");
+    fetch(`/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting show/hide Temp/Humidity/Battery in display');
+            if (preferencesDebug) console.log('Set show/hide Temp/Humidity/Battery in display successfully');
+        })
+        .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Get the current URL
     var currentURL = window.location.href;
@@ -482,11 +719,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check if the current URL contains "preferences.html"
     if (currentURL.includes("preferences.html")) {
         highlightCurrentPage(); // Highlight the current page in the navigation bar
-        relaxedSecurity = currentURL.includes("relaxedSecurity");
+        forcedRelaxedSecurity = currentURL.includes("relaxedSecurity");
+        relaxedSecurity = forcedRelaxedSecurity;
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
-        loadPreferencesFromServer();
-        fetchVersion();
+        setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
+        setTimeout(() => { fetchVersion(); }, 100); // Delay of 100ms
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
         });
@@ -494,5 +732,14 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
         handleWiFiMQTTDependency();
+        setTimeout(() => { handleCalibrationWizard(); }, 200); // Delay of 500ms
+
+        // Update the battery voltage every second
+        setInterval(updateVoltage, 1000);
+
+        // Listen for input events on the voltage reference field with a delay of 100ms
+        document.getElementById('vRef').addEventListener('input', () => {
+            setTimeout(updateVRef, 100);
+        });
     }
 });

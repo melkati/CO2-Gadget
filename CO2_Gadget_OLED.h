@@ -36,14 +36,10 @@ void setDisplayReverse(bool reverse) {
     shouldRedrawDisplay = true;
 }
 
-void setDisplayBrightness(uint32_t newBrightness) {
-    Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
-    u8g2.setContrast(newBrightness);
-    actualDisplayBrightness = newBrightness;
-}
-
-void displaySleep(bool value = true) {
-    // u8g2.setPowerSave(number);  // Turn off the display
+void setDisplayBrightness(uint16_t newBrightness) {
+  Serial.printf("-->[OLED] Setting display brightness value at %d\n", newBrightness);
+  u8g2.setContrast(newBrightness);
+  actualDisplayBrightness = newBrightness;
 }
 
 void turnOffDisplay() {

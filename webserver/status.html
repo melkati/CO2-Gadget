@@ -1,52 +1,53 @@
 <!DOCTYPE html>
 <html lang="en" theme="light">
-
 <head>
-    <meta charset="UTF-8">
-    <title>CO2 Gadget Status</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
         // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
-            const savedTheme = localStorage.getItem('theme');
+            const savedTheme = localStorage.getItem("theme");
             if (savedTheme) {
-                document.documentElement.setAttribute('theme', savedTheme);
+                document.documentElement.setAttribute("theme", savedTheme);
             }
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./status.js"></script>
-    <script defer type="text/javascript" src="./combined.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar -->
-    <div class="navbar">
+    <div class="navbar" id="navbar">
         <div class="nav-content">
             <div class="nav-links-left">
                 <a href="index.html">Home</a>
                 <a href="preferences.html">Preferences</a>
+                <a href="low_power.html">Low power</a>
                 <a href="status.html">Status</a>
             </div>
             <div class="nav-links-right">
-                <a href="ota.html" class="hidden">OTA</a>
+                <a href="ota.html" class="hidden" id="otaLink">OTA</a>
                 <a href="/getCaptivePortalStatusAsJson">
                     <span id="server-status-dot" class="status-dot status-dot-hidden"
                         title="Captive portal inactive"></span>
                 </a>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
-                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
                         <path fill="var(--icon-color)"
-                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1,0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
                     </svg>
                 </div>
             </div>
         </div>
+        <!-- Captive Portal Status Container -->
+        <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
     </div>
-
-    <!-- Captive Portal Status Container -->
-    <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+    
+    <!-- Debug Window Container -->
+    <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
         <h1>CO2 Gadget Status</h1>
@@ -57,19 +58,19 @@
                 <span class="status-label">Sensor Selected:</span> <span id="mainDeviceSelected"></span>
             </div>
             <div class="status-item" id="co2Item">
-                <span class="status-label">CO2:</span> <span id="co2"></span>
+                <span class="status-label">CO2:</span> <span id="co2"></span> ppm
             </div>
             <div class="status-item" id="temperatureItem">
-                <span class="status-label">Temperature:</span> <span id="temperature"></span>
+                <span class="status-label">Temperature:</span> <span id="temperature"></span> ºC
             </div>
             <div class="status-item" id="humidityItem">
-                <span class="status-label">Humidity:</span> <span id="humidity"></span>
+                <span class="status-label">Humidity:</span> <span id="humidity"></span> %RH
             </div>
             <div class="status-item" id="measurementIntervalItem">
-                <span class="status-label">Measurement Interval:</span> <span id="measurementInterval"></span>
+                <span class="status-label">Measurement Interval:</span> <span id="measurementInterval"></span> secs.
             </div>
             <div class="status-item" id="sampleIntervalItem">
-                <span class="status-label">Sample Interval:</span> <span id="sampleInterval"></span>
+                <span class="status-label">Sample Interval:</span> <span id="sampleInterval"></span> secs.
             </div>
         </fieldset>
 
@@ -163,10 +164,45 @@
         <fieldset>
             <legend>CO2 Gadget Calibration:</legend>
             <div class="status-item" id="calibrationValueItem">
-                <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span>
+                <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span> ppm
             </div>
             <div class="status-item" id="pendingCalibrationItem">
                 <span class="status-label">Pending Calibration:</span> <span id="pendingCalibration"></span>
+            </div>
+        </fieldset>
+
+        <!-- Low Power Options Group -->
+        <fieldset>
+            <legend>Low Power Options:</legend>
+            <div class="status-item" id="lowPowerModeItem">
+                <span class="status-label">Low Power Mode:</span> <span id="lowPowerMode"></span>
+            </div>
+            <div class="status-item" id="waitToDeepItem">
+                <span class="status-label">Wait To Deep Sleep:</span> <span id="waitToDeep"></span> secs
+            </div>
+            <div class="status-item" id="timeSleepingItem">
+                <span class="status-label">Time Sleeping:</span> <span id="timeSleeping"></span> secs
+            </div>
+            <div class="status-item" id="cyclsWifiConnItem">
+                <span class="status-label">Cycles WiFi Connected:</span> <span id="cyclsWifiConn"></span>
+            </div>
+            <div class="status-item" id="cycRedrawDisItem">
+                <span class="status-label">Cycles Redraw Display:</span> <span id="cycRedrawDis"></span>
+            </div>
+            <div class="status-item" id="actBLEOnWakeItem">
+                <span class="status-label">Activate BLE on Wake:</span> <span id="actBLEOnWake"></span>
+            </div>
+            <div class="status-item" id="actWifiOnWakeItem">
+                <span class="status-label">Activate WiFi on Wake:</span> <span id="actWifiOnWake"></span>
+            </div>
+            <div class="status-item" id="actMQTTOnWakeItem">
+                <span class="status-label">Activate MQTT on Wake:</span> <span id="actMQTTOnWake"></span>
+            </div>
+            <div class="status-item" id="actESPnowWakeItem">
+                <span class="status-label">Activate ESPNow on Wake:</span> <span id="actESPnowWake"></span>
+            </div>
+            <div class="status-item" id="displayOnWakeItem">
+                <span class="status-label">Display on Wake:</span> <span id="displayOnWake"></span>
             </div>
         </fieldset>
 
@@ -174,16 +210,16 @@
         <fieldset>
             <legend>CO2 Gadget System:</legend>
             <div class="status-item" id="freeHeapItem">
-                <span class="status-label">Free Heap:</span> <span id="freeHeap"></span>
+                <span class="status-label">Free Heap:</span> <span id="freeHeap"></span> bytes
             </div>
             <div class="status-item" id="minFreeHeapItem">
-                <span class="status-label">Min Free Heap:</span> <span id="minFreeHeap"></span>
+                <span class="status-label">Min Free Heap:</span> <span id="minFreeHeap"></span> bytes
             </div>
             <div class="status-item" id="uptimeItem">
                 <span class="status-label">Uptime:</span> <span id="uptime"></span>
             </div>
             <div class="status-item" id="batVoltageItem">
-                <span class="status-label">Battery Voltage:</span> <span id="batVoltage"></span>
+                <span class="status-label">Battery Voltage:</span> <span id="batVoltage"></span> Volts.
             </div>
         </fieldset>
 
