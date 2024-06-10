@@ -1,4 +1,4 @@
-name: Beta Release V2.93
+name: Beta Release V2.94
 
 # # # # # # # # # # #
 # To create new Beta version and upload to the web server, just commit with a message with the format "Beta v*.*.*" (Beta v1.0.1, Beta v1.1.12, Beta v2.1.123, etc)
@@ -37,7 +37,6 @@ jobs:
           - ttgo-t7-WEACT_GDEH0154D67
           - ttgo-t7-WEACT_DEPG0213BN
           - ttgo-t7-WEACT_GxEPD2_290_BS
-          
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
@@ -112,11 +111,12 @@ jobs:
           # spiffs,   data,   spiffs,  0x370000,  0x4B000,  # spiffs partition at offset 3604480 with size 307200 bytes (476KB)
           
           # Define offset values based on env.CHIP_FAMILY
+          # SPIFFS at 0x370000 (3604480) for ESP32 and 0xc90000 (13172736) for ESP32-S3
           if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
             bootloader_offset=0
             partitions_offset=32768
             firmware_offset=65536
-            spiffs_offset=3604480
+            spiffs_offset=13172736
           else
             # Default values for ESP32 or other environments
             bootloader_offset=4096
