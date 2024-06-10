@@ -1190,7 +1190,7 @@ void initWebServer() {
             };
             // <CO2-GADGET_IP>/settings?ToggleDisplayReverse
             if (request->hasParam("ToggleDisplayReverse")) {
-                Serial.println("-->[DISP] Toggle display reverse");
+                Serial.println("-->[WEBS] Toggle display reverse");
                 displayReverse = !displayReverse;
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
                 setDisplayReverse(displayReverse);
@@ -1203,23 +1203,29 @@ void initWebServer() {
             };
             // <CO2-GADGET_IP>/settings?setDisplayBrightness
             if (request->hasParam("setDisplayBrightness")) {
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
                 inputString = request->getParam("setDisplayBrightness")->value();
-                Serial.println("-->[DISP] Set display brightness");
+                Serial.println("-->[WEBS] Set display brightness");
                 DisplayBrightness = inputString.toInt();
                 setDisplayBrightness(DisplayBrightness);
                 if (inMenu) isMenuDirty = true;
+#else
+                Serial.println("-->[WEBS] Display brightness not supported");
+#endif
                 request->send(200, "text/plain", "OK. Set Display brightness");
             };
             // <CO2-GADGET_IP>/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}
-            if (request->hasParam("showTemp")) {
+            if (request->hasParam("showTemp") || request->hasParam("showHumidity") || request->hasParam("showBattery")) {
                 displayShowTemperature = (request->getParam("showTemp")->value() == "true" || request->getParam("showTemp")->value() == "1");
                 displayShowHumidity = (request->getParam("showHumidity")->value() == "true" || request->getParam("showHumidity")->value() == "1");
                 displayShowBattery = (request->getParam("showBattery")->value() == "true" || request->getParam("showBattery")->value() == "1");
-                Serial.println("-->[DISP] showTemp(" + request->getParam("showTemp")->value() + ") - showHumidity(" + request->getParam("showHumidity")->value() + ") - showBAttery(" + request->getParam("showBattery")->value() + ") in display");
-                if (!inMenu) shouldRedrawDisplay = true;
-                request->send(200, "text/plain", "OK.  show/hide Temp/Humidity/Battery in display");
+                Serial.println("-->[WEBS] showTemp(" + request->getParam("showTemp")->value() + ") - showHumidity(" + request->getParam("showHumidity")->value() + ") - showBAttery(" + request->getParam("showBattery")->value() + ") in display");
+                if (!inMenu) {
+                    Serial.println("-->[WEBS] Set shouldRedrawDisplay to true");
+                    redrawDisplayOnNextLoop = true;
+                }
+                request->send(200, "text/plain", "OK. Showing/hidding Temp/Humidity/Battery in display");
             };
-
             // <CO2-GADGET_IP>/settings?displayShowBatteryVoltage=true
             if (request->hasParam("displayShowBatteryVoltage")) {
                 String inputString = request->getParam("displayShowBatteryVoltage")->value();
