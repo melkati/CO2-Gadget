@@ -3,22 +3,12 @@ let co2Interval = 15000; // 15 seconds
 let temperatureInterval = 30000; // 60 seconds
 let humidityInterval = 30000; // 60 seconds
 
-// Define timers for data update functions
-let co2Timer = setInterval(getCO2Data, co2Interval);
-let temperatureTimer = setInterval(getTemperatureData, temperatureInterval);
-let humidityTimer = setInterval(getHumidityData, humidityInterval);
-
 // Function to set intervals based on values obtained from the server
 function setUpdateIntervals(newCO2Interval) {
     co2Interval = newCO2Interval;
-    // Clear current intervals
-    clearInterval(co2Timer);
-    clearInterval(temperatureTimer);
-    clearInterval(humidityTimer);
-    // Set new intervals
-    co2Timer = setInterval(getCO2Data, co2Interval);
-    temperatureTimer = setInterval(getTemperatureData, temperatureInterval);
-    humidityTimer = setInterval(getHumidityData, humidityInterval);
+    setInterval(getCO2Data, co2Interval);
+    setInterval(getTemperatureData, temperatureInterval);
+    setInterval(getHumidityData, humidityInterval);
 }
 
 // Function to fetch measurement interval from the server
@@ -82,5 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
         getHumidityData();
         getMeasurementInterval();
         highlightCurrentPage(); // Highlight the current page in the navigation bar
+        // setInterval(getCO2Data, co2Interval);
+        // setInterval(getTemperatureData, temperatureInterval);
+        // setInterval(getHumidityData, humidityInterval);
     }
 });
