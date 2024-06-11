@@ -218,55 +218,58 @@ function fillFeaturesFromServer() {
     document.getElementById('featureOTA').textContent = features.SUPPORT_OTA;
 }
 
-function getBatteryVoltage() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        console.log(this.responseText);
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("batVoltage").innerHTML =
-                this.responseText;
-        }
-    };
-    xhttp.open("GET", "readBatteryVoltage", true);
-    xhttp.send();
+function updateBatteryVoltage(voltage) {
+    document.getElementById("batVoltage").innerHTML = voltage;
 }
 
-function getFreeHeap() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        console.log(this.responseText);
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("freeHeap").innerHTML =
-                this.responseText;
-        }
-    };
-    xhttp.open("GET", "getFreeHeap", true);
-    xhttp.send();
+function updateFreeHeap(freeHeap) {
+    document.getElementById("freeHeap").innerHTML = freeHeap;
 }
 
-function getMinFreeHeap() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        console.log(this.responseText);
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("minFreeHeap").innerHTML =
-                this.responseText;
-        }
-    };
-    xhttp.open("GET", "getMinFreeHeap", true);
-    xhttp.send();
+function updateMinFreeHeap(minFreeHeap) {
+    document.getElementById("minFreeHeap").innerHTML = minFreeHeap;
+}
+
+function fetchAndUpdateBatteryVoltage() {
+    readBatteryVoltage()
+        .then(voltage => {
+            updateBatteryVoltage(voltage);
+        })
+        .catch(error => {
+            console.error('Error updating battery voltage:', error);
+        });
+}
+
+function fetchAndUpdateFreeHeap() {
+    readFreeHeap()
+        .then(freeHeap => {
+            updateFreeHeap(freeHeap);
+        })
+        .catch(error => {
+            console.error('Error updating free heap:', error);
+        });
+}
+
+function fetchAndUpdateMinFreeHeap() {
+    readMinFreeHeap()
+        .then(minFreeHeap => {
+            updateMinFreeHeap(minFreeHeap);
+        })
+        .catch(error => {
+            console.error('Error updating min free heap:', error);
+        });
 }
 
 setInterval(function () {
     // Call a function repetatively with 1 Second interval
-    getBatteryVoltage();
-    getFreeHeap();
-    getMinFreeHeap();
+    fetchAndUpdateBatteryVoltage();
+    fetchAndUpdateFreeHeap();
+    fetchAndUpdateMinFreeHeap();
     loadCaptivePortalStatusFromServer();
 }, 1000); // 1000mS  update rate
 
 window.onload = function () {
-    getBatteryVoltage();
+    fetchAndUpdateBatteryVoltage();
 };
 
 document.addEventListener("DOMContentLoaded", function () {
