@@ -1,18 +1,17 @@
-name: Beta Release V2.94
+name: Beta Release V3.0 # This file must be placed in the .github/workflows folder at the root of the repository in the master branch
 
 # # # # # # # # # # #
 # To create new Beta version and upload to the web server, just commit with a message with the format "Beta v*.*.*" (Beta v1.0.1, Beta v1.1.12, Beta v2.1.123, etc)
 # # # # # # # # # # #
-
 on:
   push:
     branches:
       - development
     paths-ignore:
       - '.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
-    # Only run when commit message contains "Beta"
+    # Only run when commit message contains "Beta" and does not contain "low-power"
     # Use 'contains' with 'github.event.head_commit.message'
-    if: contains(github.event.head_commit.message, 'Beta') || github.event_name == 'workflow_dispatch'
+    if: contains(github.event.head_commit.message, 'Beta') && !contains(github.event.head_commit.message, 'low-power') || github.event_name == 'workflow_dispatch'
   workflow_dispatch:
 
 jobs:
