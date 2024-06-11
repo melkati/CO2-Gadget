@@ -171,6 +171,41 @@
             </div>
         </fieldset>
 
+        <!-- Low Power Options Group -->
+        <fieldset id="lowPowerOptionsFieldset" class="hidden">
+            <legend>Low Power Options:</legend>
+            <div class="status-item" id="lowPowerModeItem">
+                <span class="status-label">Low Power Mode:</span> <span id="lowPowerMode"></span>
+            </div>
+            <div class="status-item" id="waitToDeepItem">
+                <span class="status-label">Wait To Deep Sleep:</span> <span id="waitToDeep"></span> secs
+            </div>
+            <div class="status-item" id="timeSleepingItem">
+                <span class="status-label">Time Sleeping:</span> <span id="timeSleeping"></span> secs
+            </div>
+            <div class="status-item" id="cyclsWifiConnItem">
+                <span class="status-label">Cycles WiFi Connected:</span> <span id="cyclsWifiConn"></span>
+            </div>
+            <div class="status-item" id="cycRedrawDisItem">
+                <span class="status-label">Cycles Redraw Display:</span> <span id="cycRedrawDis"></span>
+            </div>
+            <div class="status-item" id="actBLEOnWakeItem">
+                <span class="status-label">Activate BLE on Wake:</span> <span id="actBLEOnWake"></span>
+            </div>
+            <div class="status-item" id="actWifiOnWakeItem">
+                <span class="status-label">Activate WiFi on Wake:</span> <span id="actWifiOnWake"></span>
+            </div>
+            <div class="status-item" id="actMQTTOnWakeItem">
+                <span class="status-label">Activate MQTT on Wake:</span> <span id="actMQTTOnWake"></span>
+            </div>
+            <div class="status-item" id="actESPnowWakeItem">
+                <span class="status-label">Activate ESPNow on Wake:</span> <span id="actESPnowWake"></span>
+            </div>
+            <div class="status-item" id="displayOnWakeItem">
+                <span class="status-label">Display on Wake:</span> <span id="displayOnWake"></span>
+            </div>
+        </fieldset>
+
         <!-- System Group -->
         <fieldset>
             <legend>CO2 Gadget System:</legend>
@@ -236,6 +271,9 @@
             </div>
             <div class="feature-item" id="featureOTAItem">
                 <span class="feature-label">OTA:</span> <span id="featureOTA"></span>
+            </div>
+            <div class="feature-item" id="featureLowPowerItem" class="hidden">
+                <span class="feature-label">Low power:</span> <span id="featureLowPower"></span>
             </div>
         </fieldset>
     </div>

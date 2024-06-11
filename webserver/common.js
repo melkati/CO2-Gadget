@@ -35,7 +35,8 @@ var features = {
     SUPPORT_MDNS: false,
     SUPPORT_MQTT: false,
     SUPPORT_MQTT_DISCOVERY: false,
-    SUPPORT_OTA: false
+    SUPPORT_OTA: false,
+    SUPPORT_LOW_POWER: false
 };
 
 /**
@@ -129,6 +130,13 @@ function loadFeaturesFromServer() {
             else {
                 features.SUPPORT_OTA = false;
             }
+
+            if (data.LowPower !== undefined) {
+                features.SUPPORT_LOW_POWER = data.LowPower;
+            }
+            else {
+                features.SUPPORT_LOW_POWER = false;
+            }
         }
         )
         .catch(error => console.error('Error fetching features:', error));
@@ -184,5 +192,36 @@ function readMinFreeHeap() {
         .catch(error => {
             console.error('Error fetching min free heap:', error);
             throw error;
+        });
+}
+
+/**
+ * Handles the features data and updates the SUPPORT_* properties accordingly.
+ * @param {Object} features - The features data object.
+ */
+function handleFeaturesData(data) {
+    features = data;
+    if (captivePortalDebug) console.log('Features:', features);
+}
+
+/**
+ * Fetches features as JSON from the server and handles the response.
+ */
+function getFeaturesAsJson() {
+    fetch("/getFeaturesAsJson")
+        .then(response => {
+            if (!response.ok) {
+                // if (captivePortalDebug) console.log("Received response:", response);
+                console.error("Response not OK:", response.status, response.statusText);
+                throw new Error("Network response was not ok " + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Received JSON:", data);
+            handleFeaturesData(data);
+        })
+        .catch(error => {
+            console.error("Error fetching CO2 Gadget features:", error);
         });
 }

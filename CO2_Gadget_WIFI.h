@@ -770,6 +770,11 @@ String getCO2GadgetFeaturesAsJson() {
 #else
     doc["CaptivePortal"] = false;
 #endif
+#ifdef SUPPORT_LOW_POWER
+    doc["LowPower"] = true;
+#else
+    doc["LowPower"] = false;
+#endif
 
     String output;
     serializeJson(doc, output);
