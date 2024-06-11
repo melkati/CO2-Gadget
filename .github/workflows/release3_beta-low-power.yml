@@ -128,7 +128,7 @@ jobs:
           echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
           echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
           echo "  \"flavour\": \"${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
-          echo "  \"version\": \"${{ steps.check_version.outputs.VERSION }}-beta\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"version\": \"${{ steps.check_version.outputs.VERSION }}-beta-low-power\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
           echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
           echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
           echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
