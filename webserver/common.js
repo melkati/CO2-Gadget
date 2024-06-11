@@ -39,6 +39,30 @@ var features = {
 };
 
 /**
+ * Restarts the ESP32 device after user confirmation.
+ */
+function restartESP32() {
+    const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
+    if (isConfirmed) {
+        if (preferencesDebug) console.log("Restarting ESP32...");
+        fetch('/restart', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('ESP32 restart initiated');
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            })
+            .catch(error => console.error('Error restarting ESP32:', error));
+    }
+}
+
+/**
  * Adds the 'active' class to the current page link in the navigation bar.
  */
 function highlightCurrentPage() {
