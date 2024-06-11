@@ -1,4 +1,4 @@
-name: Low-Power Beta Release V2.94
+name: Low-Power Beta Release V3.0 # This file must be placed in the .github/workflows folder at the root of the repository in the master branch
 
 # # # # # # # # # # #
 # To create new Low-Power Beta version and upload to the web server, just commit with a message with the format "Beta v*.*.* low-power" (Beta v1.0.1 low-power, Beta v1.1.12 low-power, Beta v2.1.123 low-power, etc)
@@ -193,7 +193,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: ./low_power_beta_firmware/
-          REMOTE_DIR: /low-power/
+          REMOTE_DIR: /${{ github.event.repository.name }}/low-power/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
