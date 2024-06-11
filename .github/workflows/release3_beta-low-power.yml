@@ -193,7 +193,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: ./low_power_beta_firmware/
-          REMOTE_DIR: /low-power/
+          REMOTE_DIR: /${{ github.event.repository.name }}/low-power/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
