@@ -139,38 +139,6 @@ function updateActiveStates(data) {
 }
 
 /**
- * Handles the features data and updates the SUPPORT_* properties accordingly.
- * @param {Object} features - The features data object.
- */
-function handleFeaturesData(data) {
-    features = data;
-    if (captivePortalDebug) console.log('Features:', features);
-}
-
-/**
- * Fetches features as JSON from the server and handles the response.
- */
-function getFeaturesAsJson() {
-    fetch("/getFeaturesAsJson")
-        .then(response => {
-            if (!response.ok) {
-                // if (captivePortalDebug) console.log("Received response:", response);
-                console.error("Response not OK:", response.status, response.statusText);
-                throw new Error("Network response was not ok " + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Received JSON:", data);
-            handleFeaturesData(data);
-            showCO2GadgetFeatures();
-        })
-        .catch(error => {
-            console.error("Error fetching CO2 Gadget features:", error);
-        });
-}
-
-/**
  * Fetches the captive portal settings from the server.
  */
 function getCaptivePortalSettings() {
