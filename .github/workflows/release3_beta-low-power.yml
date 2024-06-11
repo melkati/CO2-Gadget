@@ -1,0 +1,203 @@
+name: Low-Power Beta Release V2.94
+
+# # # # # # # # # # #
+# To create new Low-Power Beta version and upload to the web server, just commit with a message with the format "Beta v*.*.* low-power" (Beta v1.0.1 low-power, Beta v1.1.12 low-power, Beta v2.1.123 low-power, etc)
+# # # # # # # # # # #
+
+on:
+  push:
+    branches:
+      - development-low-power
+    paths-ignore:
+      - '.github/workflows/release3_beta-low-power.yml'  # Ignore changes in the workflow file itself
+    # Only run when commit message contains "Beta" and "low-power"
+    # Use 'contains' with 'github.event.head_commit.message'
+    if: contains(github.event.head_commit.message, 'Beta') && contains(github.event.head_commit.message, 'low-power') || github.event_name == 'workflow_dispatch'
+  workflow_dispatch:
+
+jobs:
+  build_low_power_beta:
+    name: Create Low-Power Beta Release
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment:
+          # - esp32dev
+          # - esp32dev_OLED
+          - TTGO_TDISPLAY
+          - TTGO_TDISPLAY_SANDWICH
+          - TDISPLAY_S3
+          # - esp32dev_ST7789_240x320
+          - ttgo-t5-EINKBOARDGDEM0213B74
+          - ttgo-t5-EINKBOARDDEPG0213BN
+          - ttgo-t5-EINKBOARDGDEW0213M21
+          - ttgo-t7-EINKBOARDGDEM029T94
+          # - ttgo-t7-WEACT_GDEH0154D67
+          # - ttgo-t7-WEACT_DEPG0213BN
+          # - ttgo-t7-WEACT_GxEPD2_290_BS
+
+    env:
+      CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
+
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Show environments
+        run: |
+          echo
+
+      - name: Check if version exists
+        id: check_version
+        run: |
+          commit_message=$(git log --format=%B -n 1 $GITHUB_SHA)
+          version_regex="Beta v([0-9]+\.[0-9]+\.[0-9]+) low-power"
+          if [[ $commit_message =~ $version_regex ]]; then
+            echo "Version found: ${BASH_REMATCH[1]}"
+            echo "::set-output name=VERSION::${BASH_REMATCH[1]}"
+          else
+            echo "No valid version found in commit message. Exiting..."
+            exit 1
+          fi
+          
+      - name: Determine chipFamily
+        id: determine_chip_family
+        run: |
+          case "${{ matrix.environment }}" in
+          "esp32dev_beta")
+            CHIP_FAMILY="ESP32";;
+          "TDISPLAY_S3")
+            CHIP_FAMILY="ESP32-S3";;
+          # Add more cases for other environments as needed
+          *)
+            CHIP_FAMILY="UNKNOWN";;
+          esac
+          echo "::set-output name=chipFamily::${CHIP_FAMILY}"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U platformio
+          platformio update
+
+      - name: Get current date
+        id: date
+        run: |
+          echo "::set-output name=date::$(date +'%d-%m-%Y')"
+          echo "::set-output name=time::$(date +'%H:%M:%S')"
+
+      - name: Create low-power beta manifest file
+        if: steps.check_version.outputs.VERSION != ''
+        id: create_low_power_betamanifest
+        run: |
+          # Note: if you change the partition table, make sure to update the offsets
+          #       See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html
+          # Name,     Type,   SubType, Offset,    Size,     Flags
+          # nvs,      data,   nvs,     0x9000,    0x5000,   # nvs partition at at offset 20480 with size 36864 bytes (36KB)
+          # otadata,  data,   ota,     0xe000,    0x2000,   # otadata partition at offset 57344 with size 8192 bytes (8KB)
+          # app0,     app,    ota_0,   0x10000,   0x1B0000, # app0 partition at offset 65536 with size 1769472 bytes (1.68MB)
+          # app1,     app,    ota_1,   0x1C0000,  0x1B0000, # app1 partition at offset 1835008 with size 1769472 bytes (1.68MB)
+          # spiffs,   data,   spiffs,  0x370000,  0x4B000,  # spiffs partition at offset 3604480 with size 307200 bytes (476KB)
+          
+          # Define offset values based on env.CHIP_FAMILY
+          # SPIFFS at 0x370000 (3604480) for ESP32 and 0xc90000 (13172736) for ESP32-S3
+          if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
+            bootloader_offset=0
+            partitions_offset=32768
+            firmware_offset=65536
+            spiffs_offset=13172736
+          else
+            # Default values for ESP32 or other environments
+            bootloader_offset=4096
+            partitions_offset=32768
+            firmware_offset=65536
+            spiffs_offset=3604480
+          fi
+
+          # Create low-power beta manifest
+          echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"flavour\": \"${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"version\": \"${{ steps.check_version.outputs.VERSION }}-beta\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  \"new_install_improv_wait_time\": 20," >> ${{ github.event.repository.name }}.beta-low-power.manifest.json
+          echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "        \"chipFamily\": \"${{ env.CHIP_FAMILY }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "        \"improv\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-bootloader.bin\", \"offset\": $bootloader_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-partitions.bin\", \"offset\": $partitions_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-firmware.bin\", \"offset\": $firmware_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin\", \"offset\": $spiffs_offset }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "::set-output name=betamanifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json)"
+
+      - name: Read low-power beta manifest files
+        if: steps.check_version.outputs.VERSION != ''
+        run:  |
+          echo "Low-Power Beta Manifest:"
+          echo ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+          echo "Low-Power Beta Manifest file contents read with cat:"
+          cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+
+      - name: Copy low-power beta manifest files
+        if: steps.check_version.outputs.VERSION != ''
+        run: |            
+          mkdir ./low_power_beta_firmware      
+          cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json ./low_power_beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta-low-power.manifest.json
+
+      - name: Build low-power beta firmware file
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          pio run -e ${{ matrix.environment }}
+
+      - name: Copy low-power beta firmware files
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          cp .pio/build/${{ matrix.environment }}/bootloader.bin ./low_power_beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-bootloader.bin
+          cp .pio/build/${{ matrix.environment }}/partitions.bin  ./low_power_beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-partitions.bin
+          cp .pio/build/${{ matrix.environment }}/firmware.bin    ./low_power_beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-firmware.bin
+
+      - name: Build low-power beta spiffs file
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          pio run -e ${{ matrix.environment }} -t buildfs
+
+      - name: Copy low-power beta spiffs files
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          ls -la ./low_power_beta_firmware
+          cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./low_power_beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin
+
+      - name: 📂 Sync low-power beta files - FTP-Deploy-Action
+        if: steps.check_version.outputs.VERSION != ''
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          LOCAL_DIR: ./low_power_beta_firmware/
+          REMOTE_DIR: /low-power/
+          METHOD: ftp
+          PORT: 21
+          ARGS: --verbose
+          
+      - name: Clean eMariete.com Cache
+        if: steps.check_version.outputs.VERSION != ''
+        run: curl https://emariete.com/clean_cache_litespeed.php
