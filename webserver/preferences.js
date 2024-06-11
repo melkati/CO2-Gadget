@@ -302,30 +302,6 @@ function savePreferences() {
 }
 
 /**
- * Restarts the ESP32 device after user confirmation.
- */
-function restartESP32() {
-    const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
-    if (isConfirmed) {
-        if (preferencesDebug) console.log("Restarting ESP32...");
-        fetch('/restart', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        })
-            .then(response => {
-                if (response.ok) {
-                    console.log('ESP32 restart initiated');
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-            })
-            .catch(error => console.error('Error restarting ESP32:', error));
-    }
-}
-
-/**
  * Backs up preferences by saving them to a JSON file.
  */
 function backupPreferences() {
@@ -441,15 +417,20 @@ function handleWiFiMQTTDependency() {
 }
 
 /**
- * Updates the battery voltage display by fetching it from the server.
+ * Updates the battery voltage displayed on the page.
  */
-function updateVoltage() {
-    fetch('/readBatteryVoltage')
-        .then(response => response.text())
+function updateBatteryVoltage(voltage) {
+    document.getElementById('currentVoltage').textContent = voltage + ' Volts';
+}
+
+function fetchAndUpdateBatteryVoltage() {
+    readBatteryVoltage()
         .then(voltage => {
-            document.getElementById('currentVoltage').textContent = voltage + ' Volts';
+            updateBatteryVoltage(voltage);
         })
-        .catch(error => console.error('Error fetching battery voltage:', error));
+        .catch(error => {
+            console.error('Error updating battery voltage:', error);
+        });
 }
 
 /**
@@ -735,7 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { handleCalibrationWizard(); }, 200); // Delay of 500ms
 
         // Update the battery voltage every second
-        setInterval(updateVoltage, 1000);
+        setInterval(fetchAndUpdateBatteryVoltage, 1000);
 
         // Listen for input events on the voltage reference field with a delay of 100ms
         document.getElementById('vRef').addEventListener('input', () => {

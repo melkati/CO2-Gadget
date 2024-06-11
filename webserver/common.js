@@ -39,6 +39,30 @@ var features = {
 };
 
 /**
+ * Restarts the ESP32 device after user confirmation.
+ */
+function restartESP32() {
+    const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
+    if (isConfirmed) {
+        if (preferencesDebug) console.log("Restarting ESP32...");
+        fetch('/restart', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('ESP32 restart initiated');
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            })
+            .catch(error => console.error('Error restarting ESP32:', error));
+    }
+}
+
+/**
  * Adds the 'active' class to the current page link in the navigation bar.
  */
 function highlightCurrentPage() {
@@ -108,4 +132,57 @@ function loadFeaturesFromServer() {
         }
         )
         .catch(error => console.error('Error fetching features:', error));
+}
+
+// Getters
+
+function readBatteryVoltage() {
+    return fetch('/readBatteryVoltage')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.text();
+        })
+        .then(voltage => {
+            return voltage;
+        })
+        .catch(error => {
+            console.error('Error fetching battery voltage:', error);
+            throw error;
+        });
+}
+
+function readFreeHeap() {
+    return fetch('/getFreeHeap')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.text();
+        })
+        .then(heap => {
+            return heap;
+        })
+        .catch(error => {
+            console.error('Error fetching free heap:', error);
+            throw error;
+        });
+}
+
+function readMinFreeHeap() {
+    return fetch('/getMinFreeHeap')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.text();
+        })
+        .then(heap => {
+            return heap;
+        })
+        .catch(error => {
+            console.error('Error fetching min free heap:', error);
+            throw error;
+        });
 }
