@@ -216,6 +216,13 @@ function fillFeaturesFromServer() {
     document.getElementById('featureMQTT').textContent = features.SUPPORT_MQTT;
     document.getElementById('featureMQTTDiscovery').textContent = features.SUPPORT_MQTT_DISCOVERY;
     document.getElementById('featureOTA').textContent = features.SUPPORT_OTA;
+    if (features.SUPPORT_LOW_POWER) {
+        document.getElementById('featureLowPowerItem').classList.remove('hidden');
+        document.getElementById('lowPowerOptionsFieldset').classList.remove('hidden');
+    } else {
+        document.getElementById('featureLowPowerItem').classList.add('hidden');
+        document.getElementById('lowPowerOptionsFieldset').classList.add('hidden');
+    }
 }
 
 function updateBatteryVoltage(voltage) {
