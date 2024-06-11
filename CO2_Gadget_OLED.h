@@ -42,6 +42,15 @@ void setDisplayBrightness(uint16_t newBrightness) {
   actualDisplayBrightness = newBrightness;
 }
 
+// https://github.com/olikraus/u8g2/wiki/u8g2reference#setpowersave
+void displaySleep(bool value) {
+    // if (value) {
+    //     u8g2.setPowerSave(value);
+    // } else {
+    //     u8g2.setPowerSave(value);
+    // }
+}
+
 void turnOffDisplay() {
     setDisplayBrightness(0);  // Turn off the display
 }
