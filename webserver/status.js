@@ -293,9 +293,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loadStatusFromServer();
         displayVersion();
         loadCaptivePortalStatusFromServer();
-        loadFeaturesFromServer();
-        setTimeout(function () {
-            fillFeaturesFromServer();
-        }, 500);
+        getFeaturesAsJson().then(fillFeaturesFromServer);
     }
 });
