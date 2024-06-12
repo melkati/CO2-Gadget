@@ -1,14 +1,16 @@
 /**
  * Fetches version information from the server and updates the version displayed
  */
-function fetchVersion() {
-    fetch('/getVersion')
-        .then(response => response.json())
+function displayVersion() {
+
+    fetchVersion()
         .then(versionInfo => {
-            if (preferencesDebug) console.log('Version information:', versionInfo);
-            const versionElement = document.getElementById("co2GadgetVersion");
-            const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
-            versionElement.innerText = versionText;
+            let versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}`;
+            if (versionInfo.firmBranch) {
+                versionText += `-${versionInfo.firmBranch}`;
+            }
+            versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            document.getElementById("co2GadgetVersion").innerText = versionText;
 
             // Adjust preferences.html for specific versions
             if (versionInfo.firmFlavour == 'T-Display S3') {
@@ -38,7 +40,10 @@ function fetchVersion() {
                 document.getElementById("tToDispOffDiv").classList.add("hidden");
             }
         })
-        .catch(error => console.error('Error fetching version information:', error));
+        .catch(error => {
+            console.error('Error displaying version:', error);
+        });
+
 }
 
 /**
@@ -693,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
         setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
-        setTimeout(() => { fetchVersion(); }, 100); // Delay of 100ms
+        setTimeout(() => { displayVersion(); }, 100); // Delay of 100ms
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
         });
