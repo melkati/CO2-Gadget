@@ -231,6 +231,19 @@ function showCaptivePortalSettings(show) {
     }
 }
 
+/**
+ * Adjust the padding-top of the content based on the navbar height.
+ */
+function adjustContentPadding() {
+    const navbar = document.querySelector('.navbar');
+    const content = document.querySelector('.content');
+
+    if (navbar && content) {
+        const navbarHeight = navbar.offsetHeight;
+        content.style.paddingTop = `${navbarHeight}px`;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const currentPage = window.location.pathname.split("/").pop();
 
