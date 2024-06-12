@@ -137,9 +137,9 @@ h4 {
 .navbar a {
   text-decoration: none;
   color: var(--navbar-text-color);
-  padding: 0px 20px;
-  transition: color 0.3s ease;
-  display: flex; /* Add flex display */
+  padding: 0px clamp(10px, 2vw, 20px);
+  transition: padding 0.3s ease; /* Transition for smooth change */
+  display: flex; /* Flex display */
   align-items: center; /* Center align items */
 }
 
@@ -187,7 +187,7 @@ h4 {
   fill: var(--navbar-icon-color); /* Use theme-based color for icons */
 }
 
-/* Show only icons on small screens */
+/* Ensure span and svg behavior on small screens */
 @media screen and (max-width: 600px) {
   .navbar a span {
     display: none; /* Hide text */
