@@ -385,6 +385,25 @@ function getVersionStr() {
 }
 
 /**
+ * Retrieves a JSON from the server with the current settings
+ * and returns a promise that resolves to the JSON object.
+ * @returns {Promise<Object>} A promise that resolves to the settings JSON object.
+ */
+function readPreferencesFromServer() {
+    return fetch('/getActualSettingsAsJson')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error('Error fetching preferences:', error);
+            throw error;
+        });
+}
+
+/**
  * Initialize the captive portal for preferences.html.
  */
 function initNavBar() {
