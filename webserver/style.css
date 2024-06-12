@@ -35,6 +35,8 @@
   --tab-active-bg-color: #ffffff;
   --tab-active-text-color: #000;
   --tab-active-border-color: #0056b3;
+  --navbar-text-color: #333333;
+  --navbar-icon-color: #333333;
 }
 
 [theme="dark"] {
@@ -74,6 +76,8 @@
   --tab-active-bg-color: #3b4a5a;
   --tab-active-text-color: #ecf0f1;
   --tab-active-border-color: #1abc9c;
+  --navbar-text-color: #ecf0f1;
+  --navbar-icon-color: #ecf0f1;
 }
 
 body {
@@ -135,6 +139,8 @@ h4 {
   color: var(--navbar-text-color);
   padding: 0px 20px;
   transition: color 0.3s ease;
+  display: flex; /* Add flex display */
+  align-items: center; /* Center align items */
 }
 
 .navbar a:hover {
@@ -172,6 +178,26 @@ h4 {
   transform: scale(1.5);
 }
 
+/* Add styles for SVG icons */
+.navbar a svg {
+  display: none; /* Hide icons by default */
+  width: 24px; /* Icon size */
+  height: 24px;
+  margin-right: 8px; /* Space between icon and text */
+  fill: var(--navbar-icon-color); /* Use theme-based color for icons */
+}
+
+/* Show only icons on small screens */
+@media screen and (max-width: 600px) {
+  .navbar a span {
+    display: none; /* Hide text */
+  }
+
+  .navbar a svg {
+    display: inline; /* Show icons */
+  }
+}
+
 .tag {
   font-size: 1.2em;
   color: var(--bg-color);
@@ -184,6 +210,16 @@ h4 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   display: inline-block;
   transition: background-color 0.3s, color 0.3s;
+}
+
+@media screen and (max-width: 600px) {
+  .tag {
+      font-size: 1em;
+      transform: rotate(180deg);
+      writing-mode: vertical-rl;
+      display: block;
+      margin: 0;
+  }
 }
 
 [theme="dark"] .tag {
@@ -509,7 +545,7 @@ button:hover {
 
   .tag {
     font-size: 1em;
-    margin-right: 10px; /* Separación entre la etiqueta y el gráfico */
+    margin-right: 10px;
   }
 
   .tag.co2::after {
