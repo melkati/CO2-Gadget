@@ -35,6 +35,8 @@
   --tab-active-bg-color: #ffffff;
   --tab-active-text-color: #000;
   --tab-active-border-color: #0056b3;
+  --navbar-text-color: #333333;
+  --navbar-icon-color: #333333;
 }
 
 [theme="dark"] {
@@ -74,14 +76,8 @@
   --tab-active-bg-color: #3b4a5a;
   --tab-active-text-color: #ecf0f1;
   --tab-active-border-color: #1abc9c;
-}
-
-/* For small screens */
-@media screen and (max-width: 600px) {
-  .content {
-    max-width: 100%;
-    padding: 0 10px;
-  }
+  --navbar-text-color: #ecf0f1;
+  --navbar-icon-color: #ecf0f1;
 }
 
 body {
@@ -141,8 +137,10 @@ h4 {
 .navbar a {
   text-decoration: none;
   color: var(--navbar-text-color);
-  padding: 0px 20px;
-  transition: color 0.3s ease;
+  padding: 0px clamp(10px, 2vw, 20px);
+  transition: padding 0.3s ease; /* Transition for smooth change */
+  display: flex; /* Flex display */
+  align-items: center; /* Center align items */
 }
 
 .navbar a:hover {
@@ -180,6 +178,26 @@ h4 {
   transform: scale(1.5);
 }
 
+/* Add styles for SVG icons */
+.navbar a svg {
+  display: none; /* Hide icons by default */
+  width: 24px; /* Icon size */
+  height: 24px;
+  margin-right: 8px; /* Space between icon and text */
+  fill: var(--navbar-icon-color); /* Use theme-based color for icons */
+}
+
+/* Ensure span and svg behavior on small screens */
+@media screen and (max-width: 600px) {
+  .navbar a span {
+    display: none; /* Hide text */
+  }
+
+  .navbar a svg {
+    display: inline; /* Show icons */
+  }
+}
+
 .tag {
   font-size: 1.2em;
   color: var(--bg-color);
@@ -194,6 +212,16 @@ h4 {
   transition: background-color 0.3s, color 0.3s;
 }
 
+@media screen and (max-width: 600px) {
+  .tag {
+      font-size: 1em;
+      transform: rotate(180deg);
+      writing-mode: vertical-rl;
+      display: block;
+      margin: 0;
+  }
+}
+
 [theme="dark"] .tag {
   color: var(--title-color);
   background-color: var(--tag-dark-bg-color);
@@ -203,6 +231,19 @@ h4 {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
+}
+
+/* Default text for tags */
+.tag.co2::after {
+  content: "CO2";
+}
+
+.tag.temp::after {
+  content: "Temperature";
+}
+
+.tag.humi::after {
+  content: "Humidity";
 }
 
 .form-group label {
@@ -299,7 +340,23 @@ input[type="checkbox"] {
   border: 1px solid var(--input-border-color);
   background-color: var(--input-background-color);
   border-radius: 4px;
-  font-size: 14px;
+}
+
+.buttonsAlignRight {
+  display: flex;
+  justify-content: flex-end; /* Make sure the buttons are aligned to the right */
+  margin-top: 20px;
+}
+
+.buttonsAlignRight .buttonsRestartSave {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* Make sure the buttons are aligned to the right */
+}
+
+.buttonsRestartSave {
+  display: flex;
+  gap: 10px;
 }
 
 .buttonsAlignRight {
@@ -405,7 +462,7 @@ button:hover {
 }
 
 .content {
-  max-width: 600px;
+  max-width: 90%;
   margin: 0 auto;
   overflow-x: auto;
 }
@@ -428,7 +485,7 @@ button:hover {
 .circular-chart {
   display: block;
   margin: 10px auto;
-  max-width: 80%;
+  max-width: 90%;
   max-height: 250px;
 }
 
@@ -477,24 +534,47 @@ button:hover {
   text-anchor: middle;
 }
 
-@media only screen and (max-width: 639px) {
+/* For small screens */
+@media screen and (max-width: 600px) {
+  .content {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
   .flex-wrapper {
-    flex-flow: column wrap;
+    flex-direction: column;
     align-items: center;
   }
 
   .single-chart {
+    width: 100%;
+    margin-bottom: 30px; /* Aumenta el espacio entre los gráficos */
     display: flex;
-    justify-content: space-around;
-    height: 32vh;
-    width: 32vh;
-    flex-flow: wrap;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .circular-chart {
+    max-width: 60%; /* Ajusta el tamaño máximo del gráfico */
+    height: auto;
   }
 
   .tag {
-    font: bolder condensed 90% arial;
-    writing-mode: vertical-rl;
-    text-orientation: upright;
+    font-size: 1em;
+    margin-right: 10px;
+  }
+
+  .tag.co2::after {
+    content: "CO2";
+  }
+
+  .tag.temp::after {
+    content: "Temp";
+  }
+
+  .tag.humi::after {
+    content: "Hum";
   }
 }
 
@@ -822,12 +902,12 @@ button:hover {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 input.valid {
   border-color: #468847;
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAgVBMVEUAAABetV5buFtcuFxcuVxdu11cuFxbuFtcuFxcuFxbtltcuFxbtltetl5cuFxct1xduV1fuF9cuFxcuFxbultcuFxduF1gtWBduV1cuFxcuVxcuFxcuFxcuFxet15dt11cuFxcuFxbt1teuF5duV1euF5cuVxcuFxcuFxcuFwAAADG3XcxAAAAKXRSTlMAJrDPRSnn1OjCKvM4MamLFivp8jvI1xgs6jpL++w5UvrxUU83RMe6MlhBCPsAAAABYktHRACIBR1IAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4AwTFzUBkZPjhwAAAHBJREFUGNNjYCAJMDIxsyDzWdk0NdmR+RyampqcCD4XiM/Nw8DLxy8A4gsKAfnCIgwMopqaYuIMDBIwPgOzJkhEQhLElwIplZYBMmWFQXw5iGHyCppgoCgHM14JLKLIg7BQGSiiqILsRFU1dQ3iPQgAPhMLEPHXqSUAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTItMTlUMjM6NTM6MDErMDE6MDCbiS6WAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTEyLTE5VDIzOjUzOjAxKzAxOjAw6tSWKgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII=);
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAgVBMVEUAAABetV5buFtcuFxcuVxdu11cuFxbuFtcuFxcuFxbtltcuFxbtltetl5cuFxct1xduV1fuF9cuFxcuFxbt1teuF5duV1euF5cuVxcuFxcuFxcuFwAAADG3XcxAAAAKXRSTlMAJrDPRSnn1OjCKvM4MamLFivp8jvI1xgs6jpL++w5UvrxUU83RMe6MlhBCPsAAAABYktHRACIBR1IAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4AwTFzUBkZPjhwAAAHBJREFUGNNjYCAJMDIxsyDzWdk0NdmR+RyampqcCD4XiM/Nw8DLxy8A4gsKAfnCIgwMopqaYuIMDBIwPgOzJkhEQhLElwIplZYBMmWFQXw5iGHyCppgoCgHM14JLKLIg7BQGSiiqILsRFU1dQ3iPQgAPhMLEPHXqSUAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTItMTlUMjM6NTM6MDErMDE6MDCbiS6WAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTEyLTE5VDIzOjUzOjAxKzAxOjAw6tSWKgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII=);
   background-position: right 5px center;
   background-repeat: no-repeat;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);

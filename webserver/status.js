@@ -1,12 +1,12 @@
-// Function to fetch version information from the server
-function fetchVersion() {
-    fetch('/getVersion')
-        .then(response => response.json())
-        .then(versionInfo => {
-            // Update CO2 Gadget version in the status line
-            document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: v" + versionInfo.firmVerMajor + "." + versionInfo.firmVerMinor + "." + versionInfo.firmRevision + "-" + versionInfo.firmBranch + " (Flavour: " + versionInfo.firmFlavour + ")";
+// Function to fetch version information from the server and display it in the status line
+function displayVersion() {
+    getVersionStr()
+        .then(versionText => {
+            document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: " + versionText;
         })
-        .catch(error => console.error('Error fetching version information:', error));
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
 
 /**
@@ -219,9 +219,12 @@ function fillFeaturesFromServer() {
     if (features.SUPPORT_LOW_POWER) {
         document.getElementById('featureLowPowerItem').classList.remove('hidden');
         document.getElementById('lowPowerOptionsFieldset').classList.remove('hidden');
+        document.getElementById('featureLowPower').textContent = features.SUPPORT_LOW_POWER;
+
     } else {
         document.getElementById('featureLowPowerItem').classList.add('hidden');
         document.getElementById('lowPowerOptionsFieldset').classList.add('hidden');
+        document.getElementById('featureLowPower').textContent = false;
     }
 }
 
@@ -288,11 +291,8 @@ document.addEventListener("DOMContentLoaded", function () {
         highlightCurrentPage(); // Highlight the current page in the navigation bar
         // Set initial values when the page loads
         loadStatusFromServer();
-        fetchVersion;
+        displayVersion();
         loadCaptivePortalStatusFromServer();
-        loadFeaturesFromServer();
-        setTimeout(function () {
-            fillFeaturesFromServer();
-        }, 500);        
+        getFeaturesAsJson().then(fillFeaturesFromServer);
     }
 });
