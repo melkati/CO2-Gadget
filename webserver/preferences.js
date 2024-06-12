@@ -697,8 +697,17 @@ document.addEventListener("DOMContentLoaded", () => {
         relaxedSecurity = forcedRelaxedSecurity;
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
-        setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
-        setTimeout(() => { displayVersion(); }, 100); // Delay of 100ms
+
+        // Load preferences from the server and populate the form
+        readPreferencesFromServer()
+            .then(preferences => {
+                populateFormWithPreferences(preferences);
+                displayVersion();
+            })
+            .catch(error => {
+                console.error('Error initializing preferences page:', error);
+            });
+
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
         });
@@ -706,7 +715,7 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
         handleWiFiMQTTDependency();
-        setTimeout(() => { handleCalibrationWizard(); }, 200); // Delay of 500ms
+        handleCalibrationWizard();
 
         // Update the battery voltage every second
         setInterval(fetchAndUpdateBatteryVoltage, 1000);
