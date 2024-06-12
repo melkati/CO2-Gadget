@@ -344,7 +344,7 @@ input[type="checkbox"] {
 
 .buttonsAlignRight {
   display: flex;
-  justify-content: flex-end; /* Alinear a la derecha */
+  justify-content: flex-end; /* Make sure the buttons are aligned to the right */
   margin-top: 20px;
 }
 
@@ -885,7 +885,7 @@ button:hover {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 input.valid {

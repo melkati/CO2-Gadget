@@ -189,6 +189,83 @@ function readBatteryVoltage() {
 }
 
 /**
+ * Fetches CO2 data from the server.
+ * @returns {Promise<string>} A promise that resolves to the CO2 value as a string.
+ */
+function readCO2Data() {
+    return fetch("/readCO2")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok.");
+            }
+            return response.text();
+        })
+        .then(data => parseFloat(data))
+        .catch(error => {
+            console.error("Error fetching CO2 data:", error);
+            throw error;
+        });
+}
+
+/**
+ * Fetches temperature data from the server.
+ * @returns {Promise<number>} A promise that resolves to the temperature value.
+ */
+function readTemperatureData() {
+    return fetch("/readTemperature")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok.");
+            }
+            return response.text();
+        })
+        .then(data => parseFloat(data).toFixed(1))
+        .catch(error => {
+            console.error("Error fetching temperature data:", error);
+            throw error;
+        });
+}
+
+/**
+ * Fetches humidity data from the server.
+ * @returns {Promise<string>} A promise that resolves to the humidity value as a string.
+ */
+function readHumidityData() {
+    return fetch("/readHumidity")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok.");
+            }
+            return response.text();
+        })
+        .then(data => parseFloat(data).toFixed(0))
+        .catch(error => {
+            console.error("Error fetching humidity data:", error);
+            throw error;
+        });
+}
+
+/**
+ * Reads the measurement interval from the server.
+ * @returns {Promise<number>} A promise that resolves to the measurement interval in milliseconds.
+ * @throws {Error} If the network response is not ok or an error occurs during the fetch operation.
+ */
+function readMeasurementInterval() {
+    return fetch("/getMeasurementInterval")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok.");
+            }
+            return response.text();
+        })
+        .then(data => parseInt(data) * 1000)
+        .catch(error => {
+            console.error("Error fetching measurement interval:", error);
+            throw error;
+        });
+}
+
+/**
  * Fetches the free heap memory from the server.
  * @returns {Promise<string>} A promise that resolves to the free heap memory as a string.
  * @throws {Error} If the network response is not ok or if there is an error fetching the data.
@@ -231,19 +308,26 @@ function readMinFreeHeap() {
  * @param {Object} data - The features data object.
  */
 function handleFeaturesData(data) {
-    features = data;
-    if (captivePortalDebug) console.log('Features:', features);
+    features.SUPPORT_BLE = data.BLE !== undefined ? data.BLE : false;
+    features.SUPPORT_BUZZER = data.Buzzer !== undefined ? data.Buzzer : false;
+    features.SUPPORT_ESPNOW = data.EspNow !== undefined ? data.EspNow : false;
+    features.SUPPORT_MDNS = data.mDNS !== undefined ? data.mDNS : false;
+    features.SUPPORT_MQTT = data.MQTT !== undefined ? data.MQTT : false;
+    features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery !== undefined ? data.MQTTDiscovery : false;
+    features.SUPPORT_OTA = data.OTA !== undefined ? data.OTA : false;
+    features.SUPPORT_LOW_POWER = data.LowPower !== undefined ? data.LowPower : false;
+
+    if (captivePortalDebug) console.log('Mapped Features:', features);
 }
 
 /**
  * Fetches features as JSON from the server and processes the data.
- * @returns {void}
+ * @returns {Promise<void>}
  */
 function getFeaturesAsJson() {
-    fetch("/getFeaturesAsJson")
+    return fetch("/getFeaturesAsJson")
         .then(response => {
             if (!response.ok) {
-                // if (captivePortalDebug) console.log("Received response:", response);
                 console.error("Response not OK:", response.status, response.statusText);
                 throw new Error("Network response was not ok " + response.statusText);
             }
@@ -299,3 +383,31 @@ function getVersionStr() {
             throw error;
         });
 }
+
+/**
+ * Initialize the captive portal for preferences.html.
+ */
+function initNavBar() {
+    if (captivePortalDebug)
+        console.log("Document loaded. Initializing navbar...");
+    if (features.SUPPORT_OTA) {
+        const otaLink = document.getElementById("otaLink");
+        if (otaLink) {
+            otaLink.classList.remove("hidden")
+        } else {
+            console.error('Element with ID "otaLink" not found.')
+        }
+    }
+    if (features.SUPPORT_LOW_POWER) {
+        const lowPowerLink = document.getElementById("lowPowerLink");
+        if (lowPowerLink) {
+            lowPowerLink.classList.remove("hidden")
+        } else {
+            console.error('Element with ID "lowPowerLink" not found.')
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    getFeaturesAsJson().then(initNavBar);
+});

@@ -6,59 +6,66 @@ let humidityInterval = 30000; // 60 seconds
 // Function to set intervals based on values obtained from the server
 function setUpdateIntervals(newCO2Interval) {
     co2Interval = newCO2Interval;
-    setInterval(getCO2Data, co2Interval);
-    setInterval(getTemperatureData, temperatureInterval);
-    setInterval(getHumidityData, humidityInterval);
+    setInterval(updateCO2Data, co2Interval);
+    setInterval(updateTemperatureData, temperatureInterval);
+    setInterval(updateHumidityData, humidityInterval);
 }
 
 // Function to fetch measurement interval from the server
-function getMeasurementInterval() {
-    fetch('/getMeasurementInterval')
-        .then(response => response.text())
-        .then(data => {
-            console.log('CO2 Measurement Interval', data);
-            let newCO2Interval = parseInt(data) * 1000;
-            setUpdateIntervals(newCO2Interval);
-        })
-        .catch((error) => {
-            console.error('Error fetching measurement interval', error);
-        });
+function updateMeasurementInterval() {
+    readMeasurementInterval().then(measurementInterval => {
+        console.log('CO2 Measurement Interval', measurementInterval);
+        let newCO2Interval = parseInt(measurementInterval) * 1000;
+        setUpdateIntervals(newCO2Interval);
+    }).catch(error => {
+        console.error('Error updating measurement interval', error);
+    });
+    // fetch('/getMeasurementInterval')
+    //     .then(response => response.text())
+    //     .then(data => {
+    //         console.log('CO2 Measurement Interval', data);
+    //         let newCO2Interval = parseInt(data) * 1000;
+    //         setUpdateIntervals(newCO2Interval);
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error fetching measurement interval', error);
+    //     });
 }
 
-function getCO2Data() {
-    fetch('/readCO2')
-        .then(response => response.text())
-        .then(data => {
-            let co2Value = parseFloat(data);
-            document.querySelector('text#CO2Value').textContent = co2Value.toFixed(0); // No decimals
-        })
-        .catch((error) => {
-            console.error('Error fetching CO2 data', error);
-        });
+/**
+ * Updates the CO2 data on the web page.
+ * @returns {void}
+ */
+function updateCO2Data() {
+    readCO2Data().then(co2Value => {
+        document.querySelector("#CO2Value").textContent = co2Value.toFixed(0);
+    }).catch(error => {
+        console.error("Error updating CO2 data:", error);
+    });
 }
 
-function getTemperatureData() {
-    fetch('/readTemperature')
-        .then(response => response.text())
-        .then(data => {
-            let temperatureValue = parseFloat(data);
-            document.querySelector('text#TempValue').textContent = temperatureValue.toFixed(1); // One decimal
-        })
-        .catch((error) => {
-            console.error('Error fetching temperature data', error);
-        });
+/**
+ * Updates the temperature data on the web page.
+ * @returns {void}
+ */
+function updateTemperatureData() {
+    readTemperatureData().then(temperatureValue => {
+        document.querySelector("#TempValue").textContent = temperatureValue;
+    }).catch(error => {
+        console.error("Error updating temperature data:", error);
+    });
 }
 
-function getHumidityData() {
-    fetch('/readHumidity')
-        .then(response => response.text())
-        .then(data => {
-            let humidityValue = parseFloat(data);
-            document.querySelector('text#HumValue').textContent = humidityValue.toFixed(0); // No decimals
-        })
-        .catch((error) => {
-            console.error('Error fetching humidity data', error);
-        });
+/**
+ * Updates the humidity data on the web page.
+ * @returns {void}
+ */
+function updateHumidityData() {
+    readHumidityData().then(humidityValue => {
+        document.querySelector("#HumValue").textContent = humidityValue;
+    }).catch(error => {
+        console.error("Error updating humidity data:", error);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -67,13 +74,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Check if the current file is index.html or root
     if (currentFileName === "index.html" || currentFileName === "") {
-        getCO2Data();
-        getTemperatureData();
-        getHumidityData();
-        getMeasurementInterval();
-        highlightCurrentPage(); // Highlight the current page in the navigation bar
-        // setInterval(getCO2Data, co2Interval);
-        // setInterval(getTemperatureData, temperatureInterval);
-        // setInterval(getHumidityData, humidityInterval);
+        updateCO2Data();
+        updateTemperatureData();
+        updateHumidityData();
+        updateMeasurementInterval();
+        highlightCurrentPage();
+        setInterval(updateCO2Data, co2Interval);
+        setInterval(updateTemperatureData, temperatureInterval);
+        setInterval(updateHumidityData, humidityInterval);
     }
 });
