@@ -1,44 +1,43 @@
 <!DOCTYPE html>
 <html lang="en" theme="light">
-
 <head>
-    <meta charset="UTF-8">
-    <title>CO2 Gadget Monitor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
         // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
-            const savedTheme = localStorage.getItem('theme');
+            const savedTheme = localStorage.getItem("theme");
             if (savedTheme) {
-                document.documentElement.setAttribute('theme', savedTheme);
+                document.documentElement.setAttribute("theme", savedTheme);
             }
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
     <script defer type="text/javascript" src="./index.js"></script>
-    <!-- <script defer type="text/javascript" src="./combined.js"></script> -->
 </head>
 
 <body>
     <!-- Navigation bar -->
-    <div class="navbar">
+    <div class="navbar" id="navbar">
         <div class="nav-content">
             <div class="nav-links-left">
                 <a href="index.html">Home</a>
                 <a href="preferences.html">Preferences</a>
+                <a href="low_power.html">Low power</a>
                 <a href="status.html">Status</a>
             </div>
             <div class="nav-links-right">
-                <a href="ota.html" class="hidden">OTA</a>
+                <a href="ota.html" class="hidden" id="otaLink">OTA</a>
                 <a href="/getCaptivePortalStatusAsJson">
                     <span id="server-status-dot" class="status-dot status-dot-hidden"
                         title="Captive portal inactive"></span>
                 </a>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
-                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
                         <path fill="var(--icon-color)"
-                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                            d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1,0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
                     </svg>
                 </div>
             </div>
@@ -52,51 +51,49 @@
 
     <div class="content">
         <!-- Dynamic content goes here -->
-    </div>
+        <div class="flex-wrapper">
+            <div class="single-chart">
+                <div class="tag co2"></div>
+                <svg viewBox="0 0 36 36" class="circular-chart co2">
+                    <path class="circle-bg" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke-dasharray="50, 100" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20" class="value" id="CO2Value">Init...</text>
+                    <text x="18" y="25" class="unit">ppm</text>
+                </svg>
+                </div>
 
-    <div class="flex-wrapper">
-        <div class="single-chart">
-            <div class="tag">CO2</div>
-            <svg viewBox="0 0 36 36" class="circular-chart co2">
-                <path class="circle-bg" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path class="circle" stroke-dasharray="50, 100" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20" class="value" id="CO2Value">Init...</text>
-                <text x="18" y="25" class="unit">ppm</text>
-            </svg>
-        </div>
-
-        <div class="single-chart">
-            <div class="tag">Temperature</div>
-            <svg viewBox="0 0 36 36" class="circular-chart temp">
-                <path class="circle-bg" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path class="circle" stroke-dasharray="60, 100" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20" class="value" id="TempValue">Init...</text>
-                <text x="18" y="25" class="unit">°C</text>
-            </svg>
-        </div>
-        <div class="single-chart">
-            <div class="tag">Humidity</div>
-            <svg viewBox="0 0 36 36" class="circular-chart humi">
-                <path class="circle-bg" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path class="circle" stroke-dasharray="90, 100" d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20" class="value" id="HumValue">Init...</text>
-                <text x="18" y="25" class="unit">%rH</text>
-            </svg>
+            <div class="single-chart">
+                <div class="tag temp"></div>
+                <svg viewBox="0 0 36 36" class="circular-chart temp">
+                    <path class="circle-bg" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke-dasharray="60, 100" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20" class="value" id="TempValue">Init...</text>
+                    <text x="18" y="25" class="unit">°C</text>
+                </svg>
+                </div>
+                <div class="single-chart">
+                <div class="tag humi"></div>
+                <svg viewBox="0 0 36 36" class="circular-chart humi">
+                    <path class="circle-bg" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke-dasharray="90, 100" d="M18 2.0845
+                                                                  a 15.9155 15.9155 0 0 1 0 31.831
+                                                                  a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20" class="value" id="HumValue">Init...</text>
+                    <text x="18" y="25" class="unit">%rH</text>
+                </svg>
+            </div>
         </div>
     </div>
 
 </body>
-
 </html>

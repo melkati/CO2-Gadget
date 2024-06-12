@@ -29,6 +29,12 @@
   --modal-bg-color: #f1f1f1;
   --modal-overlay-bg-color: rgba(0, 0, 0, 0.4);
   --unchecked-font-color: orange;
+  --tab-bg-color: #f4f4f4;
+  --tab-text-color: #666;
+  --tab-border-color: #ccc;
+  --tab-active-bg-color: #ffffff;
+  --tab-active-text-color: #000;
+  --tab-active-border-color: #0056b3;
 }
 
 [theme="dark"] {
@@ -62,14 +68,12 @@
   --modal-bg-color: #3b4a5a;
   --modal-overlay-bg-color: rgba(0, 0, 0, 0.8);
   --unchecked-font-color: yellow;
-}
-
-/* For small screens */
-@media screen and (max-width: 600px) {
-  .content {
-    max-width: 100%;
-    padding: 0 10px;
-  }
+  --tab-bg-color: #34495e;
+  --tab-text-color: #ecf0f1;
+  --tab-border-color: #1c2833;
+  --tab-active-bg-color: #3b4a5a;
+  --tab-active-text-color: #ecf0f1;
+  --tab-active-border-color: #1abc9c;
 }
 
 body {
@@ -193,6 +197,19 @@ h4 {
   margin-bottom: 15px;
 }
 
+/* Default text for tags */
+.tag.co2::after {
+  content: "CO2";
+}
+
+.tag.temp::after {
+  content: "Temperature";
+}
+
+.tag.humi::after {
+  content: "Humidity";
+}
+
 .form-group label {
   flex: 1;
   margin-right: 10px;
@@ -287,7 +304,23 @@ input[type="checkbox"] {
   border: 1px solid var(--input-border-color);
   background-color: var(--input-background-color);
   border-radius: 4px;
-  font-size: 14px;
+}
+
+.buttonsAlignRight {
+  display: flex;
+  justify-content: flex-end; /* Alinear a la derecha */
+  margin-top: 20px;
+}
+
+.buttonsAlignRight .buttonsRestartSave {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* Make sure the buttons are aligned to the right */
+}
+
+.buttonsRestartSave {
+  display: flex;
+  gap: 10px;
 }
 
 button {
@@ -376,7 +409,7 @@ button:hover {
 }
 
 .content {
-  max-width: 600px;
+  max-width: 90%;
   margin: 0 auto;
   overflow-x: auto;
 }
@@ -399,7 +432,7 @@ button:hover {
 .circular-chart {
   display: block;
   margin: 10px auto;
-  max-width: 80%;
+  max-width: 90%;
   max-height: 250px;
 }
 
@@ -448,24 +481,47 @@ button:hover {
   text-anchor: middle;
 }
 
-@media only screen and (max-width: 639px) {
+/* For small screens */
+@media screen and (max-width: 600px) {
+  .content {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
   .flex-wrapper {
-    flex-flow: column wrap;
+    flex-direction: column;
     align-items: center;
   }
 
   .single-chart {
+    width: 100%;
+    margin-bottom: 30px; /* Aumenta el espacio entre los gráficos */
     display: flex;
-    justify-content: space-around;
-    height: 32vh;
-    width: 32vh;
-    flex-flow: wrap;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .circular-chart {
+    max-width: 60%; /* Ajusta el tamaño máximo del gráfico */
+    height: auto;
   }
 
   .tag {
-    font: bolder condensed 90% arial;
-    writing-mode: vertical-rl;
-    text-orientation: upright;
+    font-size: 1em;
+    margin-right: 10px; /* Separación entre la etiqueta y el gráfico */
+  }
+
+  .tag.co2::after {
+    content: "CO2";
+  }
+
+  .tag.temp::after {
+    content: "Temp";
+  }
+
+  .tag.humi::after {
+    content: "Hum";
   }
 }
 
@@ -690,6 +746,62 @@ button:hover {
     opacity: 0;
   }
 }
+.tab-container {
+  margin-top: 20px;
+}
+
+.tab {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 1px solid var(--tab-border-color);
+  border-radius: 4px 4px 0 0;
+  background-color: var(--tab-bg-color);
+  color: var(--tab-text-color);
+  cursor: pointer;
+}
+
+.tab:hover {
+  background-color: var(--tab-active-bg-color);
+}
+
+.tab.active {
+  background-color: var(--tab-active-bg-color);
+  color: var(--tab-active-text-color);
+  border: 1px solid var(--tab-active-border-color);
+  border-bottom: 1px solid var(--bg-color); /* Para que se conecte con el contenido */
+}
+
+.tab-content {
+  display: none;
+  padding: 10px;
+  border: 1px solid var(--tab-border-color);
+  border-top: none;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+.tab-content.active {
+  display: block;
+}
+
+#buttonContainer button {
+  margin-top: 10px;
+}
+
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeInOut 2s ease-in-out;
+}
 
 .debug-window {
   position: fixed;
@@ -742,7 +854,7 @@ button:hover {
 
 input.valid {
   border-color: #468847;
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAgVBMVEUAAABetV5buFtcuFxcuVxdu11cuFxbuFtcuFxcuFxbtltcuFxbtltetl5cuFxct1xduV1fuF9cuFxcuFxbultcuFxduF1gtWBduV1cuFxcuVxcuFxcuFxcuFxet15dt11cuFxcuFxbt1teuF5duV1euF5cuVxcuFxcuFxcuFwAAADG3XcxAAAAKXRSTlMAJrDPRSnn1OjCKvM4MamLFivp8jvI1xgs6jpL++w5UvrxUU83RMe6MlhBCPsAAAABYktHRACIBR1IAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4AwTFzUBkZPjhwAAAHBJREFUGNNjYCAJMDIxsyDzWdk0NdmR+RyampqcCD4XiM/Nw8DLxy8A4gsKAfnCIgwMopqaYuIMDBIwPgOzJkhEQhLElwIplZYBMmWFQXw5iGHyCppgoCgHM14JLKLIg7BQGSiiqILsRFU1dQ3iPQgAPhMLEPHXqSUAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTItMTlUMjM6NTM6MDErMDE6MDCbiS6WAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTEyLTE5VDIzOjUzOjAxKzAxOjAw6tSWKgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII=);
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAgVBMVEUAAABetV5buFtcuFxcuVxdu11cuFxbuFtcuFxcuFxbtltcuFxbtltetl5cuFxct1xduV1fuF9cuFxcuFxbt1teuF5duV1euF5cuVxcuFxcuFxcuFwAAADG3XcxAAAAKXRSTlMAJrDPRSnn1OjCKvM4MamLFivp8jvI1xgs6jpL++w5UvrxUU83RMe6MlhBCPsAAAABYktHRACIBR1IAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4AwTFzUBkZPjhwAAAHBJREFUGNNjYCAJMDIxsyDzWdk0NdmR+RyampqcCD4XiM/Nw8DLxy8A4gsKAfnCIgwMopqaYuIMDBIwPgOzJkhEQhLElwIplZYBMmWFQXw5iGHyCppgoCgHM14JLKLIg7BQGSiiqILsRFU1dQ3iPQgAPhMLEPHXqSUAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTItMTlUMjM6NTM6MDErMDE6MDCbiS6WAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTEyLTE5VDIzOjUzOjAxKzAxOjAw6tSWKgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII=);
   background-position: right 5px center;
   background-repeat: no-repeat;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
