@@ -1,20 +1,33 @@
 ---
-name: Feature request
+name: Feature Request
 about: Suggest an idea for this project
 title: ''
-labels: ''
+labels: 'bug,needs-triage'
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+# Feature Description
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+<!-- A clear and concise description of what the feature is and what problem it solves -->
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Benefits
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+<!-- Explain the benefits and why this feature should be added -->
+
+## Possible Implementation
+
+<!-- If you have any suggestions on how to implement this feature, provide details here -->
+
+## Additional Context
+
+<!-- Add any other context or screenshots about the feature request here -->
+
+## Collaboration
+
+Would you like to work on this feature?
+- [ ] Yes, I would like to implement a PR. We are more than happy to help you go through the process.
+
+## Related Issues
+
+**Related issue or feature (if applicable):** links to existing issues or features
