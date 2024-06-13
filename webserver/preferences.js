@@ -173,86 +173,90 @@ function loadPreferencesFromServer() {
  * @returns {Object} - The collected preferences data.
  */
 function collectPreferencesData() {
-    const preferencesData = {
-        customCalValue: document.getElementById("customCalValue").value,
-        tempOffset: document.getElementById("tempOffset").value,
-        altitudeMeters: document.getElementById("altitudeMeters").value,
-        autoSelfCalibration: document.getElementById("autoSelfCalibration").checked,
-        co2OrangeRange: document.getElementById("co2OrangeRange").value,
-        co2RedRange: document.getElementById("co2RedRange").value,
-        DisplayBright: document.getElementById("DisplayBright").value,
-        neopixBright: document.getElementById("neopixBright").value,
-        selNeopxType: document.getElementById("selNeopxType").value,
-        activeBLE: document.getElementById("activeBLE").checked,
-        activeWIFI: document.getElementById("activeWIFI").checked,
-        activeMQTT: document.getElementById("activeMQTT").checked,
-        activeESPNOW: document.getElementById("activeESPNOW").checked,
-        rootTopic: document.getElementById("rootTopic").value,
-        batDischgd: document.getElementById("batDischgd").value,
-        batChargd: document.getElementById("batChargd").value,
-        vRef: document.getElementById("vRef").value,
-        tToDispOff: document.getElementById("tToDispOff").value,
-        tToPubMQTT: document.getElementById("tToPubMQTT").value,
-        tToPubESPNow: document.getElementById("tToPubESPNow").value,
-        tKeepAlMQTT: document.getElementById("tKeepAlMQTT").value,
-        tKeepAlESPNow: document.getElementById("tKeepAlESPNow").value,
-        dispOffOnExP: document.getElementById("dispOffOnExP").checked,
-        wifiSSID: document.getElementById("wifiSSID").value,
-        hostName: document.getElementById("hostName").value,
-        useStaticIP: document.getElementById("useStaticIP").checked,
-        staticIP: document.getElementById("staticIP").value,
-        gateway: document.getElementById("gateway").value,
-        subnet: document.getElementById("subnet").value,
-        dns1: document.getElementById("dns1").value,
-        dns2: document.getElementById("dns2").value,
-        selCO2Sensor: document.getElementById("selCO2Sensor").value,
-        debugSensors: document.getElementById("debugSensors").checked,
-        displayReverse: document.getElementById("displayReverse").checked,
-        showFahrenheit: document.getElementById("showFahrenheit").checked,
-        measurementInterval: document.getElementById("measurementInterval").value,
-        outModeRelay: document.getElementById("outModeRelay").checked,
-        channelESPNow: document.getElementById("channelESPNow").value,
-        boardIdESPNow: document.getElementById("boardIdESPNow").value,
-        peerESPNowAddress: document.getElementById("peerESPNowAddress").value,
-        showTemp: document.getElementById("showTemp").checked,
-        showHumidity: document.getElementById("showHumidity").checked,
-        showBattery: document.getElementById("showBattery").checked,
-        showCO2: document.getElementById("showCO2").checked,
-        mqttClientId: document.getElementById("mqttClientId").value,
-        mqttShowInCon: document.getElementById("mqttShowInCon").checked,
-        mqttBroker: document.getElementById("mqttBroker").value,
-        mqttUser: document.getElementById("mqttUser").value,
-        toneBzrBeep: document.getElementById("toneBzrBeep").value,
-        durBzrBeep: document.getElementById("durBzrBeep").value,
-        timeBtwnBzr: document.getElementById("timeBtwnBzr").value
-    };
+    try {
+        const preferencesData = {};
 
-    if (relaxedSecurity) {
-        preferencesData.wifiPass = document.getElementById("wifiPass").value;
-        preferencesData.mqttPass = document.getElementById("mqttPass").value;
-    }
+        const setValue = (id, type = 'value') => {
+            const element = document.getElementById(id);
+            if (element) {
+                preferencesData[id] = (type === 'checked') ? element.checked : element.value;
+            } else {
+                console.warn(`Element with ID '${id}' not found.`);
+            }
+        };
 
-    // New fields for Captive Portal
-    const cpNoTimeout = document.getElementById("cpNoTimeout");
-    if (cpNoTimeout) {
-        preferencesData.cpNoTimeout = cpNoTimeout.checked;
-    }
-    const cpRelaxedSec = document.getElementById("cpRelaxedSec");
-    if (cpRelaxedSec) {
-        preferencesData.cpRelaxedSec = cpRelaxedSec.checked;
-    }
-    const cpDebug = document.getElementById("cpDebug");
-    if (cpDebug) {
-        preferencesData.cpDebug = cpDebug.checked;
-    }
-    const cpWaitTime = document.getElementById("cpWaitTime");
-    if (cpWaitTime) {
-        preferencesData.cpWaitTime = cpWaitTime.value;
-    }
+        // Setting values for preferencesData
+        setValue("customCalValue");
+        setValue("tempOffset");
+        setValue("altitudeMeters");
+        setValue("autoSelfCalibration", 'checked');
+        setValue("co2OrangeRange");
+        setValue("co2RedRange");
+        setValue("DisplayBright");
+        setValue("neopixBright");
+        setValue("selNeopxType");
+        setValue("activeBLE", 'checked');
+        setValue("activeWIFI", 'checked');
+        setValue("activeMQTT", 'checked');
+        setValue("activeESPNOW", 'checked');
+        setValue("rootTopic");
+        setValue("batDischgd");
+        setValue("batChargd");
+        setValue("vRef");
+        setValue("tToDispOff");
+        setValue("tToPubMQTT");
+        setValue("tToPubESPNow");
+        setValue("tKeepAlMQTT");
+        setValue("tKeepAlESPNow");
+        setValue("dispOffOnExP", 'checked');
+        setValue("wifiSSID");
+        setValue("hostName");
+        setValue("useStaticIP", 'checked');
+        setValue("staticIP");
+        setValue("gateway");
+        setValue("subnet");
+        setValue("dns1");
+        setValue("dns2");
+        setValue("selCO2Sensor");
+        setValue("debugSensors", 'checked');
+        setValue("displayReverse", 'checked');
+        setValue("showFahrenheit", 'checked');
+        setValue("measurementInterval");
+        setValue("outModeRelay", 'checked');
+        setValue("channelESPNow");
+        setValue("boardIdESPNow");
+        setValue("peerESPNowAddress");
+        setValue("showTemp", 'checked');
+        setValue("showHumidity", 'checked');
+        setValue("showBattery", 'checked');
+        setValue("showCO2", 'checked');
+        setValue("mqttClientId");
+        setValue("mqttShowInCon", 'checked');
+        setValue("mqttBroker");
+        setValue("mqttUser");
+        setValue("toneBzrBeep");
+        setValue("durBzrBeep");
+        setValue("timeBtwnBzr");
 
-    console.log("Collected preferences data:", preferencesData);
+        if (relaxedSecurity) {
+            setValue("wifiPass");
+            setValue("mqttPass");
+        }
 
-    return preferencesData;
+        // New fields for Captive Portal
+        setValue("cpNoTimeout", 'checked');
+        setValue("cpRelaxedSec", 'checked');
+        setValue("cpDebug", 'checked');
+        setValue("cpWaitTime");
+
+        console.log("Collected preferences data:", preferencesData);
+
+        return preferencesData;
+    } catch (error) {
+        console.error("Error collecting preferences data:", error);
+        alert("An error occurred while collecting preferences data. Please check the console for details.");
+        throw error; // Re-throw the error after logging it
+    }
 }
 
 /**
