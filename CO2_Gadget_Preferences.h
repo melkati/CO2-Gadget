@@ -693,7 +693,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         if (JsonDocument.containsKey("customCalValue")) {
             customCalibrationValue = JsonDocument["customCalValue"];
         }
-        if (JsonDocument.containsKey("tempOffset") && tempOffset != float(JsonDocument["tempOffset"])) {
+        if (JsonDocument.containsKey("tempOffset") && (tempOffset != float(JsonDocument["tempOffset"]))) {
             Serial.println("-->[PREF] Temp Offset changed from " + String(tempOffset) + " to " + String(JsonDocument["tempOffset"].as<String>()));
             tempOffset = float(JsonDocument["tempOffset"]);
             sensors.setTempOffset(tempOffset);
@@ -763,7 +763,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         if (JsonDocument.containsKey("batChargd")) {
             batteryFullyChargedMillivolts = JsonDocument["batChargd"];
         }
-        if (JsonDocument.containsKey("vRef") && vRef != JsonDocument["vRef"]) {
+        if (JsonDocument.containsKey("vRef") && (vRef != JsonDocument["vRef"])) {
             Serial.println("-->[PREF] vRef changed from " + String(vRef) + " to " + String(JsonDocument["vRef"].as<String>()));
             vRef = JsonDocument["vRef"];
             battery.begin(vRef, voltageDividerRatio, &asigmoidal);
@@ -834,7 +834,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
 
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
-        if (JsonDocument.containsKey("displayReverse") && displayReverse != JsonDocument["displayReverse"]) {
+        if (JsonDocument.containsKey("displayReverse") && (displayReverse != JsonDocument["displayReverse"])) {
             Serial.println("-->[PREF] Display Reverse changed from " + String(displayReverse) + " to " + String(JsonDocument["displayReverse"].as<String>()));
             displayReverse = JsonDocument["displayReverse"];
             setDisplayReverse(displayReverse);
@@ -877,37 +877,37 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             }
         }
 
-        if (JsonDocument.containsKey("showTemp") && displayShowTemperature != JsonDocument["showTemp"]) {
+        if (JsonDocument.containsKey("showTemp") && (displayShowTemperature != JsonDocument["showTemp"])) {
             Serial.println("-->[PREF] Display Temperature changed from " + String(displayShowTemperature) + " to " + String(JsonDocument["showTemp"].as<String>()));
             displayShowTemperature = JsonDocument["showTemp"];
             shouldRedrawDisplay = true;
         }
 
-        if (JsonDocument.containsKey("showHumidity") && displayShowHumidity != JsonDocument["showHumidity"]) {
+        if (JsonDocument.containsKey("showHumidity") && (displayShowHumidity != JsonDocument["showHumidity"])) {
             Serial.println("-->[PREF] Display Humidity changed from " + String(displayShowHumidity) + " to " + String(JsonDocument["showHumidity"].as<String>()));
             displayShowHumidity = JsonDocument["showHumidity"];
             shouldRedrawDisplay = true;
         }
 
-        if (JsonDocument.containsKey("showBattery") && displayShowBattery != JsonDocument["showBattery"]) {
+        if (JsonDocument.containsKey("showBattery") && (displayShowBattery != JsonDocument["showBattery"])) {
             Serial.println("-->[PREF] Display Battery changed from " + String(displayShowBattery) + " to " + String(JsonDocument["showBattery"].as<String>()));
             displayShowBattery = JsonDocument["showBattery"];
             shouldRedrawDisplay = true;
         }
 
-        if (JsonDocument.containsKey("showBattVolt") && displayShowBatteryVoltage != JsonDocument["showBattVolt"]) {
+        if (JsonDocument.containsKey("showBattVolt") && (displayShowBatteryVoltage != JsonDocument["showBattVolt"])) {
             Serial.println("-->[PREF] Display Battery Voltage changed from " + String(displayShowBatteryVoltage) + " to " + String(JsonDocument["showBattVolt"].as<String>()));
             displayShowBatteryVoltage = JsonDocument["showBattVolt"];
             shouldRedrawDisplay = true;
         }
 
-        if (JsonDocument.containsKey("showCO2") && displayShowCO2 != JsonDocument["showCO2"]) {
+        if (JsonDocument.containsKey("showCO2") && (displayShowCO2 != JsonDocument["showCO2"])) {
             Serial.println("-->[PREF] Display CO2 changed from " + String(displayShowCO2) + " to " + String(JsonDocument["showCO2"].as<String>()));
             displayShowCO2 = JsonDocument["showCO2"];
             shouldRedrawDisplay = true;
         }
 
-        if (JsonDocument.containsKey("showPM25") && displayShowPM25 != JsonDocument["showPM25"]) {
+        if (JsonDocument.containsKey("showPM25") && (displayShowPM25 != JsonDocument["showPM25"])) {
             Serial.println("-->[PREF] Display PM2.5 changed from " + String(displayShowPM25) + " to " + String(JsonDocument["showPM25"].as<String>()));
             displayShowPM25 = JsonDocument["showPM25"];
             shouldRedrawDisplay = true;
@@ -985,13 +985,13 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 #endif
 
         // If JsonDocument["wifiPass"] is present and different from the current one, update the wifiPass variable
-        if (JsonDocument.containsKey("wifiPass") && wifiPass != JsonDocument["wifiPass"].as<String>().c_str()) {
+        if (JsonDocument.containsKey("wifiPass") && (wifiPass != JsonDocument["wifiPass"].as<String>().c_str())) {
             Serial.println("-->[PREF] WiFi Password changed. Updating WiFi Password in preferences");
             wifiPass = JsonDocument["wifiPass"].as<String>().c_str();
             wifiChanged = true;
         }
         // If JsonDocument["mqttPass"] is present and different from the current one, update the mqttPass variable
-        if (JsonDocument.containsKey("mqttPass") && mqttPass != JsonDocument["mqttPass"].as<String>().c_str()) {
+        if (JsonDocument.containsKey("mqttPass") && (mqttPass != JsonDocument["mqttPass"].as<String>().c_str())) {
             Serial.println("-->[PREF] MQTT Password changed. Updating MQTT Password in preferences");
             mqttPass = JsonDocument["mqttPass"].as<String>().c_str();
             wifiChanged = true;
