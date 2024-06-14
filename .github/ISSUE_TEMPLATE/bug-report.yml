@@ -1,0 +1,73 @@
+name: "🐛 Bug Report"
+description: "If something isn't working as expected."
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+
+  - type: checkboxes
+    id: input1
+    attributes:
+      label: Would you like to work on a fix?
+      options:
+        - label: Check this if you would like to implement a PR, we are more than happy to help you go through the process.
+
+  - type: textarea
+    attributes:
+      label: Current and expected behavior
+      description: A clear and concise description of what the CO2 Gadget is doing and what you would expect.
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Reproduction
+      description: |
+        Please provide issue reproduction.
+        Tell us what you did so that we can reproduce the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: If applicable, add screenshots to help explain your problem
+      description: |
+        If you have a screenshot of the issue, please upload it here.
+        You can also drag and drop the image here.
+    validations:
+      required: false
+
+  - type: input
+    attributes:
+      label: CO2 Gadget version
+      description: Which version of CO2 Gadget are you using?
+      placeholder: v0.0.0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: input2
+    attributes:
+      label: Which CO2 Gadget flavour are you using?
+      options:
+        - label: Generic ESP32 without display
+        - label: OLED
+        - label: TFT
+        - label: e-Ink
+        - label: Other (please specify below)
+
+  - type: checkboxes
+    id: input3
+    attributes:
+      label: How do you install CO2 Gadget?
+      options:
+        - label: From the web installer
+        - label: From the source code on GitHub
+        - label: Other (please specify below)
+
+  - type: textarea
+    attributes:
+      label: Possible solution
+      description: If you have suggestions on a fix for the bug.
