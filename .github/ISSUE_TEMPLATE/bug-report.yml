@@ -21,7 +21,7 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: textarea
     attributes:
       label: Reproduction
       description: |
@@ -66,6 +66,13 @@ body:
         - label: From the web installer
         - label: From the source code on GitHub
         - label: Other (please specify below)
+
+  - type: checkboxes
+    id: input4
+    attributes:
+      label: Have you tried with the latest version available at https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced and does the problem still exist?
+      options:
+        - label: Yes, I have tried with the latest version and the problem still exists.
 
   - type: textarea
     attributes:
