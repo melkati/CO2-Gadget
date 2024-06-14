@@ -258,6 +258,18 @@ function fillFeaturesFromServer() {
     }
 }
 
+function updateCO2Value(co2) {
+    document.getElementById("co2").innerHTML = co2;
+}
+
+function updateTemperatureValue(temperature) {
+    document.getElementById("temperature").innerHTML = temperature;
+}
+
+function updateHumidityValue(humidity) {
+    document.getElementById("humidity").innerHTML = humidity;
+}
+
 function updateBatteryVoltage(voltage) {
     document.getElementById("batVoltage").innerHTML = voltage;
 }
@@ -268,6 +280,36 @@ function updateFreeHeap(freeHeap) {
 
 function updateMinFreeHeap(minFreeHeap) {
     document.getElementById("minFreeHeap").innerHTML = minFreeHeap;
+}
+
+function fetchAndUpdateCO2Value() {
+    readCO2Data()
+        .then(co2 => {
+            updateCO2Value(co2);
+        })
+        .catch(error => {
+            console.error('Error updating CO2 value:', error);
+        });
+}
+
+function fetchAndUpdateTemperatureValue() {
+    readTemperatureData()
+        .then(temperature => {
+            updateTemperatureValue(temperature);
+        })
+        .catch(error => {
+            console.error('Error updating temperature value:', error);
+        });
+}
+
+function fetchAndUpdateHumidityValue() {
+    readHumidityData()
+        .then(humidity => {
+            updateHumidityValue(humidity);
+        })
+        .catch(error => {
+            console.error('Error updating humidity value:', error);
+        });
 }
 
 function fetchAndUpdateBatteryVoltage() {
@@ -305,6 +347,9 @@ setInterval(function () {
     fetchAndUpdateBatteryVoltage();
     fetchAndUpdateFreeHeap();
     fetchAndUpdateMinFreeHeap();
+    fetchAndUpdateCO2Value();
+    fetchAndUpdateTemperatureValue();
+    fetchAndUpdateHumidityValue();
     loadCaptivePortalStatusFromServer();
 }, 1000); // 1000mS  update rate
 

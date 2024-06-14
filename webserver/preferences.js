@@ -180,8 +180,10 @@ function collectPreferencesData() {
             const element = document.getElementById(id);
             if (element) {
                 preferencesData[id] = (type === 'checked') ? element.checked : element.value;
+                return true; // Successfully set value
             } else {
                 console.warn(`Element with ID '${id}' not found.`);
+                return false; // Element not found
             }
         };
 
