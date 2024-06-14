@@ -6,6 +6,18 @@ body:
     attributes:
       value: Thanks for taking the time to suggest a new feature! Please fill out this form as completely as possible.
 
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure you have checked the [roadmap](https://github.com/users/melkati/projects/3) to ensure that your feature request does not already exist.
+
+  - type: checkboxes
+    id: input2
+    attributes:
+      label: Have you checked the roadmap to ensure your feature request does not already exist?
+      options:
+        - label: Yes, I have checked the roadmap and my feature request does not already exist.
+
   - type: checkboxes
     id: input1
     attributes:
