@@ -6,6 +6,11 @@ body:
   - type: markdown
     attributes:
       value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+  
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure you have tried with the latest version available at [web installer](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced) and confirm that the problem still exists.
 
   - type: checkboxes
     id: input1
@@ -13,6 +18,13 @@ body:
       label: Would you like to work on a fix?
       options:
         - label: Check this if you would like to implement a PR, we are more than happy to help you go through the process.
+
+  - type: checkboxes
+    id: input4
+    attributes:
+      label: Have you tried with the latest version and does the problem still exist?
+      options:
+        - label: Yes, I have tried with the latest version and the problem still exists.
 
   - type: textarea
     attributes:
@@ -66,13 +78,6 @@ body:
         - label: From the web installer
         - label: From the source code on GitHub
         - label: Other (please specify below)
-
-  - type: checkboxes
-    id: input4
-    attributes:
-      label: Have you tried with the latest version available at the [web installer](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced) and does the problem still exist?
-      options:
-        - label: Yes, I have tried with the latest version and the problem still exists.
 
   - type: textarea
     attributes:
