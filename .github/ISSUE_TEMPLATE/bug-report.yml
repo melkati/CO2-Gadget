@@ -70,7 +70,7 @@ body:
   - type: checkboxes
     id: input4
     attributes:
-      label: Have you tried with the latest version available at https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced and does the problem still exist?
+      label: Have you tried with the latest version available at the [web installer](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced) and does the problem still exist?
       options:
         - label: Yes, I have tried with the latest version and the problem still exists.
 
