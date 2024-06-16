@@ -1,3 +1,12 @@
+// To create a font use the proccesing sketch at: https://github.com/Bodmer/TFT_eSPI/tree/master/Tools/Create_Smooth_Font/Create_font
+// Edit it to suit for needs and run it in processing
+// In Windows, you can run it from the command line with the following line with your proceesing-java path and run the sketch (edit the path to suit your needs):
+// "%USERPROFILE%\Downloads\processing-4.3\processing-java" --sketch="%cd%" --run
+//
+// Another useful tools are:
+// https://products.aspose.app/font/generator/ttf-to-ttf
+// https://notisrac.github.io/FileToCArray/
+
 #include <pgmspace.h>
 
 const uint8_t FontNotoSansBold120ptDigits[] PROGMEM = {
