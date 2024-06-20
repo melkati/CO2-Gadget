@@ -167,6 +167,7 @@ uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we co
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
+bool hasBattery = false;
 bool workingOnExternalPower = true;    // True if working on external power (USB connected)
 uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;

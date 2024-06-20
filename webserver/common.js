@@ -429,4 +429,9 @@ function initNavBar() {
 
 document.addEventListener("DOMContentLoaded", function () {
     getFeaturesAsJson().then(initNavBar);
+
+    // Add device hostName to the exixting page title as document.title + (HostName)
+    readPreferencesFromServer().then(data => {
+        document.title += ` (${data.hostName})`;
+    });
 });

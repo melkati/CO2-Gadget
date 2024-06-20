@@ -29,7 +29,7 @@ It's really flexible, you can use this firmware with **any supported CO2 Monitor
 
 With cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
 
-This repository is mainly addressed at developers. If you are an end user willing to install and use the CO2 Gadget firmware, you will find complete instructions at [my blog](https://emariete.com/en/co2-meter-gadget/) including instructions in how to install the firmware very easily, with just two clicks in your browser (without having edit files, compile or install anything on your computer).
+This repository is mainly addressed at developers. If you are an end user willing to install and use the CO2 Gadget firmware, you will find complete instructions at [my blog](https://emariete.com/en/co2-meter-gadget/) including instructions in how to install the firmware very easily, with just afew clicks in your browser (without having edit files, compile or install anything on your computer).
 
 If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
 
@@ -46,7 +46,7 @@ If you don't have a CO2 Monitor you will also find some complete tutorials to bu
 - Real time visualization on display, serial port and web page
 - Management and configuration via on screen menu, internal web page and console (USB/serial port)
 - Local data logger with upload to phone by BLE
-- CO2 Sensor calibration via via on screen menu, internal web page, console (USB/serial port), Bluetooth or MQTT
+- CO2 Sensor calibration via on screen menu, internal web page, console (USB/serial port), Bluetooth or MQTT
 - WIFI connection
 - Easy configuration of WIFI from your phone via Bluetooth or from the web page (Captive Portal)
 - Sending of data via MQTT (measurement, battery, alarms, etc)
@@ -76,7 +76,7 @@ For latest information on other hardware use (boards, sensors, displays, etc), p
 
 ## TFT Displays
 
-CO2 Gadget right now has support for a lot of different TFT displays. There are precompiled versions for TFT 240x135 and 320x170 pixels displays (included in ready made all in one boards as TTGO T-Display, T-Display S3 and others).
+CO2 Gadget has support for a lot of different TFT displays. There are precompiled versions for TFT 240x135 and 320x170 pixels displays (included in ready made all in one boards as TTGO T-Display, T-Display S3 and others).
 
 <p align="center">
 	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/073d5f17-1e77-4692-833b-2cf2b838d72a">
@@ -92,23 +92,26 @@ You can use many different E-INK displays. There are precompiled versions for mo
 
 ## OLED Displays
 
-CO2 Gadget right now has support for many different OLED displays. There are precompiled versions for OLED I2C 1.3" 128x64 pixels display.
+CO2 Gadget supports many different OLED displays. There are precompiled versions for OLED I2C 1.3" 128x64 pixels display.
 ![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
 
 ## ESP32 Boards
 
-Supporting any other ESP32 board is very easy. Yoy just have to setup the pines accordly.
+Supporting any other ESP32 board is very easy. You just have to setup the pines accordingly.
 
 These are the GPIOs used by each predefined board:
 
-| Flavor | Display | RX/TX | I2C SDA/SCL | UP/DWN  | GPIO Orange  | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer
-|:-----------------------|:----------------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| TTGO_TDISPLAY	TFT      | TFT 240×135      | 13/12   | 21/22 | 35/0 | 32 | 33 | 34 | 26 | 2
-| TTGO_TDISPLAY_SANDWICH | TFT 240×135      | 13/12   | 22/21 | 35/0 | 32 | 33 | 34 | 26 | 2
-| TDISPLAY_S3            | TFT 320x170      | 18/17   | 43/44 | 14/0 | 03 | 01 | 04 | 16 | 2
-| esp32dev_OLED	SSH1106  | SSH1106 128×64   | 17/16   | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
-| esp32dev               | No display       | 17/16	  | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2
-| esp32dev-ST7789_240x320 | ST7789_240x320 | 17/16	  | 21/22 | 19/0 | 32 | 33 | 34 | 26 | 2
+| Flavor                      | Display           | RX/TX | I2C SDA/SCL | UP/DWN  | GPIO Orange | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer |
+|:----------------------------|:-----------------:|:-----:|:-----------:|:-------:|:-----------:|:--------:|:-------------:|:-------------:|:-----------:|
+| TTGO_TDISPLAY               | TFT 240×135       | 13/12 | 21/22       | 35/0    | 32          | 33       | 34            | 26            | 2           |
+| TTGO_TDISPLAY_SANDWICH      | TFT 240×135       | 13/12 | 22/21       | 35/0    | 32          | 33       | 34            | 26            | 2           |
+| TDISPLAY_S3                 | TFT 320x170       | 18/17 | 43/44       | 14/0    | 03          | 01       | 04            | 16            | 2           |
+| esp32dev_OLED               | SSH1106 128×64    | 17/16 | 21/22       | 15/0    | 32          | 33       | 34            | 26            | 2           |
+| esp32dev                    | No display        | 17/16 | 21/22       | 15/0    | 32          | 33       | 34            | 26            | 2           |
+| esp32dev-ST7789_240x320     | ST7789_240x320    | 17/16 | 21/22       | 19/0    | 32          | 33       | 34            | 26            | 2           |
+| ttgo-t5-EINKBOARDDEPG0213BN | E-Ink 2.13"       | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
+| ttgo-t5-EINKBOARDGDEW0213M21| E-Ink 2.13"       | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
+| ttgo-t7-EINKBOARDGDEM029T94 | E-Ink 2.9"        | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
 
 - Flavour: Name of the firmware variant.
 - Display: Display supported by each flavour.
@@ -116,7 +119,7 @@ These are the GPIOs used by each predefined board:
 - I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
 - UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
 - GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
-- GPIO Red: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
+- GPIO Red: Pin (GPIO) corresponding to the output when the red level is reached (for relays, alarms, and RGB LED).
 - GPIO Battery: Pin for battery voltage measurement.
 - Neopixel GPIO: Pin to which you must connect the data line of the Neopixel (WS2812B) LEDs.
 - Buzzer: Pin to connect a passive buzzer for CO2 level sound alarms (built in transistor recommended).
@@ -249,7 +252,7 @@ Do you want to support the CO2-Gadget project? Thank you! While financial contri
 
 # TO DO
 
-- [ ] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
+- [ ] [Implement low power functionality (Already done and on Alpha testing right now!)](https://github.com/melkati/CO2-Gadget/issues/188)
 - [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
 
 # Useful information

@@ -91,19 +91,19 @@
                 <legend>Connectivity</legend>
 
                 <div class="form-group flex-align-center">
-                    <label for="activeWIFI">WIFI:</label>
-                    <input type="checkbox" id="activeWIFI" name="activeWIFI">
-                    <span class="tooltip-icon">ℹ️</span>
-                    <span class="tooltip-text">Should the device connect to a WiFi network?</span>
-                </div>
-
-                <div class="form-group flex-align-center">
                     <label for="activeBLE">BLE:</label>
                     <input type="checkbox" id="activeBLE" name="activeBLE">
                     <span class="tooltip-icon">ℹ️</span>
                     <span class="tooltip-text">Should the device use the Bluetooth Low Energy (BLE) connection? Use with
                         Sensirion's
                         MyAmbiance App or others.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="activeWIFI">WIFI:</label>
+                    <input type="checkbox" id="activeWIFI" name="activeWIFI">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Should the device connect to a WiFi network?</span>
                 </div>
 
                 <div class="form-group flex-align-center">
@@ -549,6 +549,14 @@
             <!-- Battery Group -->
             <fieldset>
                 <legend>Battery</legend>
+
+                <div class="form-group flex-align-center">
+                    <label for="hasBattery">Has Battery installed:</label>
+                    <input type="checkbox" id="hasBattery" name="hasBattery">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Check this box if you have a battery installed. This will enable the
+                        battery settings and optimize CO2 Gadget behavior for battery operation.</span>
+                </div>
 
                 <div class="form-group flex-align-center">
                     <label for="batDischgd">Battery Discharged Millivolts:</label>

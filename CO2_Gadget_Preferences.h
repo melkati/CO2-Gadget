@@ -177,6 +177,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] activeESPNOW is:\t#" + String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(activeESPNOW) + ")");
     Serial.println("-->[PREF] activeOTA is:\t#" + String(activeOTA ? "Enabled" : "Disabled") + "# (" + String(activeOTA) + ")");
     Serial.println("-->[PREF] rootTopic:\t#" + rootTopic + "#");
+    Serial.println("-->[PREF] hasBattery:\t#" +  String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(hasBattery) + ")");
     Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
     Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
     Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
@@ -312,6 +313,7 @@ void initPreferences() {
         activeMQTT = false;
         preferences.putBool("activeMQTT", activeMQTT);
     }
+    hasBattery = preferences.getBool("hasBattery", false);
     batteryDischargedMillivolts = preferences.getUInt("batDischgd", 3200);
     batteryFullyChargedMillivolts = preferences.getUInt("batChargd", 4200);
     vRef = preferences.getUInt("vRef", 930);  // Looks like, due to a bug, 930 is a goos starting number for vRef
@@ -451,6 +453,7 @@ void putPreferences() {
     preferences.putBool("activeESPNOW", activeESPNOW);
     preferences.putBool("activeOTA", activeOTA);
     preferences.putString("rootTopic", rootTopic);
+    preferences.putBool("hasBattery", hasBattery);
     preferences.putUInt("batDischgd", batteryDischargedMillivolts);
     preferences.putUInt("batChargd", batteryFullyChargedMillivolts);
     preferences.putUInt("vRef", vRef);
@@ -569,6 +572,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["activeESPNOW"] = activeESPNOW;
     doc["activeOTA"] = activeOTA;
     doc["rootTopic"] = rootTopic;
+    doc["hasBattery"] = hasBattery;
     doc["batDischgd"] = batteryDischargedMillivolts;
     doc["batChargd"] = batteryFullyChargedMillivolts;
     doc["vRef"] = vRef;
@@ -756,6 +760,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
         if (JsonDocument.containsKey("rootTopic")) {
             rootTopic = JsonDocument["rootTopic"].as<String>().c_str();
+        }
+        if (JsonDocument.containsKey("hasBattery")) {
+            hasBattery = JsonDocument["hasBattery"];
         }
         if (JsonDocument.containsKey("batDischgd")) {
             batteryDischargedMillivolts = JsonDocument["batDischgd"];
