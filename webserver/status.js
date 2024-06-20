@@ -178,6 +178,36 @@ function loadStatusFromServer() {
         .catch(error => console.error('Error fetching status:', error));
 }
 
+// function updateUptime(element, initialUptime) {
+//     const startTime = Date.now();
+//     const initialUptimeMs = initialUptime;
+
+//     function formatUptime(uptimeMs) {
+//         const seconds = Math.floor(uptimeMs / 1000);
+//         const minutes = Math.floor(seconds / 60);
+//         const hours = Math.floor(minutes / 60);
+//         const days = Math.floor(hours / 24);
+
+//         const formattedHours = hours - (days * 24);
+//         const formattedMinutes = minutes - (days * 24 * 60) - (hours * 60);
+//         const formattedSeconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+
+//         return `${days}d ${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
+//     }
+
+//     function update() {
+//         const currentTime = Date.now();
+//         const elapsedTime = currentTime - startTime;
+//         const currentUptime = initialUptimeMs + elapsedTime;
+
+//         element.textContent = formatUptime(currentUptime);
+//     }
+
+//     update(); // Initial update
+//     setInterval(update, 1000); // Update every second
+// }
+
+
 function updateUptime(element, initialUptime) {
     const startTime = Date.now();
     const initialUptimeMs = initialUptime;
@@ -188,9 +218,9 @@ function updateUptime(element, initialUptime) {
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
 
-        const formattedHours = hours - (days * 24);
-        const formattedMinutes = minutes - (days * 24 * 60) - (hours * 60);
-        const formattedSeconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+        const formattedHours = hours % 24; // Correct calculation for hours
+        const formattedMinutes = minutes % 60; // Correct calculation for minutes
+        const formattedSeconds = seconds % 60; // Correct calculation for seconds
 
         return `${days}d ${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
     }
@@ -228,6 +258,18 @@ function fillFeaturesFromServer() {
     }
 }
 
+function updateCO2Value(co2) {
+    document.getElementById("co2").innerHTML = co2;
+}
+
+function updateTemperatureValue(temperature) {
+    document.getElementById("temperature").innerHTML = temperature;
+}
+
+function updateHumidityValue(humidity) {
+    document.getElementById("humidity").innerHTML = humidity;
+}
+
 function updateBatteryVoltage(voltage) {
     document.getElementById("batVoltage").innerHTML = voltage;
 }
@@ -238,6 +280,36 @@ function updateFreeHeap(freeHeap) {
 
 function updateMinFreeHeap(minFreeHeap) {
     document.getElementById("minFreeHeap").innerHTML = minFreeHeap;
+}
+
+function fetchAndUpdateCO2Value() {
+    readCO2Data()
+        .then(co2 => {
+            updateCO2Value(co2);
+        })
+        .catch(error => {
+            console.error('Error updating CO2 value:', error);
+        });
+}
+
+function fetchAndUpdateTemperatureValue() {
+    readTemperatureData()
+        .then(temperature => {
+            updateTemperatureValue(temperature);
+        })
+        .catch(error => {
+            console.error('Error updating temperature value:', error);
+        });
+}
+
+function fetchAndUpdateHumidityValue() {
+    readHumidityData()
+        .then(humidity => {
+            updateHumidityValue(humidity);
+        })
+        .catch(error => {
+            console.error('Error updating humidity value:', error);
+        });
 }
 
 function fetchAndUpdateBatteryVoltage() {
@@ -275,6 +347,9 @@ setInterval(function () {
     fetchAndUpdateBatteryVoltage();
     fetchAndUpdateFreeHeap();
     fetchAndUpdateMinFreeHeap();
+    fetchAndUpdateCO2Value();
+    fetchAndUpdateTemperatureValue();
+    fetchAndUpdateHumidityValue();
     loadCaptivePortalStatusFromServer();
 }, 1000); // 1000mS  update rate
 
