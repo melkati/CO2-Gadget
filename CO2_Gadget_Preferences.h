@@ -177,7 +177,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] activeESPNOW is:\t#" + String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(activeESPNOW) + ")");
     Serial.println("-->[PREF] activeOTA is:\t#" + String(activeOTA ? "Enabled" : "Disabled") + "# (" + String(activeOTA) + ")");
     Serial.println("-->[PREF] rootTopic:\t#" + rootTopic + "#");
-    Serial.println("-->[PREF] hasBattery:\t#" +  String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(hasBattery) + ")");
+    Serial.println("-->[PREF] hasBattery:\t#" + String(hasBattery ? "Enabled" : "Disabled") + "# (" + String(hasBattery) + ")");
     Serial.println("-->[PREF] batDischgd:\t #" + String(batteryDischargedMillivolts) + "#");
     Serial.println("-->[PREF] batChargd:\t #" + String(batteryFullyChargedMillivolts) + "#");
     Serial.println("-->[PREF] vRef:\t #" + String(vRef) + "#");
