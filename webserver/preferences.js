@@ -18,16 +18,15 @@ function displayVersion() {
                 displayBrightInput.min = "1";
                 displayBrightInput.max = "16";
                 displayBrightInput.step = "1";
-                const tooltipText = document.querySelector('.tooltip-text');
+                const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
                 let currentText = tooltipText.textContent;
                 currentText += ' Valid brightness values: 1-16.';
 
             } else {
-                // Add to tooltip text: Valid brightness values: displayBrightInput.min to displayBrightInput.max
                 const displayBrightInput = document.getElementById("DisplayBright");
                 let min = displayBrightInput.min;
                 let max = displayBrightInput.max;
-                const tooltipText = document.querySelector('.tooltip-text');
+                const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
                 let currentText = tooltipText.textContent;
                 currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
                 tooltipText.textContent = currentText;
@@ -110,6 +109,7 @@ function populateFormWithPreferences(preferences) {
     setFormValue("mqttBroker", preferences.mqttBroker);
     setFormValue("mqttUser", preferences.mqttUser);
     if (relaxedSecurity) setFormValue("mqttPass", preferences.mqttPass);
+    setFormValue("hasBattery", preferences.hasBattery);
     setFormValue("batDischgd", preferences.batDischgd);
     setFormValue("batChargd", preferences.batChargd);
     setFormValue("vRef", preferences.vRef);
@@ -202,6 +202,7 @@ function collectPreferencesData() {
         setValue("activeMQTT", 'checked');
         setValue("activeESPNOW", 'checked');
         setValue("rootTopic");
+        setValue("hasBattery");
         setValue("batDischgd");
         setValue("batChargd");
         setValue("vRef");
