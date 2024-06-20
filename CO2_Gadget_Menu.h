@@ -599,7 +599,12 @@ result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+TOGGLE(hasBattery, hasBatteryMenu, "Has battery: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doNothing, noEvent)
+  ,VALUE("OFF", false, doNothing, noEvent));
+
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(hasBatteryMenu)
   ,FIELD(batteryVoltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
   ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
@@ -1152,7 +1157,7 @@ void initMenu() {
     if (!activeWIFI) {
         activeMQTTMenu[0].disable();  // Make MQTT active field unselectable if WIFI is not active
     }
-    batteryConfigMenu[0].disable();  // Make information field unselectable
+    batteryConfigMenu[1].disable();  // Make information field unselectable
     temperatureConfigMenu[0].disable();
     setCO2Sensor = selectedCO2Sensor;
 #ifdef DEBUG_ARDUINOMENU
@@ -1181,8 +1186,8 @@ bool menuEntryCharacterReceived() {
 }
 
 void menuLoop() {
-#ifdef DEBUG_ARDUINOMENU    
-    if (shouldRedrawDisplay) Serial.println("-->[MENU] Entering menu loop with shouldRedrawDisplay: " + String(shouldRedrawDisplay) + " and redrawDisplayOnNextLoop: " + String(redrawDisplayOnNextLoop));
+#ifdef DEBUG_ARDUINOMENU
+    if ((!inMenu) && (shouldRedrawDisplay)) Serial.println("-->[MENU] Entering menu loop with shouldRedrawDisplay: " + String(shouldRedrawDisplay) + " and redrawDisplayOnNextLoop: " + String(redrawDisplayOnNextLoop));
 #endif
     if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
 
