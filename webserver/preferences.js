@@ -109,7 +109,7 @@ function populateFormWithPreferences(preferences) {
     setFormValue("mqttBroker", preferences.mqttBroker);
     setFormValue("mqttUser", preferences.mqttUser);
     if (relaxedSecurity) setFormValue("mqttPass", preferences.mqttPass);
-    setFormValue("hasBattery", preferences.hasBattery);
+    setFormCheckbox("hasBattery", preferences.hasBattery);
     setFormValue("batDischgd", preferences.batDischgd);
     setFormValue("batChargd", preferences.batChargd);
     setFormValue("vRef", preferences.vRef);
@@ -202,7 +202,7 @@ function collectPreferencesData() {
         setValue("activeMQTT", 'checked');
         setValue("activeESPNOW", 'checked');
         setValue("rootTopic");
-        setValue("hasBattery");
+        setValue("hasBattery", 'checked');
         setValue("batDischgd");
         setValue("batChargd");
         setValue("vRef");
