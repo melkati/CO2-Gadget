@@ -12,6 +12,7 @@
 #include <Sensors.hpp>
 
 #define DEEP_SLEEP_DEBUG
+#define DEEP_SLEEP_DEBUG2
 
 // CO2 sensors enum
 // typedef enum {
@@ -658,11 +659,14 @@ void fromDeepSleepTimer() {
 #endif
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
             if (deepSleepData.displayOnWake) {
+                if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
 #ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
+                    Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
 #endif
-                initDisplay(true);
-                displayShowValues();
+                    initPreferences();
+                    initDisplay(true);
+                    displayShowValues(true);
+                }
                 esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
                 Serial.flush();
 #ifdef TIMEDEBUG
