@@ -43,15 +43,15 @@
 #define SUPPORT_CAPTIVE_PORTAL  // Please, don't disable this.
 
 // Functions and enum definitions
-void reverseButtons(bool reversed);             // Defined in CO2_Gadget_Buttons.h
-void outputsLoop();                             // Defined in CO2_Gadget_Main.h
-void publishMQTTLogData(String logData);        // Defined in CO2_Gadget_MQTT.h
-void putPreferences();                          // Defined in CO2_Gadget_Preferences.h
-void menuLoop();                                // Defined in CO2_Gadget_Menu.h
-void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
-String getLowPowerModeName(uint16_t mode);      // Defined in CO2_Gadget_DeepSleep.h
-void restartTimerToDeepSleep();                 // Defined in CO2_Gadget_DeepSleep.h
-void setDisplayReverse(bool reverse);           // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
+void reverseButtons(bool reversed);                 // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                                 // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);            // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                              // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
+void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
+String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
+void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
+void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 
 // Define enum for toneBuzzerBeep
@@ -646,7 +646,7 @@ void setCpuFrequencyAndReinitSerial(int16_t newCpuFrequency) {
 }
 
 void utilityLoop() {
-    return; // Temporary disable utilityLoop
+    return;  // Temporary disable utilityLoop
     if (isDownloadingBLE) return;
     int16_t actualCPUFrequency = getCpuFrequencyMhz();
     const int16_t highCpuFrequency = 240;
@@ -764,7 +764,13 @@ void initGPIOLowPower() {
 #endif
     // initSensors();
     if (deepSleepData.activeWifiOnWake) {
+        Serial.println("-->[STUP]--> Reconnecting to WiFi...");
         doDeepSleepWiFiConnect();
+        Serial.println("-->[STUP]--> Initializing Web Server...");
+        initWebServer();
+        server.begin();
+        Serial.println("-->[WiFi] HTTP server started");
+        printWiFiStatus();
     }
     wifiChanged = false;
 #ifdef SUPPORT_ESPNOW
@@ -895,6 +901,14 @@ void setup() {
             }
         }
     }
+
+    if (interactiveMode) {
+        Serial.println("-->[STUP] Entering interactive mode");
+        initPreferences();
+    } else {
+        Serial.println("-->[STUP] Entering low power mode");
+    }
+
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
 }
 

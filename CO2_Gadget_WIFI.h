@@ -969,7 +969,10 @@ const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
 
 void initWebServer() {
-    SPIFFS.begin();
+    if (!SPIFFS.begin()) {
+        Serial.println("-->[WEBS][Error] Failed to mount SPIFFS");
+        return;
+    }
 
 #ifdef DEBUG_WIFI_EVENTS
     // Print to serial the free space in the SPIFFS
