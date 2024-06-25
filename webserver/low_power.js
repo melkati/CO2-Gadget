@@ -1,3 +1,14 @@
+// Function to fetch version information from the server and display it in the status line
+function displayVersion() {
+    getVersionStr()
+        .then(versionText => {
+            document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: " + versionText;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
 function openTab(evt, tabName) {
     var i, tabContent, tabLinks;
     tabContent = document.getElementsByClassName("tab-content");
@@ -277,6 +288,15 @@ function saveLowPowerToServer() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Get the current URL
+    var currentURL = window.location.href;
+
+    // Check if the current URL contains "status.html"
+    if (currentURL.includes("low_power.html")) {
+        highlightCurrentPage(); // Highlight the current page in the navigation bar
+        displayVersion();
+    }
+
     loadPreferencesFromServer();
     loadThresholdsFromServer();
 
