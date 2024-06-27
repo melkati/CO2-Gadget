@@ -1380,6 +1380,15 @@ void initWebServer() {
         }
     });
 
+    server.on("/goLowPower", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", "Going to low power mode");
+            toDeepSleep();
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             request->send(200, "text/plain", "ESP32 restart initiated");
