@@ -51,6 +51,7 @@ void menuLoop();                                    // Defined in CO2_Gadget_Men
 void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
 String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
 void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
+void toDeepSleep();                                 // Defined in CO2_Gadget_DeepSleep.h
 void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 
@@ -827,8 +828,8 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.setDebugOutput(true);
-    Serial.setTxBufferSize(1024);
-    Serial.setRxBufferSize(512);
+    // Serial.setTxBufferSize(1024);
+    // Serial.setRxBufferSize(512);
     Serial.begin(115200);
     Serial.println();
     Serial.println();
