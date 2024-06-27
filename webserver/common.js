@@ -404,11 +404,12 @@ function readPreferencesFromServer() {
 }
 
 /**
- * Initialize the captive portal for preferences.html.
+ * Initialize the navbar based on the features supported by the device.
  */
 function initNavBar() {
     if (captivePortalDebug)
         console.log("Document loaded. Initializing navbar...");
+
     if (features.SUPPORT_OTA) {
         const otaLink = document.getElementById("otaLink");
         if (otaLink) {
@@ -417,6 +418,7 @@ function initNavBar() {
             console.error('Element with ID "otaLink" not found.')
         }
     }
+
     if (features.SUPPORT_LOW_POWER) {
         const lowPowerLink = document.getElementById("lowPowerLink");
         if (lowPowerLink) {
@@ -424,14 +426,45 @@ function initNavBar() {
         } else {
             console.error('Element with ID "lowPowerLink" not found.')
         }
+
+        const lowPowerIcon = document.getElementById("iconLighting");
+        if (lowPowerIcon) {
+            lowPowerIcon.classList.remove("hidden");
+        } else {
+            console.error('Element with ID "iconLighting" not found.')
+        }
     }
+}
+
+/**
+ * Handles the low power mode activation.
+ */
+function goLowPower() {
+    console.log("Low power mode activated");
+    fetch('/goLowPower', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Low power mode activated');
+            } else {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+        })
+        .catch(error => console.error('Error activating low power mode:', error));
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     getFeaturesAsJson().then(initNavBar);
 
-    // Add device hostName to the exixting page title as document.title + (HostName)
+    // Add device hostName to the existing page title as document.title + (HostName)
     readPreferencesFromServer().then(data => {
         document.title += ` (${data.hostName})`;
     });
+
+    // Llamar a la función goLowPower al hacer clic en el icono de bajo consumo
+    document.getElementById('lightingIcon').addEventListener('click', goLowPower);
 });
