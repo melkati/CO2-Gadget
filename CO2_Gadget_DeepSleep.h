@@ -530,7 +530,7 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
 }
 
 bool scd30HandleFromDeepSleep(bool blockingMode = true) {
-    bool initialized = false;
+    static bool initialized = false;
     unsigned long previousMillis = 0, startTimeoutMillis = millis();
 
     if (!initialized) {
