@@ -373,7 +373,7 @@ void initPreferences() {
     deepSleepData.timeSleeping = preferences.getUInt("timeSleeping", 60);
     deepSleepData.cyclesLeftToWiFiConnect = preferences.getUInt("cyclsWifiConn", 5);
     deepSleepData.activateWiFiEvery = deepSleepData.cyclesLeftToWiFiConnect;
-    deepSleepData.cyclesLeftToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
+    // deepSleepData.cyclesLeftToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
     deepSleepData.redrawDisplayEveryCycles = deepSleepData.cyclesLeftToRedrawDisplay;
     deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
     deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
@@ -944,9 +944,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         if (JsonDocument.containsKey("cyclsWifiConn")) {
             deepSleepData.cyclesLeftToWiFiConnect = JsonDocument["cyclsWifiConn"];
         }
-        if (JsonDocument.containsKey("cycRedrawDis")) {
-            deepSleepData.cyclesLeftToRedrawDisplay = JsonDocument["cycRedrawDis"];
-        }
+        // if (JsonDocument.containsKey("cycRedrawDis")) {
+        //     deepSleepData.cyclesLeftToRedrawDisplay = JsonDocument["cycRedrawDis"];
+        // }
         if (JsonDocument.containsKey("actBLEOnWake")) {
             deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
         }
