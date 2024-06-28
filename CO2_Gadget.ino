@@ -226,6 +226,7 @@ typedef struct {
     bool displayOnWake;
     uint16_t timeToDisplayOnWake = 3;
     bool measurementsStarted;
+    uint64_t bootTimes;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -839,6 +840,8 @@ void setup() {
     Serial.println("-->[STUP] lowPowerMode mode (from RTC memory): (" + String(deepSleepData.lowPowerMode) + ") " + getLowPowerModeName(deepSleepData.lowPowerMode));
 
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
+        ++deepSleepData.bootTimes;
+        Serial.println("-->[STUP] Boot times from Deep Sleep: " + String(deepSleepData.bootTimes));
         timeToWaitForImprov = 0;
         switch (esp_sleep_get_wakeup_cause()) {
             case ESP_SLEEP_WAKEUP_TIMER:
