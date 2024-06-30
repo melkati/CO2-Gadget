@@ -133,6 +133,7 @@ void storeSensorSelectedInRTC() {
 }
 
 void initSCD30SensorLowPower() {
+    return;
 #ifndef Wire1
     if (!sensors.scd30.begin()) return;
 #else
