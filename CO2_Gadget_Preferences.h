@@ -235,8 +235,8 @@ void printActualSettings() {
     Serial.printf("-->[PREF] lowPowerMode is:\t#%d#\n", deepSleepData.lowPowerMode);
     Serial.printf("-->[PREF] waitToDeep is:\t#%d#\n", deepSleepData.waitToGoDeepSleepOn1stBoot);
     Serial.printf("-->[PREF] timeSleeping is:\t#%d#\n", deepSleepData.timeSleeping);
-    Serial.printf("-->[PREF] cyclsWifiConn is:\t#%d#\n", deepSleepData.cyclesLeftToWiFiConnect);
-    Serial.printf("-->[PREF] cycRedrawDis is:\t#%d#\n", deepSleepData.cyclesLeftToRedrawDisplay);
+    Serial.printf("-->[PREF] cyclsWifiConn is:\t#%d#\n", deepSleepData.activateWiFiEvery);
+    Serial.printf("-->[PREF] cycRedrawDis is:\t#%d#\n", deepSleepData.redrawDisplayEveryCycles);
     Serial.printf("-->[PREF] actBLEOnWake is:\t#%s#\n",
                   ((deepSleepData.activeBLEOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] actWifiOnWake is:\t#%s#\n",
@@ -371,10 +371,8 @@ void initPreferences() {
     deepSleepData.lowPowerMode = preferences.getUInt("lowPowerMode", 0);
     deepSleepData.waitToGoDeepSleepOn1stBoot = preferences.getUInt("waitToDeep", 60);
     deepSleepData.timeSleeping = preferences.getUInt("timeSleeping", 60);
-    deepSleepData.cyclesLeftToWiFiConnect = preferences.getUInt("cyclsWifiConn", 5);
-    deepSleepData.activateWiFiEvery = deepSleepData.cyclesLeftToWiFiConnect;
-    // deepSleepData.cyclesLeftToRedrawDisplay = preferences.getUInt("cycRedrawDis", 5);
-    deepSleepData.redrawDisplayEveryCycles = deepSleepData.cyclesLeftToRedrawDisplay;
+    deepSleepData.activateWiFiEvery = preferences.getUInt("cyclsWifiConn", 5);
+    deepSleepData.redrawDisplayEveryCycles = preferences.getUInt("cycRedrawDis", 5);
     deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
     deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
     deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
@@ -507,8 +505,8 @@ void putPreferences() {
     preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
     preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
     preferences.putUInt("timeSleeping", deepSleepData.timeSleeping);
-    preferences.putUInt("cyclsWifiConn", deepSleepData.cyclesLeftToWiFiConnect);
-    preferences.putUInt("cycRedrawDis", deepSleepData.cyclesLeftToRedrawDisplay);
+    preferences.putUInt("cyclsWifiConn", deepSleepData.activateWiFiEvery);
+    preferences.putUInt("cycRedrawDis", deepSleepData.redrawDisplayEveryCycles);
     preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
     preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
     preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
@@ -641,8 +639,8 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["lowPowerMode"] = deepSleepData.lowPowerMode;
     doc["waitToDeep"] = deepSleepData.waitToGoDeepSleepOn1stBoot;
     doc["timeSleeping"] = deepSleepData.timeSleeping;
-    doc["cyclsWifiConn"] = deepSleepData.cyclesLeftToWiFiConnect;
-    doc["cycRedrawDis"] = deepSleepData.cyclesLeftToRedrawDisplay;
+    doc["cyclsWifiConn"] = deepSleepData.activateWiFiEvery;
+    doc["cycRedrawDis"] = deepSleepData.redrawDisplayEveryCycles;
     doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
     doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
     doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
@@ -942,11 +940,11 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             deepSleepData.timeSleeping = JsonDocument["timeSleeping"];
         }
         if (JsonDocument.containsKey("cyclsWifiConn")) {
-            deepSleepData.cyclesLeftToWiFiConnect = JsonDocument["cyclsWifiConn"];
+            deepSleepData.activateWiFiEvery = JsonDocument["cyclsWifiConn"];
         }
-        // if (JsonDocument.containsKey("cycRedrawDis")) {
-        //     deepSleepData.cyclesLeftToRedrawDisplay = JsonDocument["cycRedrawDis"];
-        // }
+        if (JsonDocument.containsKey("cycRedrawDis")) {
+            deepSleepData.redrawDisplayEveryCycles = JsonDocument["cycRedrawDis"];
+        }
         if (JsonDocument.containsKey("actBLEOnWake")) {
             deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
         }

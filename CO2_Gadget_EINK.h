@@ -21,9 +21,6 @@
 #define RESETDURATION 2 // Default reset duration in seconds for WaveShare displays with clever reset circuit
 #endif
 
-uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
-uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
-
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
 #include "bootlogo.h"
@@ -708,7 +705,7 @@ void displayShowValues(bool forceRedraw = false) {
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
 #endif
     } else {
-        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Forcing full refresh of display");
@@ -771,13 +768,13 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (cyclesLeftToRedrawDisplay > 0) {
-        cyclesLeftToRedrawDisplay--;
+    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
+        deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
 #endif
     } else {
-        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Forcing full refresh of display");
