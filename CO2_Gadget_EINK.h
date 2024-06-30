@@ -699,8 +699,8 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (cyclesLeftToRedrawDisplay > 0) {
-        cyclesLeftToRedrawDisplay--;
+    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
+        deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
 #endif
