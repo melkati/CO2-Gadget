@@ -202,6 +202,7 @@ void printRTCMemoryEnter() {
     Serial.println("-->[DEEP][ENTER DeepSleep] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][ENTER DeepSleep] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
     Serial.println("-->[DEEP][ENTER DeepSleep] displayOnWake: " + String(deepSleepData.displayOnWake));
+    Serial.println("-->[DEEP][ENTER DeepSleep] Wake up times: " + String(deepSleepData.bootTimes));
 #endif
 }
 
@@ -223,6 +224,7 @@ void printRTCMemoryExit() {
     Serial.println("-->[DEEP][EXIT DeepSleep] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][EXIT DeepSleep] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
     Serial.println("-->[DEEP][EXIT DeepSleep] displayOnWake: " + String(deepSleepData.displayOnWake));
+    Serial.println("-->[DEEP][EXIT DeepSleep] Wake up times: " + String(deepSleepData.bootTimes));
 #endif
 }
 
