@@ -202,6 +202,7 @@ void printRTCMemoryEnter() {
     Serial.println("-->[DEEP][ENTER DeepSleep] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][ENTER DeepSleep] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
     Serial.println("-->[DEEP][ENTER DeepSleep] displayOnWake: " + String(deepSleepData.displayOnWake));
+    Serial.println("-->[DEEP][ENTER DeepSleep] displayReverseOnWake: " + String(deepSleepData.displayReverseOnWake));
     Serial.println("-->[DEEP][ENTER DeepSleep] Wake up times: " + String(deepSleepData.bootTimes));
 #endif
 }
@@ -223,7 +224,8 @@ void printRTCMemoryExit() {
     Serial.println("-->[DEEP][EXIT DeepSleep] activeWifiOnWake: " + String(deepSleepData.activeWifiOnWake));
     Serial.println("-->[DEEP][EXIT DeepSleep] sendMQTTOnWake: " + String(deepSleepData.sendMQTTOnWake));
     Serial.println("-->[DEEP][EXIT DeepSleep] sendESPNowOnWake: " + String(deepSleepData.sendESPNowOnWake));
-    Serial.println("-->[DEEP][EXIT DeepSleep] displayOnWake: " + String(deepSleepData.displayOnWake));
+    Serial.println("-->[DEEP][EXIT DeepSleep] displayOnWake: " + String(deepSleepData.displayOnWake));    
+    Serial.println("-->[DEEP][EXIT DeepSleep] displayReverseOnWake: " + String(deepSleepData.displayReverseOnWake));
     Serial.println("-->[DEEP][EXIT DeepSleep] Wake up times: " + String(deepSleepData.bootTimes));
 #endif
 }
@@ -242,6 +244,10 @@ void callbackTouch() {
 void toDeepSleep() {
 #ifdef SUPPORT_EINK
 // display.hibernate();
+#endif
+
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+                deepSleepData.displayReverseOnWake = displayReverse;
 #endif
 
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
@@ -622,7 +628,7 @@ bool handleLowPowerSensors() {
     return (readOK);
 }
 
-void fromDeepSleepTimer() {
+void handleCycleCountersOnWake() {
     --deepSleepData.cyclesLeftToWiFiConnect;
     --deepSleepData.cyclesLeftToRedrawDisplay;
     if (deepSleepData.cyclesLeftToWiFiConnect == 65535) deepSleepData.cyclesLeftToWiFiConnect = 0;
@@ -630,138 +636,137 @@ void fromDeepSleepTimer() {
 
 #if defined(DEEP_SLEEP_DEBUG)
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesLeftToWiFiConnect));
-#endif
-
-#if defined(DEEP_SLEEP_DEBUG) && defined(SUPPORT_EINK)
     Serial.println("-->[DEEP] Cycles left to redraw E-Ink display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
 #endif
+}
+
+void handleLowPowerModeBasicOnWake() {
+#ifdef DEEP_SLEEP_DEBUG
+    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER");
+#endif
+}
+
+void handleBLEOnWake() {
+#ifdef SUPPORT_BLE
+    if (deepSleepData.activeBLEOnWake) {
+        initBLE();
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
+#endif
+        publishBLE();
+    }
+#endif
+}
+
+void handleDisplayReverseOnWake() {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    displayReverse = deepSleepData.displayReverseOnWake;
+    setDisplayReverse(displayReverse);
+    reverseButtons(displayReverse);
+#endif
+}
+
+void handleDisplayRedrawOnWake() {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] Updating display");
+#endif
+        initDisplay(true);
+        displayShowValues(true);
+    }
+#endif
+}
+
+void handleDisplayOnWake() {
+#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
+    if (deepSleepData.displayOnWake && deepSleepData.cyclesLeftToRedrawDisplay == 0) {
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
+#endif
+        initDisplay(true);
+        displayShowValues(true);
+        esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
+        Serial.flush();
+        delay(deepSleepData.timeToDisplayOnWake * 1000);
+    }
+#endif
+}
+
+void handleWiFiConnectionOnWake() {
+    if (deepSleepData.cyclesLeftToWiFiConnect == 0) {
+        doDeepSleepWiFiConnect();
+    }
+}
+
+void handleMQTTPublishOnWake() {
+#ifdef SUPPORT_MQTT
+    if (deepSleepData.sendMQTTOnWake && WiFi.status() == WL_CONNECTED) {
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] MQTT connected. Publishing measurements.");
+#endif
+        publishMQTT(true);
+        delay(10);
+    }
+#endif
+}
+
+void handleMediumLowPowerModeOnWake() {
+#ifdef DEEP_SLEEP_DEBUG
+    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
+#endif
+    initBattery();
+    batteryLoop();
+    if (handleLowPowerSensors()) {
+        displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
+    }
+    handleBLEOnWake();
+    handleDisplayOnWake();
+    handleWiFiConnectionOnWake();
+#ifdef DEEP_SLEEP_DEBUG
+    Serial.println("-->[DEEP] CO2: " + String(co2) + " CO2temp: " + String(temp) + " CO2humi: " + String(hum));
+#endif
+    handleMQTTPublishOnWake();
+}
+
+void fromDeepSleepTimer() {
+    handleCycleCountersOnWake();
 
     switch (deepSleepData.lowPowerMode) {
         case BASIC_LOWPOWER:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER");
-#endif
+            handleLowPowerModeBasicOnWake();
             break;
         case MEDIUM_LOWPOWER:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
-#endif
-            initBattery();
-            batteryLoop();
-            if (handleLowPowerSensors()) {
-                displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
-            }
-#ifdef SUPPORT_BLE
-            if (deepSleepData.activeBLEOnWake) {
-                initBLE();
-#ifdef DEEP_SLEEP_DEBUG
-                Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
-#endif
-                publishBLE();
-                // BLELoop();
-            }
-#endif
-#if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-            if (deepSleepData.displayOnWake) {
-                if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
-#ifdef DEEP_SLEEP_DEBUG
-                    Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
-#endif
-                    initPreferences();
-                    initDisplay(true);
-                    displayShowValues(true);
-                }
-                esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
-                Serial.flush();
-#ifdef TIMEDEBUG
-                timerLightSleep.resume();
-#endif
-                // esp_light_sleep_start();
-                delay(deepSleepData.timeToDisplayOnWake * 1000);
-#ifdef TIMEDEBUG
-                timerLightSleep.pause();
-#endif
-            }
-#endif // defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-#ifdef SUPPORT_EINK
-                if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
-#ifdef DEEP_SLEEP_DEBUG
-                    Serial.println("-->[DEEP] Updating e-ink display");
-#endif
-                    initPreferences();
-                    initDisplay(true);
-                    displayShowValues(true);
-                }
-#ifdef TIMEDEBUG
-                timerLightSleep.resume();
-#endif
-#ifdef TIMEDEBUG
-                timerLightSleep.pause();
-#endif
-#endif // SUPPORT_EINK
-            if (deepSleepData.cyclesLeftToWiFiConnect == 0) {
-                doDeepSleepWiFiConnect();
-            }
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] CO2: " + String(co2) + " CO2temp: " + String(temp) + " CO2humi: " + String(hum));
-#endif
-#ifdef SUPPORT_MQTT
-            if ((deepSleepData.sendMQTTOnWake) && (WiFi.status() == WL_CONNECTED)) {
-                Serial.println("-->[DEEP] MQTT connected. Publishing measurements.");
-                publishMQTT(true);
-                delay(10);
-            }
-#endif
+            handleMediumLowPowerModeOnWake();
             break;
         case MAXIMUM_LOWPOWER:
             break;
     }
+
     Serial.flush();
 }
 
-void fromDeepSleep() {
-    esp_sleep_wakeup_cause_t wakeupCause;
-    wakeupCause = esp_sleep_get_wakeup_cause();
-#ifdef DEEP_SLEEP_DEBUG
-    printRTCMemoryExit();
-    Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
-#endif
-#ifdef DEEP_SLEEP_DEBUG
-    Serial.println("");
-    Serial.println("");
-#endif
+void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
     switch (wakeupCause) {
         case ESP_SLEEP_WAKEUP_TIMER:
 #ifdef DEEP_SLEEP_DEBUG
             Serial.println("-->[DEEP] Wakeup caused by timer");
 #endif
             fromDeepSleepTimer();
-#if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)  // #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+#if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
-            // turnOffDisplay();
-            // Serial.println("-->[DEEP] Display off *");
             delay(10);
             displaySleep(false);
 #endif
             toDeepSleep();
             break;
         case ESP_SLEEP_WAKEUP_EXT0:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_IO");
-#endif
-            interactiveMode = true;
-            break;
         case ESP_SLEEP_WAKEUP_EXT1:
-#ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Wakeup caused by external signal using RTC_CNTL");
-#endif
-            interactiveMode = true;
-            break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
 #ifdef DEEP_SLEEP_DEBUG
-            Serial.println("-->[DEEP] Wakeup caused by touchpad");
-            interactiveMode = true;
+            Serial.println("-->[DEEP] Wakeup caused by external signal");
 #endif
+            interactiveMode = true;
             break;
         case ESP_SLEEP_WAKEUP_ULP:
 #ifdef DEEP_SLEEP_DEBUG
@@ -772,6 +777,17 @@ void fromDeepSleep() {
             Serial.println("-->[DEEP] Wakeup was not caused by deep sleep. Reason: " + String(wakeupCause));
             break;
     }
+}
+
+void fromDeepSleep() {
+    esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+#ifdef DEEP_SLEEP_DEBUG
+    printRTCMemoryExit();
+    Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
+    Serial.println();
+#endif
+    handleDisplayReverseOnWake();
+    handleWakeupCauseOnWake(wakeupCause);
 }
 
 void deepSleepLoop() {

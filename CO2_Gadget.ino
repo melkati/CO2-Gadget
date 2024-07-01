@@ -224,6 +224,7 @@ typedef struct {
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
     bool displayOnWake;
+    bool displayReverseOnWake;  // Display reverse on wake. Here to avoid having to read preferences on wake
     uint16_t timeToDisplayOnWake = 3;
     bool measurementsStarted;
     uint64_t bootTimes;
@@ -757,6 +758,7 @@ void initGPIOLowPower() {
     interactiveMode = true;
     deepSleepEnabled = true;
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    handleDisplayReverseOnWake();
     initDisplay(true);
 #endif
     initBattery();
@@ -829,8 +831,8 @@ void setup() {
     uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);  // save WatchDog register
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);                        // disable brownout detector
     Serial.setDebugOutput(true);
-    // Serial.setTxBufferSize(1024);
-    // Serial.setRxBufferSize(512);
+    Serial.setTxBufferSize(1024);
+    Serial.setRxBufferSize(512);
     Serial.begin(115200);
     Serial.println();
     Serial.println();
