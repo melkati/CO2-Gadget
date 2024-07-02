@@ -550,11 +550,11 @@ String getActualSettingsAsJson(bool includePasswords = false) {
 
     doc["prefVersion"] = prefVersion;
     doc["prefRevision"] = prefRevision;
-    doc["firmVerMajor"] = firmVersionMajor;
-    doc["firmVerMinor"] = firmVersionMinor;
-    doc["firmRevision"] = firmRevision;
-    doc["firmBranch"] = firmBranch;
-    doc["firmFlavour"] = firmFlavour;
+    doc["firmVerMajor"] = getCO2GadgetMajorVersion();
+    doc["firmVerMinor"] = getCO2GadgetMinorVersion();
+    doc["firmRevision"] = getCO2GadgetRevisionNumber();
+    doc["firmBranch"] = getCO2GadgetRevisionBranch();
+    doc["firmFlavour"] = FLAVOUR;
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = String(tempOffset, 1);
     doc["altitudeMeters"] = altitudeMeters;
