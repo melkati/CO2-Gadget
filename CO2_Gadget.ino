@@ -230,6 +230,8 @@ typedef struct {
     bool displayOnWake;
     bool displayReverseOnWake;  // Display reverse on wake. Here to avoid having to read preferences on wake
     uint16_t timeToDisplayOnWake = 3;
+    bool lastWifiRSSIValid;
+    int16_t lastWifiRSSI;
     bool measurementsStarted;
     uint64_t bootTimes;
     uint64_t uptimeMillis;
@@ -864,6 +866,8 @@ void setup() {
         // Normal boot from any reason
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
             deepSleepData.uptimeMillis = 0;
+            deepSleepData.lastWifiRSSIValid = false;
+            deepSleepData.lastWifiRSSI = 0;
             Serial.println("-->[STUP] Initializing from: " + getResetReason());
             initPreferences();
             initThresholds();
