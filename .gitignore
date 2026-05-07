@@ -13,6 +13,7 @@ auto_firmware_version.py
 platformio_extra_configs.ini
 compress.ps1
 
-# Local development logs — not for the repo
+# Local development logs and planning files — not for the repo
 docs/phase*-log.md
 docs/build-*.log
+PLAN.md
