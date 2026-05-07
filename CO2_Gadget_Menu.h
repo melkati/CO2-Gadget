@@ -599,7 +599,12 @@ result doSetvRef(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+TOGGLE(hasBattery, hasBatteryMenu, "Has battery: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doNothing, noEvent)
+  ,VALUE("OFF", false, doNothing, noEvent));
+
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(hasBatteryMenu)
   ,FIELD(batteryVoltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
   ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
   ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
@@ -631,7 +636,6 @@ MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doNothing, noEvent)
   ,VALUE("OFF", false, doNothing, noEvent));
-
   
 result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
@@ -664,29 +668,28 @@ result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
 }
 
 TOGGLE(displayReverse, activeDisplayReverse, "Orient: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Normal", false, doDisplayReverse, enterEvent)
-  ,VALUE("Reversed", true, doDisplayReverse, enterEvent));
-
+  ,VALUE("Normal",   false, doDisplayReverse, enterEvent)
+  ,VALUE("Reversed", true,  doDisplayReverse, enterEvent));
 
 TOGGLE(displayShowTemperature, activeDisplayShowTemperature, "Temp: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-  ,VALUE("Show", true, doDisplayReverse, enterEvent));
+  ,VALUE("Hide", false, doNothing, enterEvent)
+  ,VALUE("Show", true,  doNothing, enterEvent));
 
 TOGGLE(displayShowHumidity, activeDisplayShowHumidity, "Humidity: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-  ,VALUE("Show", true, doDisplayReverse, enterEvent));
+  ,VALUE("Hide", false, doNothing, enterEvent)
+  ,VALUE("Show", true,  doNothing, enterEvent));
 
 TOGGLE(displayShowBattery, activeDisplayShowBattery, "Battery: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-  ,VALUE("Show", true, doDisplayReverse, enterEvent));
+  ,VALUE("Hide", false, doNothing, enterEvent)
+  ,VALUE("Show", true,  doNothing, enterEvent));
 
 TOGGLE(displayShowCO2, activeDisplayShowCO2, "CO2: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-  ,VALUE("Show", true, doDisplayReverse, enterEvent));
+  ,VALUE("Hide", false, doNothing, enterEvent)
+  ,VALUE("Show", true,  doNothing, enterEvent));
 
 TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wrapStyle
-  ,VALUE("Hide", false, doDisplayReverse, enterEvent)
-  ,VALUE("Show", true, doDisplayReverse, enterEvent));
+  ,VALUE("Hide", false, doNothing, enterEvent)
+  ,VALUE("Show", true,  doNothing, enterEvent));
 
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
@@ -1154,7 +1157,7 @@ void initMenu() {
     if (!activeWIFI) {
         activeMQTTMenu[0].disable();  // Make MQTT active field unselectable if WIFI is not active
     }
-    batteryConfigMenu[0].disable();  // Make information field unselectable
+    batteryConfigMenu[1].disable();  // Make information field unselectable
     temperatureConfigMenu[0].disable();
     setCO2Sensor = selectedCO2Sensor;
 #ifdef DEBUG_ARDUINOMENU
@@ -1183,11 +1186,14 @@ bool menuEntryCharacterReceived() {
 }
 
 void menuLoop() {
+#ifdef DEBUG_ARDUINOMENU
+    if ((!inMenu) && (shouldRedrawDisplay)) Serial.println("-->[MENU] Entering menu loop with shouldRedrawDisplay: " + String(shouldRedrawDisplay) + " and redrawDisplayOnNextLoop: " + String(redrawDisplayOnNextLoop));
+#endif
     if (isDownloadingBLE) return;  // Do not run the menu if downloading BLE
 
     if ((inMenu) && isMenuDirty) {
-#ifdef DEBUG_ARDUINOMENU        
-        Serial.println("-->[MENU] Menu is dirty. Restarting menu...");      
+#ifdef DEBUG_ARDUINOMENU
+        Serial.println("-->[MENU] Menu is dirty. Restarting menu...");
 #endif
         isMenuDirty = false;
         mainMenu.dirty = true;
@@ -1212,6 +1218,9 @@ void menuLoop() {
 
     if (!menuInitialized) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+#ifdef DEBUG_ARDUINOMENU
+        if (shouldRedrawDisplay) Serial.println("-->[MENU] Displaying values while waiting for Improv-WiFi to start with shouldRedrawDisplay: " + String(shouldRedrawDisplay) + " and redrawDisplayOnNextLoop: " + String(redrawDisplayOnNextLoop));
+#endif
         displayShowValues(shouldRedrawDisplay);
 #endif
         shouldRedrawDisplay = false;
@@ -1235,20 +1244,9 @@ void menuLoop() {
 #ifdef DEBUG_ARDUINOMENU
     static unsigned long lastPrintTime = 0;
     if (millis() - lastPrintTime >= 1000) {
-        Serial.println("-->[MENU] menuLoop");
+        Serial.println("-->[MENU] menuLoop. shouldRedrawDisplay: " + String(shouldRedrawDisplay) + " and redrawDisplayOnNextLoop: " + String(redrawDisplayOnNextLoop));
         lastPrintTime = millis();
     }
-#endif
-
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-    // Workaround: Try to avoid Serial TX buffer full if it's not connected to a receiving device. Looks like the issue is just with ESP32 S3
-/*    if ((Serial.availableForWrite() < 100) || (!workingOnExternalPower)) {
-        Serial.println("[MENU] Serial TX buffer full or not connected to a receiving device. Restarting Serial...");
-        Serial.end();
-        delay(10);
-        Serial.begin(115200);
-    }
-    */
 #endif
 
     if (activeWIFI) {

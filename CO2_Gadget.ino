@@ -40,15 +40,16 @@
 
 /*****************************************************************************************************/
 
-#define SUPPORT_CAPTIVE_PORTAL // Please, don't disable this.
+#define SUPPORT_CAPTIVE_PORTAL  // Please, don't disable this.
 
 // Functions and enum definitions
-void reverseButtons(bool reversed);       // Defined in CO2_Gadget_Buttons.h
-void outputsLoop();                       // Defined in CO2_Gadget_Main.h
-void publishMQTTLogData(String logData);  // Defined in CO2_Gadget_MQTT.h
-void putPreferences();                    // Defined in CO2_Gadget_Preferences.h
-void menuLoop();                          // Defined in CO2_Gadget_Menu.h
-void setDisplayReverse(bool reverse);     // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
+void reverseButtons(bool reversed);                 // Defined in CO2_Gadget_Buttons.h
+void outputsLoop();                                 // Defined in CO2_Gadget_Main.h
+void publishMQTTLogData(String logData);            // Defined in CO2_Gadget_MQTT.h
+void putPreferences();                              // Defined in CO2_Gadget_Preferences.h
+void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
+void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
+void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 // void setBLEHistoryInterval(uint64_t interval);  // Defined in CO2_Gadget_BLE.h
 
 // Define enum for toneBuzzerBeep
@@ -130,16 +131,17 @@ bool menuInitialized = false;
 uint16_t DisplayBrightness = 100;
 bool displayReverse = false;
 bool showFahrenheit = false;
-bool displayShowTemperature = true;
-bool displayShowHumidity = true;
-bool displayShowBattery = true;
-bool displayShowBatteryVoltage = false;
-bool displayShowCO2 = true;
-bool displayShowPM25 = true;
+volatile bool displayShowTemperature = true;
+volatile bool displayShowHumidity = true;
+volatile bool displayShowBattery = true;
+volatile bool displayShowBatteryVoltage = false;
+volatile bool displayShowCO2 = true;
+volatile bool displayShowPM25 = true;
 bool debugSensors = false;
 bool inMenu = false;
-bool shouldWakeUpDisplay = false;
-bool shouldRedrawDisplay = false;
+volatile bool shouldWakeUpDisplay = false;
+volatile bool shouldRedrawDisplay = false;
+volatile bool redrawDisplayOnNextLoop = false;
 bool isMenuDirty = false;  // To know if we need to redraw the menu
 uint16_t measurementInterval = 10;
 uint16_t sampleInterval = 60;
@@ -163,6 +165,7 @@ uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we co
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
+bool hasBattery = false;
 bool workingOnExternalPower = true;    // True if working on external power (USB connected)
 uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
@@ -380,26 +383,23 @@ void wakeUpDisplay() {
 void processPendingCommands() {
     if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
-        if (calibrationValue != 0) {
-            printf("-->[MAIN] Calibrating CO2 sensor at %d PPM\n", calibrationValue);
+        if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
+            Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
         } else {
-            printf("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at %d PPM\n", calibrationValue);
+            Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
             pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
         if (ambientPressureValue != 0) {
-            printf("-->[MAIN] Setting AmbientPressure for CO2 sensor at %d mbar\n", ambientPressureValue);
+            Serial.println("-->[MAIN] Setting AmbientPressure for CO2 sensor at " + String(ambientPressureValue) + " mbar\n");
             pendingAmbientPressure = false;
             // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
         } else {
-            printf(
-                "-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid "
-                "value at %d mbar\n",
-                ambientPressureValue);
+            Serial.println("-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid value at " + String(ambientPressureValue) + " mbar\n");
             pendingAmbientPressure = false;
         }
     }

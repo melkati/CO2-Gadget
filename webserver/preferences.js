@@ -1,14 +1,16 @@
 /**
  * Fetches version information from the server and updates the version displayed
  */
-function fetchVersion() {
-    fetch('/getVersion')
-        .then(response => response.json())
+function displayVersion() {
+
+    fetchVersion()
         .then(versionInfo => {
-            if (preferencesDebug) console.log('Version information:', versionInfo);
-            const versionElement = document.getElementById("co2GadgetVersion");
-            const versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}-${versionInfo.firmBranch} (Flavour: ${versionInfo.firmFlavour})`;
-            versionElement.innerText = versionText;
+            let versionText = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}`;
+            if (versionInfo.firmBranch) {
+                versionText += `-${versionInfo.firmBranch}`;
+            }
+            versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            document.getElementById("co2GadgetVersion").innerText = versionText;
 
             // Adjust preferences.html for specific versions
             if (versionInfo.firmFlavour == 'T-Display S3') {
@@ -16,19 +18,18 @@ function fetchVersion() {
                 displayBrightInput.min = "1";
                 displayBrightInput.max = "16";
                 displayBrightInput.step = "1";
-                const tooltipText = document.querySelector('.tooltip-text');
+                const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
                 let currentText = tooltipText.textContent;
                 currentText += ' Valid brightness values: 1-16.';
 
             } else {
-                // Add to tooltip text: Valid brightness values: displayBrightInput.min to displayBrightInput.max
                 const displayBrightInput = document.getElementById("DisplayBright");
                 let min = displayBrightInput.min;
                 let max = displayBrightInput.max;
-                const tooltipText = document.querySelector('.tooltip-text');
+                const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
                 let currentText = tooltipText.textContent;
                 currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
-                tooltipText.textContent = currentText;                
+                tooltipText.textContent = currentText;
             }
 
             // TO-DO: Change to use getFeaturesAsJson endpoint to check for "EINK" instead of firmFlavour to reduce complexity
@@ -38,7 +39,10 @@ function fetchVersion() {
                 document.getElementById("tToDispOffDiv").classList.add("hidden");
             }
         })
-        .catch(error => console.error('Error fetching version information:', error));
+        .catch(error => {
+            console.error('Error displaying version:', error);
+        });
+
 }
 
 /**
@@ -51,7 +55,7 @@ function populateFormWithPreferences(preferences) {
         if (preferencesDebug) console.log(`Setting relaxedSecurity field to:`, preferences.relaxedSecurity);
         // If forcedRelaxedSecurity is set because the current URL does contains the "relaxedSecurity" parameter, do not overide the value with the one from the server
         if (!forcedRelaxedSecurity) {
-        relaxedSecurity = preferences.relaxedSecurity;
+            relaxedSecurity = preferences.relaxedSecurity;
         }
     }
 
@@ -105,6 +109,7 @@ function populateFormWithPreferences(preferences) {
     setFormValue("mqttBroker", preferences.mqttBroker);
     setFormValue("mqttUser", preferences.mqttUser);
     if (relaxedSecurity) setFormValue("mqttPass", preferences.mqttPass);
+    setFormCheckbox("hasBattery", preferences.hasBattery);
     setFormValue("batDischgd", preferences.batDischgd);
     setFormValue("batChargd", preferences.batChargd);
     setFormValue("vRef", preferences.vRef);
@@ -168,86 +173,93 @@ function loadPreferencesFromServer() {
  * @returns {Object} - The collected preferences data.
  */
 function collectPreferencesData() {
-    const preferencesData = {
-        customCalValue: document.getElementById("customCalValue").value,
-        tempOffset: document.getElementById("tempOffset").value,
-        altitudeMeters: document.getElementById("altitudeMeters").value,
-        autoSelfCalibration: document.getElementById("autoSelfCalibration").checked,
-        co2OrangeRange: document.getElementById("co2OrangeRange").value,
-        co2RedRange: document.getElementById("co2RedRange").value,
-        DisplayBright: document.getElementById("DisplayBright").value,
-        neopixBright: document.getElementById("neopixBright").value,
-        selNeopxType: document.getElementById("selNeopxType").value,
-        activeBLE: document.getElementById("activeBLE").checked,
-        activeWIFI: document.getElementById("activeWIFI").checked,
-        activeMQTT: document.getElementById("activeMQTT").checked,
-        activeESPNOW: document.getElementById("activeESPNOW").checked,
-        rootTopic: document.getElementById("rootTopic").value,
-        batDischgd: document.getElementById("batDischgd").value,
-        batChargd: document.getElementById("batChargd").value,
-        vRef: document.getElementById("vRef").value,
-        tToDispOff: document.getElementById("tToDispOff").value,
-        tToPubMQTT: document.getElementById("tToPubMQTT").value,
-        tToPubESPNow: document.getElementById("tToPubESPNow").value,
-        tKeepAlMQTT: document.getElementById("tKeepAlMQTT").value,
-        tKeepAlESPNow: document.getElementById("tKeepAlESPNow").value,
-        dispOffOnExP: document.getElementById("dispOffOnExP").checked,
-        wifiSSID: document.getElementById("wifiSSID").value,
-        hostName: document.getElementById("hostName").value,
-        useStaticIP: document.getElementById("useStaticIP").checked,
-        staticIP: document.getElementById("staticIP").value,
-        gateway: document.getElementById("gateway").value,
-        subnet: document.getElementById("subnet").value,
-        dns1: document.getElementById("dns1").value,
-        dns2: document.getElementById("dns2").value,
-        selCO2Sensor: document.getElementById("selCO2Sensor").value,
-        debugSensors: document.getElementById("debugSensors").checked,
-        displayReverse: document.getElementById("displayReverse").checked,
-        showFahrenheit: document.getElementById("showFahrenheit").checked,
-        measurementInterval: document.getElementById("measurementInterval").value,
-        outModeRelay: document.getElementById("outModeRelay").checked,
-        channelESPNow: document.getElementById("channelESPNow").value,
-        boardIdESPNow: document.getElementById("boardIdESPNow").value,
-        peerESPNowAddress: document.getElementById("peerESPNowAddress").value,
-        showTemp: document.getElementById("showTemp").checked,
-        showHumidity: document.getElementById("showHumidity").checked,
-        showBattery: document.getElementById("showBattery").checked,
-        showCO2: document.getElementById("showCO2").checked,
-        mqttClientId: document.getElementById("mqttClientId").value,
-        mqttShowInCon: document.getElementById("mqttShowInCon").checked,
-        mqttBroker: document.getElementById("mqttBroker").value,
-        mqttUser: document.getElementById("mqttUser").value,
-        toneBzrBeep: document.getElementById("toneBzrBeep").value,
-        durBzrBeep: document.getElementById("durBzrBeep").value,
-        timeBtwnBzr: document.getElementById("timeBtwnBzr").value
-    };
+    try {
+        const preferencesData = {};
 
-    if (relaxedSecurity) {
-        preferencesData.wifiPass = document.getElementById("wifiPass").value;
-        preferencesData.mqttPass = document.getElementById("mqttPass").value;
-    }
+        const setValue = (id, type = 'value') => {
+            const element = document.getElementById(id);
+            if (element) {
+                preferencesData[id] = (type === 'checked') ? element.checked : element.value;
+                return true; // Successfully set value
+            } else {
+                console.warn(`Element with ID '${id}' not found.`);
+                return false; // Element not found
+            }
+        };
 
-    // New fields for Captive Portal
-    const cpNoTimeout = document.getElementById("cpNoTimeout");
-    if (cpNoTimeout) {
-        preferencesData.cpNoTimeout = cpNoTimeout.checked;
-    }
-    const cpRelaxedSec = document.getElementById("cpRelaxedSec");
-    if (cpRelaxedSec) {
-        preferencesData.cpRelaxedSec = cpRelaxedSec.checked;
-    }
-    const cpDebug = document.getElementById("cpDebug");
-    if (cpDebug) {
-        preferencesData.cpDebug = cpDebug.checked;
-    }
-    const cpWaitTime = document.getElementById("cpWaitTime");
-    if (cpWaitTime) {
-        preferencesData.cpWaitTime = cpWaitTime.value;
-    }
+        // Setting values for preferencesData
+        setValue("customCalValue");
+        setValue("tempOffset");
+        setValue("altitudeMeters");
+        setValue("autoSelfCalibration", 'checked');
+        setValue("co2OrangeRange");
+        setValue("co2RedRange");
+        setValue("DisplayBright");
+        setValue("neopixBright");
+        setValue("selNeopxType");
+        setValue("activeBLE", 'checked');
+        setValue("activeWIFI", 'checked');
+        setValue("activeMQTT", 'checked');
+        setValue("activeESPNOW", 'checked');
+        setValue("rootTopic");
+        setValue("hasBattery", 'checked');
+        setValue("batDischgd");
+        setValue("batChargd");
+        setValue("vRef");
+        setValue("tToDispOff");
+        setValue("tToPubMQTT");
+        setValue("tToPubESPNow");
+        setValue("tKeepAlMQTT");
+        setValue("tKeepAlESPNow");
+        setValue("dispOffOnExP", 'checked');
+        setValue("wifiSSID");
+        setValue("hostName");
+        setValue("useStaticIP", 'checked');
+        setValue("staticIP");
+        setValue("gateway");
+        setValue("subnet");
+        setValue("dns1");
+        setValue("dns2");
+        setValue("selCO2Sensor");
+        setValue("debugSensors", 'checked');
+        setValue("displayReverse", 'checked');
+        setValue("showFahrenheit", 'checked');
+        setValue("measurementInterval");
+        setValue("outModeRelay", 'checked');
+        setValue("channelESPNow");
+        setValue("boardIdESPNow");
+        setValue("peerESPNowAddress");
+        setValue("showTemp", 'checked');
+        setValue("showHumidity", 'checked');
+        setValue("showBattery", 'checked');
+        setValue("showCO2", 'checked');
+        setValue("mqttClientId");
+        setValue("mqttShowInCon", 'checked');
+        setValue("mqttBroker");
+        setValue("mqttUser");
+        setValue("toneBzrBeep");
+        setValue("durBzrBeep");
+        setValue("timeBtwnBzr");
 
-    console.log("Collected preferences data:", preferencesData);
+        if (relaxedSecurity) {
+            setValue("wifiPass");
+            setValue("mqttPass");
+        }
 
-    return preferencesData;
+        // New fields for Captive Portal
+        setValue("cpNoTimeout", 'checked');
+        setValue("cpRelaxedSec", 'checked');
+        setValue("cpDebug", 'checked');
+        setValue("cpWaitTime");
+
+        console.log("Collected preferences data:", preferencesData);
+
+        return preferencesData;
+    } catch (error) {
+        console.error("Error collecting preferences data:", error);
+        alert("An error occurred while collecting preferences data. Please check the console for details.");
+        throw error; // Re-throw the error after logging it
+    }
 }
 
 /**
@@ -287,30 +299,6 @@ function savePreferences() {
             }
         })
         .catch(error => console.error('Error saving preferences:', error));
-}
-
-/**
- * Restarts the ESP32 device after user confirmation.
- */
-function restartESP32() {
-    const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
-    if (isConfirmed) {
-        if (preferencesDebug) console.log("Restarting ESP32...");
-        fetch('/restart', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        })
-            .then(response => {
-                if (response.ok) {
-                    console.log('ESP32 restart initiated');
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-            })
-            .catch(error => console.error('Error restarting ESP32:', error));
-    }
 }
 
 /**
@@ -429,15 +417,20 @@ function handleWiFiMQTTDependency() {
 }
 
 /**
- * Updates the battery voltage display by fetching it from the server.
+ * Updates the battery voltage displayed on the page.
  */
-function updateVoltage() {
-    fetch('/readBatteryVoltage')
-        .then(response => response.text())
+function updateBatteryVoltage(voltage) {
+    document.getElementById('currentVoltage').textContent = voltage + ' Volts';
+}
+
+function fetchAndUpdateBatteryVoltage() {
+    readBatteryVoltage()
         .then(voltage => {
-            document.getElementById('currentVoltage').textContent = voltage + ' Volts';
+            updateBatteryVoltage(voltage);
         })
-        .catch(error => console.error('Error fetching battery voltage:', error));
+        .catch(error => {
+            console.error('Error updating battery voltage:', error);
+        });
 }
 
 /**
@@ -598,6 +591,108 @@ function handleCalibrationWizard() {
     });
 }
 
+/**
+ * Sanity Data form before Save 
+ */
+function sanityCheckData() {
+    var txt_error = "";
+    let errorMessage = document.getElementById('error-message');
+
+    // Sanyty check for display brightness
+    const inputDisplayBrightness = document.getElementById("DisplayBright");
+    if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max) || parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) {
+        inputDisplayBrightness.classList.remove('valid');
+        inputDisplayBrightness.classList.add('error');
+
+        if (parseInt(inputDisplayBrightness.value) > parseInt(inputDisplayBrightness.max)) inputDisplayBrightness.value = inputDisplayBrightness.max;
+        if (parseInt(inputDisplayBrightness.value) < parseInt(inputDisplayBrightness.min)) inputDisplayBrightness.value = inputDisplayBrightness.min;
+
+        txt_error = "Display Brightness value must be >=" + inputDisplayBrightness.min + " and <=" + inputDisplayBrightness.max;
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputDisplayBrightness.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputDisplayBrightness.classList.remove('error');
+        inputDisplayBrightness.classList.add('valid');
+    }
+
+    // Sanyty check for CO2 Orange and Red Range
+    const inputco2OrangeRange = document.getElementById("co2OrangeRange");
+    const inputco2RedRange = document.getElementById("co2RedRange");
+    if (parseInt(inputco2OrangeRange.value) > parseInt(inputco2RedRange.value)) {
+        inputco2RedRange.value = parseInt(inputco2OrangeRange.value) + 1;
+        inputco2OrangeRange.classList.remove('valid');
+        inputco2RedRange.classList.remove('valid');
+        inputco2OrangeRange.classList.add('error');
+        inputco2RedRange.classList.add('error');
+        txt_error = "Red level must be greater than Orange level";
+        if (errorMessage) errorMessage.remove(); // Remove previous error messages
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'form-error';
+        errorMessage.textContent = txt_error;
+        inputco2RedRange.insertAdjacentElement('afterend', errorMessage);
+        if (preferencesDebug) console.log(txt_error);
+        return false;
+    } else {
+        if (errorMessage) errorMessage.remove();
+        inputco2OrangeRange.classList.remove('error');
+        inputco2RedRange.classList.remove('error');
+        inputco2OrangeRange.classList.add('valid');
+        inputco2RedRange.classList.add('valid');
+    }
+    return true;
+}
+
+/**
+ * Runtime display reverse 
+ */
+function toggleDisplayReverse() {
+    if (preferencesDebug) console.log("Toggle Display Reverse");
+    fetch("/settings?ToggleDisplayReverse")
+        .then(response => {
+            if (!response.ok) throw new Error('Error reversing display');
+            if (preferencesDebug) console.log('Toggle Display Reverse successfully');
+        })
+        .catch(error => console.error('Error Toggling Display Reverse:', error));
+}
+
+/**
+ * Runtime display brightness 
+ */
+function setDisplayBrightness() {
+    const inputDisplayBrightness = document.getElementById("DisplayBright").value;
+    if (preferencesDebug) console.log("Set Display Brightness = " + inputDisplayBrightness);
+    fetch(`/settings?setDisplayBrightness=${inputDisplayBrightness}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting display brightness');
+            if (preferencesDebug) console.log('Set Display brightness successfully');
+        })
+        .catch(error => console.error('Error Setting Display brightness:', error));
+}
+
+/**
+* Runtime show/hide Temp/Humidity/Battery in display
+*/
+function showTempHumBatt() {
+    const inputShowTemp = document.getElementById("showTemp").checked;
+    const inputShowHumidity = document.getElementById("showHumidity").checked;
+    const inputShowBattery = document.getElementById("showBattery").checked;
+    if (preferencesDebug) console.log("Show/hide Temp/Humidity/Battery in display");
+    fetch(`/settings?showTemp=${inputShowTemp}&showHumidity=${inputShowHumidity}&showBattery=${inputShowBattery}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error setting show/hide Temp/Humidity/Battery in display');
+            if (preferencesDebug) console.log('Set show/hide Temp/Humidity/Battery in display successfully');
+        })
+        .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Get the current URL
     var currentURL = window.location.href;
@@ -609,8 +704,17 @@ document.addEventListener("DOMContentLoaded", () => {
         relaxedSecurity = forcedRelaxedSecurity;
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
-        setTimeout(() => { loadPreferencesFromServer(); }, 50); // Delay of 100ms
-        setTimeout(() => { fetchVersion(); }, 100); // Delay of 100ms
+
+        // Load preferences from the server and populate the form
+        readPreferencesFromServer()
+            .then(preferences => {
+                populateFormWithPreferences(preferences);
+                displayVersion();
+            })
+            .catch(error => {
+                console.error('Error initializing preferences page:', error);
+            });
+
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
         });
@@ -618,10 +722,10 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
         handleWiFiMQTTDependency();
-        setTimeout(() => { handleCalibrationWizard(); }, 200); // Delay of 500ms
+        handleCalibrationWizard();
 
         // Update the battery voltage every second
-        setInterval(updateVoltage, 1000);
+        setInterval(fetchAndUpdateBatteryVoltage, 1000);
 
         // Listen for input events on the voltage reference field with a delay of 100ms
         document.getElementById('vRef').addEventListener('input', () => {
