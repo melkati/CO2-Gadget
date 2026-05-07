@@ -122,6 +122,7 @@ function populateFormWithPreferences(preferences) {
     setFormCheckbox("showHumidity", preferences.showHumidity);
     setFormCheckbox("showBattery", preferences.showBattery);
     setFormCheckbox("showStatusIcons", preferences.showStatusIcons);
+    setFormCheckbox("wakeOnCO2Alert", preferences.wakeOnCO2Alert);
     setFormCheckbox("showCO2", preferences.showCO2);
     setFormCheckbox("dispOffOnExP", preferences.dispOffOnExP);
     setFormCheckbox("displayReverse", preferences.displayReverse);
@@ -234,6 +235,7 @@ function collectPreferencesData() {
         setValue("showHumidity", 'checked');
         setValue("showBattery", 'checked');
         setValue("showStatusIcons", 'checked');
+        setValue("wakeOnCO2Alert", 'checked');
         setValue("showCO2", 'checked');
         setValue("mqttClientId");
         setValue("mqttShowInCon", 'checked');

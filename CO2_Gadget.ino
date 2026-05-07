@@ -173,6 +173,7 @@ bool hasBattery = false;
 bool workingOnExternalPower = true;    // True if working on external power (USB connected)
 uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
+bool wakeDisplayOnCO2Alert = true;            // Wake display when CO2 rises above the warning threshold (issue #80)
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
 
@@ -564,6 +565,19 @@ void readingsLoop() {
 #endif
 #ifdef SUPPORT_ESPNOW
             publishESPNow();
+#endif
+
+            // Issue #80: Wake display when CO2 rises above the warning threshold
+#if defined(SUPPORT_OLED) || defined(SUPPORT_TFT)
+            if (wakeDisplayOnCO2Alert && actualDisplayBrightness == 0) {
+                static bool co2WasBelowAlertThreshold = true;
+                if (co2 >= co2OrangeRange && co2WasBelowAlertThreshold) {
+                    shouldWakeUpDisplay = true;
+                    co2WasBelowAlertThreshold = false;
+                } else if (co2 < (co2OrangeRange - PIN_HYSTERESIS)) {
+                    co2WasBelowAlertThreshold = true;
+                }
+            }
 #endif
         }
     }

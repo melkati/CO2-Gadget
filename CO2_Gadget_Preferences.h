@@ -226,6 +226,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] showCO2:\t #" + String(displayShowCO2 ? "Show" : "Hide") + "#");
     Serial.println("-->[PREF] showPM25:\t #" + String(displayShowPM25 ? "Show" : "Hide") + "#");
     Serial.println("-->[PREF] showStatusIcons:\t #" + String(displayShowStatusIcons ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] wakeOnCO2Alert:\t #" + String(wakeDisplayOnCO2Alert ? "Enabled" : "Disabled") + "#");
 
     // Buzzer preferences
     Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
@@ -363,6 +364,7 @@ void initPreferences() {
     displayShowCO2 = preferences.getBool("showCO2", true);
     displayShowPM25 = preferences.getBool("showPM25", true);
     displayShowStatusIcons = preferences.getBool("showStatusIcons", true);
+    wakeDisplayOnCO2Alert = preferences.getBool("wakeOnCO2Alert", true);
 
     // Retrieve buzzer preferences
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
@@ -498,6 +500,7 @@ void putPreferences() {
     preferences.putBool("showCO2", displayShowCO2);
     preferences.putBool("showPM25", displayShowPM25);
     preferences.putBool("showStatusIcons", displayShowStatusIcons);
+    preferences.putBool("wakeOnCO2Alert", wakeDisplayOnCO2Alert);
 
     // Buzzer preferences
     preferences.putUInt("toneBzrBeep", toneBuzzerBeep);          // Buzzer frequency
@@ -631,6 +634,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
     doc["showStatusIcons"] = displayShowStatusIcons;
+    doc["wakeOnCO2Alert"] = wakeDisplayOnCO2Alert;
     doc["measInterval"] = measurementInterval;
     doc["sampInterval"] = sampleInterval;
 
@@ -927,6 +931,10 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             Serial.println("-->[PREF] Display Status Icons changed from " + String(displayShowStatusIcons) + " to " + String(JsonDocument["showStatusIcons"].as<String>()));
             displayShowStatusIcons = JsonDocument["showStatusIcons"];
             shouldRedrawDisplay = true;
+        }
+
+        if (JsonDocument.containsKey("wakeOnCO2Alert")) {
+            wakeDisplayOnCO2Alert = JsonDocument["wakeOnCO2Alert"];
         }
 
         // Buzzer preferences
