@@ -459,6 +459,7 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
     // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If forceCaptivePortalActive is also true, draw it blue
 
     if (captivePortalActive) {
@@ -495,6 +496,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (!activeBLE) {
         tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_DARKGREY);
@@ -504,6 +506,7 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
     if (troubledMQTT) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
         tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
@@ -518,6 +521,7 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_ESPNOW
     if (troubledESPNOW) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);

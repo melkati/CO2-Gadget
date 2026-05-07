@@ -140,6 +140,7 @@ volatile bool displayShowBattery = true;
 volatile bool displayShowBatteryVoltage = false;
 volatile bool displayShowCO2 = true;
 volatile bool displayShowPM25 = true;
+volatile bool displayShowStatusIcons = true;
 bool debugSensors = false;
 bool inMenu = false;
 volatile bool shouldWakeUpDisplay = false;

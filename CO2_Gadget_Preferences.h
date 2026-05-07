@@ -225,6 +225,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] showBatteryVolt:\t #" + String(displayShowBatteryVoltage ? "Show" : "Hide") + "#");
     Serial.println("-->[PREF] showCO2:\t #" + String(displayShowCO2 ? "Show" : "Hide") + "#");
     Serial.println("-->[PREF] showPM25:\t #" + String(displayShowPM25 ? "Show" : "Hide") + "#");
+    Serial.println("-->[PREF] showStatusIcons:\t #" + String(displayShowStatusIcons ? "Show" : "Hide") + "#");
 
     // Buzzer preferences
     Serial.println("-->[PREF] toneBuzzerBeep is:\t#" + String(toneBuzzerBeep) + "#");
@@ -361,6 +362,7 @@ void initPreferences() {
     displayShowBatteryVoltage = preferences.getBool("showBattVolt", false);
     displayShowCO2 = preferences.getBool("showCO2", true);
     displayShowPM25 = preferences.getBool("showPM25", true);
+    displayShowStatusIcons = preferences.getBool("showStatusIcons", true);
 
     // Retrieve buzzer preferences
     toneBuzzerBeep = preferences.getUInt("toneBzrBeep", BUZZER_TONE_MED);          // Frequency of the buzzer beep
@@ -495,6 +497,7 @@ void putPreferences() {
     preferences.putBool("showBattVolt", displayShowBatteryVoltage);
     preferences.putBool("showCO2", displayShowCO2);
     preferences.putBool("showPM25", displayShowPM25);
+    preferences.putBool("showStatusIcons", displayShowStatusIcons);
 
     // Buzzer preferences
     preferences.putUInt("toneBzrBeep", toneBuzzerBeep);          // Buzzer frequency
@@ -627,6 +630,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["showBattVolt"] = displayShowBatteryVoltage;
     doc["showCO2"] = displayShowCO2;
     doc["showPM25"] = displayShowPM25;
+    doc["showStatusIcons"] = displayShowStatusIcons;
     doc["measInterval"] = measurementInterval;
     doc["sampInterval"] = sampleInterval;
 
@@ -916,6 +920,12 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         if (JsonDocument.containsKey("showPM25") && (displayShowPM25 != JsonDocument["showPM25"])) {
             Serial.println("-->[PREF] Display PM2.5 changed from " + String(displayShowPM25) + " to " + String(JsonDocument["showPM25"].as<String>()));
             displayShowPM25 = JsonDocument["showPM25"];
+            shouldRedrawDisplay = true;
+        }
+
+        if (JsonDocument.containsKey("showStatusIcons") && (displayShowStatusIcons != JsonDocument["showStatusIcons"])) {
+            Serial.println("-->[PREF] Display Status Icons changed from " + String(displayShowStatusIcons) + " to " + String(JsonDocument["showStatusIcons"].as<String>()));
+            displayShowStatusIcons = JsonDocument["showStatusIcons"];
             shouldRedrawDisplay = true;
         }
 
