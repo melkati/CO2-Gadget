@@ -216,7 +216,7 @@ uint64_t timeCaptivePortalStarted = 0;
 
 #include "AsyncJson.h"
 #ifdef SUPPORT_OTA
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #endif
 #include <FS.h>
 #include <SPIFFS.h>
@@ -308,7 +308,7 @@ bool displayNotification(String notificationText, notificationTypes notification
 /*********                                                                                   *********/
 /*****************************************************************************************************/
 #ifdef SUPPORT_OTA
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #endif
 
 /*****************************************************************************************************/
