@@ -844,6 +844,19 @@ String getCO2GadgetStatusAsJson() {
     doc["freeHeap"] = ESP.getFreeHeap();
     doc["minFreeHeap"] = ESP.getMinFreeHeap();
     doc["uptime"] = millis();
+
+    // Low power preferences
+    doc["lowPowerMode"] = deepSleepData.lowPowerMode;
+    doc["waitToDeep"] = deepSleepData.waitToGoDeepSleepOn1stBoot;
+    doc["timeSleeping"] = deepSleepData.timeSleeping;
+    doc["cyclsWifiConn"] = deepSleepData.cyclesLeftToWiFiConnect;
+    doc["cycRedrawDis"] = deepSleepData.cyclesLeftToRedrawDisplay;
+    doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
+    doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
+    doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
+    doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
+    doc["displayOnWake"] = deepSleepData.displayOnWake;
+
     String output;
     serializeJson(doc, output);
     return output;
@@ -956,7 +969,10 @@ const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
 
 void initWebServer() {
-    SPIFFS.begin();
+    if (!SPIFFS.begin()) {
+        Serial.println("-->[WEBS][Error] Failed to mount SPIFFS");
+        return;
+    }
 
 #ifdef DEBUG_WIFI_EVENTS
     // Print to serial the free space in the SPIFFS
@@ -1050,6 +1066,13 @@ void initWebServer() {
         }
     });
 
+    server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html.gz", "text/html");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+
     server.on("/ota.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             /** GZIPPED CONTENT ***/
@@ -1081,6 +1104,13 @@ void initWebServer() {
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
+    });
+
+    server.on("/low_power.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        /** GZIPPED CONTENT ***/
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.js.gz", "application/javascript");
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
     server.on("/status.js", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1177,7 +1207,7 @@ void initWebServer() {
                 } else {
                     request->send(400, "text/plain", "Error. MeasurementInterval must have a number as parameter.");
                 }
-            };
+            }
             // <CO2-GADGET_IP>/settings?CalibrateCO2=400
             if (request->hasParam("CalibrateCO2")) {
                 inputString = request->getParam("CalibrateCO2")->value();
@@ -1293,6 +1323,12 @@ void initWebServer() {
         }
     });
 
+    server.on("/getThresholdsAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
+        restartTimerToDeepSleep();
+        String thresholdsAsJson = thresholdsManager.getAllThresholdsAsJson();
+        request->send(200, "application/json", thresholdsAsJson);
+    });
+
     server.on("/getVersion", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             String versionJson = getCO2GadgetVersionAsJson();
@@ -1344,6 +1380,15 @@ void initWebServer() {
         }
     });
 
+    server.on("/goLowPower", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            request->send(200, "text/plain", "Going to low power mode");
+            toDeepSleep();
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             request->send(200, "text/plain", "ESP32 restart initiated");
@@ -1361,6 +1406,24 @@ void initWebServer() {
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
+    });
+
+    AsyncCallbackJsonWebHandler *saveThresholdsHandler = new AsyncCallbackJsonWebHandler("/saveThresholds", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        restartTimerToDeepSleep();
+        StaticJsonDocument<2048> data;
+        if (json.is<JsonArray>()) {
+            data = json.as<JsonArray>();
+        } else if (json.is<JsonObject>()) {
+            data = json.as<JsonObject>();
+        }
+        String response;
+        serializeJson(data, response);
+        request->send(200, "application/json", response);
+        Serial.print("-->[WiFi] Received /saveThresholds command with parameter: ");
+        Serial.println(response);
+        thresholdsManager.setThresholdsFromJSON(response);
+        Serial.print("-->[WiFi] Thresholds saved: ");
+        printThresholdsFromNVR();
     });
 
     server.on("/setPreferencesValue", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -1421,6 +1484,7 @@ void initWebServer() {
 
     server.addHandler(savePreferencesHandlerHandler);
     server.addHandler(setCaptivePortalSettingsHandler);
+    server.addHandler(saveThresholdsHandler);
 }
 
 void customWiFiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {

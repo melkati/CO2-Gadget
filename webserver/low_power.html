@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        // Immediately set the theme based on localStorage before the CSS is loaded
+        (function () {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("theme", savedTheme);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script defer type="text/javascript" src="./low_power.js"></script>
+</head>
+
+<body>
+    <!-- Navigation bar -->
+    <div class="navbar" id="navbar">
+        <div class="nav-content">
+            <div class="nav-links-left">
+                <a href="index.html">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                        <path
+                            d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2H104c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z" />
+                    </svg>
+                    <span>Home</span>
+                </a>
+                <a href="preferences.html">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                        <path
+                            d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z" />
+                    </svg>
+                    <span>Preferences</span>
+                </a>
+                <a href="low_power.html" class="hidden" id="lowPowerLink">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                        <path
+                            d="M0 256L28.5 28c2-16 15.6-28 31.8-28H228.9c15 0 27.1 12.1 27.1 27.1c0 3.2-.6 6.5-1.7 9.5L208 160H347.3c20.2 0 36.7 16.4 36.7 36.7c0 7.4-2.2 14.6-6.4 20.7l-192.2 281c-5.9 8.6-15.6 13.7-25.9 13.7h-2.9c-15.7 0-28.5-12.8-28.5-28.5c0-2.3 .3-4.6 .9-6.9L176 288H32c-17.7 0-32-14.3-32-32z" />
+                    </svg>
+                    <span>Low Power</span>
+                </a>
+                <a href="status.html">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                        <path
+                            d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+                    </svg>
+                    <span>Status</span>
+                </a>
+            </div>
+            <div class="nav-links-right">
+                <a href="ota.html" class="hidden" id="otaLink">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                        <path
+                            d="M288 109.3V352c0 17.7-14.3 32-32 32s-32-14.3-32-32V109.3l-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352H192c0 35.3 28.7 64 64 64s64-28.7 64-64H448c35.3 0 64 28.7 64 64v32c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V416c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z" />
+                    </svg>
+                    <span>OTA</span>
+                </a>
+                <a href="/getCaptivePortalStatusAsJson">
+                    <span id="server-status-dot" class="status-dot status-dot-hidden"
+                        title="Captive portal inactive"></span>
+                </a>
+                <!-- Low Power Icon -->
+                <div class="iconLowPower hidden low-power-icon light-mode" id="iconLighting">
+                    <svg id="lightingIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                        <path id="iconPathLowPower" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <!-- Theme Switch Icon -->
+                <div class="iconDarkLight" id="iconBulb">
+                    <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path id="iconPath" fill="currentColor"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <!-- Captive Portal Status Container -->
+        <div id="captive-portal-status-bar" class="captive-portal-status-bar hidden-captive-portal-status-bar"></div>
+    </div>
+
+    <!-- Debug Window Container -->
+    <div id="debug-window" class="debug-window hidden-debug-window"></div>
+
+    <div class="content">
+        <h1>Low Power Settings</h1>
+        <form id="preferencesForm">
+            <!-- Low Power Options Group -->
+            <fieldset>
+                <legend>Low Power Options</legend>
+
+                <div class="form-group flex-align-center">
+                    <label for="lowPowerMode">Low Power Mode:</label>
+                    <select id="lowPowerMode" name="lowPowerMode">
+                        <option value="0">Disabled</option>
+                        <!-- <option value="2">Basic Low Power (Not implemented)</option> -->
+                        <option value="2">Enabled</option>
+                        <!-- <option value="2">Maximum Low Power (Not implemented)</option> -->
+                    </select>
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Select if you want to use low power mode. This will reduce the power
+                        consumption of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="waitToDeep">Wait Time Before Low Power Mode (secs):</label>
+                    <input type="number" id="waitToDeep" name="waitToDeep" value="" min="15" max="900">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to wait before entering low power mode. This will give you time to
+                        interact with the device before it enters low power mode.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="timeSleeping">Time to be in Low Power Mode (secs):</label>
+                    <input type="number" id="timeSleeping" name="timeSleeping" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Time to be in low power mode after a measurement. This will reduce the
+                        power consumption of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="cyclsWifiConn">Connect to WiFi Every (Cycles):</label>
+                    <input type="number" id="cyclsWifiConn" name="cyclsWifiConn" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Connect to WiFi every X cycles. This will reduce the power consumption of
+                        the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="cycRedrawDis">Redraw Display Every (Cycles):</label>
+                    <input type="number" id="cycRedrawDis" name="cycRedrawDis" value="">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Redraw the display every X cycles. This will reduce the power consumption
+                        of the device. Use with caution as some features will be disabled.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actBLEOnWake">Activate BLE on Wakeup:</label>
+                    <input type="checkbox" id="actBLEOnWake" name="actBLEOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Activate BLE on wakeup. This will allow CO2 Gadget to send data to your
+                        phone or other BLE devices.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actWifiOnWake">Activate WiFi on Wakeup:</label>
+                    <input type="checkbox" id="actWifiOnWake" name="actWifiOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Activate WiFi on wakeup. This will allow CO2 Gadget to send data to your
+                        network (this is needed for MQTT).</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actMQTTOnWake">Send Data via MQTT on Wakeup:</label>
+                    <input type="checkbox" id="actMQTTOnWake" name="actMQTTOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Send data via MQTT on wakeup. This will allow CO2 Gadget to send data to
+                        your network (this is needed for Home Assistant).</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="actESPnowWake">Send Data via ESPNow on Wakeup:</label>
+                    <input type="checkbox" id="actESPnowWake" name="actESPnowWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Send data via ESPNow on wakeup. This will allow CO2 Gadget to send data
+                        to other ESP32 devices.</span>
+                </div>
+
+                <div class="form-group flex-align-center">
+                    <label for="deepSleepData.displayOnWake">Momentary Display on Wakeup:</label>
+                    <input type="checkbox" id="deepSleepData.displayOnWake" name="deepSleepData.displayOnWake">
+                    <span class="tooltip-icon">ℹ️</span>
+                    <span class="tooltip-text">Turn on the display for a moment when the device wakes up. This will
+                        allow you to see the current readings.</span>
+                </div>
+            </fieldset>
+
+            <!-- Thresholds Options Group -->
+            <fieldset>
+                <legend>Threshold Options</legend>
+
+                <div class="tab-container">
+                    <div class="tab" onclick="openTab(event, 'Display')">
+                        <input type="checkbox" id="chkDisplay" onchange="toggleTab('Display')">
+                        <label for="chkDisplay">Display</label>
+                    </div>
+                    <div class="tab" onclick="openTab(event, 'Bluetooth')">
+                        <input type="checkbox" id="chkBluetooth" onchange="toggleTab('Bluetooth')">
+                        <label for="chkBluetooth">Bluetooth</label>
+                    </div>
+                    <div class="tab" onclick="openTab(event, 'MQTT')">
+                        <input type="checkbox" id="chkMQTT" onchange="toggleTab('MQTT')">
+                        <label for="chkMQTT">MQTT</label>
+                    </div>
+                    <div class="tab" onclick="openTab(event, 'ESPNOW')">
+                        <input type="checkbox" id="chkESPNOW" onchange="toggleTab('ESPNOW')">
+                        <label for="chkESPNOW">ESPNOW</label>
+                    </div>
+
+                    <div id="Display" class="tab-content">
+                        <p>These are the thresholds for the display when in low power mode.</p>
+
+                        <fieldset>
+                            <legend>General Settings</legend>
+                            <div>
+                                <label for="keepAliveTimeDisplay">Keep Alive Time
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Maximum time in seconds to update values if the threshold
+                                        is not met. CO2 Gadget will update the display regardless of the threshold if
+                                        this time has passed since the last update.</span>
+                                </label>
+                                <input type="number" id="keepAliveTimeDisplay" name="keepAliveTimeDisplay" value="0">
+                            </div>
+                            <div>
+                                <label for="thrOnlyInLowPDisplay">Apply threshold only in low power mode</label>
+                                <!-- <input type="radio" id="thrOnlyInLowPDisplay" name="thrOnlyInLowPDisplay" value="true">
+                                <span class="tooltip-icon">ℹ️</span> -->
+                                <span class="tooltip-text">Apply the threshold only when the device is in low power
+                                    mode.</span>
+                                <input type="radio" id="thrOnlyInLowPDisplay" name="thrOnlyInLowPDisplay" value="false">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Apply the threshold when the device is not in low power
+                                    mode.</span>
+                        </fieldset>
+
+
+                        <fieldset>
+                            <legend>Thresholds Options for Display</legend>
+                            <fieldset>
+                                <div>
+                                    <label for="co2ThresholdAbsDisplay">CO2 Threshold Absolute (ppm value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of CO2 in ppm that will
+                                        trigger
+                                        the
+                                        threshold. The display will not be updated until the threshold is met.</span>
+                                    <input type="number" id="co2ThresholdAbsDisplay" name="co2ThresholdAbsDisplay"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdPctDisplay">CO2 Threshold Percentage (ppm
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of CO2 in ppm that will trigger
+                                        the
+                                        threshold. The display will not be updated until the threshold is met.</span>
+                                    <input type="number" id="co2ThresholdPctDisplay" name="co2ThresholdPctDisplay"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdAndOr">Combine with:</label>
+                                    <input type="radio" id="co2ThresholdAnd" name="co2ThresholdAndOr" value="and">
+                                    <label for="co2ThresholdAnd">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="co2ThresholdOr" name="co2ThresholdAndOr" value="or">
+                                    <label for="co2ThresholdOr">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="tempThresholdAbsDisplay">Temp Threshold Absolute (°C value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of temperature in °C that
+                                        will
+                                        trigger the threshold. The display will not be updated until the threshold is
+                                        met.</span>
+                                    <input type="number" step="any" id="tempThresholdAbsDisplay"
+                                        name="tempThresholdAbsDisplay" value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdPctDisplay">Temp Threshold Percentage (°C
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of temperature in °C that will
+                                        trigger
+                                        the threshold. The display will not be updated until the threshold is
+                                        met.</span>
+                                    <input type="number" id="tempThresholdPctDisplay" name="tempThresholdPctDisplay"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdAndOr">Combine with:</label>
+                                    <input type="radio" id="tempThresholdAnd" name="tempThresholdAndOr" value="and">
+                                    <label for="tempThresholdAnd">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="tempThresholdOr" name="tempThresholdAndOr" value="or">
+                                    <label for="tempThresholdOr">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="humThresholdAbsDisplay">Hum Threshold Absolute (%rH value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of humidity in %rH that
+                                        will
+                                        trigger
+                                        the threshold. The display will not be updated until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdAbsDisplay" name="humThresholdAbsDisplay"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdPctDisplay">Hum Threshold Percentage (%rH
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of humidity in %rH that will
+                                        trigger
+                                        the threshold. The display will not be updated until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdPctDisplay" name="humThresholdPctDisplay"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdAndOr">Combine with:</label>
+                                    <input type="radio" id="humThresholdAnd" name="humThresholdAndOr" value="and">
+                                    <label for="humThresholdAnd">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="humThresholdOr" name="humThresholdAndOr" value="or">
+                                    <label for="humThresholdOr">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+                        </fieldset>
+                    </div>
+
+                    <div id="Bluetooth" class="tab-content">
+                        <p>These are the thresholds for the Bluetooth functionality when in low power mode.</p>
+
+                        <fieldset>
+                            <legend>General Settings</legend>
+                            <div>
+                                <label for="keepAliveTimeBluetooth">Keep Alive Time</label>
+                                <input type="number" id="keepAliveTimeBluetooth" name="keepAliveTimeBluetooth"
+                                    value="0">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Maximum time in seconds to wait to send values via Bluetooth.
+                                    CO2 Gadget will send values by Bluetooth regardless of the threshold if this time
+                                    has passed since the last data was sent.</span>
+                            </div>
+                            <div>
+                                <label for="thrOnlyInLowPBluetooth">Only in low power</label>
+                                <span class="tooltip-text">Apply the threshold only when the device is in low power
+                                    mode.</span>
+                                <input type="radio" id="thrOnlyInLowPBluetooth" name="thrOnlyInLowPBluetooth"
+                                    value="false">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Apply the threshold when the device is not in low power
+                                    mode.</span>
+                        </fieldset>
+
+
+                        <fieldset>
+                            <legend>Thresholds Options for Bluetooth</legend>
+                            <fieldset>
+                                <div>
+                                    <label for="co2ThresholdAbsBluetooth">CO2 Threshold Absolute (ppm value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of CO2 in ppm that will
+                                        trigger
+                                        the
+                                        threshold. The value will not be sent by bluetooth until the threshold is
+                                        met.</span>
+                                    <input type="number" id="co2ThresholdAbsBluetooth" name="co2ThresholdAbsBluetooth"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdPctBluetooth">CO2 Threshold Percentage (ppm
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of CO2 in ppm that will trigger
+                                        the
+                                        threshold. The value will not be sent by bluetooth until the threshold is
+                                        met.</span>
+                                    <input type="number" id="co2ThresholdPctBluetooth" name="co2ThresholdPctBluetooth"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdAndOrBluetooth">Combine with:</label>
+                                    <input type="radio" id="co2ThresholdAndBluetooth" name="co2ThresholdAndOrBluetooth"
+                                        value="and">
+                                    <label for="co2ThresholdAndBluetooth">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="co2ThresholdOrBluetooth" name="co2ThresholdAndOrBluetooth"
+                                        value="or">
+                                    <label for="co2ThresholdOrBluetooth">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="tempThresholdAbsBluetooth">Temp Threshold Absolute (°C value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of temperature in °C that
+                                        will
+                                        trigger the threshold. The value will not be sent by bluetooth until the
+                                        threshold
+                                        is
+                                        met.</span>
+                                    <input type="number" step="any" id="tempThresholdAbsBluetooth"
+                                        name="tempThresholdAbsBluetooth" value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdPctBluetooth">Temp Threshold Percentage (°C
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of temperature in °C that will
+                                        trigger
+                                        the threshold. The value will not be sent by bluetooth until the threshold is
+                                        met.</span>
+                                    <input type="number" id="tempThresholdPctBluetooth" name="tempThresholdPctBluetooth"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdAndOrBluetooth">Combine with:</label>
+                                    <input type="radio" id="tempThresholdAndBluetooth"
+                                        name="tempThresholdAndOrBluetooth" value="and">
+                                    <label for="tempThresholdAndBluetooth">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <input type="radio" id="tempThresholdOrBluetooth" name="tempThresholdAndOrBluetooth"
+                                        value="or">
+                                    <label for="tempThresholdOrBluetooth">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="humThresholdAbsBluetooth">Hum Threshold Absolute (%rH value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of humidity in %rH that
+                                        will
+                                        trigger
+                                        the threshold. The value will not be sent by bluetooth until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdAbsBluetooth" name="humThresholdAbsBluetooth"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdPctBluetooth">Hum Threshold Percentage (%rH
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of humidity in %rH that will
+                                        trigger
+                                        the threshold. The value will not be sent by bluetooth until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdPctBluetooth" name="humThresholdPctBluetooth"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdAndOrBluetooth">Combine with:</label>
+                                    <input type="radio" id="humThresholdAndBluetooth" name="humThresholdAndOrBluetooth"
+                                        value="and">
+                                    <label for="humThresholdAndBluetooth">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="humThresholdOrBluetooth" name="humThresholdAndOrBluetooth"
+                                        value="or">
+                                    <label for="humThresholdOrBluetooth">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+                        </fieldset>
+                    </div>
+
+                    <div id="MQTT" class="tab-content">
+                        <p>These are the thresholds for the MQTT functionality when in low power mode.</p>
+
+                        <fieldset>
+                            <legend>General Settings</legend>
+                            <div>
+                                <label for="keepAliveTimeMQTT">Keep Alive Time</label>
+                                <input type="number" id="keepAliveTimeMQTT" name="keepAliveTimeMQTT" value="0">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Maximum time in seconds to wait to send values via MQTT. CO2
+                                    Gadget will send values by MQTT regardless of the threshold if this time has passed
+                                    since the last data was sent.</span>
+                            </div>
+                            <div>
+                                <label for="thrOnlyInLowPMQTT">Only in low power</label>
+                                <span class="tooltip-text">Apply the threshold only when the device is in low power
+                                    mode.</span>
+                                <input type="radio" id="thrOnlyInLowPMQTT" name="thrOnlyInLowPMQTT" value="false">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Apply the threshold when the device is not in low power
+                                    mode.</span>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Thresholds Options for MQTT</legend>
+                            <fieldset>
+                                <div>
+                                    <label for="co2ThresholdAbsMQTT">CO2 Threshold Absolute (ppm value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of CO2 in ppm that will
+                                        trigger
+                                        the
+                                        threshold. The value will not be sent by MQTT until the threshold is met.</span>
+                                    <input type="number" id="co2ThresholdAbsMQTT" name="co2ThresholdAbsMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdPctMQTT">CO2 Threshold Percentage (ppm percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of CO2 in ppm that will trigger
+                                        the
+                                        threshold. The value will not be sent by MQTT until the threshold is met.</span>
+                                    <input type="number" id="co2ThresholdPctMQTT" name="co2ThresholdPctMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdAndOrMQTT">Combine with:</label>
+                                    <input type="radio" id="co2ThresholdAndMQTT" name="co2ThresholdAndOrMQTT"
+                                        value="and">
+                                    <label for="co2ThresholdAndMQTT">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="co2ThresholdOrMQTT" name="co2ThresholdAndOrMQTT" value="or">
+                                    <label for="co2ThresholdOrMQTT">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="tempThresholdAbsMQTT">Temp Threshold Absolute (°C value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of temperature in °C that
+                                        will
+                                        trigger the threshold. The value will not be sent by MQTT until the threshold is
+                                        met.</span>
+                                    <input type="number" step="any" id="tempThresholdAbsMQTT"
+                                        name="tempThresholdAbsMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdPctMQTT">Temp Threshold Percentage (°C percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of temperature in °C that will
+                                        trigger
+                                        the threshold. The value will not be sent by MQTT until the threshold is
+                                        met.</span>
+                                    <input type="number" step="any" id="tempThresholdPctMQTT"
+                                        name="tempThresholdPctMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdAndOrMQTT">Combine with:</label>
+                                    <input type="radio" id="tempThresholdAndMQTT" name="tempThresholdAndOrMQTT"
+                                        value="and">
+                                    <label for="tempThresholdAndMQTT">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="tempThresholdOrMQTT" name="tempThresholdAndOrMQTT"
+                                        value="or">
+                                    <label for="tempThresholdOrMQTT">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="humThresholdAbsMQTT">Hum Threshold Absolute (%rH value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of humidity in %rH that
+                                        will
+                                        trigger
+                                        the threshold. The value will not be sent by MQTT until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdAbsMQTT" name="humThresholdAbsMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdPctMQTT">Hum Threshold Percentage (%rH percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of humidity in %rH that will
+                                        trigger
+                                        the threshold. The value will not be sent by MQTT until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdPctMQTT" name="humThresholdPctMQTT" value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdAndOrMQTT">Combine with:</label>
+                                    <input type="radio" id="humThresholdAndMQTT" name="humThresholdAndOrMQTT"
+                                        value="and">
+                                    <label for="humThresholdAndMQTT">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="humThresholdOrMQTT" name="humThresholdAndOrMQTT" value="or">
+                                    <label for="humThresholdOrMQTT">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+                        </fieldset>
+                    </div>
+
+
+                    <div id="ESPNOW" class="tab-content">
+                        <p>These are the thresholds for the ESPNOW functionality.</p>
+
+                        <fieldset>
+                            <legend>General Settings for ESPNOW</legend>
+                            <div>
+                                <label for="keepAliveTimeESPNOW">Keep Alive Time</label>
+                                <input type="number" id="keepAliveTimeESPNOW" name="keepAliveTimeESPNOW" value="0">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Maximum time in seconds to wait to send values via ESPNOW.
+                                    CO2 Gadget will send values by ESPNOW regardless of the threshold if this time has
+                                    passed since the last data was sent.</span>
+                            </div>
+                            <div>
+                                <label for="thrOnlyInLowPESPNOW">Only in low power</label>
+                                <span class="tooltip-text">Apply the threshold only when the device is in low power
+                                    mode.</span>
+                                <input type="radio" id="thrOnlyInLowPESPNOW" name="thrOnlyInLowPESPNOW" value="false">
+                                <span class="tooltip-icon">ℹ️</span>
+                                <span class="tooltip-text">Apply the threshold when the device is not in low power
+                                    mode.</span>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Thresholds Options for ESPNOW</legend>
+                            <fieldset>
+                                <div>
+                                    <label for="co2ThresholdAbsESPNOW">CO2 Threshold Absolute (ppm value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of CO2 in ppm that will
+                                        trigger
+                                        the
+                                        threshold. The value will not be sent by ESPNOW until the threshold is
+                                        met.</span>
+                                    <input type="number" id="co2ThresholdAbsESPNOW" name="co2ThresholdAbsESPNOW"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdPctESPNOW">CO2 Threshold Percentage (ppm
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of CO2 in ppm that will trigger
+                                        the
+                                        threshold. The value will not be sent by ESPNOW until the threshold is
+                                        met.</span>
+                                    <input type="number" id="co2ThresholdPctESPNOW" name="co2ThresholdPctESPNOW"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="co2ThresholdAndOrESPNOW">Combine with:</label>
+                                    <input type="radio" id="co2ThresholdAndESPNOW" name="co2ThresholdAndOrESPNOW"
+                                        value="and">
+                                    <label for="co2ThresholdAndESPNOW">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="co2ThresholdOrESPNOW" name="co2ThresholdAndOrESPNOW"
+                                        value="or">
+                                    <label for="co2ThresholdOrESPNOW">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="tempThresholdAbsESPNOW">Temp Threshold Absolute (°C value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of temperature in °C that
+                                        will
+                                        trigger the threshold. The value will not be sent by ESPNOW until the threshold
+                                        is
+                                        met.</span>
+                                    <input type="number" step="any" id="tempThresholdAbsESPNOW"
+                                        name="tempThresholdAbsESPNOW" value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdPctESPNOW">Temp Threshold Percentage (°C
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of temperature in °C that will
+                                        trigger
+                                        the threshold. The value will not be sent by ESPNOW until the threshold is
+                                        met.</span>
+                                    <input type="number" id="tempThresholdPctESPNOW" name="tempThresholdPctESPNOW"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="tempThresholdAndOrESPNOW">Combine with:</label>
+                                    <input type="radio" id="tempThresholdAndESPNOW" name="tempThresholdAndOrESPNOW"
+                                        value="and">
+                                    <label for="tempThresholdAndESPNOW">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="tempThresholdOrESPNOW" name="tempThresholdAndOrESPNOW"
+                                        value="or">
+                                    <label for="tempThresholdOrESPNOW">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <div>
+                                    <label for="humThresholdAbsESPNOW">Hum Threshold Absolute (%rH value):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The absolute value difference of humidity in %rH that
+                                        will
+                                        trigger
+                                        the threshold. The value will not be sent by ESPNOW until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdAbsESPNOW" name="humThresholdAbsESPNOW"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdPctESPNOW">Hum Threshold Percentage (%rH
+                                        percentage):</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">The percentage difference of humidity in %rH that will
+                                        trigger
+                                        the threshold. The value will not be sent by ESPNOW until the threshold is
+                                        met.</span>
+                                    <input type="number" id="humThresholdPctESPNOW" name="humThresholdPctESPNOW"
+                                        value="">
+                                </div>
+                                <div>
+                                    <label for="humThresholdAndOrESPNOW">Combine with:</label>
+                                    <input type="radio" id="humThresholdAndESPNOW" name="humThresholdAndOrESPNOW"
+                                        value="and">
+                                    <label for="humThresholdAndESPNOW">AND</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">Both conditions must be met to trigger the
+                                        threshold.</span>
+                                    <input type="radio" id="humThresholdOrESPNOW" name="humThresholdAndOrESPNOW"
+                                        value="or">
+                                    <label for="humThresholdOrESPNOW">OR</label>
+                                    <span class="tooltip-icon">ℹ️</span>
+                                    <span class="tooltip-text">At least one condition must be met to trigger the
+                                        threshold.</span>
+                                </div>
+                            </fieldset>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="buttonsAlignRight">
+                <div class="buttonsRestartSave">
+                    <button id="restartButton" type="button" onclick="restartESP32()">Restart device</button>
+                    <button id="savePreferencesButton" type="button" onclick="saveLowPowerToServer()">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Popup to display a message -->
+    <div id="popup">
+        <p>Saving preferences...</p>
+    </div>
+
+    <!-- Status line to display CO2 Gadget version -->
+    <div id="statusLineContainer">
+        <span id="co2GadgetVersion"></span>
+    </div>
+
+
+</body>
+
+</html>

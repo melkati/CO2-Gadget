@@ -10,6 +10,8 @@
 /*****************************************************************************************************/
 // clang-format on
 
+// Another option: https://github.com/G6EJD/LiPo_Battery_Capacity_Estimator
+
 float lastBatteryVoltage = 0;
 uint16_t timeBetweenBatteryRead = 1;
 uint64_t lastTimeBatteryRead = 0;  // Time of last battery reading

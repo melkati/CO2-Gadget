@@ -100,7 +100,9 @@ int getCO2GadgetRevisionNumber() {
     strncpy(revNumberStr, CO2_GADGET_REV, dashIndex);
     revNumberStr[dashIndex] = '\0';  // Null-terminate the string
 #ifdef DEBUG_PREFERENCES
-    Serial.println("-->[PREF] Revision number: " + String(revNumberStr));
+    // Print the revision number to the serial console
+    Serial.print("-->[PREF] Revision number: ");
+    Serial.println(revNumberStr);
 #endif
     return atoi(revNumberStr);
 #else
@@ -229,6 +231,24 @@ void printActualSettings() {
     Serial.println("-->[PREF] durationBuzzerBeep is:\t#" + String(durationBuzzerBeep) + "#");
     Serial.println("-->[PREF] timeBetweenBuzzerBeeps is:\t#" + String(timeBetweenBuzzerBeeps) + "#");
 
+    // Low power preferences
+    Serial.printf("-->[PREF] lowPowerMode is:\t#%d#\n", deepSleepData.lowPowerMode);
+    Serial.printf("-->[PREF] waitToDeep is:\t#%d#\n", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    Serial.printf("-->[PREF] timeSleeping is:\t#%d#\n", deepSleepData.timeSleeping);
+    Serial.printf("-->[PREF] cyclsWifiConn is:\t#%d#\n", deepSleepData.activateWiFiEvery);
+    Serial.printf("-->[PREF] cycRedrawDis is:\t#%d#\n", deepSleepData.redrawDisplayEveryCycles);
+    Serial.printf("-->[PREF] actBLEOnWake is:\t#%s#\n",
+                  ((deepSleepData.activeBLEOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actWifiOnWake is:\t#%s#\n",
+                  ((deepSleepData.activeWifiOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actMQTTOnWake is:\t#%s#\n",
+                  ((deepSleepData.sendMQTTOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] actESPnowWake is:\t#%s#\n",
+                  ((deepSleepData.sendESPNowOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] displayOnWake is:\t#%s#\n",
+                  ((deepSleepData.displayOnWake) ? "Enabled" : "Disabled"));
+
+    Serial.printf("-->[PREF] \n");
     // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
     Serial.println("-->[PREF] cpNoTimeout is:\t#" + String(captivePortalNoTimeout ? "Enabled" : "Disabled") + "#");
@@ -347,6 +367,25 @@ void initPreferences() {
     durationBuzzerBeep = preferences.getUInt("durBzrBeep", DURATION_BEEP_MEDIUM);  // Duration of the buzzer beep
     timeBetweenBuzzerBeeps = preferences.getUInt("timeBtwnBzr", 65535);            // Time between consecutive beeps
 
+    // Low power preferences
+    deepSleepData.lowPowerMode = preferences.getUInt("lowPowerMode", 0);
+    deepSleepData.waitToGoDeepSleepOn1stBoot = preferences.getUInt("waitToDeep", 60);
+    deepSleepData.timeSleeping = preferences.getUInt("timeSleeping", 60);
+    deepSleepData.activateWiFiEvery = preferences.getUInt("cyclsWifiConn", 5);
+    deepSleepData.redrawDisplayEveryCycles = preferences.getUInt("cycRedrawDis", 5);
+    deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
+    deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+    deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+    deepSleepData.sendESPNowOnWake = preferences.getBool("actESPnowWake", false);
+    deepSleepData.displayOnWake = preferences.getBool("displayOnWake", false);
+
+    // Check if the values are within the expected range
+    if ((deepSleepData.waitToGoDeepSleepOn1stBoot < 15) || (deepSleepData.waitToGoDeepSleepOn1stBoot > 900)) {
+        deepSleepData.waitToGoDeepSleepOn1stBoot = 180;
+        preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    }
+
+    preferences.end();
 // Retrieve Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
     captivePortalNoTimeout = preferences.getBool("cpNoTimeout", false);
@@ -364,7 +403,6 @@ void initPreferences() {
     wifiPass.trim();
     hostName.trim();
     preferences.end();
-// #define DEBUG_PREFERENCES
 #ifdef DEBUG_PREFERENCES
     printActualSettings();
 #endif
@@ -463,6 +501,18 @@ void putPreferences() {
     preferences.putUInt("durBzrBeep", durationBuzzerBeep);       // Buzzer duration
     preferences.putUInt("timeBtwnBzr", timeBetweenBuzzerBeeps);  // Time between beeps
 
+    // Low power preferences
+    preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
+    preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
+    preferences.putUInt("timeSleeping", deepSleepData.timeSleeping);
+    preferences.putUInt("cyclsWifiConn", deepSleepData.activateWiFiEvery);
+    preferences.putUInt("cycRedrawDis", deepSleepData.redrawDisplayEveryCycles);
+    preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
+    preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
+    preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
+    preferences.putBool("actESPnowWake", deepSleepData.sendESPNowOnWake);
+    preferences.putBool("displayOnWake", deepSleepData.displayOnWake);
+
     // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
     preferences.putBool("cpNoTimeout", captivePortalNoTimeout);
@@ -500,11 +550,11 @@ String getActualSettingsAsJson(bool includePasswords = false) {
 
     doc["prefVersion"] = prefVersion;
     doc["prefRevision"] = prefRevision;
-    doc["firmVerMajor"] = firmVersionMajor;
-    doc["firmVerMinor"] = firmVersionMinor;
-    doc["firmRevision"] = firmRevision;
-    doc["firmBranch"] = firmBranch;
-    doc["firmFlavour"] = firmFlavour;
+    doc["firmVerMajor"] = getCO2GadgetMajorVersion();
+    doc["firmVerMinor"] = getCO2GadgetMinorVersion();
+    doc["firmRevision"] = getCO2GadgetRevisionNumber();
+    doc["firmBranch"] = getCO2GadgetRevisionBranch();
+    doc["firmFlavour"] = FLAVOUR;
     doc["customCalValue"] = customCalibrationValue;
     doc["tempOffset"] = String(tempOffset, 1);
     doc["altitudeMeters"] = altitudeMeters;
@@ -585,6 +635,18 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["durBzrBeep"] = durationBuzzerBeep;       // Buzzer duration
     doc["timeBtwnBzr"] = timeBetweenBuzzerBeeps;  // Time between beeps
 
+    // Low power preferences
+    doc["lowPowerMode"] = deepSleepData.lowPowerMode;
+    doc["waitToDeep"] = deepSleepData.waitToGoDeepSleepOn1stBoot;
+    doc["timeSleeping"] = deepSleepData.timeSleeping;
+    doc["cyclsWifiConn"] = deepSleepData.activateWiFiEvery;
+    doc["cycRedrawDis"] = deepSleepData.redrawDisplayEveryCycles;
+    doc["actBLEOnWake"] = deepSleepData.activeBLEOnWake;
+    doc["actWifiOnWake"] = deepSleepData.activeWifiOnWake;
+    doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
+    doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
+    doc["displayOnWake"] = deepSleepData.displayOnWake;
+
     // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
     doc["cpNoTimeout"] = captivePortalNoTimeout;
@@ -601,13 +663,16 @@ String getActualSettingsAsJson(bool includePasswords = false) {
 
     String preferencesJson;
     serializeJson(doc, preferencesJson);
-    // Serial.println("-->[PREF] Preferences JSON: " + preferencesJson);
+#ifdef DEBUG_PREFERENCES
+    Serial.print("-->[PREF] Preferences JSON: ");
+    Serial.println(preferencesJson);
+#endif
     return preferencesJson;
 }
 
 bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Create a JSON object to store preferences
-    JsonDocument JsonDocument;
+    DynamicJsonDocument JsonDocument(1024); // Asegúrate de ajustar el tamaño según sea necesario
 
     // Try to deserialize the JSON body from the request
     DeserializationError error = deserializeJson(JsonDocument, jsonPreferences);
@@ -615,7 +680,6 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         // Handle the error when deserializing JSON
         Serial.print("Error deserializing JSON: ");
         Serial.println(error.c_str());
-        // request->send(400, "text/plain", "Error in preferences format");
         return false;
     }
 
@@ -865,6 +929,38 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             timeBetweenBuzzerBeeps = JsonDocument["timeBtwnBzr"];
         }
 
+        // Low power preferences
+        if (JsonDocument.containsKey("lowPowerMode")) {
+            deepSleepData.lowPowerMode = JsonDocument["lowPowerMode"];
+        }
+        if (JsonDocument.containsKey("waitToDeep")) {
+            deepSleepData.waitToGoDeepSleepOn1stBoot = JsonDocument["waitToDeep"];
+        }
+        if (JsonDocument.containsKey("timeSleeping")) {
+            deepSleepData.timeSleeping = JsonDocument["timeSleeping"];
+        }
+        if (JsonDocument.containsKey("cyclsWifiConn")) {
+            deepSleepData.activateWiFiEvery = JsonDocument["cyclsWifiConn"];
+        }
+        if (JsonDocument.containsKey("cycRedrawDis")) {
+            deepSleepData.redrawDisplayEveryCycles = JsonDocument["cycRedrawDis"];
+        }
+        if (JsonDocument.containsKey("actBLEOnWake")) {
+            deepSleepData.activeBLEOnWake = JsonDocument["actBLEOnWake"];
+        }
+        if (JsonDocument.containsKey("actWifiOnWake")) {
+            deepSleepData.activeWifiOnWake = JsonDocument["actWifiOnWake"];
+        }
+        if (JsonDocument.containsKey("actMQTTOnWake")) {
+            deepSleepData.sendMQTTOnWake = JsonDocument["actMQTTOnWake"];
+        }
+        if (JsonDocument.containsKey("actESPnowWake")) {
+            deepSleepData.sendESPNowOnWake = JsonDocument["actESPnowWake"];
+        }
+        if (JsonDocument.containsKey("displayOnWake")) {
+            deepSleepData.displayOnWake = JsonDocument["displayOnWake"];
+        }
+
         // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
         if (JsonDocument.containsKey("cpNoTimeout")) {
@@ -910,13 +1006,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         // Manage error while storing preferences
         Serial.print("Error storing preferences: ");
         Serial.println(e.what());
-        // request->send(500, "text/plain", "Internal Server Error Storing Preferences");
         return false;
     }
 
-    // Send a successful response
-    // request->send(200, "text/plain", "Preferences saved successfully");
-    // Serial.println("-->[PREF] Preferences saved successfully @ handleSavePreferencesFromJSON()");
     putPreferences();
     return true;
 }

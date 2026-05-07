@@ -17,8 +17,9 @@
 // clang-format on
 #include <GxEPD2_BW.h>
 
-uint16_t redrawDisplayEveryCycles = 10;  // Redraw display every X partial updates
-uint16_t cyclesLeftToRedrawDisplay = 0;  // Cycles left to redraw display
+#ifndef RESETDURATION
+#define RESETDURATION 2 // Default reset duration in seconds for WaveShare displays with clever reset circuit
+#endif
 
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEW0213M21)
 
@@ -39,7 +40,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> display(GxEPD2_213_BN(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // DEPG0213BN https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEM0213B74
@@ -49,7 +49,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 2;
 GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> display(GxEPD2_213_B74(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEM0213B74 https://s.click.aliexpress.com/e/_DDFb2gl
 #endif
 #ifdef EINKBOARDGDEW0213M21
@@ -59,7 +58,6 @@ const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 212;
 int displayHeight = 104;
-uint16_t resetDuration = 2;
 // GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex ::HEIGHT> display(GxEPD2_213_flex(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 // GxEPD2_BW<GxEPD2_213_T5D, GxEPD2_213_T5D ::HEIGHT> display(GxEPD2_213_T5D(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
 GxEPD2_BW<GxEPD2_213_M21, GxEPD2_213_M21 ::HEIGHT> display(GxEPD2_213_M21(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));  // GDEW0213M21 104x212, SSD1608 (GDEW0213Z16LW) https://s.click.aliexpress.com/e/_DDFb2gl
@@ -73,7 +71,6 @@ const GFXfont SmallFont = NotoSans_Bold6pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 296;
 int displayHeight = 128;
-uint16_t resetDuration = 2;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -100,7 +97,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold46pt7b;
 int displayWidth = 250;
 int displayHeight = 122;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -115,7 +111,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold38pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -130,7 +125,6 @@ const GFXfont SmallFont = NotoSans_SemiCondensed_Bold10pt7b;
 const GFXfont BigFont = Digits_NotoSans_Bold48pt7b;
 int displayWidth = 200;
 int displayHeight = 200;
-uint16_t resetDuration = 50;
 
 #include "bootlogo.h"  // Made with https://javl.github.io/image2cpp/
 #include "icons.h"
@@ -361,10 +355,10 @@ bool displayNotification(String notificationText, String notificationText2, noti
     return true;
 }
 
-// busyCallback function called during waiting for BUSY to end, to light sleep or service other tasks
-void busyCallback(const void* p) {
+// busyCallbackDeepSleep function called during waiting for BUSY to end, to light sleep or service other tasks
+void busyCallbackDeepSleep(const void* p) {
 #ifdef DEBUG_EINK
-    // Serial.println("Serial.println("[EINK] busyCallback light sleep");
+    // Serial.println("Serial.println("[EINK] busyCallbackDeepSleep light sleep");
 #endif
     esp_sleep_enable_timer_wakeup(0.2 * 1000000);  // 0.2 seconds
     Serial.flush();
@@ -377,9 +371,9 @@ void busyCallback(const void* p) {
 #endif
 }
 
-void busyHighPerformanceCallback(const void* p) {
+void busyCallbackHighPerformance(const void* p) {
 #ifdef DEBUG_EINK
-    // Serial.println("[EINK] busyHighPerformanceCallback light sleep");
+    // Serial.println("[EINK] busyCallbackHighPerformance light sleep");
 #endif
     menuLoop();
 }
@@ -398,14 +392,14 @@ void setDisplayReverse(bool reverse) {
 void initDisplayFromDeepSleep(bool forceRedraw = false) {
     RTC_DATA_ATTR static bool firstBoot = true;
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
-    display.epd2.setBusyCallback(busyCallback);  // register callback to be called during BUSY active time
+    display.epd2.setBusyCallback(busyCallbackDeepSleep);  // register callback to be called during BUSY active time
     setElementLocations();
     if (firstBoot) {
         forceRedraw = true;
-        display.init(115200, true, resetDuration, false);
+        display.init(115200, true, RESETDURATION, false);
         firstBoot = false;
     } else {
-        display.init(115200, false, resetDuration, false);
+        display.init(115200, false, RESETDURATION, false);
     }
 
     // Set default options to draw
@@ -419,15 +413,16 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     // Serial.println("-->[EINK] Width: " + String(display.width()) + ", Height: " + String(display.height()));
 #endif
 
-    // Each cyclesToRedrawDisplay boots do a full screen refresh
+    // Each deepSleepData.redrawDisplayEveryCycles boots do a full screen refresh
     if (forceRedraw) {
+        // display.fillScreen(GxEPD_WHITE);
+        // display.display();
+        // drawMainScreen(false);
+        // deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with full refresh from: ");
         Serial.println(__func__);
 #endif
-        display.fillScreen(GxEPD_WHITE);
-        display.display();
-        //        deepSleepData.cyclesToRedrawDisplay = cyclesToRedrawDisplay;
     } else {
 #ifdef DEBUG_EINK
         Serial.print("-->[EINK] Initializing display from deep sleep with partial refresh from: ");
@@ -437,6 +432,7 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
         // display.fillRect(20, 45, display.width() - 40, display.height() - 40, GxEPD_WHITE);
         // display.fillRect(0, 0, display.width(), display.height(), GxEPD_WHITE);
         // display.displayWindow(0, 0, display.width(), display.height());
+        // drawMainScreen(false);
     }
 }
 
@@ -450,11 +446,11 @@ void initDisplay(bool fastMode = false) {
         Serial.println(__func__);
     }
 #endif
-    display.epd2.setBusyCallback(busyHighPerformanceCallback);  // register callback to be called during BUSY active time (attend menu)
+    display.epd2.setBusyCallback(busyCallbackHighPerformance);  // register callback to be called during BUSY active time (attend menu)
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
 
-    // display.init(115200, true, resetDuration, false);
-    display.init(115200, !fastMode, resetDuration, false);
+    // display.init(115200, true, RESETDURATION, false);
+    display.init(115200, !fastMode, RESETDURATION, false);
 
 #ifdef DEBUG_EINK
     int a = SCK, b = EPD_MISO, c = MOSI, d = SS, e = EPD_DC, f = EPD_RST, g = EPD_BUSY;
@@ -672,16 +668,13 @@ void testRedrawValues(bool randomNumbers = false) {
     display.setTextColor(GxEPD_BLACK);
     display.setFont(&BigFont);
     display.setTextSize(1);
-    display.setCursor(0, 100);
-    display.print(textToDraw);
-    display.setFont(&SmallFont);
-    textDrawn = textToDraw;
     lastTimeDrawn = millis();
 }
 
 #ifdef EINKBOARDGDEM0213B74
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
+    if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (redrawDisplayOnNextLoop) {
         shouldRedrawDisplay = true;
@@ -706,13 +699,13 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (cyclesLeftToRedrawDisplay > 0) {
-        cyclesLeftToRedrawDisplay--;
+    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
+        deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
 #endif
     } else {
-        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Forcing full refresh of display");
@@ -746,6 +739,11 @@ void displayShowValues(bool forceRedraw = false) {
 
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
+    if (forceRedraw) {
+        thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
+    } else {
+        if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
+    }
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (redrawDisplayOnNextLoop) {
         shouldRedrawDisplay = true;
@@ -770,13 +768,13 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (cyclesLeftToRedrawDisplay > 0) {
-        cyclesLeftToRedrawDisplay--;
+    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
+        deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
 #endif
     } else {
-        cyclesLeftToRedrawDisplay = redrawDisplayEveryCycles;
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
         Serial.println("-->[EINK] Forcing full refresh of display");

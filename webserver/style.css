@@ -178,6 +178,22 @@ h4 {
   transform: scale(1.5);
 }
 
+.iconLowPower {
+  margin-left: 10px;
+  margin-right: 1rem;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+}
+
+.iconLowPower:hover {
+  transform: scale(1.1);
+}
+
+.iconLowPower:active {
+  transform: scale(1.5);
+}
+
 /* Add styles for SVG icons */
 .navbar a svg {
   display: none; /* Hide icons by default */
@@ -359,6 +375,23 @@ input[type="checkbox"] {
   gap: 10px;
 }
 
+.buttonsAlignRight {
+  display: flex;
+  justify-content: flex-end; /* Alinear a la derecha */
+  margin-top: 20px;
+}
+
+.buttonsAlignRight .buttonsRestartSave {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* Make sure the buttons are aligned to the right */
+}
+
+.buttonsRestartSave {
+  display: flex;
+  gap: 10px;
+}
+
 button {
   background-color: var(--button-background-color);
   color: white;
@@ -445,9 +478,14 @@ button:hover {
 }
 
 .content {
-  max-width: 90%;
+  max-width: 600px;
+  width: 90%;
   margin: 0 auto;
   overflow-x: auto;
+}
+
+.home-page .content {
+  max-width: none;
 }
 
 .flex-wrapper {

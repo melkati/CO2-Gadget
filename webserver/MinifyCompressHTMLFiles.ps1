@@ -13,7 +13,8 @@ $htmlSets = @{
     "index.html.gz" = "index.html"
     "preferences.html.gz" = "preferences.html"
     "status.html.gz" = "status.html"
-    "ota.html.gz" = "ota.html"    
+    "ota.html.gz" = "ota.html"
+    "low_power.html.gz" = "low_power.html"
 }
 
 Write-Host "Source Directory: $sourceDirectory"

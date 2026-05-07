@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" theme="light">
-
 <head>
-    <meta charset="UTF-8">
-    <title>CO2 Gadget Status</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <title>CO2 Gadget Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
         // Immediately set the theme based on localStorage before the CSS is loaded
         (function () {
-            const savedTheme = localStorage.getItem('theme');
+            const savedTheme = localStorage.getItem("theme");
             if (savedTheme) {
-                document.documentElement.setAttribute('theme', savedTheme);
+                document.documentElement.setAttribute("theme", savedTheme);
             }
         })();
     </script>
@@ -68,6 +67,12 @@
                     <span id="server-status-dot" class="status-dot status-dot-hidden"
                         title="Captive portal inactive"></span>
                 </a>
+                <!-- Low Power Icon -->
+                <div class="iconLowPower hidden low-power-icon light-mode" id="iconLighting">
+                    <svg id="lightingIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                        <path id="iconPathLowPower" fill="currentColor"></path>
+                    </svg>
+                </div>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
                     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">

@@ -11,6 +11,12 @@
 #ifdef SUPPORT_MQTT
 #include <PubSubClient.h>
 
+// Forward declarations
+bool publishMQTTDiscovery(int qos);
+void mqttClientLoop();
+
+// #define DEBUG_MQTT_SENDING
+
 char charPublish[20];
 PubSubClient mqttClient(espClient);
 #endif
@@ -39,6 +45,12 @@ void mqttReconnect() {
                     subscriptionTopic = rootTopic + "/ambientpressure";
                     mqttClient.subscribe((subscriptionTopic).c_str());
                     printf("-->[MQTT] Suscribing to: %s\n", subscriptionTopic.c_str());
+                    // Send discovery
+                    if (!mqttDiscoverySent) {
+                        Serial.printf("-->[MQTT] Connected to broker. Sending discovery...\n");
+                        publishMQTTDiscovery(0);
+                        mqttDiscoverySent = true;
+                    }
                 } else {
                     ++mqttConnectionRetries;
                     mqttClient.setSocketTimeout(2);  // Drop timeout to 2 secs for subsecuents tries
@@ -91,9 +103,11 @@ void publishIntMQTT(String topic, int64_t payload) {
 #ifdef SUPPORT_MQTT
     dtostrf(payload, 0, 0, charPublish);
     topic = rootTopic + topic;
-    if (!inMenu && mqttShowInConsole) {
+    if (!inMenu) {
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %d to ", payload);
         Serial.println("topic: " + topic);
+#endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -103,9 +117,11 @@ void publishFloatMQTT(String topic, float payload) {
 #ifdef SUPPORT_MQTT
     dtostrf(payload, 0, 2, charPublish);
     topic = rootTopic + topic;
-    if (!inMenu && mqttShowInConsole) {
+    if (!inMenu) {
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %.0f to ", payload);
         Serial.println("topic: " + topic);
+#endif
     }
     mqttClient.publish((topic).c_str(), charPublish);
 #endif
@@ -114,9 +130,11 @@ void publishFloatMQTT(String topic, float payload) {
 void publishStrMQTT(String topic, String payload) {
 #ifdef SUPPORT_MQTT
     topic = rootTopic + topic;
-    if (!inMenu && mqttShowInConsole) {
+    if (!inMenu) {
+#ifdef DEBUG_MQTT_SENDING
         Serial.printf("-->[MQTT] Publishing %s to ", payload.c_str());
         Serial.println("topic: " + topic);
+#endif
     }
     mqttClient.publish(topic.c_str(), payload.c_str());
 #endif
@@ -124,9 +142,11 @@ void publishStrMQTT(String topic, String payload) {
 
 void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #ifdef SUPPORT_MQTT
-    if (!inMenu && mqttShowInConsole) {
-        // Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
-        // Serial.println("topic: " + topic);
+    if (!inMenu) {
+#ifdef DEBUG_MQTT_SENDING
+        Serial.printf("-->[MQTT] Publishing discovery %s to ", payload.c_str());
+        Serial.println("topic: " + topic);
+#endif
     }
     mqttClient.publish(topic.c_str(), payload.c_str(), true);
 #endif
@@ -227,6 +247,7 @@ bool publishMQTTDiscovery(int qos) {
     // clang-format on
 
     Serial.println("-->[MQTT] Successfully published all MQTT Discovery topics");
+    delay(10);
     return allSendsSuccessed;
 #endif
 }
@@ -247,6 +268,7 @@ void initMQTT() {
         mqttClient.setBufferSize(1024);
 
         mqttReconnect();
+        mqttClientLoop();
     }
 #endif
 }
@@ -306,10 +328,10 @@ void publishMeasurementsMQTT() {
     publishFloatMQTT("/humi", hum);
 }
 
-void publishMQTT() {
+void publishMQTT(bool forcePublish = false) {
 #ifdef SUPPORT_MQTT
     if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
-        if ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0)) {
+        if ((forcePublish) || ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0))) {
             publishMeasurementsMQTT();
             publishMQTTAlarms();
             publishMQTTSystemData();
