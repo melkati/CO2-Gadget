@@ -23,6 +23,10 @@
 #include <menuIO/u8g2Out.h>
 #endif
 
+#ifdef SUPPORT_EINK
+#include "GxEPD2Out.h"
+#endif
+
 #include <menuIO/esp8266Out.h>  //must include this even if not doing web output...
 
 using namespace Menu;
@@ -962,8 +966,27 @@ menuOut* outputs[]{&outSerial,&oledOut};//list of output devices
 MENU_INPUTS(in,&serial);
 #endif // SUPPORT_OLED
 
-#if (!SUPPORT_OLED && !SUPPORT_TFT)
+#if (!defined(SUPPORT_OLED) && !defined(SUPPORT_TFT) && !defined(SUPPORT_EINK))
 menuOut* outputs[]{&outSerial};//No display, only serial output
+#elif defined(SUPPORT_EINK) && !defined(SUPPORT_TFT) && !defined(SUPPORT_OLED)
+// E-ink output: colors, panel dimensions defined in CO2_Gadget_EINK.h
+// displayWidth/displayHeight are globals set per-board in CO2_Gadget_EINK.h
+#define eink_fontW 6
+#define eink_fontH 9
+const colorDef<uint16_t> einkColors[6] MEMMODE = {
+    {{0,0},{0,1,1}},  // bgColor  — black bg
+    {{65535,65535},{65535,0,0}},  // fgColor — white text
+    {{65535,65535},{65535,0,0}},  // valColor
+    {{65535,65535},{65535,0,0}},  // unitColor
+    {{0,65535},{0,0,65535}},      // cursorColor
+    {{65535,65535},{65535,0,0}},  // titleColor
+};
+const panel einkPanels[] MEMMODE = {{0, 0, 250 / eink_fontW, 122 / eink_fontH}};
+navNode *einkNodes[sizeof(einkPanels) / sizeof(panel)];
+panelsList einkPList(einkPanels, einkNodes, 1);
+idx_t einkTops[MAX_DEPTH] = {0};
+GxEPD2Out<decltype(display)> einkOut(display, einkColors, einkTops, einkPList, eink_fontW, eink_fontH);
+menuOut* outputs[]{&outSerial, &einkOut};
 #endif
 
 outputsList out(outputs, sizeof(outputs) / sizeof(menuOut *)); // outputs list controller
