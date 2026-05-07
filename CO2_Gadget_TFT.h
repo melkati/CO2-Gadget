@@ -201,17 +201,32 @@ void setDisplayBrightness(uint16_t newBrightness) {
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     if (actualDisplayBrightness != newBrightness) {
-        uint16_t dif, i;
-        if (newBrightness > actualDisplayBrightness)
-            dif = 16 - (newBrightness - actualDisplayBrightness);
-        else
-            dif = actualDisplayBrightness - newBrightness;
-
-        // Serial.printf("-->[TFT ] Change brightness %d levels", dif);
-        for (i = 1; i <= dif; i++) {
+        if (newBrightness == 0) {
+            // Hold the backlight pin LOW for >3ms to force the backlight IC into complete shutdown.
+            // Simple pulse-down would cycle the IC back to max brightness rather than turning it off.
+            // Fixes #218 / #223: display fails to power off on T-Display S3.
             digitalWrite(TFT_BACKLIGHT, LOW);
-            delayMicroseconds(20);
-            digitalWrite(TFT_BACKLIGHT, HIGH);
+            delay(5);  // 5ms >> 3ms threshold; IC shuts down completely
+            // Pin remains LOW; IC stays off until next wake-up sequence
+        } else {
+            if (actualDisplayBrightness == 0) {
+                // Waking from full shutdown: bring pin HIGH so the IC resets and powers up at
+                // maximum brightness (level 16), then step down to the desired level.
+                digitalWrite(TFT_BACKLIGHT, HIGH);
+                delay(5);  // Allow IC to stabilize at level 16
+                actualDisplayBrightness = 16;
+            }
+            uint16_t dif, i;
+            if (newBrightness > actualDisplayBrightness)
+                dif = 16 - (newBrightness - actualDisplayBrightness);
+            else
+                dif = actualDisplayBrightness - newBrightness;
+            // Serial.printf("-->[TFT ] Change brightness %d levels\n", dif);
+            for (i = 1; i <= dif; i++) {
+                digitalWrite(TFT_BACKLIGHT, LOW);
+                delayMicroseconds(20);
+                digitalWrite(TFT_BACKLIGHT, HIGH);
+            }
         }
         actualDisplayBrightness = newBrightness;
     }
