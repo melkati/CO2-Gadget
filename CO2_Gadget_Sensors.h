@@ -18,6 +18,10 @@ float tempOffset = 0.0f;
 volatile uint16_t co2 = 0;
 volatile uint16_t previousCO2Value = 0;
 float temp, tempFahrenheit, hum = 0;
+uint16_t pm1 = 0;   // PM1.0 (µg/m³) — from particulate sensors e.g. SPS30
+uint16_t pm25 = 0;  // PM2.5 (µg/m³)
+uint16_t pm4 = 0;   // PM4.0 (µg/m³) — SPS30 specific
+uint16_t pm10 = 0;  // PM10  (µg/m³)
 String mainDeviceSelected = "";
 
 ThresholdManager thresholdsManager;
@@ -61,6 +65,13 @@ void onSensorDataOk() {
     deepSleepData.lastHumidityValue = hum;
     if (!inMenu) {
         Serial.printf("-->[SENS] CO2: %d CO2temp: %.2f CO2humi: %.2f H: %.2f T: %.2f\n", co2, sensors.getCO2temp(), sensors.getCO2humi(), sensors.getHumidity(), sensors.getTemperature());
+    }
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+        pm1  = sensors.getPM1();
+        pm25 = sensors.getPM25();
+        pm4  = sensors.getPM4();
+        pm10 = sensors.getPM10();
+        if (!inMenu) Serial.printf("-->[SENS] PM1: %d PM2.5: %d PM4: %d PM10: %d µg/m³\n", pm1, pm25, pm4, pm10);
     }
     newReadingsAvailable = true;
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());

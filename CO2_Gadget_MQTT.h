@@ -241,6 +241,14 @@ bool publishMQTTDiscovery(int qos) {
     allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",   "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",      "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("humidity",         "",                  "",                "",      "humi",        "Humidity",             "water-percent",                        "%",        qos);
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+        // clang-format off
+        allSendsSuccessed |= sendMQTTDiscoveryTopic("pm1",          "measurement",       "",                "",      "pm1",         "PM1.0",                "air-filter",                           "\u00b5g/m\u00b3", qos);
+        allSendsSuccessed |= sendMQTTDiscoveryTopic("pm25",         "measurement",       "",                "",      "pm25",        "PM2.5",                "air-filter",                           "\u00b5g/m\u00b3", qos);
+        allSendsSuccessed |= sendMQTTDiscoveryTopic("",             "measurement",       "",                "",      "pm4",         "PM4.0",                "air-filter",                           "\u00b5g/m\u00b3", qos);
+        allSendsSuccessed |= sendMQTTDiscoveryTopic("pm10",         "measurement",       "",                "",      "pm10",        "PM10",                 "air-filter",                           "\u00b5g/m\u00b3", qos);
+        // clang-format on
+    }
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "diagnostic",       "",      "error",       "Error",                "alert-circle-outline",     "",         qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "diagnostic",       "",      "json",        "JSON",                 "code-json",                "",         qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",              "",                  "",                 "",      "problem",     "Problem",              "alert-outline",            "",         qos);  // Special binary sensor which is based on error topic
@@ -326,6 +334,12 @@ void publishMeasurementsMQTT() {
     publishIntMQTT("/co2", co2);
     publishFloatMQTT("/temp", temp);
     publishFloatMQTT("/humi", hum);
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+        publishIntMQTT("/pm1",  pm1);
+        publishIntMQTT("/pm25", pm25);
+        publishIntMQTT("/pm4",  pm4);
+        publishIntMQTT("/pm10", pm10);
+    }
 }
 
 void publishMQTT(bool forcePublish = false) {
