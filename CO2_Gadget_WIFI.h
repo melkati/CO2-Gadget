@@ -1088,6 +1088,14 @@ void initWebServer() {
         }
     });
 
+    server.on("/calibration.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            serveGzippedFile(request, "/calibration.html.gz", "text/html");
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
     server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             serveGzippedFile(request, "/low_power.html.gz", "text/html");
