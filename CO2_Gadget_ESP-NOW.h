@@ -179,6 +179,7 @@ void initESPNow() {
 
 void publishESPNow() {
     if ((!activeESPNOW) || (!EspNowInititialized)) return;
+    if (!thresholdsManager.evaluateThresholds(ESPNOW_SEND, co2, temp, hum)) return;
     if ((millis() - lastTimeESPNowPublished >= timeBetweenESPNowPublish * 1000) || (millis() - lastTimeESPNowPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeESPNowPublished == 0)) {
         //Set values to send
         outgoingReadings.boardID = boardIdESPNow;

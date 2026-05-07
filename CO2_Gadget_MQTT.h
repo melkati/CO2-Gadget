@@ -331,6 +331,7 @@ void publishMeasurementsMQTT() {
 void publishMQTT(bool forcePublish = false) {
 #ifdef SUPPORT_MQTT
     if (activeMQTT && !troubledMQTT && !troubledWIFI && (WiFi.status() == WL_CONNECTED) && mqttClient.connected()) {
+        if (!forcePublish && !thresholdsManager.evaluateThresholds(MQTT_SEND, co2, temp, hum)) return;
         if ((forcePublish) || ((millis() - lastTimeMQTTPublished >= timeBetweenMQTTPublish * 1000) || (millis() - lastTimeMQTTPublished >= timeToKeepAliveMQTT * 1000) || (lastTimeMQTTPublished == 0))) {
             publishMeasurementsMQTT();
             publishMQTTAlarms();
