@@ -252,7 +252,7 @@ Do you want to support the CO2-Gadget project? Thank you! While financial contri
 
 # TO DO
 
-- [ ] [Implement low power functionality (Already done and on Alpha testing right now!)](https://github.com/melkati/CO2-Gadget/issues/188)
+- [x] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
 - [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
 
 # Useful information

@@ -672,7 +672,8 @@ String getActualSettingsAsJson(bool includePasswords = false) {
 
 bool handleSavePreferencesFromJSON(String jsonPreferences) {
     // Create a JSON object to store preferences
-    DynamicJsonDocument JsonDocument(1024); // Asegúrate de ajustar el tamaño según sea necesario
+    // Use a large pool to handle 50+ preference fields; too small causes NoMemory and silent save failure (Fixes #90)
+    DynamicJsonDocument JsonDocument(4096);
 
     // Try to deserialize the JSON body from the request
     DeserializationError error = deserializeJson(JsonDocument, jsonPreferences);

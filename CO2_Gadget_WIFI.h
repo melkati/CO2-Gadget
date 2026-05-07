@@ -968,6 +968,40 @@ const char *PARAM_INPUT_1 = "MeasurementInterval";
 const char *PARAM_INPUT_2 = "CalibrateCO2";
 const char *PARAM_INPUT_3 = "SetVRef";
 
+/**
+ * Serves a gzip-compressed file from SPIFFS, checking Accept-Encoding first.
+ * iOS Captive Network Assistant and other limited browsers do not declare
+ * Accept-Encoding: gzip and would render garbled content otherwise.
+ * A minimal HTML fallback is served when gzip is not accepted. (Fixes #219)
+ */
+void serveGzippedFile(AsyncWebServerRequest *request, const char *spiffsPath, const char *contentType) {
+    bool clientAcceptsGzip = request->hasHeader("Accept-Encoding") &&
+                             request->header("Accept-Encoding").indexOf("gzip") >= 0;
+    if (clientAcceptsGzip) {
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, spiffsPath, contentType);
+        response->addHeader("Content-Encoding", "gzip");
+        response->addHeader("Cache-Control", "no-cache");
+        request->send(response);
+    } else {
+        // Client does not accept gzip (e.g. iOS CNA mini-browser) — serve fallback page
+        String ip = WiFi.softAPIP().toString();
+        if (ip == "0.0.0.0") ip = WiFi.localIP().toString();
+        String html = "<!DOCTYPE html><html><head>"
+                      "<meta charset='utf-8'>"
+                      "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+                      "<title>CO2 Gadget</title></head>"
+                      "<body style='font-family:sans-serif;text-align:center;padding:2em'>"
+                      "<h2>CO2 Gadget</h2>"
+                      "<p>Please open this page in a full browser:</p>"
+                      "<p><a href='http://";
+        html += ip;
+        html += "'>http://";
+        html += ip;
+        html += "</a></p></body></html>";
+        request->send(200, "text/html", html);
+    }
+}
+
 void initWebServer() {
     if (!SPIFFS.begin()) {
         Serial.println("-->[WEBS][Error] Failed to mount SPIFFS");
@@ -997,10 +1031,7 @@ void initWebServer() {
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/index.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1008,10 +1039,7 @@ void initWebServer() {
 
     server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html.gz", "text/html");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/index.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1043,10 +1071,7 @@ void initWebServer() {
 
             timeCaptivePortalStarted = millis();
 
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.html.gz", "text/html");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/preferences.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1057,28 +1082,21 @@ void initWebServer() {
 
     server.on("/status.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.html.gz", "text/html");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/status.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
     });
 
     server.on("/low_power.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.html.gz", "text/html");
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
+        if (request != nullptr) {
+            serveGzippedFile(request, "/low_power.html.gz", "text/html");
+        }
     });
 
     server.on("/ota.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.html.gz", "text/html");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/ota.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1086,10 +1104,7 @@ void initWebServer() {
 
     server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/index.js.gz", "application/javascript");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1097,28 +1112,21 @@ void initWebServer() {
 
     server.on("/preferences.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/preferences.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/preferences.js.gz", "application/javascript");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
     });
 
     server.on("/low_power.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        /** GZIPPED CONTENT ***/
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/low_power.js.gz", "application/javascript");
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
+        if (request != nullptr) {
+            serveGzippedFile(request, "/low_power.js.gz", "application/javascript");
+        }
     });
 
     server.on("/status.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/status.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/status.js.gz", "application/javascript");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1126,10 +1134,7 @@ void initWebServer() {
 
     server.on("/ota.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/ota.js.gz", "application/javascript");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/ota.js.gz", "application/javascript");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1137,10 +1142,7 @@ void initWebServer() {
 
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/style.css.gz", "text/css");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/style.css.gz", "text/css");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1148,10 +1150,7 @@ void initWebServer() {
 
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            /** GZIPPED CONTENT ***/
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/favicon.png.gz", "image/png");
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
+            serveGzippedFile(request, "/favicon.png.gz", "image/png");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1443,14 +1442,9 @@ void initWebServer() {
 
     AsyncCallbackJsonWebHandler *savePreferencesHandlerHandler = new AsyncCallbackJsonWebHandler("/savePreferences", [](AsyncWebServerRequest *request, JsonVariant &json) {
         if (request != nullptr) {
-            StaticJsonDocument<2048> data;
-            if (json.is<JsonArray>()) {
-                data = json.as<JsonArray>();
-            } else if (json.is<JsonObject>()) {
-                data = json.as<JsonObject>();
-            }
+            // Serialize directly from the already-parsed JsonVariant (avoids intermediate copy and size limits) (Fixes #90)
             String response;
-            serializeJson(data, response);
+            serializeJson(json, response);
             request->send(200, "application/json", response);
 #ifdef DEBUG_CAPTIVE_PORTAL
             Serial.print("-->[WEBS] Received /savePreferences command with content: ");
