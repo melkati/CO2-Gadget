@@ -10,7 +10,7 @@ $outputDirectory = "data"
 
 # Define the JavaScript file sets to be combined and compressed
 $javascriptSets = @{
-    "index.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "index.js")
+    "index.v2.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "index.js")
     "preferences.js.gz" = @("common.js", "themes.js", "captiveportal.js", "debugWindow.js", "captivePortalStatusBar.js", "serverStatusDot.js", "preferences.js")
     "status.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "status.js")
     "ota.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "ota.js")

@@ -93,16 +93,9 @@
     <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <!-- Main content -->
-    <div class="content">
+    <div class="content" style="padding-bottom:16px;">
         <h1>CO2 History Charts</h1>
-        <div id="container" style="width:100%; height:400px;"></div>
+        <div id="container" style="width:100%; height:calc(100vh - 220px); min-height:320px;"></div>
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            highlightCurrentPage();
-            CreateChart();
-        });
-    </script>
 </body>
 </html>

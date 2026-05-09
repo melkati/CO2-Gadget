@@ -67,12 +67,12 @@ function updateCO2Data(co2OrangeRange, co2RedRange) {
     const co2ColorRanges = [
         { min: 0, max: co2OrangeRange, color: 'green' },
         { min: co2OrangeRange, max: co2RedRange, color: 'orange' },
-        { min: co2RedRange, max: 2000, color: 'red' }
+        { min: co2RedRange, max: Infinity, color: 'red' }
     ];
 
     readCO2Data().then(co2Value => {
         document.querySelector("#CO2Value").textContent = co2Value.toFixed(0);
-        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 2000);
+        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 5000);
     }).catch(error => {
         console.error("Error:", error);
     });
@@ -85,17 +85,17 @@ function updateCO2Data(co2OrangeRange, co2RedRange) {
  */
 function updateTemperatureData() {
     const tempColorRanges = [
-        { min: 15, max: 18, color: '#0000FF' }, // Blue
-        { min: 19, max: 22, color: '#00FFFF' }, // Cyan
-        { min: 23, max: 25, color: '#00FF00' }, // Green
-        { min: 26, max: 30, color: '#FFFF00' }, // Yellow
-        { min: 31, max: 35, color: '#FFA500' }, // Orange
-        { min: 36, max: 40, color: '#FF0000' }  // Red
+        { min: -Infinity, max: 18.5, color: '#0000FF' }, // Blue (cold)
+        { min: 18.5, max: 22.5, color: '#00FFFF' }, // Cyan
+        { min: 22.5, max: 25.5, color: '#00FF00' }, // Green
+        { min: 25.5, max: 30.5, color: '#FFFF00' }, // Yellow
+        { min: 30.5, max: 35.5, color: '#FFA500' }, // Orange
+        { min: 35.5, max: Infinity, color: '#FF0000' }  // Red (hot)
     ];
 
     readTemperatureData().then(temperatureValue => {
         document.querySelector("#TempValue").textContent = temperatureValue;
-        updateStroke(temperatureValue, 'tempCircle', tempColorRanges, 40);
+        updateStroke(temperatureValue, 'tempCircle', tempColorRanges, 50);
     }).catch(error => {
         console.error("Error:", error);
     });
