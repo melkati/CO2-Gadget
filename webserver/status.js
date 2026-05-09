@@ -241,7 +241,7 @@ function fillFeaturesFromServer() {
     function setFeature(badgeId, valId, val) {
         const el = document.getElementById(valId);
         const badge = document.getElementById(badgeId);
-        if (el) el.textContent = val ? '✓' : '✗';
+        if (el) el.textContent = val ? '\u2713' : '\u2717';
         if (badge) {
             badge.classList.toggle('feature-on', !!val);
             badge.classList.toggle('feature-off', !val);
