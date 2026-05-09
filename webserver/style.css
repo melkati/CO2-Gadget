@@ -1033,7 +1033,8 @@ button.btn-danger:hover,
    ================================================================ */
 .tooltip-icon {
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.6;
+  color: #2196F3;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
