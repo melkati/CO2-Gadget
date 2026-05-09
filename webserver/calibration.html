@@ -2,113 +2,11 @@
 <html lang="en" theme="light">
 <head>
     <meta charset="UTF-8" />
-    <title>CO2 Gadget Calibration</title>
+    <title>CO₂ Gadget — Calibration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-        // Immediately set the theme based on localStorage before the CSS is loaded
-        (function () {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme) {
-                document.documentElement.setAttribute("theme", savedTheme);
-            }
-        })();
-    </script>
-    <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./calibration.js"></script>
-    <style>
-        .calibration-card {
-            background: var(--card-bg, var(--background-color));
-            border: 1px solid var(--border-color, #ccc);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .calibration-card h2 {
-            margin-top: 0;
-            font-size: 1.1rem;
-            color: var(--text-color);
-        }
-        .calibration-card p {
-            color: var(--text-muted, var(--text-color));
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .calibration-row {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-        .calibration-row input[type="number"] {
-            width: 100px;
-            padding: 0.4rem 0.6rem;
-            font-size: 1rem;
-            border: 1px solid var(--border-color, #ccc);
-            border-radius: 4px;
-            background: var(--input-bg, var(--background-color));
-            color: var(--text-color);
-        }
-        .calibration-row button {
-            padding: 0.4rem 1.2rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-        .btn-danger {
-            background-color: var(--danger-color, #d9534f);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 0.4rem 1.2rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-        .btn-danger:hover {
-            opacity: 0.85;
-        }
-        #calibStatus {
-            margin-top: 0.75rem;
-            font-size: 0.9rem;
-            min-height: 1.2em;
-        }
-        .status-ok   { color: var(--success-color, #28a745); }
-        .status-err  { color: var(--danger-color, #d9534f); }
-        .status-pending { color: var(--warning-color, #ffc107); }
-
-        .current-readings {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-        .reading-badge {
-            background: var(--accent-bg, var(--card-bg, var(--background-color)));
-            border: 1px solid var(--border-color, #ccc);
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            text-align: center;
-            min-width: 80px;
-        }
-        .reading-badge .value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: block;
-            color: var(--text-color);
-        }
-        .reading-badge .label {
-            font-size: 0.75rem;
-            color: var(--text-muted, var(--text-color));
-        }
-
-        .warning-box {
-            background: var(--warning-bg, #fff3cd);
-            border: 1px solid var(--warning-border, #ffc107);
-            color: var(--warning-text, #856404);
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-    </style>
+    <script>(function(){var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("theme",t);})();</script>
+    <link rel="stylesheet" href="./style.css" />
+    <script defer src="./calibration.js"></script>
 </head>
 
 <body>
@@ -187,7 +85,7 @@
     <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
-        <h1>CO2 Sensor Calibration</h1>
+        <h1 class="page-title">Calibration</h1>
 
         <!-- Current readings -->
         <div class="calibration-card">
@@ -245,6 +143,7 @@
             </p>
         </div>
     </div>
-
+    <div id="popup"></div>
+    <div id="statusLineContainer"><span id="co2GadgetVersion"></span></div>
 </body>
 </html>

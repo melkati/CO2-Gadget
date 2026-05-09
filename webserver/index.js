@@ -33,17 +33,18 @@ function updateMeasurementInterval() {
 }
 
 /**
- * Updates the stroke color and dash array of an SVG element based on a value and thresholds.
- * @param {number} value - The value to determine the stroke color and dash array.
- * @param {string} elementId - The ID of the SVG element to update.
- * @param {Array} colorRanges - The color ranges array.
- * @param {number} maxValue - The maximum value for calculating the percentage.
+ * Updates the stroke color and dash array of an SVG path based on a value.
+ * Uses getTotalLength() so it works for both arc gauges and normalized circles (pathLength="100").
+ * @param {number} value - Current sensor value.
+ * @param {string} elementId - ID of the SVG path element.
+ * @param {Array} colorRanges - Array of {min, max, color} objects.
+ * @param {number} maxValue - Maximum value for scaling.
  */
 function updateStroke(value, elementId, colorRanges, maxValue) {
     const element = document.querySelector(`#${elementId}`);
     if (!element) return;
 
-    let color = 'black'; // Default color in case no match is found
+    let color = colorRanges[colorRanges.length - 1].color;
     for (let range of colorRanges) {
         if (value >= range.min && value <= range.max) {
             color = range.color;
@@ -51,9 +52,23 @@ function updateStroke(value, elementId, colorRanges, maxValue) {
         }
     }
 
-    const percentage = (value / maxValue) * 100;
+    const totalLen = (typeof element.getTotalLength === 'function') ? element.getTotalLength() : 100;
+    const percentage = Math.max(0, Math.min(1, value / maxValue));
     element.style.stroke = color;
-    element.setAttribute('stroke-dasharray', `${percentage}, 100`);
+    element.style.strokeDasharray = `${percentage * totalLen} ${totalLen}`;
+}
+
+/**
+ * Returns quality label and CSS-variable color for a CO₂ reading.
+ * @param {number} value - CO₂ ppm value.
+ * @returns {{text: string, color: string}}
+ */
+function getCO2Quality(value) {
+    if (value < 600)  return { text: 'Excellent', color: 'var(--q-excellent)' };
+    if (value < 800)  return { text: 'Good',      color: 'var(--q-good)' };
+    if (value < 1000) return { text: 'Moderate',  color: 'var(--q-moderate)' };
+    if (value < 1500) return { text: 'Poor',       color: 'var(--q-poor)' };
+    return                    { text: 'Very Poor', color: 'var(--q-bad)' };
 }
 
 /**
@@ -65,14 +80,22 @@ function updateStroke(value, elementId, colorRanges, maxValue) {
  */
 function updateCO2Data(co2OrangeRange, co2RedRange) {
     const co2ColorRanges = [
-        { min: 0, max: co2OrangeRange, color: 'green' },
-        { min: co2OrangeRange, max: co2RedRange, color: 'orange' },
-        { min: co2RedRange, max: Infinity, color: 'red' }
+        { min: 0,              max: co2OrangeRange, color: 'var(--q-good)' },
+        { min: co2OrangeRange, max: co2RedRange,    color: 'var(--q-moderate)' },
+        { min: co2RedRange,    max: Infinity,        color: 'var(--q-bad)' }
     ];
 
     readCO2Data().then(co2Value => {
-        document.querySelector("#CO2Value").textContent = co2Value.toFixed(0);
-        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 5000);
+        const valueEl = document.querySelector('#CO2Value');
+        if (valueEl) valueEl.textContent = co2Value.toFixed(0);
+        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 2000);
+
+        const qual = getCO2Quality(co2Value);
+        const qualEl = document.querySelector('#co2QualityLabel');
+        if (qualEl) { qualEl.textContent = qual.text; qualEl.style.fill = qual.color; }
+
+        const timeEl = document.querySelector('#updateTime');
+        if (timeEl) { const d = new Date(); timeEl.textContent = `Updated ${d.toLocaleTimeString()}`; }
     }).catch(error => {
         console.error("Error:", error);
     });
@@ -85,16 +108,16 @@ function updateCO2Data(co2OrangeRange, co2RedRange) {
  */
 function updateTemperatureData() {
     const tempColorRanges = [
-        { min: -Infinity, max: 18.5, color: '#0000FF' }, // Blue (cold)
-        { min: 18.5, max: 22.5, color: '#00FFFF' }, // Cyan
-        { min: 22.5, max: 25.5, color: '#00FF00' }, // Green
-        { min: 25.5, max: 30.5, color: '#FFFF00' }, // Yellow
-        { min: 30.5, max: 35.5, color: '#FFA500' }, // Orange
-        { min: 35.5, max: Infinity, color: '#FF0000' }  // Red (hot)
+        { min: -Infinity, max: 18.5, color: 'var(--accent)' },
+        { min: 18.5, max: 22.5, color: '#00CFCF' },
+        { min: 22.5, max: 25.5, color: 'var(--good)' },
+        { min: 25.5, max: 30.5, color: 'var(--caution)' },
+        { min: 30.5, max: Infinity, color: 'var(--bad)' }
     ];
 
     readTemperatureData().then(temperatureValue => {
-        document.querySelector("#TempValue").textContent = temperatureValue;
+        const el = document.querySelector('#TempValue');
+        if (el) el.textContent = temperatureValue;
         updateStroke(temperatureValue, 'tempCircle', tempColorRanges, 50);
     }).catch(error => {
         console.error("Error:", error);
@@ -109,20 +132,16 @@ function updateTemperatureData() {
  */
 function updateHumidityData() {
     const humidityColorRanges = [
-        { min: 0, max: 10, color: '#A52A2A' }, // Brown
-        { min: 11, max: 20, color: '#FF4500' }, // Dark Orange
-        { min: 21, max: 30, color: '#FFA500' }, // Orange
-        { min: 31, max: 40, color: '#FFFF00' }, // Yellow
-        { min: 41, max: 50, color: '#ADFF2F' }, // Light Green
-        { min: 51, max: 60, color: '#00FF00' }, // Green
-        { min: 61, max: 70, color: '#00FA9A' }, // Medium Spring Green
-        { min: 71, max: 80, color: '#1E90FF' }, // Dodger Blue
-        { min: 81, max: 90, color: '#0000FF' }, // Blue
-        { min: 91, max: 100, color: '#00008B' } // Dark Blue
+        { min: 0,  max: 30,  color: 'var(--bad)' },
+        { min: 30, max: 40,  color: 'var(--caution)' },
+        { min: 40, max: 60,  color: 'var(--good)' },
+        { min: 60, max: 70,  color: 'var(--caution)' },
+        { min: 70, max: 100, color: 'var(--accent)' }
     ];
 
     readHumidityData().then(humidityValue => {
-        document.querySelector("#HumValue").textContent = humidityValue;
+        const el = document.querySelector('#HumValue');
+        if (el) el.textContent = humidityValue;
         updateStroke(humidityValue, 'humiCircle', humidityColorRanges, 100);
     }).catch(error => {
         console.error("Error:", error);

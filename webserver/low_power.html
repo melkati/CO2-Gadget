@@ -2,19 +2,11 @@
 <html lang="en" theme="light">
 <head>
     <meta charset="UTF-8" />
-    <title>CO2 Gadget Configuration</title>
+    <title>CO₂ Gadget — Low Power</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-        // Immediately set the theme based on localStorage before the CSS is loaded
-        (function () {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme) {
-                document.documentElement.setAttribute("theme", savedTheme);
-            }
-        })();
-    </script>
-    <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./low_power.js"></script>
+    <script>(function(){var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("theme",t);})();</script>
+    <link rel="stylesheet" href="./style.css" />
+    <script defer src="./low_power.js"></script>
 </head>
 
 <body>
@@ -89,7 +81,13 @@
     <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
-        <h1>Low Power Settings</h1>
+        <h1 class="page-title">Low Power</h1>
+
+        <!-- Info card -->
+        <div class="lp-info-card">
+            <p>Low power mode puts the device to deep sleep between measurements. This reduces battery drain significantly but disables real-time connectivity while sleeping.</p>
+        </div>
+
         <form id="preferencesForm">
             <!-- Low Power Options Group -->
             <fieldset>
@@ -785,17 +783,7 @@
         </form>
     </div>
 
-    <!-- Popup to display a message -->
-    <div id="popup">
-        <p>Saving preferences...</p>
-    </div>
-
-    <!-- Status line to display CO2 Gadget version -->
-    <div id="statusLineContainer">
-        <span id="co2GadgetVersion"></span>
-    </div>
-
-
+    <div id="popup"></div>
+    <div id="statusLineContainer"><span id="co2GadgetVersion"></span></div>
 </body>
-
 </html>

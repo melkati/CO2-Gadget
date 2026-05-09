@@ -2,19 +2,11 @@
 <html lang="en" theme="light">
 <head>
     <meta charset="UTF-8" />
-    <title>CO2 Gadget Configuration</title>
+    <title>CO₂ Gadget — Status</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-        // Immediately set the theme based on localStorage before the CSS is loaded
-        (function () {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme) {
-                document.documentElement.setAttribute("theme", savedTheme);
-            }
-        })();
-    </script>
-    <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./status.js"></script>
+    <script>(function(){var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("theme",t);})();</script>
+    <link rel="stylesheet" href="./style.css" />
+    <script defer src="./status.js"></script>
 </head>
 
 <body>
@@ -100,10 +92,13 @@
     <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <div class="content">
-        <h1>CO2 Gadget Status</h1>
+        <h1 class="page-title">Status</h1>
 
-        <fieldset>
-            <legend>CO2 Gadget Sensors:</legend>
+        <!-- Sensors Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Sensors</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="mainDeviceSelectedItem">
                 <span class="status-label">Sensor Selected:</span> <span id="mainDeviceSelected"></span>
             </div>
@@ -122,11 +117,15 @@
             <div class="status-item" id="sampleIntervalItem">
                 <span class="status-label">BLE Sample Interval (MyAmbiance):</span> <span id="sampleInterval"></span> secs.
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- Communications Group -->
-        <fieldset>
-            <legend>CO2 Gadget Communications:</legend>
+        <!-- Communications Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Communications</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="wifiStatusItem">
                 <span class="status-label">WiFi Status:</span> <span id="wifiStatus"></span>
             </div>
@@ -208,22 +207,30 @@
             <div class="status-item" id="troubledESPNowItem">
                 <span class="status-label">Troubled ESPNow:</span> <span id="troubledESPNow"></span>
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- Calibration Group -->
-        <fieldset>
-            <legend>CO2 Gadget Calibration:</legend>
+        <!-- Calibration Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Calibration</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="calibrationValueItem">
                 <span class="status-label">Calibration Value:</span> <span id="calibrationValue"></span> ppm
             </div>
             <div class="status-item" id="pendingCalibrationItem">
                 <span class="status-label">Pending Calibration:</span> <span id="pendingCalibration"></span>
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- Low Power Options Group -->
-        <fieldset id="lowPowerOptionsFieldset" class="hidden">
-            <legend>Low Power Options:</legend>
+        <!-- Low Power Card -->
+        <div class="card hidden" id="lowPowerOptionsFieldset">
+            <div class="card-header"><h2 class="card-title">Low Power</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="lowPowerModeItem">
                 <span class="status-label">Low Power Mode:</span> <span id="lowPowerMode"></span>
             </div>
@@ -254,11 +261,15 @@
             <div class="status-item" id="displayOnWakeItem">
                 <span class="status-label">Display on Wake:</span> <span id="displayOnWake"></span>
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- System Group -->
-        <fieldset>
-            <legend>CO2 Gadget System:</legend>
+        <!-- System Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">System</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="freeHeapItem">
                 <span class="status-label">Free Heap:</span> <span id="freeHeap"></span> bytes
             </div>
@@ -271,11 +282,15 @@
             <div class="status-item" id="batVoltageItem">
                 <span class="status-label">Battery Voltage:</span> <span id="batVoltage"></span> Volts.
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- Captive Portal Group -->
-        <fieldset>
-            <legend>Captive Portal:</legend>
+        <!-- Captive Portal Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Captive Portal</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="status-item" id="captivePortalActiveItem">
                 <span class="status-label">Captive Portal Active:</span> <span id="captivePortalActive"></span>
             </div>
@@ -296,11 +311,15 @@
             <div class="status-item" id="relaxedSecurityItem">
                 <span class="status-label">Relaxed Security:</span> <span id="relaxedSecurity"></span>
             </div>
-        </fieldset>
+                </div>
+            </div>
+        </div>
 
-        <!-- Features Group -->
-        <fieldset>
-            <legend>Features (compilation time):</legend>
+        <!-- Features Card -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Compiled Features</h2></div>
+            <div class="card-body">
+                <div class="status-group">
             <div class="feature-item" id="featureBLEItem">
                 <span class="feature-label">BLE:</span> <span id="featureBLE"></span>
             </div>
@@ -322,15 +341,14 @@
             <div class="feature-item" id="featureOTAItem">
                 <span class="feature-label">OTA:</span> <span id="featureOTA"></span>
             </div>
-            <div class="feature-item" id="featureLowPowerItem" class="hidden">
+            <div class="feature-item hidden" id="featureLowPowerItem">
                 <span class="feature-label">Low power:</span> <span id="featureLowPower"></span>
             </div>
-        </fieldset>
-    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Status line to display CO2 Gadget version -->
-    <div id="statusLineContainer">
-        <span id="co2GadgetVersion"></span>
+        <div id="statusLineContainer"><span id="co2GadgetVersion"></span></div>
     </div>
 </body>
 

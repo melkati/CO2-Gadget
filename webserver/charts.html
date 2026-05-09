@@ -2,20 +2,12 @@
 <html lang="en" theme="light">
 <head>
     <meta charset="UTF-8" />
-    <title>CO2 Gadget Charts</title>
+    <title>CO₂ Gadget — Charts</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-        // Immediately set the theme based on localStorage before the CSS is loaded
-        (function () {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme) {
-                document.documentElement.setAttribute("theme", savedTheme);
-            }
-        })();
-    </script>
-    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script>(function(){var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("theme",t);})();</script>
+    <link rel="stylesheet" href="./style.css" />
     <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script defer type="text/javascript" src="./charts.js"></script>
+    <script defer src="./charts.js"></script>
 </head>
 
 <body>
@@ -94,8 +86,10 @@
 
     <!-- Main content -->
     <div class="content" style="padding-bottom:16px;">
-        <h1>CO2 History Charts</h1>
-        <div id="container" style="width:100%; height:calc(100vh - 220px); min-height:320px;"></div>
+        <h1 class="page-title">Charts</h1>
+        <div class="chart-canvas-wrap">
+            <div id="container" style="width:100%; height:calc(100vh - 260px); min-height:320px;"></div>
+        </div>
     </div>
 </body>
 </html>
