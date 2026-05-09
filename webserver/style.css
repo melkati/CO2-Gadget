@@ -701,8 +701,43 @@ h4 { font-size: 0.95rem; }
 .status-tz-link:hover { text-decoration: underline; }
 
 /* ================================================================
-   SECTION HEADER (fieldset replacement)
+   COMPILED FEATURES GRID (status.html)
    ================================================================ */
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 20px 8px;
+}
+.feature-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2, var(--surface));
+  font-size: 0.8rem;
+}
+.feature-name {
+  font-weight: 600;
+  color: var(--text-2);
+}
+.feature-val {
+  font-weight: 600;
+}
+.feature-badge.feature-on {
+  border-color: #22c55e44;
+  background: #22c55e18;
+}
+.feature-badge.feature-on .feature-val { color: #22c55e; }
+.feature-badge.feature-off {
+  border-color: var(--border);
+  opacity: 0.5;
+}
+.feature-badge.feature-off .feature-val { color: var(--text-3, #999); }
+
+
 fieldset {
   border: none;
   padding: 0;

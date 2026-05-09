@@ -238,23 +238,29 @@ function updateUptime(element, initialUptime) {
 }
 
 function fillFeaturesFromServer() {
-    // Update DOM with feature data
-    document.getElementById('featureBLE').textContent = features.SUPPORT_BLE;
-    document.getElementById('featureBuzzer').textContent = features.SUPPORT_BUZZER
-    document.getElementById('featureESPNow').textContent = features.SUPPORT_ESPNOW;
-    document.getElementById('featureMDNS').textContent = features.SUPPORT_MDNS;
-    document.getElementById('featureMQTT').textContent = features.SUPPORT_MQTT;
-    document.getElementById('featureMQTTDiscovery').textContent = features.SUPPORT_MQTT_DISCOVERY;
-    document.getElementById('featureOTA').textContent = features.SUPPORT_OTA;
+    function setFeature(badgeId, valId, val) {
+        const el = document.getElementById(valId);
+        const badge = document.getElementById(badgeId);
+        if (el) el.textContent = val ? '✓' : '✗';
+        if (badge) {
+            badge.classList.toggle('feature-on', !!val);
+            badge.classList.toggle('feature-off', !val);
+        }
+    }
+    setFeature('featureBLEItem',           'featureBLE',           features.SUPPORT_BLE);
+    setFeature('featureBuzzerItem',        'featureBuzzer',        features.SUPPORT_BUZZER);
+    setFeature('featureESPNowItem',        'featureESPNow',        features.SUPPORT_ESPNOW);
+    setFeature('featureMDNSItem',          'featureMDNS',          features.SUPPORT_MDNS);
+    setFeature('featureMQTTItem',          'featureMQTT',          features.SUPPORT_MQTT);
+    setFeature('featureMQTTDiscoveryItem', 'featureMQTTDiscovery', features.SUPPORT_MQTT_DISCOVERY);
+    setFeature('featureOTAItem',           'featureOTA',           features.SUPPORT_OTA);
     if (features.SUPPORT_LOW_POWER) {
         document.getElementById('featureLowPowerItem').classList.remove('hidden');
         document.getElementById('lowPowerOptionsFieldset').classList.remove('hidden');
-        document.getElementById('featureLowPower').textContent = features.SUPPORT_LOW_POWER;
-
+        setFeature('featureLowPowerItem', 'featureLowPower', features.SUPPORT_LOW_POWER);
     } else {
         document.getElementById('featureLowPowerItem').classList.add('hidden');
         document.getElementById('lowPowerOptionsFieldset').classList.add('hidden');
-        document.getElementById('featureLowPower').textContent = false;
     }
 }
 
