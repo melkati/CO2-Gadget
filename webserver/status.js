@@ -351,7 +351,25 @@ setInterval(function () {
     fetchAndUpdateTemperatureValue();
     fetchAndUpdateHumidityValue();
     loadCaptivePortalStatusFromServer();
+    updateStatusClock();
 }, 1000); // 1000mS  update rate
+
+/** Updates the real-time clock display on the status page using the stored timezone. */
+function updateStatusClock() {
+    const el = document.getElementById('currentTime');
+    const elOff = document.getElementById('currentTimeOffset');
+    if (!el) return;
+    const offset = (typeof getTzOffsetHours === 'function') ? getTzOffsetHours() : -new Date().getTimezoneOffset() / 60;
+    const pad = n => String(n).padStart(2, '0');
+    const d = new Date(Date.now() + offset * 3600000);
+    el.textContent = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+    if (elOff) {
+        const sign = offset >= 0 ? '+' : '−';
+        const h = Math.floor(Math.abs(offset));
+        const m = Math.round((Math.abs(offset) - h) * 60);
+        elOff.textContent = 'UTC' + sign + h + (m ? ':' + pad(m) : '');
+    }
+}
 
 window.onload = function () {
     fetchAndUpdateBatteryVoltage();
@@ -369,5 +387,6 @@ document.addEventListener("DOMContentLoaded", function () {
         displayVersion();
         loadCaptivePortalStatusFromServer();
         getFeaturesAsJson().then(fillFeaturesFromServer);
+        updateStatusClock(); // show clock immediately, don't wait 1s
     }
 });

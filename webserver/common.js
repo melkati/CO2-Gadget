@@ -481,3 +481,72 @@ document.addEventListener("DOMContentLoaded", function () {
     // Llamar a la función goLowPower al hacer clic en el icono de bajo consumo
     document.getElementById('lightingIcon').addEventListener('click', goLowPower);
 });
+
+/* =========================================================
+   Timezone helpers — stored in localStorage as 'co2gadget_tz'
+   Value is UTC offset in decimal hours (e.g. 1, -5, 5.5)
+   ========================================================= */
+
+/**
+ * Returns stored UTC offset in hours, or browser's current UTC offset if not set.
+ * @returns {number} UTC offset in decimal hours
+ */
+function getTzOffsetHours() {
+    const stored = localStorage.getItem('co2gadget_tz');
+    if (stored !== null && stored !== '') return parseFloat(stored);
+    return -new Date().getTimezoneOffset() / 60;
+}
+
+/**
+ * Returns the millisecond shift needed to convert a UTC timestamp (Date.now())
+ * to the stored local timezone for display.
+ * @returns {number} offset in ms
+ */
+function getTzOffsetMs() {
+    return getTzOffsetHours() * 3600000;
+}
+
+/**
+ * Saves a UTC offset (decimal hours) to localStorage and triggers a custom event.
+ * @param {string|number} offsetHours
+ */
+function saveTzOffset(offsetHours) {
+    localStorage.setItem('co2gadget_tz', String(offsetHours));
+    document.dispatchEvent(new CustomEvent('tzChange', { detail: { offset: parseFloat(offsetHours) } }));
+}
+
+/**
+ * Formats a UTC epoch timestamp (ms) as 'HH:mm:ss' in the stored timezone.
+ * @param {number} utcMs  — pure UTC milliseconds (Date.now())
+ * @returns {string}
+ */
+function formatTimeInTz(utcMs) {
+    const pad = n => String(n).padStart(2, '0');
+    const d = new Date(utcMs + getTzOffsetMs());
+    return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+}
+
+/**
+ * Formats a UTC epoch timestamp (ms) as 'yyyy-MM-ddTHH:mm' in the stored timezone.
+ * @param {number} utcMs  — pure UTC milliseconds
+ * @returns {string}
+ */
+function formatDatetimeLocalInTz(utcMs) {
+    const pad = n => String(n).padStart(2, '0');
+    const d = new Date(utcMs + getTzOffsetMs());
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +
+        'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+}
+
+/**
+ * Returns a human-readable UTC offset label, e.g. 'UTC+2' or 'UTC−5'.
+ * @param {number} offsetHours
+ * @returns {string}
+ */
+function tzOffsetLabel(offsetHours) {
+    const sign = offsetHours >= 0 ? '+' : '−';
+    const abs = Math.abs(offsetHours);
+    const h = Math.floor(abs);
+    const m = Math.round((abs - h) * 60);
+    return 'UTC' + sign + String(h) + (m ? ':' + String(m).padStart(2, '0') : '');
+}

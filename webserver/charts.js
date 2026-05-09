@@ -2,8 +2,10 @@
    CO2 Gadget – Charts page
    ========================================================= */
 
-/** Convierte un timestamp Unix (ms) a string local yyyy-MM-ddTHH:mm */
+/** Convierte un timestamp Unix (ms) a string 'yyyy-MM-ddTHH:mm' en la zona horaria almacenada */
 function tsToDatetimeLocal(ts) {
+    // ts is a pre-shifted timestamp (shift = stored tz – browser tz applied in buildPoints)
+    // Highcharts uses useUTC:false so it reads browser local time; getHours() gives correct local h
     const d = new Date(ts);
     const pad = n => String(n).padStart(2, '0');
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
@@ -24,7 +26,11 @@ function buildPoints(data) {
     const values = data.data;
     const intervalDuration = data.intervalDuration;
     const baseTs = Date.now() - (data.lastTimestamp - data.end * intervalDuration);
-    return values.map((v, i) => [baseTs + i * intervalDuration, v]);
+    // Extra shift = stored tz offset − browser tz offset, so Highcharts (useUTC:false) shows stored tz
+    const browserOffsetMs = -new Date().getTimezoneOffset() * 60000;
+    const storedOffsetMs = (typeof getTzOffsetMs === 'function') ? getTzOffsetMs() : browserOffsetMs;
+    const tzExtraMs = storedOffsetMs - browserOffsetMs;
+    return values.map((v, i) => [baseTs + i * intervalDuration + tzExtraMs, v]);
 }
 
 /** Aplica el filtro de rango a los puntos */
@@ -64,6 +70,11 @@ function injectControls() {
  * Crea/actualiza el gráfico Highcharts y registra toda la lógica de controles.
  */
 function CreateChart() {
+    // Display timestamps in browser local time (Highcharts default is UTC)
+    if (typeof Highcharts !== 'undefined') {
+        Highcharts.setOptions({ time: { useUTC: false } });
+    }
+
     injectControls();
 
     let allPoints = [];

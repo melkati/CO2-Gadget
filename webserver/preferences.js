@@ -735,5 +735,38 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('vRef').addEventListener('input', () => {
             setTimeout(updateVRef, 100);
         });
+
+        // Timezone selector — init and live preview
+        initTzSelector();
     }
 });
+
+/** Initialise the timezone select widget and start the live clock preview. */
+function initTzSelector() {
+    const sel = document.getElementById('tzOffset');
+    const preview = document.getElementById('tzPreview');
+    const previewOffset = document.getElementById('tzPreviewOffset');
+    if (!sel) return;
+
+    // Select the stored offset (or browser default)
+    const stored = localStorage.getItem('co2gadget_tz');
+    const current = stored !== null ? parseFloat(stored) : getTzOffsetHours();
+    // Find closest option value
+    let bestOpt = sel.options[0];
+    let bestDiff = Infinity;
+    for (const opt of sel.options) {
+        const diff = Math.abs(parseFloat(opt.value) - current);
+        if (diff < bestDiff) { bestDiff = diff; bestOpt = opt; }
+    }
+    sel.value = bestOpt.value;
+    if (stored === null) saveTzOffset(bestOpt.value); // persist browser default
+
+    function tick() {
+        if (!preview) return;
+        preview.textContent = formatTimeInTz(Date.now());
+        const offset = getTzOffsetHours();
+        if (previewOffset) previewOffset.textContent = tzOffsetLabel(offset);
+    }
+    tick();
+    setInterval(tick, 1000);
+}
