@@ -331,6 +331,116 @@ h4 { font-size: 0.95rem; }
   fill: currentColor;
 }
 
+/* Gear / settings icon-only nav button */
+.nav-icon-wrap {
+  position: relative;
+  display: flex;
+}
+.nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+  border-radius: var(--r-md) !important;
+  color: var(--nav-icon) !important;
+  transition: background-color var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              transform 120ms var(--ease) !important;
+}
+.nav-icon-btn:hover {
+  background-color: var(--surface-2) !important;
+  color: var(--text-1) !important;
+}
+.nav-icon-btn:active { transform: scale(0.92) !important; }
+.nav-icon-btn.active {
+  color: var(--nav-active) !important;
+  background-color: var(--accent-light) !important;
+}
+.nav-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* OTA update notification badge on gear icon */
+.nav-update-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f97316;
+  border: 2px solid var(--nav-bg);
+  pointer-events: none;
+}
+
+/* Maintenance / OTA section in preferences page */
+.pref-maintenance {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding: 16px 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid #f9731640;
+  background: #f9731608;
+}
+.pref-maintenance-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f9731618;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f97316;
+}
+.pref-maintenance-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+.pref-maintenance-body {
+  flex: 1;
+}
+.pref-maintenance-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-1);
+  margin: 0 0 2px;
+}
+.pref-maintenance-desc {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  margin: 0;
+}
+.pref-maintenance-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--r-md);
+  background: #f97316;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--duration) var(--ease),
+              transform 120ms var(--ease);
+}
+.pref-maintenance-btn:hover { background: #ea6c0a; }
+.pref-maintenance-btn:active { transform: scale(0.97); }
+.pref-maintenance-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
 /* Responsive nav */
 @media (max-width: 600px) {
   .navbar a span { display: none; }

@@ -415,12 +415,10 @@ function initNavBar() {
         console.log("Document loaded. Initializing navbar...");
 
     if (features.SUPPORT_OTA) {
-        const otaLink = document.getElementById("otaLink");
-        if (otaLink) {
-            otaLink.classList.remove("hidden")
-        } else {
-            console.error('Element with ID "otaLink" not found.')
-        }
+        const otaBadge = document.getElementById("otaBadge");
+        if (otaBadge) otaBadge.classList.remove("hidden");
+        const maintenanceSection = document.getElementById("maintenanceSection");
+        if (maintenanceSection) maintenanceSection.classList.remove("hidden");
     }
 
     if (features.SUPPORT_LOW_POWER) {
