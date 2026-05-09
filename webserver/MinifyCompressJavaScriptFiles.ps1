@@ -15,6 +15,8 @@ $javascriptSets = @{
     "status.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "status.js")
     "ota.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "ota.js")
     "low_power.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "low_power.js")
+    "calibration.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "debugWindow.js", "calibration.js")
+    "charts.js.gz" = @("common.js", "themes.js", "captiveportal.js", "captivePortalStatusBar.js", "serverStatusDot.js", "debugWindow.js", "charts.js")
 }
 
 Write-Host "Source Directory: $sourceDirectory"

@@ -99,6 +99,7 @@ var previousData = {
  * @property {boolean} SUPPORT_MQTT_DISCOVERY - Whether MQTT Discovery is supported.
  * @property {boolean} SUPPORT_OTA - Whether OTA updates are supported.
  * @property {boolean} SUPPORT_LOW_POWER - Whether low power mode is supported.
+ * @property {boolean} SUPPORT_CIRCULAR_BUFFER - Whether circular buffer (charts) is supported.
  */
 var features = {
     SUPPORT_BLE: false,
@@ -108,7 +109,8 @@ var features = {
     SUPPORT_MQTT: false,
     SUPPORT_MQTT_DISCOVERY: false,
     SUPPORT_OTA: false,
-    SUPPORT_LOW_POWER: false
+    SUPPORT_LOW_POWER: false,
+    SUPPORT_CIRCULAR_BUFFER: false
 };
 
 /**
@@ -165,6 +167,7 @@ function loadFeaturesFromServer() {
             features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery !== undefined ? data.MQTTDiscovery : false;
             features.SUPPORT_OTA = data.OTA !== undefined ? data.OTA : false;
             features.SUPPORT_LOW_POWER = data.LowPower !== undefined ? data.LowPower : false;
+            features.SUPPORT_CIRCULAR_BUFFER = data.CircularBuffer !== undefined ? data.CircularBuffer : false;
         })
         .catch(error => console.error('Error fetching features:', error));
 }
@@ -316,6 +319,7 @@ function handleFeaturesData(data) {
     features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery !== undefined ? data.MQTTDiscovery : false;
     features.SUPPORT_OTA = data.OTA !== undefined ? data.OTA : false;
     features.SUPPORT_LOW_POWER = data.LowPower !== undefined ? data.LowPower : false;
+    features.SUPPORT_CIRCULAR_BUFFER = data.CircularBuffer !== undefined ? data.CircularBuffer : false;
 
     if (captivePortalDebug) console.log('Mapped Features:', features);
 }
@@ -432,6 +436,15 @@ function initNavBar() {
             lowPowerIcon.classList.remove("hidden");
         } else {
             console.error('Element with ID "iconLighting" not found.')
+        }
+    }
+
+    if (features.SUPPORT_CIRCULAR_BUFFER) {
+        const chartsLink = document.getElementById("chartsLink");
+        if (chartsLink) {
+            chartsLink.classList.remove("hidden");
+        } else {
+            console.error('Element with ID "chartsLink" not found.')
         }
     }
 }

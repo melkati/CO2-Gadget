@@ -330,6 +330,15 @@ bool displayNotification(String notificationText, notificationTypes notification
 
 /*****************************************************************************************************/
 /*********                                                                                   *********/
+/*********                          SETUP CIRCULAR BUFFER FUNCTIONALITY                      *********/
+/*********                                                                                   *********/
+/*****************************************************************************************************/
+#ifdef SUPPORT_CIRCULAR_BUFFER
+#include "CO2_Gadget_CircularBufferManager.h"
+#endif
+
+/*****************************************************************************************************/
+/*********                                                                                   *********/
 /*********                           INCLUDE WIFI FUNCTIONALITY                              *********/
 /*********                                                                                   *********/
 /*****************************************************************************************************/
@@ -480,6 +489,9 @@ void readingsLoop() {
             lastReadingsCommunicationTime = esp_timer_get_time();
             newReadingsAvailable = false;
             nav.idleChanged = true;  // Must redraw display as there are new readings
+#ifdef SUPPORT_CIRCULAR_BUFFER
+            addCO2Value(co2);
+#endif
 #ifdef SUPPORT_BLE
             publishBLE();
 #endif
@@ -672,6 +684,12 @@ void initHighPerformanceMode() {
     } else {
         Serial.println("-->[STUP] Improv Serial enabled");
     }
+#ifdef SUPPORT_CIRCULAR_BUFFER
+    initCircularBuffer();
+    setSensorSampleInterval(10);       // Set the default sample interval to 10 seconds
+    setMovingAverageInterval(60);      // Set the default moving average interval to 60 seconds
+    setLongTermBufferCapacity(1440);   // Store one day of data at 1 minute intervals
+#endif
     Serial.println("-->[STUP] Ready.");
     Serial.flush();
     // WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector

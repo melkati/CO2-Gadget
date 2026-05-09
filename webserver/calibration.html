@@ -14,12 +14,7 @@
         })();
     </script>
     <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script defer type="text/javascript" src="./common.js"></script>
-    <script defer type="text/javascript" src="./themes.js"></script>
-    <script defer type="text/javascript" src="./serverStatusDot.js"></script>
-    <script defer type="text/javascript" src="./captivePortalStatusBar.js"></script>
-    <script defer type="text/javascript" src="./captiveportal.js"></script>
-    <script defer type="text/javascript" src="./debugWindow.js"></script>
+    <script defer type="text/javascript" src="./calibration.js"></script>
     <style>
         .calibration-card {
             background: var(--card-bg, var(--background-color));
@@ -152,6 +147,12 @@
                     </svg>
                     <span>Calibration</span>
                 </a>
+                <a href="charts.html" class="hidden" id="chartsLink">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z" />
+                    </svg>
+                    <span>Charts</span>
+                </a>
             </div>
             <div class="nav-links-right">
                 <a href="ota.html" class="hidden" id="otaLink">
@@ -245,61 +246,5 @@
         </div>
     </div>
 
-    <script>
-    (function () {
-        // Live readings
-        function updateReadings() {
-            fetch('/getPreferences')
-                .then(r => r.json())
-                .then(d => {
-                    if (d.co2 !== undefined)          document.getElementById('liveCO2').textContent  = d.co2;
-                    if (d.temperature !== undefined)  document.getElementById('liveTemp').textContent = parseFloat(d.temperature).toFixed(1);
-                    if (d.humidity !== undefined)     document.getElementById('liveHum').textContent  = parseFloat(d.humidity).toFixed(1);
-                    const note = document.getElementById('pendingCalibrationNote');
-                    if (d.pendingCalibration) {
-                        note.style.display = '';
-                    } else {
-                        note.style.display = 'none';
-                    }
-                })
-                .catch(() => {});
-        }
-
-        updateReadings();
-        setInterval(updateReadings, 5000);
-
-        // Calibrate button
-        document.getElementById('btnCalibrate').addEventListener('click', function () {
-            const val = parseInt(document.getElementById('calibValue').value, 10);
-            const statusEl = document.getElementById('calibStatus');
-            if (isNaN(val) || val < 400 || val > 2000) {
-                statusEl.textContent = 'Error: value must be between 400 and 2000 ppm.';
-                statusEl.className = 'status-err';
-                return;
-            }
-            statusEl.textContent = 'Sending calibration command…';
-            statusEl.className = '';
-            fetch('/settings?CalibrateCO2=' + val)
-                .then(r => {
-                    if (r.ok) {
-                        return r.text().then(t => {
-                            statusEl.textContent = '✓ ' + t;
-                            statusEl.className = 'status-ok';
-                            document.getElementById('pendingCalibrationNote').style.display = '';
-                        });
-                    } else {
-                        return r.text().then(t => {
-                            statusEl.textContent = '✗ ' + t;
-                            statusEl.className = 'status-err';
-                        });
-                    }
-                })
-                .catch(err => {
-                    statusEl.textContent = '✗ Network error: ' + err;
-                    statusEl.className = 'status-err';
-                });
-        });
-    })();
-    </script>
 </body>
 </html>

@@ -775,6 +775,11 @@ String getCO2GadgetFeaturesAsJson() {
 #else
     doc["LowPower"] = false;
 #endif
+#ifdef SUPPORT_CIRCULAR_BUFFER
+    doc["CircularBuffer"] = true;
+#else
+    doc["CircularBuffer"] = false;
+#endif
 
     String output;
     serializeJson(doc, output);
@@ -1091,6 +1096,22 @@ void initWebServer() {
     server.on("/calibration.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             serveGzippedFile(request, "/calibration.html.gz", "text/html");
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/calibration.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            serveGzippedFile(request, "/calibration.js.gz", "application/javascript");
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    server.on("/charts.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            serveGzippedFile(request, "/charts.html.gz", "text/html");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
@@ -1483,6 +1504,83 @@ void initWebServer() {
             Serial.println("---> [WiFi] Error: request is null");
         }
     });
+
+#ifdef SUPPORT_CIRCULAR_BUFFER
+    /**
+     * SUPPORT FOR CIRCULAR BUFFER WEBSERVER ENDPOINTS
+     */
+
+    /**
+     * @endpoint GET /circularBufferData
+     * @description Returns the data stored in the circular buffer.
+     * @param start (optional) - The starting index of the data to retrieve.
+     * @param end (optional) - The ending index of the data to retrieve.
+     * @response JSON - The buffer data along with timestamp and interval duration.
+     */
+    server.on("/circularBufferData", HTTP_GET, [](AsyncWebServerRequest *request) {
+        int start = 0;
+        int end = longTermBuffer.size() - 1;
+
+        if (request->hasParam("start")) {
+            start = request->getParam("start")->value().toInt();
+        }
+        if (request->hasParam("end")) {
+            end = request->getParam("end")->value().toInt();
+        }
+
+        // Ensure start and end are within bounds
+        if (start < 0) start = 0;
+        if (end >= (int)longTermBuffer.size()) end = longTermBuffer.size() - 1;
+
+        String response = getBufferData(start, end);
+        request->send(200, "application/json", response);
+    });
+
+    /**
+     * @endpoint GET /getCircularBufferConfig
+     * @description Returns the current buffer configuration.
+     * @response JSON - The current configuration including sample interval and buffer capacity.
+     */
+    server.on("/getCircularBufferConfig", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String response = getBufferConfig();
+        request->send(200, "application/json", response);
+    });
+
+    /**
+     * @endpoint POST /updateCircularBufferConfig
+     * @description Updates the buffer configuration.
+     * @body sensorSampleInterval (optional) - The new sample interval in seconds.
+     * @body movingAverageInterval (optional) - The new moving average interval in seconds.
+     * @body longTermBufferCapacity (optional) - The new capacity of the long-term buffer.
+     * @response JSON - The updated buffer configuration.
+     */
+    server.on("/updateCircularBufferConfig", HTTP_POST, [](AsyncWebServerRequest *request) {
+        uint16_t newSensorSampleInterval = sensorSampleInterval;
+        uint16_t newMovingAverageInterval = movingAverageInterval;
+        uint16_t newLongTermBufferCapacity = longTermBufferCapacity;
+
+        if (request->hasParam("sensorSampleInterval", true)) {
+            newSensorSampleInterval = request->getParam("sensorSampleInterval", true)->value().toInt();
+        }
+        if (request->hasParam("movingAverageInterval", true)) {
+            newMovingAverageInterval = request->getParam("movingAverageInterval", true)->value().toInt();
+        }
+        if (request->hasParam("longTermBufferCapacity", true)) {
+            newLongTermBufferCapacity = request->getParam("longTermBufferCapacity", true)->value().toInt();
+        }
+
+        String response = updateBufferConfig(newSensorSampleInterval, newMovingAverageInterval, newLongTermBufferCapacity);
+        request->send(200, "application/json", response);
+    });
+
+    server.on("/charts.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            serveGzippedFile(request, "/charts.js.gz", "application/javascript");
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+#endif  // SUPPORT_CIRCULAR_BUFFER
 
     server.addHandler(savePreferencesHandlerHandler);
     server.addHandler(setCaptivePortalSettingsHandler);

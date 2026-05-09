@@ -15,6 +15,8 @@ $htmlSets = @{
     "status.html.gz" = "status.html"
     "ota.html.gz" = "ota.html"
     "low_power.html.gz" = "low_power.html"
+    "calibration.html.gz" = "calibration.html"
+    "charts.html.gz" = "charts.html"
 }
 
 Write-Host "Source Directory: $sourceDirectory"
