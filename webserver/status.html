@@ -270,11 +270,13 @@
             <div class="card-header"><h2 class="card-title">System</h2></div>
             <div class="card-body">
                 <div class="status-group">
-            <div class="status-item">
+            <div class="status-item" id="currentTimeItem">
                 <span class="status-label">Current time:</span>
-                <span id="currentTime" style="font-weight:600;font-variant-numeric:tabular-nums;">--:--:--</span>
-                &nbsp;<span id="currentTimeOffset" style="color:var(--text-secondary,#666);font-size:.85em;"></span>
-                &nbsp;<a href="preferences.html#tzOffset" style="font-size:.8em;">Change timezone</a>
+                <span class="status-clock-group">
+                    <span id="currentTime" class="status-clock">--:--:--</span>
+                    <span id="currentTimeOffset" class="status-clock-offset"></span>
+                    <a href="preferences.html#tzOffset" class="status-tz-link">Change timezone</a>
+                </span>
             </div>
             <div class="status-item" id="freeHeapItem">
                 <span class="status-label">Free Heap:</span> <span id="freeHeap"></span> bytes

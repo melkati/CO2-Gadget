@@ -645,12 +645,12 @@ h4 { font-size: 0.95rem; }
 }
 
 .status-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(160px, 38%) 1fr;
   align-items: baseline;
-  justify-content: space-between;
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
-  gap: 12px;
+  gap: 8px 16px;
 }
 .status-item:last-child { border-bottom: none; }
 
@@ -658,16 +658,47 @@ h4 { font-size: 0.95rem; }
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-2);
-  flex-shrink: 0;
 }
 
-.status-item > span:last-child {
+.status-item .status-value {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-1);
-  text-align: right;
-  word-break: break-all;
+  word-break: break-word;
 }
+
+/* Fallback for plain spans without .status-value (legacy rows) */
+.status-item > span:not(.status-label) {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-1);
+  word-break: break-word;
+}
+
+/* Clock row (System card in status.html) */
+.status-clock-group {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.status-clock {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.status-clock-offset {
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+.status-tz-link {
+  font-size: 0.78rem;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.status-tz-link:hover { text-decoration: underline; }
 
 /* ================================================================
    SECTION HEADER (fieldset replacement)
