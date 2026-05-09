@@ -1034,10 +1034,13 @@ button.btn-danger:hover,
 .tooltip-icon {
   cursor: pointer;
   opacity: 0.5;
-  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
   transition: opacity 120ms;
 }
 .tooltip-icon:hover { opacity: 1; }
+.tooltip-icon svg { display: block; }
 
 .tooltip-text {
   visibility: hidden;
