@@ -20,4 +20,5 @@ webserver/data/
 # Local development logs and planning files — not for the repo
 docs/phase*-log.md
 docs/build-*.log
+docs/UI-Redesign.md
 PLAN.md

@@ -1,4 +1,5 @@
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
+[![Release](https://img.shields.io/github/v/release/melkati/CO2-Gadget?label=release)](https://github.com/melkati/CO2-Gadget/releases)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 ![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 [![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
@@ -25,6 +26,8 @@
 
 **CO2-Gadget** is an advanced firmware for CO2 Monitors/Meters based on ESP32. It's designed for flexibility, supporting a variety of popular sensors, displays, and communication protocols. With features like real-time visualization, data logging, and over-the-air updates, CO2-Gadget is perfect for both developers and end-users looking to monitor air quality effectively.
 
+> **Current version:** v0.15.000-dev (branch: `modernization/v2`) — major update with low-power mode, Apple-inspired web UI, charts, calibration page, BLE recovery, and 18 closed issues. See [CHANGELOG.md](CHANGELOG.md) for the full list.
+
 It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99% of them).
 
 With cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
@@ -42,8 +45,15 @@ If you don't have a CO2 Monitor you will also find some complete tutorials to bu
 - Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106 & CM1106SL-NS (ultra low power)
 - Support for popular color and monochrome displays
 - Fully functional without display (display not needed)
-- Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historycal data
+- Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historical data
 - Real time visualization on display, serial port and web page
+- **NEW: Apple-inspired web UI** with dark/light mode, responsive design, and card-based layout
+- **NEW: Interactive charts page** — historical CO2/temperature/humidity data with date filter and CSV/JSON export
+- **NEW: Calibration web page** — forced recalibration (FRC) with live CO2 readings
+- **NEW: Low power / deep sleep mode** with configurable sleep cycles, wake-up tracking and boot counters
+- **NEW: Threshold-gated publishing** — MQTT, BLE and ESP-NOW messages only sent when values change by a configured amount (saves bandwidth and power)
+- **NEW: Particulate sensor support** (SPS30, SN-GCJA5) — PM1.0, PM2.5, PM4.0, PM10 published via MQTT with Home Assistant discovery
+- **NEW: Wake display on CO2 alert** — display automatically wakes when CO2 rises above warning threshold
 - Management and configuration via on screen menu, internal web page and console (USB/serial port)
 - Local data logger with upload to phone by BLE
 - CO2 Sensor calibration via on screen menu, internal web page, console (USB/serial port), Bluetooth or MQTT
@@ -55,7 +65,7 @@ If you don't have a CO2 Monitor you will also find some complete tutorials to bu
 - Easy installing via web browser
 - Easy WiFi setup via web browser on install and anytime (supports Improv-WiFi)
 - Easy WiFi setup via bluetooth with the MyAmbiance App in iOS and Android
-- ESP-NOW communications protocol from Espressif for long range and low power consuption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
+- ESP-NOW communications protocol from Espressif for long range and low power consumption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
 - Over the air updates OTA
 - Support for buzzer alarms on CO2 level
 - Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
