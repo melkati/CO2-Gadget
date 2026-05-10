@@ -50,14 +50,9 @@ function buildPoints(data) {
     const interval = data.intervalDuration;  // ms entre puntos consecutivos
     const end = data.end;                     // índice del punto más reciente
 
-    // Desplazamiento extra de zona horaria: diferencia entre la zona guardada
-    // en preferencias y la zona local del navegador.
-    const browserOffsetMs = -new Date().getTimezoneOffset() * 60000;
-    const storedOffsetMs = (typeof getTzOffsetMs === 'function') ? getTzOffsetMs() : browserOffsetMs;
-    const tzExtraMs = storedOffsetMs - browserOffsetMs;
-
-    // Timestamp del punto más reciente ≈ ahora (en la zona guardada)
-    const newestTs = Date.now() + tzExtraMs;
+    // El punto más reciente fue añadido aproximadamente cuando se recibió la respuesta.
+    // Highcharts con useUTC:false ya aplica la zona horaria del navegador al mostrar.
+    const newestTs = Date.now();
 
     return values.map((v, i) => [newestTs + (i - end) * interval, v]);
 }
@@ -320,126 +315,6 @@ function CreateChart() {
             .then(r => r.json())
             .then(data => {
                 allPoints = buildPoints(data);
-                applyFilter();
-            })
-            .catch(err => console.error('Error fetching chart data:', err));
-    }
-
-    fetchAndRender();
-    setInterval(fetchAndRender, 60000);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.href.includes('charts.html') || window.location.pathname === '/charts.html') {
-        if (typeof highlightCurrentPage === 'function') highlightCurrentPage();
-        CreateChart();
-    }
-});
-            yAxis: {
-                title: { text: 'CO2 (ppm)', style: { color: cs('--font-color') } },
-                labels: { style: { color: cs('--font-color') } }
-            },
-            series: [{
-                name: 'CO2',
-                data: points,
-                color: cs('--title-color'),
-                marker: { enabled: points.length < 120 }
-            }],
-            legend: { itemStyle: { color: cs('--font-color') } },
-            credits: { enabled: false },
-            responsive: {
-                rules: [{
-                    condition: { maxWidth: 500 },
-                    chartOptions: {
-                        xAxis: { labels: { format: '{value:%H:%M}' } }
-                    }
-                }]
-            }
-        };
-    }
-
-    function renderChart(points) {
-        if (chart) {
-            chart.series[0].setData(points, true, false, false);
-        } else {
-            chart = Highcharts.chart('container', buildOptions(points));
-        }
-    }
-
-    function getRange() {
-        const fromInput = document.getElementById('charts-from');
-        const toInput   = document.getElementById('charts-to');
-        const fromTs = fromInput && fromInput.value ? new Date(fromInput.value).getTime() : -Infinity;
-        const toTs   = toInput   && toInput.value   ? new Date(toInput.value).getTime()   : Infinity;
-        return { fromTs, toTs };
-    }
-
-    function applyFilter() {
-        const { fromTs, toTs } = getRange();
-        const pts = filterPoints(allPoints, fromTs, toTs);
-        renderChart(pts.length ? pts : allPoints);
-    }
-
-    function resetFilter() {
-        if (!allPoints.length) return;
-        const fromInput = document.getElementById('charts-from');
-        const toInput   = document.getElementById('charts-to');
-        if (fromInput) fromInput.value = tsToDatetimeLocal(allPoints[0][0]);
-        if (toInput)   toInput.value   = tsToDatetimeLocal(allPoints[allPoints.length - 1][0]);
-        renderChart(allPoints);
-    }
-
-    function exportCSV() {
-        const { fromTs, toTs } = getRange();
-        const pts = filterPoints(allPoints, fromTs, toTs);
-        const rows = [['Timestamp', 'CO2_ppm']].concat(pts.map(([ts, v]) => [new Date(ts).toISOString(), v]));
-        downloadText('co2_data.csv', rows.map(r => r.join(',')).join('\n'));
-    }
-
-    function exportJSON() {
-        const { fromTs, toTs } = getRange();
-        const pts = filterPoints(allPoints, fromTs, toTs);
-        const obj = pts.map(([ts, v]) => ({ timestamp: new Date(ts).toISOString(), co2_ppm: v }));
-        downloadText('co2_data.json', JSON.stringify(obj, null, 2));
-    }
-
-    // Eventos de los botones
-    document.getElementById('charts-apply').addEventListener('click', applyFilter);
-    document.getElementById('charts-reset').addEventListener('click', resetFilter);
-    document.getElementById('charts-csv').addEventListener('click', exportCSV);
-    document.getElementById('charts-json').addEventListener('click', exportJSON);
-
-    // Actualización automática del gráfico al cambiar el tema
-    document.addEventListener('themeChange', () => {
-        if (!chart) return;
-        chart.update({
-            chart: { backgroundColor: cs('--bg-color') },
-            title: { style: { color: cs('--title-color') } },
-            xAxis: { labels: { style: { color: cs('--font-color') } } },
-            yAxis: { title: { style: { color: cs('--font-color') } }, labels: { style: { color: cs('--font-color') } } },
-            series: [{ color: cs('--title-color') }],
-            legend: { itemStyle: { color: cs('--font-color') } }
-        }, true, false, false);
-    });
-
-    // Redimensionar el gráfico con la ventana
-    window.addEventListener('resize', () => { if (chart) chart.reflow(); });
-
-    // Carga inicial y refresco cada 60 s
-    function fetchAndRender() {
-        fetch('/circularBufferData')
-            .then(r => r.json())
-            .then(data => {
-                allPoints = buildPoints(data);
-                // Inicializar inputs la primera vez
-                const fromInput = document.getElementById('charts-from');
-                const toInput   = document.getElementById('charts-to');
-                if (fromInput && !fromInput.value && allPoints.length) {
-                    fromInput.value = tsToDatetimeLocal(allPoints[0][0]);
-                }
-                if (toInput && !toInput.value && allPoints.length) {
-                    toInput.value = tsToDatetimeLocal(allPoints[allPoints.length - 1][0]);
-                }
                 applyFilter();
             })
             .catch(err => console.error('Error fetching chart data:', err));
