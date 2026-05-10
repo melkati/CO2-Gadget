@@ -421,22 +421,6 @@ function initNavBar() {
         if (maintenanceSection) maintenanceSection.classList.remove("hidden");
     }
 
-    if (features.SUPPORT_LOW_POWER) {
-        const lowPowerLink = document.getElementById("lowPowerLink");
-        if (lowPowerLink) {
-            lowPowerLink.classList.remove("hidden")
-        } else {
-            console.error('Element with ID "lowPowerLink" not found.')
-        }
-
-        const lowPowerIcon = document.getElementById("iconLighting");
-        if (lowPowerIcon) {
-            lowPowerIcon.classList.remove("hidden");
-        } else {
-            console.error('Element with ID "iconLighting" not found.')
-        }
-    }
-
     if (features.SUPPORT_CIRCULAR_BUFFER) {
         const chartsLink = document.getElementById("chartsLink");
         if (chartsLink) {
@@ -476,8 +460,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.title += ` (${data.hostName})`;
     });
 
-    // Llamar a la función goLowPower al hacer clic en el icono de bajo consumo
-    document.getElementById('lightingIcon').addEventListener('click', goLowPower);
+    // Low power icon click handler (element may not be present in all pages)
+    const lightingIcon = document.getElementById('lightingIcon');
+    if (lightingIcon) lightingIcon.addEventListener('click', goLowPower);
 });
 
 /* =========================================================

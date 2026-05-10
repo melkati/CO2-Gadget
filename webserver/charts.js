@@ -198,6 +198,9 @@ function CreateChart() {
                 color: cs('--title-color'),
                 marker: { enabled: points.length < 120 }
             }],
+            tooltip: {
+                xDateFormat: '%d/%m/%Y %H:%M:%S'
+            },
             legend: { itemStyle: { color: cs('--font-color') } },
             credits: { enabled: false },
             responsive: {

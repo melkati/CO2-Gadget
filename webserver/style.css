@@ -521,7 +521,7 @@ h4 { font-size: 0.95rem; }
 }
 
 .home-page .content {
-  max-width: 720px;
+  max-width: min(1000px, calc(100vw - 32px));
 }
 
 /* ================================================================
@@ -549,6 +549,8 @@ h4 { font-size: 0.95rem; }
 .gauge-svg {
   display: block;
   overflow: visible;
+  width: clamp(220px, 40vw, 420px);
+  height: auto;
 }
 
 .gauge-track {
@@ -592,6 +594,13 @@ h4 { font-size: 0.95rem; }
   transition: fill 0.6s var(--ease);
 }
 
+/* Min/Max labels on arc gauges */
+.gauge-minmax {
+  font-size: 0.65rem;
+  font-weight: 500;
+  fill: var(--text-3);
+}
+
 /* Quality legend below gauge */
 .quality-badge {
   display: inline-flex;
@@ -629,6 +638,7 @@ h4 { font-size: 0.95rem; }
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   transition: box-shadow var(--duration) var(--ease),
               border-color var(--duration) var(--ease);
@@ -644,6 +654,7 @@ h4 { font-size: 0.95rem; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-2);
+  text-align: center;
 }
 
 .metric-card-value {
@@ -658,7 +669,14 @@ h4 { font-size: 0.95rem; }
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text-2);
-  margin-top: 2px;
+}
+
+/* Inline value + unit row */
+.metric-value-unit {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: center;
 }
 
 /* Mini circular gauges (for temp/humidity) */
@@ -670,12 +688,14 @@ h4 { font-size: 0.95rem; }
 
 .mini-gauge-svg {
   flex-shrink: 0;
+  width: clamp(120px, 22vw, 200px);
+  height: auto;
 }
 
 .mini-gauge-track {
   fill: none;
   stroke: var(--surface-3);
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
 }
 [theme="dark"] .mini-gauge-track { stroke: var(--surface-2); }
@@ -683,9 +703,9 @@ h4 { font-size: 0.95rem; }
 .mini-gauge-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
-  stroke-dasharray: 0 100;
+  stroke-dasharray: 0 1000;
   transition: stroke-dasharray 0.9s var(--ease), stroke 0.6s var(--ease);
 }
 

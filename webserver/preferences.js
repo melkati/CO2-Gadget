@@ -1,4 +1,16 @@
 /**
+ * Loads WHO/ASHRAE recommended CO2 quality thresholds into the form fields.
+ * Warning: 800 ppm, Danger: 1000 ppm
+ */
+function loadWHOPreset() {
+    const orangeEl = document.getElementById('co2OrangeRange');
+    const redEl    = document.getElementById('co2RedRange');
+    if (orangeEl) orangeEl.value = 800;
+    if (redEl)    redEl.value    = 1000;
+    sanityCheckData();
+}
+
+/**
  * Fetches version information from the server and updates the version displayed
  */
 function displayVersion() {
