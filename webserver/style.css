@@ -709,6 +709,23 @@ h4 { font-size: 0.95rem; }
   transition: stroke-dasharray 0.9s var(--ease), stroke 0.6s var(--ease);
 }
 
+/* Numeric value rendered inside mini-gauge SVG */
+.mini-gauge-number {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  fill: var(--text-1);
+  transition: fill 0.6s var(--ease);
+}
+
+/* Unit label rendered inside mini-gauge SVG */
+.mini-gauge-unit-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  fill: var(--text-2);
+}
+
 /* Update timestamp */
 .update-time {
   text-align: center;

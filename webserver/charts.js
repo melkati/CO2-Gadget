@@ -201,6 +201,10 @@ function CreateChart() {
             tooltip: {
                 xDateFormat: '%d/%m/%Y %H:%M:%S'
             },
+            exporting: {
+                enabled: true,
+                buttons: { contextButton: { menuItems: ['downloadPNG', 'downloadJPEG', 'downloadSVG'] } }
+            },
             legend: { itemStyle: { color: cs('--font-color') } },
             credits: { enabled: false },
             responsive: {

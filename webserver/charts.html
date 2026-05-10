@@ -7,6 +7,8 @@
     <script>(function(){var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("theme",t);})();</script>
     <link rel="stylesheet" href="./style.css" />
     <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
     <script defer src="./charts.js"></script>
 </head>
 
@@ -43,10 +45,8 @@
                     </a>
                     <span class="nav-update-badge hidden" id="otaBadge" title="OTA update available"></span>
                 </div>
-                <a href="/getCaptivePortalStatusAsJson">
-                    <span id="server-status-dot" class="status-dot status-dot-hidden"
-                        title="Captive portal inactive"></span>
-                </a>
+                <span id="server-status-dot" class="status-dot status-dot-hidden"
+                    title="Captive portal inactive"></span>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
                     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">

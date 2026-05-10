@@ -44,10 +44,8 @@
                     </a>
                     <span class="nav-update-badge hidden" id="otaBadge" title="OTA update available"></span>
                 </div>
-                <a href="/getCaptivePortalStatusAsJson">
-                    <span id="server-status-dot" class="status-dot status-dot-hidden"
-                        title="Captive portal inactive"></span>
-                </a>
+                <span id="server-status-dot" class="status-dot status-dot-hidden"
+                    title="Captive portal inactive"></span>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
                     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -86,7 +84,7 @@
             <!-- Temperature -->
             <div class="metric-card">
                 <p class="metric-card-label">Temperature</p>
-                <svg class="mini-gauge-svg" viewBox="0 0 120 100" aria-hidden="true">
+                <svg class="mini-gauge-svg" viewBox="0 0 120 100" aria-label="Temperature gauge">
                     <!-- Track arc: 240° from lower-left to lower-right, center (60,55) r=45 -->
                     <path class="mini-gauge-track" d="M 21.03 77.5 A 45 45 0 1 1 98.97 77.5"/>
                     <!-- Fill arc -->
@@ -94,16 +92,15 @@
                     <!-- Min / Max labels -->
                     <text x="17" y="93" class="gauge-minmax" text-anchor="middle" id="tempMinLabel">10°</text>
                     <text x="103" y="93" class="gauge-minmax" text-anchor="middle" id="tempMaxLabel">50°</text>
+                    <!-- Value inside gauge -->
+                    <text id="TempValue" class="mini-gauge-number" x="60" y="50" text-anchor="middle" dominant-baseline="middle">--</text>
+                    <text class="mini-gauge-unit-label" x="60" y="69" text-anchor="middle">°C</text>
                 </svg>
-                <p class="metric-value-unit">
-                    <span class="metric-card-value" id="TempValue">--</span>
-                    <span class="metric-card-unit">°C</span>
-                </p>
             </div>
             <!-- Humidity -->
             <div class="metric-card">
                 <p class="metric-card-label">Humidity</p>
-                <svg class="mini-gauge-svg" viewBox="0 0 120 100" aria-hidden="true">
+                <svg class="mini-gauge-svg" viewBox="0 0 120 100" aria-label="Humidity gauge">
                     <!-- Track arc: 240° from lower-left to lower-right, center (60,55) r=45 -->
                     <path class="mini-gauge-track" d="M 21.03 77.5 A 45 45 0 1 1 98.97 77.5"/>
                     <!-- Fill arc -->
@@ -111,11 +108,10 @@
                     <!-- Min / Max labels -->
                     <text x="17" y="93" class="gauge-minmax" text-anchor="middle">0%</text>
                     <text x="103" y="93" class="gauge-minmax" text-anchor="middle">100%</text>
+                    <!-- Value inside gauge -->
+                    <text id="HumValue" class="mini-gauge-number" x="60" y="50" text-anchor="middle" dominant-baseline="middle">--</text>
+                    <text class="mini-gauge-unit-label" x="60" y="69" text-anchor="middle">%rH</text>
                 </svg>
-                <p class="metric-value-unit">
-                    <span class="metric-card-value" id="HumValue">--</span>
-                    <span class="metric-card-unit">%rH</span>
-                </p>
             </div>
         </div>
         <p class="update-time" id="updateTime">Loading...</p>

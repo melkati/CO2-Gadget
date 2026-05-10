@@ -1,8 +1,13 @@
 // Function to fetch version information from the server and display it in the status line
 function displayVersion() {
-    getVersionStr()
-        .then(versionText => {
-            document.getElementById("co2GadgetVersion").innerText = "CO2 Gadget: " + versionText;
+    fetchVersion()
+        .then(versionInfo => {
+            let txt = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}`;
+            if (versionInfo.firmBranch) txt += `-${versionInfo.firmBranch}`;
+            txt += ` (Flavour: ${versionInfo.firmFlavour})`;
+            if (versionInfo.firmBuildDate) txt += ` — Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildTime) txt += ` at ${versionInfo.firmBuildTime}`;
+            document.getElementById("co2GadgetVersion").innerText = txt;
         })
         .catch(error => {
             console.error('Error:', error);
