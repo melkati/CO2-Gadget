@@ -93,24 +93,22 @@ function getCO2Quality(value, orangeRange, redRange) {
  * @returns {Promise<void>} - A promise that resolves when the CO2 data is updated.
  */
 function updateCO2Data(co2OrangeRange, co2RedRange) {
-    const orange = Math.max(801, co2OrangeRange || 1000);
-    const red    = Math.max(orange + 1, co2RedRange || 1500);
-
-    // 5-level color scale — gauge stroke and quality label always share the same color
-    const co2ColorRanges = [
-        { min: 0,      max: 600,    color: 'var(--q-excellent)' },
-        { min: 600,    max: 800,    color: 'var(--q-good)' },
-        { min: 800,    max: orange, color: 'var(--q-moderate)' },
-        { min: orange, max: red,    color: 'var(--q-poor)' },
-        { min: red,    max: Infinity, color: 'var(--q-bad)' }
-    ];
-
     readCO2Data().then(co2Value => {
         const valueEl = document.querySelector('#CO2Value');
         if (valueEl) valueEl.textContent = co2Value.toFixed(0);
-        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 2000);
 
+        // Single source of truth: quality object drives BOTH gauge color and label
         const qual = getCO2Quality(co2Value, co2OrangeRange, co2RedRange);
+
+        // Update gauge stroke with the same color as the quality label
+        const gaugeEl = document.querySelector('#co2Circle');
+        if (gaugeEl) {
+            const totalLen = (typeof gaugeEl.getTotalLength === 'function') ? gaugeEl.getTotalLength() : 100;
+            const percentage = Math.max(0, Math.min(1, co2Value / 2000));
+            gaugeEl.style.stroke = qual.color;
+            gaugeEl.style.strokeDasharray = `${percentage * totalLen} ${totalLen}`;
+        }
+
         const qualEl = document.querySelector('#co2QualityLabel');
         if (qualEl) { qualEl.textContent = qual.text; qualEl.style.fill = qual.color; }
 

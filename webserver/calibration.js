@@ -1,22 +1,17 @@
 // Calibration page logic for CO2 Gadget
 
 (function () {
-    // Live readings
+    // Live readings — use dedicated sensor endpoints (same as index page)
     function updateReadings() {
-        fetch('/getPreferences')
-            .then(r => r.json())
-            .then(d => {
-                if (d.co2 !== undefined)          document.getElementById('liveCO2').textContent  = d.co2;
-                if (d.temperature !== undefined)  document.getElementById('liveTemp').textContent = parseFloat(d.temperature).toFixed(1);
-                if (d.humidity !== undefined)     document.getElementById('liveHum').textContent  = parseFloat(d.humidity).toFixed(1);
-                const note = document.getElementById('pendingCalibrationNote');
-                if (d.pendingCalibration) {
-                    note.style.display = '';
-                } else {
-                    note.style.display = 'none';
-                }
-            })
-            .catch(() => {});
+        Promise.all([
+            readCO2Data().catch(() => null),
+            readTemperatureData().catch(() => null),
+            readHumidityData().catch(() => null)
+        ]).then(([co2, temp, hum]) => {
+            if (co2  !== null) document.getElementById('liveCO2').textContent  = Math.round(co2);
+            if (temp !== null) document.getElementById('liveTemp').textContent = temp;
+            if (hum  !== null) document.getElementById('liveHum').textContent  = hum;
+        });
     }
 
     updateReadings();
