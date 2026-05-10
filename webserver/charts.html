@@ -12,7 +12,7 @@
     <script defer src="./charts.js"></script>
 </head>
 
-<body>
+<body class="charts-page">
     <!-- Navigation bar -->
     <div class="navbar" id="navbar">
         <div class="nav-content">
@@ -47,6 +47,12 @@
                 </div>
                 <span id="server-status-dot" class="status-dot status-dot-hidden"
                     title="Captive portal inactive"></span>
+                <!-- Fullscreen toggle -->
+                <div class="iconDarkLight" id="iconFullscreen" title="Toggle fullscreen">
+                    <svg id="fullscreenIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                        <path id="fullscreenPath" fill="currentColor" d="M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z"/>
+                    </svg>
+                </div>
                 <!-- Theme Switch Icon -->
                 <div class="iconDarkLight" id="iconBulb">
                     <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -63,9 +69,9 @@
     <div id="debug-window" class="debug-window hidden-debug-window"></div>
 
     <!-- Main content -->
-    <div class="content" style="padding-bottom:16px;">
+    <div class="content">
         <div class="chart-canvas-wrap">
-            <div id="container" style="width:100%; height:calc(100vh - 190px); min-height:320px;"></div>
+            <div id="container"></div>
         </div>
     </div>
 </body>

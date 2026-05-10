@@ -1491,6 +1491,65 @@ input.error {
 .hidden { display: none !important; }
 
 /* ================================================================
+   CHARTS PAGE — fills viewport exactly, no scrollbar
+   ================================================================ */
+body.charts-page {
+  overflow: hidden;
+}
+.charts-page .content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px); /* 56px = sticky navbar */
+  overflow: hidden;
+  padding-bottom: 12px;
+}
+.charts-page .chart-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+.charts-page #container {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: auto;
+}
+
+/* ================================================================
+   FULLSCREEN MODE
+   ================================================================ */
+.navbar {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+body.is-fullscreen .navbar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+body.is-fullscreen .navbar.fs-nav-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+/* Restore content top spacing when navbar is out of flow in fullscreen */
+body.is-fullscreen .content {
+  margin-top: 0;
+}
+/* Charts page: full height in fullscreen since navbar is out of flow */
+body.is-fullscreen.charts-page .content {
+  height: 100vh;
+}
+/* Fullscreen icon */
+#iconFullscreen {
+  cursor: pointer;
+}
+
+/* ================================================================
    ANIMATIONS
    ================================================================ */
 @keyframes progress {

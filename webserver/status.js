@@ -5,7 +5,7 @@ function displayVersion() {
             let txt = `CO2 Gadget: v${versionInfo.firmVerMajor}.${versionInfo.firmVerMinor}.${versionInfo.firmRevision}`;
             if (versionInfo.firmBranch) txt += `-${versionInfo.firmBranch}`;
             txt += ` (Flavour: ${versionInfo.firmFlavour})`;
-            if (versionInfo.firmBuildDate) txt += ` — Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildDate) txt += ` \u2014 Built: ${versionInfo.firmBuildDate}`;
             if (versionInfo.firmBuildTime) txt += ` at ${versionInfo.firmBuildTime}`;
             document.getElementById("co2GadgetVersion").innerText = txt;
         })

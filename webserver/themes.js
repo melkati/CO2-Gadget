@@ -27,6 +27,7 @@ function setThemeIcon(theme) {
 function setLowPowerIcon(theme) {
     const iconPathLowPower = document.getElementById("iconPathLowPower");
     const lowPowerIcon = document.getElementById("lightingIcon");
+    if (!lowPowerIcon || !iconPathLowPower) return;
     if (theme === "dark") {
         lowPowerIcon.setAttribute("viewBox", "0 0 384 512");
         iconPathLowPower.setAttribute("d", darkLowPowerIconPath);
@@ -84,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeTheme();
     initializeThemeSwitch();
 
-    // Llamar a la función goLowPower al hacer clic en el icono de bajo consumo
-    document.getElementById('lightingIcon').addEventListener('click', goLowPower);
+    // Low power icon click handler (element removed from most pages — null-safe)
+    const _li = document.getElementById('lightingIcon');
+    if (_li) _li.addEventListener('click', goLowPower);
 });

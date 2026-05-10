@@ -709,6 +709,19 @@ function showTempHumBatt() {
         .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
 }
 
+/**
+ * Reads preferences with limited retries to tolerate transient network timeouts.
+ * @param {number} retries - Number of retry attempts after the first failure.
+ * @returns {Promise<Object>} Preferences object.
+ */
+function readPreferencesWithRetry(retries = 2) {
+    return readPreferencesFromServer().catch(error => {
+        if (retries <= 0) throw error;
+        return new Promise(resolve => setTimeout(resolve, 900))
+            .then(() => readPreferencesWithRetry(retries - 1));
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Get the current URL
     var currentURL = window.location.href;
@@ -722,7 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
         handlePasswordFields();
 
         // Load preferences from the server and populate the form
-        readPreferencesFromServer()
+        readPreferencesWithRetry(2)
             .then(preferences => {
                 populateFormWithPreferences(preferences);
                 displayVersion();
