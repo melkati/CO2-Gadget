@@ -70,18 +70,24 @@ function injectControls() {
     const panel = document.createElement('div');
     panel.id = 'charts-controls';
     panel.innerHTML = `
-        <label class="charts-filter-toggle" title="Activar filtro de rango de fechas">
-            <input type="checkbox" id="charts-filter-enabled">
-            <span>Filtrar por rango de fechas</span>
-        </label>
-        <div id="charts-range-inputs" class="charts-range-inputs charts-range-disabled">
-            <label>Desde: <input type="datetime-local" id="charts-from"></label>
-            <label>Hasta: <input type="datetime-local" id="charts-to"></label>
-            <button id="charts-apply" class="btn-charts">Aplicar</button>
+        <div class="charts-filter-group">
+            <label class="charts-filter-toggle" title="Activar filtro de rango de fechas">
+                <input type="checkbox" id="charts-filter-enabled">
+                <span>Rango de fechas:</span>
+            </label>
+            <div id="charts-range-inputs" class="charts-range-inputs charts-range-disabled">
+                <input type="datetime-local" id="charts-from" title="Desde">
+                <span class="charts-range-sep">→</span>
+                <input type="datetime-local" id="charts-to" title="Hasta">
+                <button id="charts-apply" class="btn-charts">Aplicar</button>
+            </div>
         </div>
         <div class="charts-export-btns">
-            <button id="charts-csv"  class="btn-charts">↓ CSV</button>
-            <button id="charts-json" class="btn-charts">↓ JSON</button>
+            <span class="charts-export-label">Exportar:</span>
+            <button id="charts-csv"  class="btn-charts" title="Descargar datos en CSV">CSV</button>
+            <button id="charts-json" class="btn-charts" title="Descargar datos en JSON">JSON</button>
+            <button id="charts-png"  class="btn-charts" title="Descargar gráfico como imagen PNG">PNG</button>
+            <button id="charts-svg"  class="btn-charts" title="Descargar gráfico como vector SVG">SVG</button>
         </div>
     `;
 
@@ -90,14 +96,23 @@ function injectControls() {
         #charts-controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
             align-items: center;
+            gap: 8px 16px;
             margin-bottom: 14px;
             padding: 10px 16px;
             border-radius: var(--r-md, 10px);
             background: var(--surface-2, #f5f5f7);
             border: 1px solid var(--border, #d1d1d6);
             font-size: .85rem;
+        }
+        /* Filter group: checkbox + date pickers always visually together */
+        .charts-filter-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
         }
         .charts-filter-toggle {
             display: flex;
@@ -115,14 +130,9 @@ function injectControls() {
         .charts-range-inputs {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
             align-items: center;
+            gap: 6px;
             transition: opacity .2s;
-        }
-        .charts-range-inputs label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
         .charts-range-inputs input[type=datetime-local] {
             font-size: .82rem;
@@ -132,17 +142,31 @@ function injectControls() {
             background: var(--surface, #fff);
             color: var(--text-1, #333);
         }
+        .charts-range-sep {
+            color: var(--text-3, #aaa);
+            user-select: none;
+        }
         .charts-range-disabled {
             opacity: 0.38;
             pointer-events: none;
         }
+        /* Export buttons group */
         .charts-export-btns {
             display: flex;
+            align-items: center;
             gap: 6px;
-            margin-left: auto;
+            flex-shrink: 0;
+            border-left: 1px solid var(--border, #d1d1d6);
+            padding-left: 16px;
+        }
+        .charts-export-label {
+            font-size: .78rem;
+            color: var(--text-3, #aaa);
+            white-space: nowrap;
+            user-select: none;
         }
         .btn-charts {
-            padding: 5px 13px;
+            padding: 4px 11px;
             cursor: pointer;
             border: 1px solid var(--border, #d1d1d6);
             border-radius: var(--r-sm, 6px);
@@ -151,7 +175,16 @@ function injectControls() {
             font-size: .82rem;
             transition: background .15s;
         }
-        .btn-charts:hover { background: var(--surface-2, #ebebed); }
+        .btn-charts:hover { background: var(--surface-3, #ebebed); }
+        @media (max-width: 600px) {
+            .charts-export-btns {
+                border-left: none;
+                padding-left: 0;
+                border-top: 1px solid var(--border, #d1d1d6);
+                padding-top: 8px;
+                width: 100%;
+            }
+        }
     `;
     document.head.appendChild(style);
     container.parentNode.insertBefore(panel, container);
@@ -201,10 +234,7 @@ function CreateChart() {
             tooltip: {
                 xDateFormat: '%d/%m/%Y %H:%M:%S'
             },
-            exporting: {
-                enabled: true,
-                buttons: { contextButton: { menuItems: ['downloadPNG', 'downloadJPEG', 'downloadSVG'] } }
-            },
+            exporting: { enabled: false },
             legend: { itemStyle: { color: cs('--font-color') } },
             credits: { enabled: false },
             responsive: {
@@ -295,6 +325,12 @@ function CreateChart() {
 
     document.getElementById('charts-csv').addEventListener('click', exportCSV);
     document.getElementById('charts-json').addEventListener('click', exportJSON);
+    document.getElementById('charts-png').addEventListener('click', () => {
+        if (chart) chart.exportChart({ type: 'image/png', filename: 'co2_data' });
+    });
+    document.getElementById('charts-svg').addEventListener('click', () => {
+        if (chart) chart.exportChart({ type: 'image/svg+xml', filename: 'co2_data' });
+    });
 
     // Actualizar colores al cambiar de tema
     document.addEventListener('themeChange', () => {
