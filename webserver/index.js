@@ -26,6 +26,8 @@ function setUpdateIntervals(newCO2Interval) {
 function updateStroke(value, elementId, colorRanges, maxValue) {
     updateStrokeRange(value, elementId, colorRanges, 0, maxValue);
 }
+
+/**
  * Reads the current measurement interval, converts it to milliseconds,
  * and sets the update intervals accordingly.
  * 
