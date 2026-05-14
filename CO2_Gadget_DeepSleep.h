@@ -358,7 +358,7 @@ void doDeepSleepWiFiConnect() {
 void displayFromDeepSleep(bool forceRedraw = false) {
 #ifdef SUPPORT_EINK
     initDisplayFromDeepSleep(forceRedraw);
-    displayShowValues();
+    displayShowValues(forceRedraw);
 #endif
 }
 
@@ -630,13 +630,11 @@ bool handleLowPowerSensors() {
 
 void handleCycleCountersOnWake() {
     --deepSleepData.cyclesLeftToWiFiConnect;
-    --deepSleepData.cyclesLeftToRedrawDisplay;
     if (deepSleepData.cyclesLeftToWiFiConnect == 65535) deepSleepData.cyclesLeftToWiFiConnect = 0;
-    if (deepSleepData.cyclesLeftToRedrawDisplay == 65535) deepSleepData.cyclesLeftToRedrawDisplay = 0;
 
 #if defined(DEEP_SLEEP_DEBUG)
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesLeftToWiFiConnect));
-    Serial.println("-->[DEEP] Cycles left to redraw E-Ink display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
+    Serial.println("-->[DEEP] Display redraw cycles left: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
 #endif
 }
 
@@ -756,7 +754,7 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
             delay(10);
-            displaySleep(false);
+            displaySleep(true);
 #endif
             toDeepSleep();
             break;
@@ -849,7 +847,7 @@ void deepSleepLoop() {
 #endif
             Serial.println("-->[DEEP] Display off before going to deep sleep");
             delay(20);
-            displaySleep(false);
+            displaySleep(true);
 #endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
