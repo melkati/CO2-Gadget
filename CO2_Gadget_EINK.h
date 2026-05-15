@@ -244,12 +244,13 @@ void turnOffDisplay() {
 
 void displaySleep(bool value = true)  // https://github.com/Bodmer/TFT_eSPI/issues/715
 {
-    display.hibernate();  // TODO: Investigate display.hibernate() vs display.powerOff(). Check if this is the correct way to turn off the display. Specially for GDEM029T94
-    // display.powerOff();
     if (value) {
-        display.powerOff();  // Send command to put the display to sleep.
-        delay(10);           // Delay for shutdown time before another command can be sent.
+        display.epd2.setBusyCallback(nullptr);
+        display.hibernate();
+    } else {
+        display.powerOff();
     }
+    delay(10);  // Delay for shutdown time before another command can be sent.
 }
 
 // Function to set the display rotation
@@ -371,10 +372,13 @@ void busyCallbackDeepSleep(const void* p) {
 #endif
 }
 
+static bool einkDisplayUpdateInProgress = false;
+
 void busyCallbackHighPerformance(const void* p) {
 #ifdef DEBUG_EINK
     // Serial.println("[EINK] busyCallbackHighPerformance light sleep");
 #endif
+    if (einkDisplayUpdateInProgress) return;
     menuLoop();
 }
 
@@ -393,7 +397,6 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     RTC_DATA_ATTR static bool firstBoot = true;
     SPI.begin(EPD_SCLK, EPD_MISO, EPD_MOSI);
     display.epd2.setBusyCallback(busyCallbackDeepSleep);  // register callback to be called during BUSY active time
-    setElementLocations();
     if (firstBoot) {
         forceRedraw = true;
         display.init(115200, true, RESETDURATION, false);
@@ -406,7 +409,8 @@ void initDisplayFromDeepSleep(bool forceRedraw = false) {
     setDisplayRotation(1);
     // display.setRotation(1);
     display.setFont(&SmallFont);
-    // display.setTextColor(GxEPD_BLACK);
+    display.setTextColor(GxEPD_BLACK);
+    setElementLocations();
     // display.setFullWindow();
     // display.setPartialWindow(0, 0, display.width(), display.height());
 #ifdef DEBUG_EINK
@@ -674,7 +678,12 @@ void testRedrawValues(bool randomNumbers = false) {
 #ifdef EINKBOARDGDEM0213B74
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
-    if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
+    if (einkDisplayUpdateInProgress) return;
+    if (forceRedraw) {
+        thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
+    } else if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) {
+        return;
+    }
     if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (redrawDisplayOnNextLoop) {
         shouldRedrawDisplay = true;
@@ -712,20 +721,27 @@ void displayShowValues(bool forceRedraw = false) {
 #endif
     }
 
+    bool drawAllElements = true;
+
     if (forceRedraw) {
         display.fillScreen(GxEPD_WHITE);
         display.clearScreen(GxEPD_WHITE);
+    } else {
+        display.setPartialWindow(0, 0, display.width(), display.height());
+        display.fillScreen(GxEPD_WHITE);
     }
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
-    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
-    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, drawAllElements);
+    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, drawAllElements);
+    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, drawAllElements);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
-    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, drawAllElements);
 
+    einkDisplayUpdateInProgress = true;
     display.display(true);  // Partial update
+    einkDisplayUpdateInProgress = false;
 
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
@@ -739,6 +755,7 @@ void displayShowValues(bool forceRedraw = false) {
 
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
+    if (einkDisplayUpdateInProgress) return;
     if (forceRedraw) {
         thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
     } else {
@@ -781,27 +798,34 @@ void displayShowValues(bool forceRedraw = false) {
 #endif
     }
 
+    bool drawAllElements = true;
+
     if (forceRedraw) {
         display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
+    } else {
+        display.setPartialWindow(0, 0, display.width(), display.height());
         display.fillScreen(GxEPD_WHITE);
     }
 
     // testRedrawValues(true);
-    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, forceRedraw);
-    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, forceRedraw);
-    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, forceRedraw);
+    showCO2(co2, elementPosition.co2X, elementPosition.co2Y, drawAllElements);
+    showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, drawAllElements);
+    showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, drawAllElements);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
-    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
+    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
+    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
+    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, drawAllElements);
     // display.hibernate();
 
+    einkDisplayUpdateInProgress = true;
     if (forceRedraw) {
         display.display();  // Full update
     } else {
         display.displayWindow(0, 0, display.width(), display.height());  // Refresh screen in partial mode
     }
+    einkDisplayUpdateInProgress = false;
 
 #ifdef TIMEDEBUG
     uint32_t elapsed = timer.read();
