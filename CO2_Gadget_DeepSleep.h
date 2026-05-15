@@ -358,7 +358,9 @@ void doDeepSleepWiFiConnect() {
 void displayFromDeepSleep(bool forceRedraw = false) {
 #ifdef SUPPORT_EINK
     initDisplayFromDeepSleep(forceRedraw);
+    einkDisplayUpdateFromDeepSleep = true;
     displayShowValues(forceRedraw);
+    einkDisplayUpdateFromDeepSleep = false;
 #endif
 }
 
@@ -658,8 +660,16 @@ void handleBLEOnWake() {
 
 void handleDisplayReverseOnWake() {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    RTC_DATA_ATTR static bool lastDisplayReverseOnWake = false;
+    RTC_DATA_ATTR static bool lastDisplayReverseOnWakeValid = false;
+    bool displayReverseChanged = !lastDisplayReverseOnWakeValid || (lastDisplayReverseOnWake != deepSleepData.displayReverseOnWake);
+
     displayReverse = deepSleepData.displayReverseOnWake;
-    setDisplayReverse(displayReverse);
+    if (displayReverseChanged) {
+        setDisplayReverse(displayReverse);
+        lastDisplayReverseOnWake = displayReverse;
+        lastDisplayReverseOnWakeValid = true;
+    }
     reverseButtons(displayReverse);
 #endif
 }
