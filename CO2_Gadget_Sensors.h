@@ -186,6 +186,7 @@ void initSensors() {
 #else
     Wire.begin();
 #endif
+    Wire.setTimeout(2000);
 
     Serial.println("-->[SENS] Detecting sensors...");
     sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback

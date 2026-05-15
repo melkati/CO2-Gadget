@@ -15,8 +15,13 @@ const uint16_t DEEP_SLEEP_SECONDS_MIN = 15;
 const uint16_t DEEP_SLEEP_SECONDS_MAX = 900;
 const uint16_t DEEP_SLEEP_SECONDS_DEFAULT = 60;
 
+#ifdef DEBUG_DEEP
 #define DEEP_SLEEP_DEBUG
+#endif
+
+#ifdef DEBUG_DEEP_RTC
 #define DEEP_SLEEP_DEBUG2
+#endif
 
 // CO2 sensors enum
 // typedef enum {
@@ -304,11 +309,13 @@ void toDeepSleep() {
         sensors.scd4x.startLowPowerPeriodicMeasurement();
     }
 
+#ifdef DEEP_SLEEP_DEBUG
     Serial.println("");
     Serial.println("-->***********************************************************************************");
     Serial.println("-->[DEEP] Going into deep sleep for " + String(sleepSeconds) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
     Serial.println("-->***********************************************************************************");
     Serial.println("");
+#endif
     printRTCMemoryEnter();
 
 #ifdef BTN_WAKEUP_IS_TOUCHPAD
@@ -421,6 +428,7 @@ void reInitI2C() {
 #endif
         delay(10);
     }
+    Wire.setTimeout(2000);
 }
 
 bool cm1106HandleFromDeepSleep() {
@@ -663,15 +671,17 @@ bool handleLowPowerSensors() {
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
-        readOK = scd41HandleFromDeepSleep(blockingMode);
 #endif
+        readOK = scd41HandleFromDeepSleep(blockingMode);
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
-        readOK = scd40HandleFromDeepSleep(blockingMode);
 #endif
+        readOK = scd40HandleFromDeepSleep(blockingMode);
     } else {
+#ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
+#endif
         sensors.init();
     }
     return (readOK);
@@ -887,14 +897,16 @@ void deepSleepLoop() {
         // if ((millis() - lastDotPrintTime >= 1000)) {
         //     Serial.print(".");            // Print a dot every loop to show that the device is alive
         //     lastDotPrintTime = millis();  // Update last print time
+#endif
     } else {
+#ifdef DEEP_SLEEP_DEBUG
         // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + "Now: " + String(millis()));
             Serial.println("-->[DEEP] (inMenu=FALSE) Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 5000) + " seconds");
             lastSerialPrintTime = millis();  // Update last print time
-#endif
         }
+#endif
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
