@@ -283,7 +283,7 @@ bool publishMQTTDiscovery(int qos) {
     // TO-DO: Add MAC Address, Hostname, IP and Status to discovery. Don't know why they are not working (home assistant doesn't show them)
     //
     //                                          Device Class        | State Class       | Entity Category   | Group  | Field        | User Friendly Name    | Icon                      | Unit
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "s",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "uptime",      "Uptime",               "clock-time-eight-outline", "",         qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "MAC",         "MAC Address",          "network-outline",          "",         qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "hostname",    "Hostname",             "network-outline",          "",         qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "freeMem",     "Free Memory",          "memory",                   "B",        qos);
@@ -374,11 +374,11 @@ void publishMQTTAlarms() {
 }
 
 void publishMQTTSystemData() {
-    publishIntMQTT("/uptime", millis() / 1000);
+    publishStrMQTT("/uptime", getReliableUptimeFormatted());
     publishFloatMQTT("/voltage", batteryVoltage);
     publishIntMQTT("/battery", batteryLevel);
     publishIntMQTT("/freeMem", ESP.getFreeHeap());
-    publishIntMQTT("/wifiRSSI", WiFi.RSSI());
+    publishIntMQTT("/wifiRSSI", getWiFiRSSIForStatus());
     publishStrMQTT("/IP", WiFi.localIP().toString());
     publishStrMQTT("/MAC", WiFi.macAddress());
     publishStrMQTT("/hostname", hostName);

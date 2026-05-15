@@ -2,6 +2,7 @@
 #define CO2_Gadget_BLE_h
 
 #ifdef SUPPORT_BLE
+#include <NimBLEDevice.h>
 #include "Sensirion_Gadget_BLE.h"
 #include "WifiMultiLibraryWrapper.h"
 
@@ -47,6 +48,21 @@ void initBLE() {
             bleInitialized = true;
         }
     }
+#endif
+}
+
+void disableBLE() {
+#ifdef SUPPORT_BLE
+    if (!bleInitialized) {
+        return;
+    }
+
+    lib.stopAdvertising();
+    delay(10);
+    NimBLEDevice::deinit(true);
+    bleInitialized = false;
+    delay(20);
+    Serial.println("-->[BLE ] BLE disabled!");
 #endif
 }
 

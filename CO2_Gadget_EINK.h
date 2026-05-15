@@ -592,7 +592,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
 #endif
-    int8_t rssi = WiFi.RSSI();
+    int16_t rssi = getWiFiRSSIForStatus();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
         return;
@@ -602,13 +602,16 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
     } else {
-        if (WiFi.status() == WL_CONNECTED) {
-            if (rssi < 60)
+        if ((WiFi.status() == WL_CONNECTED) || deepSleepData.lastWifiRSSIValid) {
+            int16_t signalStrength = abs(rssi);
+            if (signalStrength < 60)
                 display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-            else if (rssi < 70)
+            else if (signalStrength < 70)
                 display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
-            else if (rssi < 80)
+            else if (signalStrength < 80)
                 display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+            else
+                display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
         } else {
             display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
         }

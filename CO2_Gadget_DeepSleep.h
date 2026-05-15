@@ -11,6 +11,10 @@
 
 #include <Sensors.hpp>
 
+const uint16_t DEEP_SLEEP_SECONDS_MIN = 15;
+const uint16_t DEEP_SLEEP_SECONDS_MAX = 900;
+const uint16_t DEEP_SLEEP_SECONDS_DEFAULT = 60;
+
 #define DEEP_SLEEP_DEBUG
 #define DEEP_SLEEP_DEBUG2
 
@@ -241,10 +245,51 @@ void callbackTouch() {
     // placeholder callback function
 }
 
+uint16_t getValidatedDeepSleepSeconds() {
+    if ((deepSleepData.timeSleeping < DEEP_SLEEP_SECONDS_MIN) || (deepSleepData.timeSleeping > DEEP_SLEEP_SECONDS_MAX)) {
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] Invalid timeSleeping in RTC memory: " + String(deepSleepData.timeSleeping) + ". Using " + String(DEEP_SLEEP_SECONDS_DEFAULT) + " seconds.");
+#endif
+        deepSleepData.timeSleeping = DEEP_SLEEP_SECONDS_DEFAULT;
+    }
+
+    return deepSleepData.timeSleeping;
+}
+
+void prepareServicesForDeepSleep() {
+#ifdef SUPPORT_MQTT
+    if (mqttClient.connected()) {
+        mqttClient.loop();
+        delay(10);
+        mqttClient.disconnect();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_ESPNOW
+    if (EspNowInititialized) {
+        disableESPNow();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_BLE
+    disableBLE();
+#endif
+
+    if (WiFi.getMode() != WIFI_OFF) {
+        disableWiFi();
+        delay(50);
+    }
+}
+
 void toDeepSleep() {
 #ifdef SUPPORT_EINK
 // display.hibernate();
 #endif
+
+    deepSleepData.uptimeMillis += millis();
+    const uint16_t sleepSeconds = getValidatedDeepSleepSeconds();
 
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
                 deepSleepData.displayReverseOnWake = displayReverse;
@@ -261,7 +306,7 @@ void toDeepSleep() {
 
     Serial.println("");
     Serial.println("-->***********************************************************************************");
-    Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
+    Serial.println("-->[DEEP] Going into deep sleep for " + String(sleepSeconds) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
     Serial.println("-->***********************************************************************************");
     Serial.println("");
     printRTCMemoryEnter();
@@ -292,6 +337,7 @@ void toDeepSleep() {
 #endif
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
@@ -303,10 +349,11 @@ void toDeepSleep() {
         esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
     }
     // #endif
-    esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
+    esp_sleep_enable_timer_wakeup(static_cast<uint64_t>(sleepSeconds) * 1000000ULL);
     delay(5);
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
+    prepareServicesForDeepSleep();
     esp_deep_sleep_start();
 }
 
