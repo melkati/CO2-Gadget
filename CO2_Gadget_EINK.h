@@ -373,6 +373,7 @@ void busyCallbackDeepSleep(const void* p) {
 }
 
 static bool einkDisplayUpdateInProgress = false;
+static bool einkDisplayUpdateFromDeepSleep = false;
 
 void busyCallbackHighPerformance(const void* p) {
 #ifdef DEBUG_EINK
@@ -697,7 +698,7 @@ void displayShowValues(bool forceRedraw = false) {
         shouldRedrawDisplay = false;
     }
     // Return if last update less than 15 seconds ago
-    if (!forceRedraw && (millis() - lastDisplayUpdate < 10000)) {
+    if (!forceRedraw && !einkDisplayUpdateFromDeepSleep && (millis() - lastDisplayUpdate < 10000)) {
         return;
     }
 
@@ -714,7 +715,7 @@ void displayShowValues(bool forceRedraw = false) {
     if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
         deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
+        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
 #endif
     } else {
         deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
@@ -774,7 +775,7 @@ void displayShowValues(bool forceRedraw = false) {
         shouldRedrawDisplay = false;
     }
     // Return if last update less than 15 seconds ago
-    if (!forceRedraw && (millis() - lastDisplayUpdate < 15000)) {
+    if (!forceRedraw && !einkDisplayUpdateFromDeepSleep && (millis() - lastDisplayUpdate < 15000)) {
         return;
     }
 
@@ -791,7 +792,7 @@ void displayShowValues(bool forceRedraw = false) {
     if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
         deepSleepData.cyclesLeftToRedrawDisplay--;
 #ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(cyclesLeftToRedrawDisplay));
+        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
 #endif
     } else {
         deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
