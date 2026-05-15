@@ -11,8 +11,8 @@ ThresholdManager::ThresholdManager() {
 
 void ThresholdManager::setThresholds(OutputType outputType, bool enabled, bool useOnlyInLowPower, uint16_t keepAlive, uint16_t co2ThresholdAbsolute, float tempThresholdAbsolute, float humThresholdAbsolute, uint16_t co2ThresholdPercentage, float tempThresholdPercentage, float humThresholdPercentage, bool co2CombineWithAnd, bool tempCombineWithAnd, bool humCombineWithAnd) {
     thresholds[outputType].enabled = enabled;
-    thresholds[outputType].useOnlyInLowPower = false;
-    thresholds[outputType].keepAlive = 0;
+    thresholds[outputType].useOnlyInLowPower = useOnlyInLowPower;
+    thresholds[outputType].keepAlive = keepAlive;
     thresholds[outputType].co2ThresholdAbsolute = co2ThresholdAbsolute;
     thresholds[outputType].tempThresholdAbsolute = tempThresholdAbsolute;
     thresholds[outputType].humThresholdAbsolute = humThresholdAbsolute;
@@ -22,9 +22,9 @@ void ThresholdManager::setThresholds(OutputType outputType, bool enabled, bool u
     thresholds[outputType].previousCO2Value = 0;
     thresholds[outputType].previousTemperatureValue = 0.0f;
     thresholds[outputType].previousHumidityValue = 0.0f;
-    thresholds[outputType].co2CombineWithAnd = true;
-    thresholds[outputType].tempCombineWithAnd = true;
-    thresholds[outputType].humCombineWithAnd = true;
+    thresholds[outputType].co2CombineWithAnd = co2CombineWithAnd;
+    thresholds[outputType].tempCombineWithAnd = tempCombineWithAnd;
+    thresholds[outputType].humCombineWithAnd = humCombineWithAnd;
 #ifdef DEBUG_THRESHOLDS
     Serial.println("-->[THRE] Thresholds set for output type: " + String(outputType));
     Serial.println("-->[THRE] Setting enabled: " + String(enabled));
@@ -153,7 +153,7 @@ bool ThresholdManager::evaluateThresholds(OutputType outputType, uint16_t co2, f
  * @throws None
  */
 String ThresholdManager::getThresholdsAsJson(OutputType outputType) {
-    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(10);
+    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(15);
     DynamicJsonDocument doc(capacity);
 
     doc["enabled"] = thresholds[outputType].enabled;
@@ -191,7 +191,7 @@ String ThresholdManager::getThresholdsAsJson(OutputType outputType) {
  * @throws None
  */
 String ThresholdManager::getAllThresholdsAsJson() {
-    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(10);
+    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(15);
     DynamicJsonDocument doc(capacity);
 
     for (int i = 0; i < NUM_OUTPUTS; ++i) {
@@ -268,7 +268,7 @@ void ThresholdManager::saveThresholdsToNVR() {
  * @throws None
  */
 void ThresholdManager::setThresholdsFromJSON(String response) {
-    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(10);
+    const size_t capacity = JSON_ARRAY_SIZE(NUM_OUTPUTS) + NUM_OUTPUTS * JSON_OBJECT_SIZE(15);
     DynamicJsonDocument doc(capacity);
     deserializeJson(doc, response);
 
