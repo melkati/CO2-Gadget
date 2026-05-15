@@ -152,6 +152,55 @@ void publishStrDiscoveryMQTT(String topic, String payload, int qos) {
 #endif
 }
 
+String getMQTTDiscoveryObjectId(String devicePrefix, String field) {
+    String source = devicePrefix + "_" + field;
+    String objectId = "";
+    bool lastWasSeparator = false;
+
+    source.toLowerCase();
+    for (uint16_t i = 0; i < source.length(); ++i) {
+        char c = source.charAt(i);
+        if (((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9'))) {
+            objectId += c;
+            lastWasSeparator = false;
+        } else if (!lastWasSeparator && objectId.length() > 0) {
+            objectId += "_";
+            lastWasSeparator = true;
+        }
+    }
+
+    while (objectId.endsWith("_")) {
+        objectId.remove(objectId.length() - 1);
+    }
+
+    if (objectId.length() == 0) {
+        objectId = "co2_gadget_" + field;
+        objectId.toLowerCase();
+    }
+    return objectId;
+}
+
+bool isMQTTDiscoveryPlaceholderName(String value) {
+    value.trim();
+    value.toLowerCase();
+    return (value.length() == 0) || (value == "unnamed_device") || (value == "unknown");
+}
+
+String getMQTTDiscoveryDeviceName() {
+    String deviceName = String(hostName);
+    if (isMQTTDiscoveryPlaceholderName(deviceName)) {
+        deviceName = String(UNITHOSTNAME);
+    }
+    if (isMQTTDiscoveryPlaceholderName(deviceName)) {
+        deviceName = String(rootTopic);
+    }
+    if (isMQTTDiscoveryPlaceholderName(deviceName)) {
+        deviceName = "CO2-Gadget";
+    }
+    deviceName.trim();
+    return deviceName;
+}
+
 bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entityCategory,
                             String group, String field, String name, String icon, String unit,
                             int qos) {
@@ -159,6 +208,9 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
     String hw_version = String(FLAVOUR);
 
     String maintopic = String(rootTopic);
+    String deviceName = getMQTTDiscoveryDeviceName();
+    String objectId = getMQTTDiscoveryObjectId(deviceName, field);
+    String entityDomain = (field == "problem") ? "binary_sensor" : "sensor";
 
     String topicFull;
     String configTopic;
@@ -176,10 +228,13 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
     payload = String("{") +
               "\"~\": \"" + maintopic + "\"," +
               "\"unique_id\": \"" + maintopic + "-" + configTopic + "\"," +
-              "\"object_id\": \"" + maintopic + "_" + configTopic + "\"," +
+              "\"default_entity_id\": \"" + entityDomain + "." + objectId + "\"," +
               "\"name\": \"" + name + "\"," +
-              "\"icon\": \"mdi:" + icon + "\"," +
-              "\"unit_of_measurement\": \"" + unit + "\",";
+              "\"icon\": \"mdi:" + icon + "\",";
+
+    if (unit != "") {
+        payload += "\"unit_of_measurement\": \"" + unit + "\",";
+    }
 
     if (field == "problem") {  // Special binary sensor which is based on error topic
         payload += "\"state_topic\": \"~/error\",";
@@ -202,7 +257,7 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
 
     payload += String("\"device\": {") +
                "\"identifiers\": [\"" + maintopic + "\"]," +
-               "\"name\": \"" + maintopic + "\"," +
+               "\"name\": \"" + deviceName + "\"," +
                "\"model\": \"CO2 Gadget\"," +
                "\"manufacturer\": \"emariete.com\"," +
                "\"hw_version\": \"" + hw_version + "\"," +
