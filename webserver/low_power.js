@@ -63,6 +63,12 @@ function toggle(checkboxId, elementId) {
     checkbox.addEventListener('change', toggleElement);
 }
 
+function setCombineMode(andRadioId, orRadioId, combineWithAnd) {
+    const useAnd = !!combineWithAnd;
+    document.getElementById(andRadioId).checked = useAnd;
+    document.getElementById(orRadioId).checked = !useAnd;
+}
+
 function loadThresholdsFromServer() {
     fetch('/getThresholdsAsJson')
         .then(response => response.json())
@@ -77,9 +83,9 @@ function loadThresholdsFromServer() {
             document.getElementById("tempThresholdPctDisplay").value = data[0].thrTempPer;
             document.getElementById("humThresholdAbsDisplay").value = data[0].thrHumAbs;
             document.getElementById("humThresholdPctDisplay").value = data[0].thrHumPer;
-            document.getElementById("co2ThresholdAnd").checked = data[0].thrCo2CombAnd;
-            document.getElementById("tempThresholdAnd").checked = data[0].thrTempCombAnd;
-            document.getElementById("humThresholdAnd").checked = data[0].thrHumCombAnd;
+            setCombineMode("co2ThresholdAnd", "co2ThresholdOr", data[0].thrCo2CombAnd);
+            setCombineMode("tempThresholdAnd", "tempThresholdOr", data[0].thrTempCombAnd);
+            setCombineMode("humThresholdAnd", "humThresholdOr", data[0].thrHumCombAnd);
 
             document.getElementById("chkBluetooth").checked = data[1].enabled;
             document.getElementById("keepAliveTimeBluetooth").value = data[1].thrKeepAlive;
@@ -90,9 +96,9 @@ function loadThresholdsFromServer() {
             document.getElementById("tempThresholdPctBluetooth").value = data[1].thrTempPer;
             document.getElementById("humThresholdAbsBluetooth").value = data[1].thrHumAbs;
             document.getElementById("humThresholdPctBluetooth").value = data[1].thrHumPer;
-            document.getElementById("co2ThresholdAndBluetooth").checked = data[1].thrCo2CombAnd;
-            document.getElementById("tempThresholdAndBluetooth").checked = data[1].thrTempCombAnd;
-            document.getElementById("humThresholdAndBluetooth").checked = data[1].thrHumCombAnd;
+            setCombineMode("co2ThresholdAndBluetooth", "co2ThresholdOrBluetooth", data[1].thrCo2CombAnd);
+            setCombineMode("tempThresholdAndBluetooth", "tempThresholdOrBluetooth", data[1].thrTempCombAnd);
+            setCombineMode("humThresholdAndBluetooth", "humThresholdOrBluetooth", data[1].thrHumCombAnd);
 
             document.getElementById("chkMQTT").checked = data[2].enabled;
             document.getElementById("keepAliveTimeMQTT").value = data[2].thrKeepAlive;
@@ -103,9 +109,9 @@ function loadThresholdsFromServer() {
             document.getElementById("tempThresholdPctMQTT").value = data[2].thrTempPer;
             document.getElementById("humThresholdAbsMQTT").value = data[2].thrHumAbs;
             document.getElementById("humThresholdPctMQTT").value = data[2].thrHumPer;
-            document.getElementById("co2ThresholdAndMQTT").checked = data[2].thrCo2CombAnd;
-            document.getElementById("tempThresholdAndMQTT").checked = data[2].thrTempCombAnd;
-            document.getElementById("humThresholdAndMQTT").checked = data[2].thrHumCombAnd;
+            setCombineMode("co2ThresholdAndMQTT", "co2ThresholdOrMQTT", data[2].thrCo2CombAnd);
+            setCombineMode("tempThresholdAndMQTT", "tempThresholdOrMQTT", data[2].thrTempCombAnd);
+            setCombineMode("humThresholdAndMQTT", "humThresholdOrMQTT", data[2].thrHumCombAnd);
 
             document.getElementById("chkESPNOW").checked = data[3].enabled;
             document.getElementById("keepAliveTimeESPNOW").value = data[3].thrKeepAlive;
@@ -116,9 +122,9 @@ function loadThresholdsFromServer() {
             document.getElementById("tempThresholdPctESPNOW").value = data[3].thrTempPer;
             document.getElementById("humThresholdAbsESPNOW").value = data[3].thrHumAbs;
             document.getElementById("humThresholdPctESPNOW").value = data[3].thrHumPer;
-            document.getElementById("co2ThresholdAndESPNOW").checked = data[3].thrCo2CombAnd;
-            document.getElementById("tempThresholdAndESPNOW").checked = data[3].thrTempCombAnd;
-            document.getElementById("humThresholdAndESPNOW").checked = data[3].thrHumCombAnd;
+            setCombineMode("co2ThresholdAndESPNOW", "co2ThresholdOrESPNOW", data[3].thrCo2CombAnd);
+            setCombineMode("tempThresholdAndESPNOW", "tempThresholdOrESPNOW", data[3].thrTempCombAnd);
+            setCombineMode("humThresholdAndESPNOW", "humThresholdOrESPNOW", data[3].thrHumCombAnd);
 
             // Toggle visibility of tabs based on checkbox state
             toggle('chkDisplay', 'Display');
