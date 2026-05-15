@@ -50,6 +50,8 @@ void putPreferences();                              // Defined in CO2_Gadget_Pre
 void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
 void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
 String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
+uint64_t getReliableUptimeSeconds();                // Accumulated uptime across deep sleep cycles
+String getReliableUptimeFormatted();                // Accumulated uptime formatted as <dd>d <hh>h <mm>m
 void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
 void toDeepSleep();                                 // Defined in CO2_Gadget_DeepSleep.h
 void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
@@ -164,15 +166,25 @@ uint64_t timeInitializationCompleted = 0;
 // Variables for Battery reading
 float batteryVoltage = 0;
 uint8_t batteryLevel = 100;
+#ifdef SUPPORT_LOW_POWER
+RTC_DATA_ATTR uint16_t vRef = 960;
+#else
 uint16_t vRef = 960;
+#endif
 uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
+#ifdef SUPPORT_LOW_POWER
+RTC_DATA_ATTR bool hasBattery = false;
+RTC_DATA_ATTR bool workingOnExternalPower = true;    // True if working on external power (USB connected)
+RTC_DATA_ATTR bool displayOffOnExternalPower = false;
+#else
 bool hasBattery = false;
 bool workingOnExternalPower = true;    // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
+#endif
+uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool wakeDisplayOnCO2Alert = true;            // Wake display when CO2 rises above the warning threshold (issue #80)
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
@@ -228,11 +240,32 @@ typedef struct {
     bool displayOnWake;
     bool displayReverseOnWake;  // Display reverse on wake. Here to avoid having to read preferences on wake
     uint16_t timeToDisplayOnWake = 3;
+    bool lastWifiRSSIValid;
+    int16_t lastWifiRSSI;
     bool measurementsStarted;
     uint64_t bootTimes;
+    uint64_t uptimeMillis;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
+
+uint64_t getReliableUptimeSeconds() {
+    return (deepSleepData.uptimeMillis + millis()) / 1000;
+}
+
+String getReliableUptimeFormatted() {
+    uint64_t totalMinutes = (deepSleepData.uptimeMillis + millis()) / 60000;
+    uint64_t days = totalMinutes / 1440;
+    uint8_t hours = (totalMinutes % 1440) / 60;
+    uint8_t minutes = totalMinutes % 60;
+    char uptime[32];
+
+    snprintf(uptime, sizeof(uptime), "%02llud %02uh %02um",
+             static_cast<unsigned long long>(days),
+             static_cast<unsigned int>(hours),
+             static_cast<unsigned int>(minutes));
+    return String(uptime);
+}
 
 #ifdef BUILD_GIT
 #undef BUILD_GIT
@@ -796,6 +829,7 @@ void setup() {
     Serial.println("-->[STUP] lowPowerMode mode (from RTC memory): (" + String(deepSleepData.lowPowerMode) + ") " + getLowPowerModeName(deepSleepData.lowPowerMode));
 
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
+        deepSleepData.uptimeMillis += static_cast<uint64_t>(deepSleepData.timeSleeping) * 1000ULL;
         ++deepSleepData.bootTimes;
         Serial.println("-->[STUP] Boot times from Deep Sleep: " + String(deepSleepData.bootTimes));
         timeToWaitForImprov = 0;
@@ -835,6 +869,9 @@ void setup() {
     } else {
         // Normal boot from any reason
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
+            deepSleepData.uptimeMillis = 0;
+            deepSleepData.lastWifiRSSIValid = false;
+            deepSleepData.lastWifiRSSI = 0;
             Serial.println("-->[STUP] Initializing from: " + getResetReason());
             initPreferences();
             initThresholds();

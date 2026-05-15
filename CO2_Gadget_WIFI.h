@@ -10,6 +10,7 @@
 // clang-format on
 
 #include <Arduino.h>
+#include <esp_wifi.h>
 
 #ifdef SUPPORT_CAPTIVE_PORTAL
 DNSServer dnsServer;
@@ -368,6 +369,29 @@ void printDisconnectReason(int reasonCode) {
 #endif  // DEBUG_WIFI_EVENTS
 }
 
+bool isValidWiFiRSSI(int16_t rssi) {
+    return (rssi <= 0) && (rssi >= -100);
+}
+
+void updateCachedWiFiRSSI() {
+    if (WiFi.status() != WL_CONNECTED) return;
+
+    int16_t rssi = WiFi.RSSI();
+    if (!isValidWiFiRSSI(rssi)) return;
+
+    deepSleepData.lastWifiRSSI = rssi;
+    deepSleepData.lastWifiRSSIValid = true;
+}
+
+int16_t getWiFiRSSIForStatus() {
+    if (WiFi.status() == WL_CONNECTED) {
+        updateCachedWiFiRSSI();
+        return deepSleepData.lastWifiRSSI;
+    }
+
+    return deepSleepData.lastWifiRSSIValid ? deepSleepData.lastWifiRSSI : 0;
+}
+
 void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Get current status
@@ -425,8 +449,9 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
     Serial.println(MACAddress);
 
     // Print the received signal strength:
+    updateCachedWiFiRSSI();
     Serial.print("-->[WiFi] Signal strength (RSSI):");
-    Serial.print(WiFi.RSSI());
+    Serial.print(getWiFiRSSIForStatus());
     Serial.println(" dBm");
 
     /*
@@ -628,8 +653,10 @@ void initMDNS() {
 }
 
 void disableWiFi() {
-    WiFi.disconnect(true);  // Disconnect from the network
-    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    WiFi.disconnect(false);  // Disconnect first; esp_wifi_stop() stops the radio below.
+    delay(50);
+    esp_wifi_stop();
+    delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
 }
 
@@ -798,7 +825,7 @@ String getCO2GadgetStatusAsJson() {
     doc["wifiPass"] = wifiPass;
 #endif
     doc["IP"] = WiFi.localIP().toString();
-    doc["RSSI"] = WiFi.RSSI();
+    doc["RSSI"] = getWiFiRSSIForStatus();
     doc["MACAddress"] = MACAddress;
     doc["hostName"] = hostName;
     doc["useStaticIP"] = useStaticIP;
@@ -1684,6 +1711,7 @@ bool connectToWiFi() {
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
+        updateCachedWiFiRSSI();
         return true;
     }
 }
