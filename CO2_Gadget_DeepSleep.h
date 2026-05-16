@@ -269,10 +269,14 @@ void toDeepSleep() {
     esp_sleep_enable_touchpad_wakeup();
 #endif
 
-    // Experimental: Turn off green LED and display on S3 board
-    // #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    // digitalWrite(TFT_POWER_ON_BATTERY, LOW);
-    // #endif
+    // Cut display power rail before deep sleep (TDISPLAY_S3 and boards with TFT_POWER_ON_BATTERY)
+    // Without this, gpio_deep_sleep_hold_en() keeps the pin HIGH and the display drains current during sleep.
+#ifdef TFT_POWER_ON_BATTERY
+    setDisplayBrightness(0);                  // Shutdown backlight IC first
+    delay(5);
+    digitalWrite(TFT_POWER_ON_BATTERY, LOW);  // Cut display power MOSFET
+    delay(5);
+#endif
 
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEW0213M21) || defined(EINKBOARDGDEM0213B74)
     // Pull up pin 13 to put flash memory into deep sleep
@@ -301,6 +305,20 @@ void toDeepSleep() {
     // #endif
     esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
     delay(5);
+
+#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+    // On ESP32-S3 with USB CDC enabled, the USB PHY draws ~40mA during deep sleep
+    // unless explicitly shut down. Serial.end() stops the HWCDC driver and allows
+    // the USB PHY to power down, enabling true sub-mA deep sleep.
+    Serial.end();
+    delay(50);
+#endif
+
+    // Power down SPI flash/PSRAM LDO (VDDSDIO) during deep sleep.
+    // By default it stays ON to preserve PSRAM state, but since deep sleep
+    // always triggers a full reset on wake, powering it down saves ~5-20mA.
+    esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
     esp_deep_sleep_start();
@@ -732,6 +750,13 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
             Serial.println("-->[DEEP] Wakeup caused by timer");
 #endif
             fromDeepSleepTimer();
+#if defined(SUPPORT_TFT)
+            // For TFT displays, explicitly turn off the display before deep sleep.
+            // turnOffDisplay() shuts down the backlight IC; TFT_POWER_ON_BATTERY is
+            // then driven LOW inside toDeepSleep() to cut the display power rail.
+            turnOffDisplay();
+            delay(10);
+#endif
 #if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
             delay(10);

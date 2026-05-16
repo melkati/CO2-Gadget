@@ -300,13 +300,18 @@ void initBacklight() {
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     pinMode(TFT_BACKLIGHT, OUTPUT);
+    // TFT_POWER_ON_BATTERY was already set HIGH in initDisplay() before tft.init();
+    // assert it here too so initBacklight() is safe if called independently.
     pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
-    delay(20);
-    digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
-    actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
+    delay(20);  // Pin starts LOW → >3 ms keeps IC in shutdown; then we wake it below
+    digitalWrite(TFT_BACKLIGHT, HIGH);
+    delay(5);   // Allow backlight IC (DW8904-compatible) to stabilize at level 16
+    actualDisplayBrightness = 16;  // IC powers up at maximum level after wakeup from shutdown
     if (DisplayBrightness > 16)    // Prevent malfunction if upper values are stored in preferences
         DisplayBrightness = 16;
+    if (DisplayBrightness == 0)    // Prevent permanent black screen: 0 shuts down the IC immediately
+        DisplayBrightness = 1;
     setDisplayBrightness(DisplayBrightness);
 #endif
 }
@@ -328,6 +333,13 @@ void initDisplay(bool fastMode = false) {
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+    // Power on display BEFORE tft.init() so the panel is powered during initialization.
+    // On battery-powered devices GPIO15 enables the boost converter; without it the
+    // init commands reach an unpowered panel and the display stays blank.
+    pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
+    digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
+#endif
     tft.init();
     setDisplayReverse(displayReverse);
     setElementLocations();
