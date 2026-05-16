@@ -296,28 +296,50 @@ void toDeepSleep() {
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
 
-    // Only GPIOs which are have RTC functionality can be used: 0,2,4,12-15,25-27,32-39
+    // Configure GPIO wakeup source.
+    // On ESP32-S3, ext0 wakeup uses esp_deep_sleep_enable_gpio_wakeup() (IDF 5.x LP GPIO API).
+    // On classic ESP32, use esp_sleep_enable_ext0_wakeup() (RTC GPIO API).
+#if CONFIG_IDF_TARGET_ESP32S3
+    // ESP32-S3: use the GPIO wakeup API. On IDF 5.x this is esp_deep_sleep_enable_gpio_wakeup();
+    // on older IDF the ext1 API with a single GPIO is used as a fallback.
+    // Wakes on LOW level (button pressed = GND).
     if ((BTN_DWN != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_DWN))) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);  // 1 = High, 0 = Low
+        gpio_pullup_en(static_cast<gpio_num_t>(BTN_DWN));    // ensure pull-up so pin is HIGH when idle
+        gpio_pulldown_dis(static_cast<gpio_num_t>(BTN_DWN));
+        // Use ext1 on ESP32-S3 (supports all GPIOs), wakeup when ALL listed GPIOs go LOW.
+        esp_sleep_enable_ext1_wakeup(1ULL << BTN_DWN, ESP_EXT1_WAKEUP_ALL_LOW);
     } else if ((BTN_UP != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_UP))) {
-        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);  // 1 = High, 0 = Low
+        gpio_pullup_en(static_cast<gpio_num_t>(BTN_UP));
+        gpio_pulldown_dis(static_cast<gpio_num_t>(BTN_UP));
+        esp_sleep_enable_ext1_wakeup(1ULL << BTN_UP, ESP_EXT1_WAKEUP_ALL_LOW);
     }
+#else
+    // Classic ESP32: only RTC-capable GPIOs can be used (0,2,4,12-15,25-27,32-39).
+    if ((BTN_DWN != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_DWN))) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_DWN), LOW);
+    } else if ((BTN_UP != -1) && esp_sleep_is_valid_wakeup_gpio(static_cast<gpio_num_t>(BTN_UP))) {
+        esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_UP), LOW);
+    }
+#endif
     // #endif
-    esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000);
+    esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000ULL);
     delay(5);
 
 #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
-    // On ESP32-S3 with USB CDC enabled, the USB PHY draws ~40mA during deep sleep
-    // unless explicitly shut down. Serial.end() stops the HWCDC driver and allows
-    // the USB PHY to power down, enabling true sub-mA deep sleep.
+    // On ESP32-S3 with USB CDC (HWCDC) enabled, the USB PHY can prevent deep sleep
+    // or cause immediate wake-up unless fully torn down. Serial.end() stops the
+    // HWCDC driver; the USB.end() call (if available) ensures the USB peripheral
+    // is properly deregistered so the PHY can power down.
     Serial.end();
-    delay(50);
+    delay(100);  // Allow USB PHY to finish disconnect sequence before entering deep sleep
 #endif
 
     // Power down SPI flash/PSRAM LDO (VDDSDIO) during deep sleep.
-    // By default it stays ON to preserve PSRAM state, but since deep sleep
-    // always triggers a full reset on wake, powering it down saves ~5-20mA.
+    // ESP_PD_DOMAIN_VDDSDIO only exists on classic ESP32; on ESP32-S3 this call
+    // is invalid and will trigger an abort. Guard it with the target check.
+#if CONFIG_IDF_TARGET_ESP32
     esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+#endif
 
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
