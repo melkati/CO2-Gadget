@@ -31,12 +31,8 @@ String getLowPowerModeName(uint16_t mode) {
     switch (mode) {
         case HIGH_PERFORMANCE:
             return "HIGH_PERFORMANCE";
-        case BASIC_LOWPOWER:
-            return "BASIC_LOWPOWER";
-        case MEDIUM_LOWPOWER:
-            return "MEDIUM_LOWPOWER";
-        case MAXIMUM_LOWPOWER:
-            return "MAXIMUM_LOWPOWER";
+        case 1:
+            return "LOW_POWER";
         default:
             return "UNKNOWN";
     }
@@ -640,12 +636,6 @@ void handleCycleCountersOnWake() {
 #endif
 }
 
-void handleLowPowerModeBasicOnWake() {
-#ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: BASIC_LOWPOWER");
-#endif
-}
-
 void handleBLEOnWake() {
 #ifdef SUPPORT_BLE
     if (deepSleepData.activeBLEOnWake) {
@@ -732,15 +722,8 @@ void handleMediumLowPowerModeOnWake() {
 void fromDeepSleepTimer() {
     handleCycleCountersOnWake();
 
-    switch (deepSleepData.lowPowerMode) {
-        case BASIC_LOWPOWER:
-            handleLowPowerModeBasicOnWake();
-            break;
-        case MEDIUM_LOWPOWER:
-            handleMediumLowPowerModeOnWake();
-            break;
-        case MAXIMUM_LOWPOWER:
-            break;
+    if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
+        handleMediumLowPowerModeOnWake();
     }
 
     Serial.flush();

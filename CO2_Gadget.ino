@@ -208,7 +208,7 @@ typedef enum {
 // typedef enum LowPowerMode { HIGH_PERFORMANCE, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER };
 
 typedef struct {
-    uint16_t lowPowerMode;  // 0 = No low power, 1 = Basic low power, 2 = Medium low power, 3 = Maximum low power
+    uint16_t lowPowerMode;  // 0 = HIGH_PERFORMANCE (no deep sleep), 1 = LOW_POWER (deep sleep enabled)
     CO2SENSORS_t co2Sensor;
     uint16_t waitToGoDeepSleepOn1stBoot;  // Give an opportunity to user to interact with the device before going to deep sleep
     uint16_t timeSleeping;

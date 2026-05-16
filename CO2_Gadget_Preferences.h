@@ -150,6 +150,14 @@ void upgradePreferences() {
         prefRevision = 1;
         putPreferences();
     }
+    // Migrate 4-mode lowPowerMode (0/1/2/3) to binary (0=HIGH_PERFORMANCE, 1=LOW_POWER)
+    if (deepSleepData.lowPowerMode > 1) {
+        Serial.println("-->[PREF] Migrating lowPowerMode " + String(deepSleepData.lowPowerMode) + " -> 1 (LOW_POWER)");
+        deepSleepData.lowPowerMode = 1;
+        preferences.begin("CO2-Gadget", false);
+        preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
+        preferences.end();
+    }
 }
 
 void printActualSettings() {
