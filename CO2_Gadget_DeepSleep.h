@@ -408,10 +408,6 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         initialized = true;
     }
 
-    if ((interactiveMode) && (!isDataReadySCD4x())) {
-        return (false);
-    }
-
     Serial.print("-->[DEEP] ");
     Serial.print(__func__);
     Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
@@ -610,13 +606,13 @@ bool handleLowPowerSensors() {
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD41] Waking up from deep sleep. Handling SCD41");
-        readOK = scd41HandleFromDeepSleep(blockingMode);
 #endif
+        readOK = scd41HandleFromDeepSleep(blockingMode);  // NOTE: must be outside #ifdef DEEP_SLEEP_DEBUG
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD40] Waking up from deep sleep. Handling SCD40");
-        readOK = scd40HandleFromDeepSleep(blockingMode);
 #endif
+        readOK = scd40HandleFromDeepSleep(blockingMode);  // NOTE: must be outside #ifdef DEEP_SLEEP_DEBUG
     } else {
         if (!interactiveMode) Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
         sensors.init();

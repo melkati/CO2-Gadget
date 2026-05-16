@@ -737,6 +737,7 @@ void initGPIOLowPower() {
 #ifdef SUPPORT_MQTT
     initMQTT();
 #endif
+    initPreferences();
     initButtons();
     timeInitializationCompleted = millis();
     restartTimerToDeepSleep();
@@ -864,9 +865,8 @@ void setup() {
 
     if (interactiveMode) {
         Serial.println("-->[STUP] Entering interactive mode");
-        initPreferences();
     } else {
-        Serial.println("-->[STUP] Entering low power mode");
+        Serial.println("-->[STUP] Entering high performance mode");
     }
 
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);  // enable brownout detector
