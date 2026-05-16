@@ -22,6 +22,8 @@ function displayVersion() {
                 versionText += `-${versionInfo.firmBranch}`;
             }
             versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            if (versionInfo.firmBuildDate) versionText += ` — Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildTime) versionText += ` at ${versionInfo.firmBuildTime}`;
             document.getElementById("co2GadgetVersion").innerText = versionText;
 
             // Adjust preferences.html for specific versions

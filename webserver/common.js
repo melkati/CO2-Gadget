@@ -379,6 +379,8 @@ function getVersionStr() {
                 versionText += `-${versionInfo.firmBranch}`;
             }
             versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            if (versionInfo.firmBuildDate) versionText += ` \u2014 Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildTime) versionText += ` at ${versionInfo.firmBuildTime}`;
             if (captivePortalDebug) console.log('Version string:', versionText);
             return versionText;
         })
