@@ -521,7 +521,37 @@ h4 { font-size: 0.95rem; }
 }
 
 .home-page .content {
-  max-width: 720px;
+  max-width: 100%;
+  padding-left: max(16px, 3vw);
+  padding-right: max(16px, 3vw);
+}
+
+/* Responsive dashboard grid: stacked on mobile, side-by-side on wide screens */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (min-width: 680px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  /* Stack the two mini-gauge cards vertically in the right column */
+  .dashboard-grid .metrics-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 48px;
+  }
 }
 
 /* ================================================================
@@ -549,6 +579,10 @@ h4 { font-size: 0.95rem; }
 .gauge-svg {
   display: block;
   overflow: visible;
+  width: 100%;
+  max-width: min(90vw, 75vh);
+  height: auto;
+  margin: 0 auto;
 }
 
 .gauge-track {
@@ -571,25 +605,29 @@ h4 { font-size: 0.95rem; }
               stroke 0.6s var(--ease);
 }
 
+/* font-size is set as SVG attribute (user units) so it scales with the gauge */
 .gauge-number {
   font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
-  font-size: 2.6rem;
   font-weight: 700;
   letter-spacing: -0.04em;
   fill: var(--text-1);
 }
 
 .gauge-unit {
-  font-size: 0.8rem;
   font-weight: 500;
   fill: var(--text-2);
 }
 
 .gauge-quality {
-  font-size: 0.95rem;
   font-weight: 600;
   fill: var(--q-good);
   transition: fill 0.6s var(--ease);
+}
+
+/* Min/Max labels on arc gauges */
+.gauge-minmax {
+  font-weight: 500;
+  fill: var(--text-3);
 }
 
 /* Quality legend below gauge */
@@ -629,6 +667,7 @@ h4 { font-size: 0.95rem; }
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   transition: box-shadow var(--duration) var(--ease),
               border-color var(--duration) var(--ease);
@@ -644,6 +683,7 @@ h4 { font-size: 0.95rem; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-2);
+  text-align: center;
 }
 
 .metric-card-value {
@@ -658,7 +698,14 @@ h4 { font-size: 0.95rem; }
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text-2);
-  margin-top: 2px;
+}
+
+/* Inline value + unit row */
+.metric-value-unit {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: center;
 }
 
 /* Mini circular gauges (for temp/humidity) */
@@ -670,12 +717,15 @@ h4 { font-size: 0.95rem; }
 
 .mini-gauge-svg {
   flex-shrink: 0;
+  width: 100%;
+  max-width: min(80vw, 38vh);
+  height: auto;
 }
 
 .mini-gauge-track {
   fill: none;
   stroke: var(--surface-3);
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
 }
 [theme="dark"] .mini-gauge-track { stroke: var(--surface-2); }
@@ -683,10 +733,24 @@ h4 { font-size: 0.95rem; }
 .mini-gauge-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
-  stroke-dasharray: 0 100;
+  stroke-dasharray: 0 1000;
   transition: stroke-dasharray 0.9s var(--ease), stroke 0.6s var(--ease);
+}
+
+/* font-size is set as SVG attribute (user units) so it scales with the gauge */
+.mini-gauge-number {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  fill: var(--text-1);
+  transition: fill 0.6s var(--ease);
+}
+
+.mini-gauge-unit-label {
+  font-weight: 500;
+  fill: var(--text-2);
 }
 
 /* Update timestamp */
@@ -1427,6 +1491,65 @@ input.error {
 .hidden { display: none !important; }
 
 /* ================================================================
+   CHARTS PAGE — fills viewport exactly, no scrollbar
+   ================================================================ */
+body.charts-page {
+  overflow: hidden;
+}
+.charts-page .content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px); /* 56px = sticky navbar */
+  overflow: hidden;
+  padding-bottom: 12px;
+}
+.charts-page .chart-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+.charts-page #container {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: auto;
+}
+
+/* ================================================================
+   FULLSCREEN MODE
+   ================================================================ */
+.navbar {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+body.is-fullscreen .navbar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+body.is-fullscreen .navbar.fs-nav-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+/* Restore content top spacing when navbar is out of flow in fullscreen */
+body.is-fullscreen .content {
+  margin-top: 0;
+}
+/* Charts page: full height in fullscreen since navbar is out of flow */
+body.is-fullscreen.charts-page .content {
+  height: 100vh;
+}
+/* Fullscreen icon */
+#iconFullscreen {
+  cursor: pointer;
+}
+
+/* ================================================================
    ANIMATIONS
    ================================================================ */
 @keyframes progress {
@@ -1454,7 +1577,6 @@ input.error {
 @media (max-width: 600px) {
   .content { padding: 16px 12px 40px; }
   .metric-card-value { font-size: 1.65rem; }
-  .gauge-number { font-size: 2rem; }
 }
 
 @media (max-width: 400px) {

@@ -23,27 +23,6 @@
                     <span>Home</span>
                 </a>
 
-                <a href="low_power.html" class="hidden" id="lowPowerLink">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                        <path
-                            d="M0 256L28.5 28c2-16 15.6-28 31.8-28H228.9c15 0 27.1 12.1 27.1 27.1c0 3.2-.6 6.5-1.7 9.5L208 160H347.3c20.2 0 36.7 16.4 36.7 36.7c0 7.4-2.2 14.6-6.4 20.7l-192.2 281c-5.9 8.6-15.6 13.7-25.9 13.7h-2.9c-15.7 0-28.5-12.8-28.5-28.5c0-2.3 .3-4.6 .9-6.9L176 288H32c-17.7 0-32-14.3-32-32z" />
-                    </svg>
-                    <span>Low Power</span>
-                </a>
-                <a href="status.html">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-                        <path
-                            d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
-                    </svg>
-                    <span>Status</span>
-                </a>
-                <a href="calibration.html">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                        <path d="M177.9 494.1c-18.7 18.7-49.1 18.7-67.9 0L17.9 401.9c-18.7-18.7-18.7-49.1 0-67.9l50.7-50.7 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 50.7-50.7c18.7-18.7 49.1-18.7 67.9 0l92.1 92.1c18.7 18.7 18.7 49.1 0 67.9L177.9 494.1z"/>
-                    </svg>
-                    <span>Calibration</span>
-                </a>
                 <a href="charts.html" class="hidden" id="chartsLink">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                         <path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z" />
@@ -52,6 +31,12 @@
                 </a>
             </div>
             <div class="nav-links-right">
+                <!-- Status icon -->
+                <div class="nav-icon-wrap">
+                    <a href="status.html" class="nav-icon-btn" id="statusNavLink" title="Status">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+                    </a>
+                </div>
                 <!-- Preferences / Settings gear icon — active on this page -->
                 <div class="nav-icon-wrap">
                     <a href="preferences.html" class="nav-icon-btn active" id="prefsLink" title="Preferences">
@@ -59,14 +44,12 @@
                     </a>
                     <span class="nav-update-badge hidden" id="otaBadge" title="OTA update available"></span>
                 </div>
-                <a href="/getCaptivePortalStatusAsJson">
-                    <span id="server-status-dot" class="status-dot status-dot-hidden"
-                        title="Captive portal inactive"></span>
-                </a>
-                <!-- Low Power Icon -->
-                <div class="iconLowPower hidden low-power-icon light-mode" id="iconLighting">
-                    <svg id="lightingIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                        <path id="iconPathLowPower" fill="currentColor"></path>
+                <span id="server-status-dot" class="status-dot status-dot-hidden"
+                    title="Captive portal inactive"></span>
+                <!-- Fullscreen toggle -->
+                <div class="iconDarkLight" id="iconFullscreen" title="Toggle fullscreen">
+                    <svg id="fullscreenIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                        <path id="fullscreenPath" fill="currentColor" d="M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z"/>
                     </svg>
                 </div>
                 <!-- Theme Switch Icon -->
@@ -238,6 +221,17 @@
                         <div class="form-group flex-align-center"><label for="autoSelfCalibration">Auto Self-Calibration:</label><input type="checkbox" id="autoSelfCalibration" name="autoSelfCalibration"><span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span><span class="tooltip-text">Not recommended if sensor doesn't get fresh air weekly.</span></div>
                         <div class="form-group flex-align-center"><label for="co2OrangeRange">Warning Level (ppm):</label><input type="number" id="co2OrangeRange" name="co2OrangeRange" value="" onchange="sanityCheckData()"></div>
                         <div class="form-group flex-align-center"><label for="co2RedRange">Danger Level (ppm):</label><input type="number" id="co2RedRange" name="co2RedRange" value="" onchange="sanityCheckData()"></div>
+                        <div class="form-group flex-align-center" style="margin-top:4px;">
+                            <button type="button" id="loadWHOPresetBtn" onclick="loadWHOPreset()" style="font-size:0.82rem;padding:5px 12px;">Load WHO/ASHRAE Recommended</button>
+                            <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
+                            <span class="tooltip-text">Sets Warning to 800 ppm and Danger to 1000 ppm — the thresholds recommended by WHO and ASHRAE for acceptable indoor air quality.</span>
+                        </div>
+                        <div class="form-group flex-align-center" style="margin-top:4px;">
+                            <a href="calibration.html" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--accent);font-weight:600;text-decoration:none;">
+                                <svg viewBox="0 0 512 512" width="13" height="13" fill="currentColor"><path d="M177.9 494.1c-18.7 18.7-49.1 18.7-67.9 0L17.9 401.9c-18.7-18.7-18.7-49.1 0-67.9l50.7-50.7 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 41.4-41.4 48 48c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6l-48-48 50.7-50.7c18.7-18.7 49.1-18.7 67.9 0l92.1 92.1c18.7 18.7 18.7 49.1 0 67.9L177.9 494.1z"/></svg>
+                                Advanced Calibration…
+                            </a>
+                        </div>
                     </fieldset>
                     <fieldset><legend>Temperature Sensor</legend>
                         <div class="form-group flex-align-center"><label for="tempOffset">Temperature Offset (°C):</label><input type="number" step="0.1" id="tempOffset" name="tempOffset" value="" min="0" max="30"><span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span><span class="tooltip-text">Calibration offset subtracted from readings.</span></div>
@@ -307,6 +301,24 @@
                     <div class="form-group flex-align-center" id="dispOffOnExPDiv"><label for="dispOffOnExP">Off on USB Power:</label><input type="checkbox" id="dispOffOnExP" name="dispOffOnExP"></div>
                     <div class="form-group flex-align-center" id="displayReverseDiv"><label for="displayReverse">Reverse Display:</label><input type="checkbox" id="displayReverse" name="displayReverse" onchange="toggleDisplayReverse()"></div>
                     <div class="form-group flex-align-center" id="displayBrightDiv"><label for="DisplayBright">Brightness:</label><input type="number" id="DisplayBright" name="DisplayBright" value="" min="5" max="255" step="5" onchange="if(sanityCheckData()) setDisplayBrightness();"></div>
+                </div>
+            </div>
+
+            <!-- Low Power -->
+            <div class="pref-section">
+                <div class="pref-section-header">
+                    <div class="pref-section-icon"><svg viewBox="0 0 384 512"><path d="M0 256L28.5 28c2-16 15.6-28 31.8-28H228.9c15 0 27.1 12.1 27.1 27.1c0 3.2-.6 6.5-1.7 9.5L208 160H347.3c20.2 0 36.7 16.4 36.7 36.7c0 7.4-2.2 14.6-6.4 20.7l-192.2 281c-5.9 8.6-15.6 13.7-25.9 13.7h-2.9c-15.7 0-28.5-12.8-28.5-28.5c0-2.3 .3-4.6 .9-6.9L176 288H32c-17.7 0-32-14.3-32-32z"/></svg></div>
+                    <span class="pref-section-title">Low Power</span>
+                </div>
+                <div class="pref-section-body">
+                    <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">Low power mode puts the device to deep sleep between measurements. This significantly reduces battery drain while maintaining periodic data collection.</p>
+                    <p style="font-size:0.82rem;color:var(--caution,#b45309);background:color-mix(in srgb,var(--caution,#b45309) 10%,transparent);border:1px solid color-mix(in srgb,var(--caution,#b45309) 30%,transparent);border-radius:var(--r-sm);padding:7px 11px;margin-bottom:14px;">
+                        <strong>⚠ Beta feature:</strong> Low power / deep sleep is still under active development. Some low power features may not work as expected. Please <a href="https://emariete.com/co2-gadget" target="_blank" rel="noopener" style="color:inherit;font-weight:700;">read the documentation</a> before enabling it.
+                    </p>
+                    <a href="low_power.html" style="display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:var(--accent);color:#fff;border-radius:var(--r-md);font-weight:600;font-size:0.88rem;text-decoration:none;">
+                        <svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"/></svg>
+                        Configure Low Power Settings
+                    </a>
                 </div>
             </div>
 

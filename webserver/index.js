@@ -16,7 +16,18 @@ function setUpdateIntervals(newCO2Interval) {
 }
 
 /**
- * Updates the measurement interval for CO2 readings.
+ * Updates the stroke color and dash array of an SVG path based on a value.
+ * Uses getTotalLength() so it works for arc gauges.
+ * @param {number} value - Current sensor value.
+ * @param {string} elementId - ID of the SVG path element.
+ * @param {Array} colorRanges - Array of {min, max, color} objects.
+ * @param {number} maxValue - Maximum value for scaling (min assumed 0).
+ */
+function updateStroke(value, elementId, colorRanges, maxValue) {
+    updateStrokeRange(value, elementId, colorRanges, 0, maxValue);
+}
+
+/**
  * Reads the current measurement interval, converts it to milliseconds,
  * and sets the update intervals accordingly.
  * 
@@ -33,14 +44,14 @@ function updateMeasurementInterval() {
 }
 
 /**
- * Updates the stroke color and dash array of an SVG path based on a value.
- * Uses getTotalLength() so it works for both arc gauges and normalized circles (pathLength="100").
+ * Updates the stroke of an arc gauge element using a min–max value range.
  * @param {number} value - Current sensor value.
  * @param {string} elementId - ID of the SVG path element.
  * @param {Array} colorRanges - Array of {min, max, color} objects.
- * @param {number} maxValue - Maximum value for scaling.
+ * @param {number} minValue - Minimum value for scaling (fills at 0%).
+ * @param {number} maxValue - Maximum value for scaling (fills at 100%).
  */
-function updateStroke(value, elementId, colorRanges, maxValue) {
+function updateStrokeRange(value, elementId, colorRanges, minValue, maxValue) {
     const element = document.querySelector(`#${elementId}`);
     if (!element) return;
 
@@ -53,22 +64,27 @@ function updateStroke(value, elementId, colorRanges, maxValue) {
     }
 
     const totalLen = (typeof element.getTotalLength === 'function') ? element.getTotalLength() : 100;
-    const percentage = Math.max(0, Math.min(1, value / maxValue));
+    const percentage = Math.max(0, Math.min(1, (value - minValue) / (maxValue - minValue)));
     element.style.stroke = color;
     element.style.strokeDasharray = `${percentage * totalLen} ${totalLen}`;
 }
 
 /**
- * Returns quality label and CSS-variable color for a CO₂ reading.
+ * Returns quality label and CSS-variable color for a CO₂ reading,
+ * using the user-configured orange/red thresholds for Poor and Very Poor.
  * @param {number} value - CO₂ ppm value.
+ * @param {number} orangeRange - User threshold for "Poor" level.
+ * @param {number} redRange - User threshold for "Very Poor" level.
  * @returns {{text: string, color: string}}
  */
-function getCO2Quality(value) {
-    if (value < 600)  return { text: 'Excellent', color: 'var(--q-excellent)' };
-    if (value < 800)  return { text: 'Good',      color: 'var(--q-good)' };
-    if (value < 1000) return { text: 'Moderate',  color: 'var(--q-moderate)' };
-    if (value < 1500) return { text: 'Poor',       color: 'var(--q-poor)' };
-    return                    { text: 'Very Poor', color: 'var(--q-bad)' };
+function getCO2Quality(value, orangeRange, redRange) {
+    const orange = Math.max(801, orangeRange || 1000);
+    const red    = Math.max(orange + 1, redRange || 1500);
+    if (value <= 600)   return { text: 'Excellent', color: 'var(--q-excellent)' };
+    if (value <= 800)   return { text: 'Good',      color: 'var(--q-good)' };
+    if (value < orange) return { text: 'Moderate',  color: 'var(--q-moderate)' };
+    if (value < red)    return { text: 'Poor',       color: 'var(--q-poor)' };
+    return                     { text: 'Very Poor', color: 'var(--q-bad)' };
 }
 
 /**
@@ -79,18 +95,22 @@ function getCO2Quality(value) {
  * @returns {Promise<void>} - A promise that resolves when the CO2 data is updated.
  */
 function updateCO2Data(co2OrangeRange, co2RedRange) {
-    const co2ColorRanges = [
-        { min: 0,              max: co2OrangeRange, color: 'var(--q-good)' },
-        { min: co2OrangeRange, max: co2RedRange,    color: 'var(--q-moderate)' },
-        { min: co2RedRange,    max: Infinity,        color: 'var(--q-bad)' }
-    ];
-
     readCO2Data().then(co2Value => {
         const valueEl = document.querySelector('#CO2Value');
         if (valueEl) valueEl.textContent = co2Value.toFixed(0);
-        updateStroke(co2Value, 'co2Circle', co2ColorRanges, 2000);
 
-        const qual = getCO2Quality(co2Value);
+        // Single source of truth: quality object drives BOTH gauge color and label
+        const qual = getCO2Quality(co2Value, co2OrangeRange, co2RedRange);
+
+        // Update gauge stroke with the same color as the quality label
+        const gaugeEl = document.querySelector('#co2Circle');
+        if (gaugeEl) {
+            const totalLen = (typeof gaugeEl.getTotalLength === 'function') ? gaugeEl.getTotalLength() : 100;
+            const percentage = Math.max(0, Math.min(1, co2Value / 2000));
+            gaugeEl.style.stroke = qual.color;
+            gaugeEl.style.strokeDasharray = `${percentage * totalLen} ${totalLen}`;
+        }
+
         const qualEl = document.querySelector('#co2QualityLabel');
         if (qualEl) { qualEl.textContent = qual.text; qualEl.style.fill = qual.color; }
 
@@ -116,9 +136,11 @@ function updateTemperatureData() {
     ];
 
     readTemperatureData().then(temperatureValue => {
+        const val = parseFloat(temperatureValue);
         const el = document.querySelector('#TempValue');
         if (el) el.textContent = temperatureValue;
-        updateStroke(temperatureValue, 'tempCircle', tempColorRanges, 50);
+        // Arc spans 10°C–50°C; expand labels if reading goes out of range
+        updateStrokeRange(val, 'tempCircle', tempColorRanges, 10, 50);
     }).catch(error => {
         console.error("Error:", error);
     });

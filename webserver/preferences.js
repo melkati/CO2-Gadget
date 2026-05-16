@@ -1,4 +1,16 @@
 /**
+ * Loads WHO/ASHRAE recommended CO2 quality thresholds into the form fields.
+ * Warning: 800 ppm, Danger: 1000 ppm
+ */
+function loadWHOPreset() {
+    const orangeEl = document.getElementById('co2OrangeRange');
+    const redEl    = document.getElementById('co2RedRange');
+    if (orangeEl) orangeEl.value = 800;
+    if (redEl)    redEl.value    = 1000;
+    sanityCheckData();
+}
+
+/**
  * Fetches version information from the server and updates the version displayed
  */
 function displayVersion() {
@@ -10,6 +22,8 @@ function displayVersion() {
                 versionText += `-${versionInfo.firmBranch}`;
             }
             versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            if (versionInfo.firmBuildDate) versionText += ` — Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildTime) versionText += ` at ${versionInfo.firmBuildTime}`;
             document.getElementById("co2GadgetVersion").innerText = versionText;
 
             // Adjust preferences.html for specific versions
@@ -697,6 +711,19 @@ function showTempHumBatt() {
         .catch(error => console.error('Error show/hide Temp/Humidity/Battery in display', error));
 }
 
+/**
+ * Reads preferences with limited retries to tolerate transient network timeouts.
+ * @param {number} retries - Number of retry attempts after the first failure.
+ * @returns {Promise<Object>} Preferences object.
+ */
+function readPreferencesWithRetry(retries = 2) {
+    return readPreferencesFromServer().catch(error => {
+        if (retries <= 0) throw error;
+        return new Promise(resolve => setTimeout(resolve, 900))
+            .then(() => readPreferencesWithRetry(retries - 1));
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Get the current URL
     var currentURL = window.location.href;
@@ -710,7 +737,7 @@ document.addEventListener("DOMContentLoaded", () => {
         handlePasswordFields();
 
         // Load preferences from the server and populate the form
-        readPreferencesFromServer()
+        readPreferencesWithRetry(2)
             .then(preferences => {
                 populateFormWithPreferences(preferences);
                 displayVersion();

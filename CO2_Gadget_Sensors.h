@@ -163,7 +163,7 @@ void initSensorsLowPower() {
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
         deepSleepData.measurementsStarted = false;
-        sensors.initCO2LowPowerMode(SENSORS::Auto, static_cast<LowPowerModes>(deepSleepData.lowPowerMode));  // Cast deepSleepData.lowPowerMode to the appropriate type before passing it to the function
+        sensors.initCO2LowPowerMode(SENSORS::Auto, MEDIUM_LOWPOWER);  // Always use MEDIUM_LOWPOWER internally regardless of the binary lowPowerMode value
         return;
     }
 
@@ -302,7 +302,7 @@ void sensorsLoopLowPower() {
 void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
     if (isDownloadingBLE) return;
-    if ((!interactiveMode) && (deepSleepData.lowPowerMode == MEDIUM_LOWPOWER) || (deepSleepData.lowPowerMode == MAXIMUM_LOWPOWER)) {
+    if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
         if (millis() - lastDotPrintTime >= 100) {
             Serial.print("[-]");  // Print a - every loop to show that the device is alive
             lastDotPrintTime = millis();

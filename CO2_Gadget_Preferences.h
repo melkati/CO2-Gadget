@@ -150,6 +150,14 @@ void upgradePreferences() {
         prefRevision = 1;
         putPreferences();
     }
+    // Migrate 4-mode lowPowerMode (0/1/2/3) to binary (0=HIGH_PERFORMANCE, 1=LOW_POWER)
+    if (deepSleepData.lowPowerMode > 1) {
+        Serial.println("-->[PREF] Migrating lowPowerMode " + String(deepSleepData.lowPowerMode) + " -> 1 (LOW_POWER)");
+        deepSleepData.lowPowerMode = 1;
+        preferences.begin("CO2-Gadget", false);
+        preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
+        preferences.end();
+    }
 }
 
 void printActualSettings() {
@@ -544,6 +552,8 @@ String getCO2GadgetVersionAsJson() {
     doc["firmRevision"] = getCO2GadgetRevisionNumber();
     doc["firmBranch"] = getCO2GadgetRevisionBranch();
     doc["firmFlavour"] = FLAVOUR;
+    doc["firmBuildDate"] = __DATE__;
+    doc["firmBuildTime"] = __TIME__;
     serializeJson(doc, versionJson);
 #ifdef DEBUG_PREFERENCES
     Serial.println("-->[PREF] CO2 Gadget Version JSON: " + versionJson);

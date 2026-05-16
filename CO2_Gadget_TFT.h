@@ -15,6 +15,7 @@
 
 #include <SPI.h>
 #include <TFT_eSPI.h>
+#include <esp_task_wdt.h>
 
 // https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
 
@@ -188,6 +189,282 @@ void setElementLocations() {
     }
 }
 
+// Save display content as BMP file in SPIFFS (/screenshot.bmp)
+File bmpFile;
+uint32_t bytesSaved = 0;
+volatile bool screenshotCaptureInProgress = false;
+volatile bool screenshotCaptureReady = false;
+volatile bool screenshotCaptureError = false;
+volatile uint8_t screenshotCaptureProgress = 0;
+TaskHandle_t screenshotTaskHandle = nullptr;
+volatile uint32_t screenshotCaptureStartMs = 0;
+// TTGO: readPixel() from a background task conflicts with the main loop's SPI
+// write transactions (xQueueGenericSend assertion failure). Use this flag to
+// defer the capture to the main-loop context (after displayShowValues finishes).
+volatile bool screenshotPendingOnMainLoop = false;
+char screenshotCaptureMessage[64] = "idle";
+constexpr uint32_t SCREENSHOT_CAPTURE_TIMEOUT_MS = 45000;
+
+void writeTwo(uint16_t word) {
+    bmpFile.write(word & 0xFF);
+    bmpFile.write((word >> 8) & 0xFF);
+    bytesSaved += 2;
+}
+
+void writeFour(uint32_t word) {
+    bmpFile.write(word & 0xFF);
+    bmpFile.write((word >> 8) & 0xFF);
+    bmpFile.write((word >> 16) & 0xFF);
+    bmpFile.write((word >> 24) & 0xFF);
+    bytesSaved += 4;
+}
+
+static inline uint16_t swapRedBlue565(uint16_t color) {
+    return (color & 0x07E0) | ((color & 0xF800) >> 11) | ((color & 0x001F) << 11);
+}
+
+static inline void setScreenshotMessage(const char *msg) {
+    if (msg == nullptr) return;
+    strncpy(screenshotCaptureMessage, msg, sizeof(screenshotCaptureMessage) - 1);
+    screenshotCaptureMessage[sizeof(screenshotCaptureMessage) - 1] = '\0';
+}
+
+static inline void updateScreenshotProgress(uint16_t rowsDone, uint16_t totalRows) {
+    if (totalRows == 0) {
+        screenshotCaptureProgress = 0;
+        return;
+    }
+    uint8_t progress = (uint8_t)((uint32_t)rowsDone * 100UL / (uint32_t)totalRows);
+    if (progress > 99) progress = 99;
+    screenshotCaptureProgress = progress;
+}
+
+static inline void keepScreenshotTaskAlive() {
+#if defined(ARDUINO_LILYGO_T_DISPLAY_S3) || defined(TDISPLAY_S3) || defined(LILYGO_T_DISPLAY_S3)
+    esp_task_wdt_reset();
+#endif
+    delay(0);
+}
+
+void readDisplayTTGO(uint16_t height, uint16_t width, uint16_t *rowBuffer, uint16_t &rowsDone, uint16_t totalRows) {
+#ifdef TTGO_TDISPLAY
+    Serial.printf("-->[TFT ] Reading display for screenshot. Width: %d, Height: %d\n", width, height);
+    delay(100);  // ST7789V needs settling time after write operations before RAMRD is reliable
+    for (int32_t y = (int32_t)height - 1; y >= 0; y--) {
+        for (uint16_t x = 0; x < width; x++) {
+            rowBuffer[x] = tft.readPixel(x, y);
+        }
+        bmpFile.write((uint8_t *)rowBuffer, width * sizeof(uint16_t));
+        bytesSaved += width * sizeof(uint16_t);
+        rowsDone++;
+        updateScreenshotProgress(rowsDone, totalRows);
+        keepScreenshotTaskAlive();
+    }
+#endif
+}
+
+void readDisplayTDisplayS3(uint16_t height, uint16_t width, uint16_t *rowBuffer, uint16_t &rowsDone, uint16_t totalRows) {
+#if defined(ARDUINO_LILYGO_T_DISPLAY_S3) || defined(TDISPLAY_S3) || defined(LILYGO_T_DISPLAY_S3)
+    Serial.printf("-->[TFT ] Reading display for screenshot. Width: %d, Height: %d\n", width, height);
+    delay(100);  // Allow parallel bus to settle before RAMRD
+    for (int32_t y = (int32_t)height - 1; y >= 0; y--) {
+        for (uint16_t x = 0; x < width; x++) {
+              uint16_t pixel = tft.readPixel(x, y);
+            // TFT_eSPI currently reports swapped red/blue channels on T-Display S3 readback.
+            rowBuffer[x] = swapRedBlue565(pixel);
+        }
+        bmpFile.write((uint8_t *)rowBuffer, width * sizeof(uint16_t));
+        bytesSaved += width * sizeof(uint16_t);
+        rowsDone++;
+        updateScreenshotProgress(rowsDone, totalRows);
+        keepScreenshotTaskAlive();
+    }
+#endif
+}
+
+void readDisplayTDisplayST7789(uint16_t height, uint16_t width, uint16_t *rowBuffer, uint16_t &rowsDone, uint16_t totalRows) {
+#ifdef ST7789_240x320
+    Serial.printf("-->[TFT ] Reading display for screenshot. Width: %d, Height: %d\n", width, height);
+    for (int32_t y = (int32_t)height - 1; y >= 0; y--) {
+        for (uint16_t x = 0; x < width; x++) {
+            rowBuffer[x] = tft.readPixel(x, y);
+        }
+        bmpFile.write((uint8_t *)rowBuffer, width * sizeof(uint16_t));
+        bytesSaved += width * sizeof(uint16_t);
+        rowsDone++;
+        updateScreenshotProgress(rowsDone, totalRows);
+        keepScreenshotTaskAlive();
+    }
+#endif
+}
+
+bool takeScreenshot() {
+    uint16_t width = tft.width();
+    uint16_t height = tft.height();
+    uint32_t imageBytes = (uint32_t)width * (uint32_t)height * 2U;
+    uint16_t rowsDone = 0;
+    uint16_t totalRows = height;
+
+    uint16_t *rowBuffer = (uint16_t *)malloc(width * sizeof(uint16_t));
+    if (rowBuffer == nullptr) {
+        setScreenshotMessage("no memory");
+        Serial.println("-->[TFT ] Error: no memory for screenshot row buffer");
+        return false;
+    }
+
+    bytesSaved = 0;
+    SPIFFS.remove("/screenshot.bmp");
+    bmpFile = SPIFFS.open("/screenshot.bmp", FILE_WRITE);
+    if (!bmpFile) {
+        free(rowBuffer);
+        setScreenshotMessage("open file failed");
+        Serial.println("-->[TFT ] Error opening /screenshot.bmp for writing");
+        return false;
+    }
+
+    // BMP file header (14 bytes)
+    bmpFile.write('B');
+    bmpFile.write('M');
+    bytesSaved += 2;
+    writeFour(14 + 40 + 12 + imageBytes);  // file size
+    writeFour(0);
+    writeFour(14 + 40 + 12);  // pixel data offset
+
+    // DIB header (BITMAPINFOHEADER, 40 bytes)
+    writeFour(40);
+    writeFour(width);
+    writeFour(height);
+    writeTwo(1);
+    writeTwo(16);  // RGB565
+    writeFour(3);  // BI_BITFIELDS
+    writeFour(imageBytes);
+    writeFour(0);
+    writeFour(0);
+    writeFour(0);
+    writeFour(0);
+
+    // Color masks for RGB565
+    writeFour(0xF800);
+    writeFour(0x07E0);
+    writeFour(0x001F);
+
+    readDisplayTTGO(height, width, rowBuffer, rowsDone, totalRows);
+    readDisplayTDisplayS3(height, width, rowBuffer, rowsDone, totalRows);
+    readDisplayTDisplayST7789(height, width, rowBuffer, rowsDone, totalRows);
+
+    bmpFile.flush();
+    uint32_t finalSize = bmpFile.size();
+    bmpFile.close();
+    free(rowBuffer);
+
+    screenshotCaptureProgress = 100;
+
+    if (finalSize == 0) setScreenshotMessage("empty file");
+
+    Serial.printf("-->[TFT ] Screenshot saved (%dx%d), bytes written: %lu, file size: %lu\n", width, height, (unsigned long)bytesSaved, (unsigned long)finalSize);
+    return finalSize > 0;
+}
+
+void screenshotCaptureTask(void *parameter) {
+    bool ok = takeScreenshot();
+    screenshotCaptureReady = ok;
+    screenshotCaptureError = !ok;
+    screenshotCaptureInProgress = false;
+    screenshotCaptureStartMs = 0;
+    if (ok) setScreenshotMessage("ready");
+    screenshotTaskHandle = nullptr;
+    vTaskDelete(nullptr);
+}
+
+bool startScreenshotCaptureAsync() {
+    if (screenshotCaptureInProgress) return false;
+    screenshotCaptureInProgress = true;
+    screenshotCaptureReady = false;
+    screenshotCaptureError = false;
+    screenshotCaptureProgress = 0;
+    screenshotCaptureStartMs = millis();
+    setScreenshotMessage("capturing");
+#ifdef TTGO_TDISPLAY
+    // TTGO: readPixel() from a background task triggers an xQueueGenericSend
+    // assertion because the main loop may hold the TFT SPI mutex mid-update.
+    // Defer the actual capture to displayShowValues() (main-loop context) where
+    // the SPI bus is known to be idle after the display update completes.
+    screenshotPendingOnMainLoop = true;
+    return true;
+#else
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(
+        screenshotCaptureTask,
+        "ScreenshotTask",
+        8192,
+        nullptr,
+        1,
+        &screenshotTaskHandle,
+        1);
+    if (taskCreated != pdPASS) {
+        screenshotCaptureInProgress = false;
+        screenshotCaptureError = true;
+        screenshotCaptureStartMs = 0;
+        setScreenshotMessage("task create failed");
+        return false;
+    }
+    return true;
+#endif
+}
+
+void refreshScreenshotCaptureState() {
+    if (!screenshotCaptureInProgress) return;
+    if (screenshotCaptureStartMs == 0) return;
+    if ((millis() - screenshotCaptureStartMs) < SCREENSHOT_CAPTURE_TIMEOUT_MS) return;
+
+    if (screenshotTaskHandle != nullptr) {
+        vTaskDelete(screenshotTaskHandle);
+        screenshotTaskHandle = nullptr;
+    }
+    screenshotCaptureInProgress = false;
+    screenshotCaptureReady = false;
+    screenshotCaptureError = true;
+    screenshotCaptureProgress = 0;
+    screenshotCaptureStartMs = 0;
+    setScreenshotMessage("timeout");
+}
+
+bool resetScreenshotCaptureState() {
+    if (screenshotTaskHandle != nullptr) {
+        vTaskDelete(screenshotTaskHandle);
+        screenshotTaskHandle = nullptr;
+    }
+    screenshotCaptureInProgress = false;
+    screenshotCaptureReady = false;
+    screenshotCaptureError = false;
+    screenshotCaptureProgress = 0;
+    screenshotCaptureStartMs = 0;
+    setScreenshotMessage("idle");
+    return true;
+}
+
+bool isScreenshotCaptureInProgress() {
+    refreshScreenshotCaptureState();
+    return screenshotCaptureInProgress;
+}
+
+bool isScreenshotCaptureReady() {
+    refreshScreenshotCaptureState();
+    return screenshotCaptureReady;
+}
+
+bool hasScreenshotCaptureError() {
+    refreshScreenshotCaptureState();
+    return screenshotCaptureError;
+}
+
+uint8_t getScreenshotCaptureProgress() {
+    return screenshotCaptureProgress;
+}
+
+const char *getScreenshotCaptureMessage() {
+    return screenshotCaptureMessage;
+}
+
 void setDisplayBrightness(uint16_t newBrightness) {
 #ifdef TTGO_TDISPLAY
     if (actualDisplayBrightness != newBrightness) {
@@ -300,13 +577,18 @@ void initBacklight() {
 #endif
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
     pinMode(TFT_BACKLIGHT, OUTPUT);
+    // TFT_POWER_ON_BATTERY was already set HIGH in initDisplay() before tft.init();
+    // assert it here too so initBacklight() is safe if called independently.
     pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
-    delay(20);
-    digitalWrite(TFT_BACKLIGHT, HIGH);
     digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
-    actualDisplayBrightness = 16;  // At the beginning brightness is at maximum level
+    delay(20);  // Pin starts LOW → >3 ms keeps IC in shutdown; then we wake it below
+    digitalWrite(TFT_BACKLIGHT, HIGH);
+    delay(5);   // Allow backlight IC (DW8904-compatible) to stabilize at level 16
+    actualDisplayBrightness = 16;  // IC powers up at maximum level after wakeup from shutdown
     if (DisplayBrightness > 16)    // Prevent malfunction if upper values are stored in preferences
         DisplayBrightness = 16;
+    if (DisplayBrightness == 0)    // Prevent permanent black screen: 0 shuts down the IC immediately
+        DisplayBrightness = 1;
     setDisplayBrightness(DisplayBrightness);
 #endif
 }
@@ -328,6 +610,13 @@ void initDisplay(bool fastMode = false) {
     // Display is rotated 90 degrees vs phisical orientation
     displayWidth = TFT_HEIGHT;
     displayHeight = TFT_WIDTH;
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+    // Power on display BEFORE tft.init() so the panel is powered during initialization.
+    // On battery-powered devices GPIO15 enables the boost converter; without it the
+    // init commands reach an unpowered panel and the display stays blank.
+    pinMode(TFT_POWER_ON_BATTERY, OUTPUT);
+    digitalWrite(TFT_POWER_ON_BATTERY, HIGH);
+#endif
     tft.init();
     setDisplayReverse(displayReverse);
     setElementLocations();
@@ -723,6 +1012,19 @@ void displayShowValues(bool forceRedraw = false) {
 
     tft.setTextDatum(currentDatum);
     tft.setTextSize(2);
+
+#ifdef TTGO_TDISPLAY
+    // Run deferred screenshot here — SPI bus is idle after the display update.
+    if (screenshotPendingOnMainLoop) {
+        screenshotPendingOnMainLoop = false;
+        bool ok = takeScreenshot();
+        screenshotCaptureReady = ok;
+        screenshotCaptureError = !ok;
+        screenshotCaptureInProgress = false;
+        screenshotCaptureStartMs = 0;
+        if (ok) setScreenshotMessage("ready");
+    }
+#endif
 }
 
 #endif  // SUPPORT_TFT

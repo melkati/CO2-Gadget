@@ -379,6 +379,8 @@ function getVersionStr() {
                 versionText += `-${versionInfo.firmBranch}`;
             }
             versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
+            if (versionInfo.firmBuildDate) versionText += ` \u2014 Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildTime) versionText += ` at ${versionInfo.firmBuildTime}`;
             if (captivePortalDebug) console.log('Version string:', versionText);
             return versionText;
         })
@@ -421,22 +423,6 @@ function initNavBar() {
         if (maintenanceSection) maintenanceSection.classList.remove("hidden");
     }
 
-    if (features.SUPPORT_LOW_POWER) {
-        const lowPowerLink = document.getElementById("lowPowerLink");
-        if (lowPowerLink) {
-            lowPowerLink.classList.remove("hidden")
-        } else {
-            console.error('Element with ID "lowPowerLink" not found.')
-        }
-
-        const lowPowerIcon = document.getElementById("iconLighting");
-        if (lowPowerIcon) {
-            lowPowerIcon.classList.remove("hidden");
-        } else {
-            console.error('Element with ID "iconLighting" not found.')
-        }
-    }
-
     if (features.SUPPORT_CIRCULAR_BUFFER) {
         const chartsLink = document.getElementById("chartsLink");
         if (chartsLink) {
@@ -476,9 +462,62 @@ document.addEventListener("DOMContentLoaded", function () {
         document.title += ` (${data.hostName})`;
     });
 
-    // Llamar a la función goLowPower al hacer clic en el icono de bajo consumo
-    document.getElementById('lightingIcon').addEventListener('click', goLowPower);
+    // Low power icon click handler (element may not be present in all pages)
+    const lightingIcon = document.getElementById('lightingIcon');
+    if (lightingIcon) lightingIcon.addEventListener('click', goLowPower);
+
+    initFullscreen();
 });
+
+/* =========================================================
+   Fullscreen management
+   ========================================================= */
+const _fsExpandPath  = "M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z";
+const _fsCompressPath = "M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H32c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V64zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32H96v64c0 17.7 14.3 32 32 32s32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H352V64zM320 320c-17.7 0-32 14.3-32 32v96c0 17.7 14.3 32 32 32s32-14.3 32-32V352h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H320z";
+
+function initFullscreen() {
+    const btn    = document.getElementById('iconFullscreen');
+    if (!btn) return;
+    const fspath = document.getElementById('fullscreenPath');
+    const fsicon = document.getElementById('fullscreenIcon');
+    const navbar = document.getElementById('navbar');
+    let hideTimer = null;
+
+    function updateFsIcon(isFs) {
+        if (!fspath || !fsicon) return;
+        fsicon.setAttribute('viewBox', '0 0 448 512');
+        fspath.setAttribute('d', isFs ? _fsCompressPath : _fsExpandPath);
+    }
+
+    function showNavbar() {
+        if (!navbar) return;
+        navbar.classList.add('fs-nav-visible');
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => navbar.classList.remove('fs-nav-visible'), 2500);
+    }
+
+    btn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        const isFs = !!document.fullscreenElement;
+        updateFsIcon(isFs);
+        document.body.classList.toggle('is-fullscreen', isFs);
+        if (isFs) {
+            showNavbar();
+            document.addEventListener('mousemove', showNavbar);
+        } else {
+            clearTimeout(hideTimer);
+            if (navbar) navbar.classList.remove('fs-nav-visible');
+            document.removeEventListener('mousemove', showNavbar);
+        }
+    });
+}
 
 /* =========================================================
    Timezone helpers — stored in localStorage as 'co2gadget_tz'

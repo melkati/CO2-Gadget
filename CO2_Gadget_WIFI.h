@@ -19,6 +19,16 @@ DNSServer dnsServer;
 WiFiClient espClient;
 AsyncWebServer server(80);
 
+#ifdef SUPPORT_TFT
+bool startScreenshotCaptureAsync();
+bool isScreenshotCaptureInProgress();
+bool isScreenshotCaptureReady();
+bool hasScreenshotCaptureError();
+uint8_t getScreenshotCaptureProgress();
+const char *getScreenshotCaptureMessage();
+bool resetScreenshotCaptureState();
+#endif
+
 void printSmallChar(char c, int row) {
     switch (c) {
         case '0':
@@ -1243,6 +1253,214 @@ void initWebServer() {
             Serial.println("---> [WiFi] Error: request is null");
         }
     });
+
+        server.on("/screenshot", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+        const char *screenshotHtml = R"HTML(
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>CO2 Gadget Screenshot</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #111; color: #eee; }
+        .card { max-width: 720px; margin: 0 auto; padding: 16px; border: 1px solid #333; border-radius: 8px; background: #1a1a1a; }
+        .bar { width: 100%; height: 18px; background: #2d2d2d; border-radius: 999px; overflow: hidden; margin: 12px 0; }
+        .fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00aaff, #00ffaa); transition: width 0.25s ease; }
+        button { padding: 8px 14px; border-radius: 6px; border: 0; background: #00aaff; color: #001018; font-weight: 700; cursor: pointer; }
+        img { max-width: 100%; display: none; border: 1px solid #333; margin-top: 12px; }
+        a { color: #7dd3fc; }
+        .mono { font-family: Consolas, monospace; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>Screenshot TFT</h2>
+        <p>Genera la captura del display y descarga <span class="mono">/screenshot.bmp</span>.</p>
+        <button id="startBtn">Iniciar captura</button>
+        <div class="bar"><div id="fill" class="fill"></div></div>
+        <div id="status" class="mono">Listo</div>
+        <p><a id="downloadLink" href="/screenshot.bmp" style="display:none" download="screenshot.bmp">Descargar screenshot.bmp</a></p>
+        <img id="preview" alt="Screenshot preview">
+      </div>
+    <script>
+    const fill = document.getElementById('fill');
+    const statusEl = document.getElementById('status');
+    const preview = document.getElementById('preview');
+    const link = document.getElementById('downloadLink');
+    const button = document.getElementById('startBtn');
+    let timer = null;
+
+        async function fetchJson(url, options) {
+            const response = await fetch(url, options || {});
+            const text = await response.text();
+            let json = null;
+            try {
+                json = JSON.parse(text);
+            } catch (e) {
+                throw new Error(`Respuesta no JSON (${response.status}): ${text.slice(0, 100)}`);
+            }
+            return { ok: response.ok, status: response.status, data: json };
+        }
+
+        async function pollStatus() {
+            const result = await fetchJson('/api/screenshot/status');
+            const s = result.data;
+      fill.style.width = `${s.progress}%`;
+      statusEl.textContent = `${s.progress}% - ${s.message}`;
+      if (s.running) return;
+      clearInterval(timer);
+      timer = null;
+      if (s.ready) {
+        const ts = Date.now();
+        preview.src = `/screenshot.bmp?t=${ts}`;
+        preview.style.display = 'block';
+        link.href = `/screenshot.bmp?t=${ts}`;
+        link.style.display = 'inline';
+            } else if (s.error) {
+                statusEl.textContent = `${s.progress}% - Error: ${s.message}`;
+      }
+      button.disabled = false;
+    }
+
+    async function startCapture() {
+            try {
+                button.disabled = true;
+                link.style.display = 'none';
+                preview.style.display = 'none';
+                fill.style.width = '0%';
+                statusEl.textContent = 'Iniciando...';
+
+                // Some captive/embedded browser setups block POST; GET fallback keeps it robust.
+                let startResult;
+                try {
+                    startResult = await fetchJson('/api/screenshot/start', { method: 'POST' });
+                } catch (err) {
+                    startResult = await fetchJson('/api/screenshot/start');
+                }
+
+                const s = startResult.data;
+                if (!s.ok) {
+                    statusEl.textContent = s.message || 'Error iniciando captura';
+                    button.disabled = false;
+                    return;
+                }
+                timer = setInterval(async () => {
+                    try {
+                        await pollStatus();
+                    } catch (error) {
+                        clearInterval(timer);
+                        timer = null;
+                        statusEl.textContent = `Error consultando estado: ${error.message}`;
+                        button.disabled = false;
+                    }
+                }, 450);
+                await pollStatus();
+            } catch (error) {
+                statusEl.textContent = `Error iniciando captura: ${error.message}`;
+        button.disabled = false;
+      }
+    }
+
+    button.addEventListener('click', startCapture);
+        pollStatus().catch(() => { statusEl.textContent = 'Listo'; });
+    </script>
+    </body>
+    </html>
+    )HTML";
+        request->send(200, "text/html", screenshotHtml);
+    #else
+        request->send(404, "text/plain", "Screenshot endpoint not supported on this display");
+    #endif
+        });
+
+        server.on("/screenshoot", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request == nullptr) return;
+        request->redirect("/screenshot");
+        });
+
+        server.on("/api/screenshot/start", HTTP_POST, [](AsyncWebServerRequest *request) {
+        if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+        bool started = startScreenshotCaptureAsync();
+        if (started) {
+            request->send(200, "application/json", "{\"ok\":true,\"message\":\"capture started\"}");
+            return;
+        }
+        if (isScreenshotCaptureInProgress()) {
+            request->send(409, "application/json", "{\"ok\":false,\"message\":\"capture already running\"}");
+            return;
+        }
+        request->send(500, "application/json", "{\"ok\":false,\"message\":\"capture start failed\"}");
+    #else
+        request->send(404, "application/json", "{\"ok\":false,\"message\":\"not supported\"}");
+    #endif
+        });
+
+        server.on("/api/screenshot/start", HTTP_GET, [](AsyncWebServerRequest *request) {
+            if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+            bool started = startScreenshotCaptureAsync();
+            if (started) {
+                request->send(200, "application/json", "{\"ok\":true,\"message\":\"capture started\"}");
+                return;
+            }
+            if (isScreenshotCaptureInProgress()) {
+                request->send(409, "application/json", "{\"ok\":false,\"message\":\"capture already running\"}");
+                return;
+            }
+            request->send(500, "application/json", "{\"ok\":false,\"message\":\"capture start failed\"}");
+    #else
+            request->send(404, "application/json", "{\"ok\":false,\"message\":\"not supported\"}");
+    #endif
+        });
+
+        server.on("/api/screenshot/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
+            if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+            resetScreenshotCaptureState();
+            request->send(200, "application/json", "{\"ok\":true,\"message\":\"capture state reset\"}");
+    #else
+            request->send(404, "application/json", "{\"ok\":false,\"message\":\"not supported\"}");
+    #endif
+        });
+
+            server.on("/api/screenshot/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+            if (request == nullptr) return;
+        #ifdef SUPPORT_TFT
+            resetScreenshotCaptureState();
+            request->send(200, "application/json", "{\"ok\":true,\"message\":\"capture state reset\"}");
+        #else
+            request->send(404, "application/json", "{\"ok\":false,\"message\":\"not supported\"}");
+        #endif
+            });
+
+        server.on("/api/screenshot/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+        String payload = "{";
+        payload += "\"running\":" + String(isScreenshotCaptureInProgress() ? "true" : "false") + ",";
+        payload += "\"ready\":" + String(isScreenshotCaptureReady() ? "true" : "false") + ",";
+        payload += "\"error\":" + String(hasScreenshotCaptureError() ? "true" : "false") + ",";
+        payload += "\"progress\":" + String(getScreenshotCaptureProgress()) + ",";
+        payload += "\"message\":\"" + String(getScreenshotCaptureMessage()) + "\"";
+        payload += "}";
+        request->send(200, "application/json", payload);
+    #else
+        request->send(404, "application/json", "{\"running\":false,\"ready\":false,\"error\":true,\"progress\":0,\"message\":\"not supported\"}");
+    #endif
+        });
+
+        server.on("/screenshot.bmp", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request == nullptr) return;
+    #ifdef SUPPORT_TFT
+        request->send(SPIFFS, "/screenshot.bmp", "image/bmp", false);
+    #else
+        request->send(404, "text/plain", "Screenshot endpoint not supported on this display");
+    #endif
+        });
 
     server.on("/readBatteryVoltage", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
