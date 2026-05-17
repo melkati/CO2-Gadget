@@ -39,6 +39,8 @@ function getWiFiStatusText(wifiStatus) {
     }
 }
 
+let uptimeIntervalId = null;
+
 // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
 function loadCaptivePortalStatusFromServer() {
     fetch('/getCaptivePortalStatusAsJson')
@@ -158,12 +160,13 @@ function loadStatusFromServer() {
                     if (key === 'WiFiStatus') {
                         element.textContent = getWiFiStatusText(data[key]) + " (" + data[key] + ")";
                     } else if (key === 'uptime') {
-                        updateUptime(element, data[key]);
+                        updateUptime(element, data[key], data.lowPowerMode, data.waitToDeep);
                     } else if (key === 'lowPowerMode') {
                         switch (data[key]) {
                             case 0:
                                 element.textContent = "Disabled";
                                 break;
+                            case 1:
                             case 2:
                                 element.textContent = "Enabled";
                                 break;
@@ -213,7 +216,7 @@ function loadStatusFromServer() {
 // }
 
 
-function updateUptime(element, initialUptime) {
+function updateUptime(element, initialUptime, lowPowerMode, waitToDeep) {
     const startTime = Date.now();
     const initialUptimeMs = initialUptime;
 
@@ -234,12 +237,22 @@ function updateUptime(element, initialUptime) {
         const currentTime = Date.now();
         const elapsedTime = currentTime - startTime;
         const currentUptime = initialUptimeMs + elapsedTime;
+        const currentUptimeSecs = Math.floor(currentUptime / 1000);
+        const isLowPowerEnabled = (lowPowerMode === 1 || lowPowerMode === 2);
 
-        element.textContent = formatUptime(currentUptime);
+        if (isLowPowerEnabled && Number.isFinite(waitToDeep)) {
+            const remainingSecs = Math.max(0, Math.floor(waitToDeep - currentUptimeSecs));
+            element.innerHTML = `${formatUptime(currentUptime)}<br><span style="font-size:.9em;opacity:.85">Deep sleep in: ${remainingSecs}s</span>`;
+        } else {
+            element.textContent = formatUptime(currentUptime);
+        }
     }
 
     update(); // Initial update
-    setInterval(update, 1000); // Update every second
+    if (uptimeIntervalId) {
+        clearInterval(uptimeIntervalId);
+    }
+    uptimeIntervalId = setInterval(update, 1000); // Update every second
 }
 
 function fillFeaturesFromServer() {
