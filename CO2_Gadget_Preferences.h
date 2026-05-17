@@ -422,8 +422,19 @@ void initPreferences() {
 }
 
 void saveWifiCredentials() {
-    Serial.println("-->[PREF] Saving WiFi credentials to NVR");
+    wifiSSID.trim();
+    wifiPass.trim();
+
     preferences.begin("CO2-Gadget", false);
+    String savedWifiSSID = preferences.getString("wifiSSID", "");
+    String savedWifiPass = preferences.getString("wifiPass", "");
+
+    if ((savedWifiSSID == wifiSSID) && (savedWifiPass == wifiPass)) {
+        preferences.end();
+        return;
+    }
+
+    Serial.println("-->[PREF] Saving WiFi credentials to NVR");
     preferences.putString("wifiSSID", wifiSSID);
     preferences.putString("wifiPass", wifiPass);
     preferences.end();
