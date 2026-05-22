@@ -237,6 +237,32 @@ void callbackTouch() {
     // placeholder callback function
 }
 
+void prepareServicesForDeepSleep() {
+#ifdef SUPPORT_MQTT
+    if (mqttClient.connected()) {
+        mqttClient.loop();
+        delay(10);
+        mqttClient.disconnect();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_ESPNOW
+    if (EspNowInititialized) {
+        disableESPNow();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_BLE
+    disableBLE();
+#endif
+
+    if (WiFi.getMode() != WIFI_OFF) {
+        disableWiFi();
+    }
+}
+
 void toDeepSleep() {
 #ifdef SUPPORT_EINK
 // display.hibernate();
@@ -343,6 +369,7 @@ void toDeepSleep() {
 
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
+    prepareServicesForDeepSleep();
     esp_deep_sleep_start();
 }
 

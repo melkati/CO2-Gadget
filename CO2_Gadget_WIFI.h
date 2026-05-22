@@ -10,6 +10,7 @@
 // clang-format on
 
 #include <Arduino.h>
+#include <esp_wifi.h>
 
 #ifdef SUPPORT_CAPTIVE_PORTAL
 DNSServer dnsServer;
@@ -638,8 +639,10 @@ void initMDNS() {
 }
 
 void disableWiFi() {
-    WiFi.disconnect(true);  // Disconnect from the network
-    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    WiFi.disconnect(false);  // Disconnect without clearing stored WiFi credentials.
+    delay(50);
+    esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+    delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
 }
 
