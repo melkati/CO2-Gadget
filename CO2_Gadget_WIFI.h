@@ -641,7 +641,11 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(false);  // Disconnect without clearing stored WiFi credentials.
     delay(50);
-    esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+    esp_err_t stopResult = esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+    if ((stopResult != ESP_OK) && (stopResult != ESP_ERR_WIFI_NOT_INIT) && (stopResult != ESP_ERR_WIFI_NOT_STARTED)) {
+        Serial.println("-->[WiFi] Error stopping WiFi: " + String(stopResult) + ". Falling back to WIFI_OFF.");
+        WiFi.mode(WIFI_OFF);
+    }
     delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
 }
