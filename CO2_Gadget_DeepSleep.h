@@ -378,6 +378,8 @@ void toDeepSleep() {
     esp_sleep_enable_timer_wakeup(static_cast<uint64_t>(sleepSeconds) * 1000000ULL);
     delay(5);
 
+    prepareServicesForDeepSleep();
+
 #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
     // On ESP32-S3 with USB CDC (HWCDC) enabled, the USB PHY can prevent deep sleep
     // or cause immediate wake-up unless fully torn down. Serial.end() stops the
@@ -396,7 +398,6 @@ void toDeepSleep() {
 
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
-    prepareServicesForDeepSleep();
     esp_deep_sleep_start();
 }
 
@@ -428,21 +429,29 @@ void doDeepSleepMQTTConnect() {
 
 void doDeepSleepWiFiConnect() {
     initPreferences();
+    bool wifiConnected = WiFi.status() == WL_CONNECTED;
     if (deepSleepData.activeWifiOnWake) {
-        connectToWiFi();
+        wifiConnected = connectToWiFi();
     }
 
 #ifdef SUPPORT_ESPNOW
-    if (deepSleepData.sendESPNowOnWake) {
+    if (deepSleepData.sendESPNowOnWake && wifiConnected) {
         initESPNow();
     }
 #endif
 #ifdef SUPPORT_MQTT
-    if (deepSleepData.sendMQTTOnWake) {
+    if (deepSleepData.sendMQTTOnWake && wifiConnected) {
         doDeepSleepMQTTConnect();
     }
 #endif
-    deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+    if (wifiConnected) {
+        deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+    } else {
+        deepSleepData.cyclesLeftToWiFiConnect = 1;
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] WiFi connection failed. Will retry on next wake cycle.");
+#endif
+    }
 }
 
 void displayFromDeepSleep(bool forceRedraw = false) {

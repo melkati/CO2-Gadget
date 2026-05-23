@@ -665,7 +665,11 @@ void initMDNS() {
 void disableWiFi() {
     WiFi.disconnect(false);  // Disconnect first; esp_wifi_stop() stops the radio below.
     delay(50);
-    esp_wifi_stop();
+    esp_err_t stopResult = esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+    if ((stopResult != ESP_OK) && (stopResult != ESP_ERR_WIFI_NOT_INIT) && (stopResult != ESP_ERR_WIFI_NOT_STARTED)) {
+        Serial.println("-->[WiFi] Error stopping WiFi: " + String(stopResult) + ". Falling back to WIFI_OFF.");
+        WiFi.mode(WIFI_OFF);
+    }
     delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
 }
@@ -1895,23 +1899,20 @@ bool connectToWiFi() {
     unsigned long checkTimer = 0;  // Timer-variables MUST be of type unsigned long
     troubledWIFI = false;
     WiFiConnectionRetries = 0;
+    const uint8_t maxWiFiConnectionRetriesDuringConnect = 30;
 
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
-    // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
-    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+    // Wait for connection until maxWiFiConnectionRetriesDuringConnect or WiFi is connected
+    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetriesDuringConnect) {
         if (TimePeriodIsOver(checkTimer, 500)) {  // Once every 500 miliseconds
             Serial.print(".");
             WiFiConnectionRetries++;
-            if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
-                Serial.println();
-                Serial.print("not connected ");
-            }
         }
         yield();
     }
 
-    if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+    if ((WiFiConnectionRetries >= maxWiFiConnectionRetriesDuringConnect) && (WiFi.status() != WL_CONNECTED)) {
         disableWiFi();
         troubledWIFI = true;
         timeTroubledWIFI = millis();
