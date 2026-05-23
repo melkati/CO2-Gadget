@@ -229,8 +229,11 @@ bool sendMQTTDiscoveryTopic(String deviceClass, String stateClass, String entity
               "\"~\": \"" + maintopic + "\"," +
               "\"unique_id\": \"" + maintopic + "-" + configTopic + "\"," +
               "\"default_entity_id\": \"" + entityDomain + "." + objectId + "\"," +
-              "\"name\": \"" + name + "\"," +
-              "\"icon\": \"mdi:" + icon + "\",";
+              "\"name\": \"" + name + "\",";
+
+    if (icon != "") {
+        payload += "\"icon\": \"mdi:" + icon + "\",";
+    }
 
     if (unit != "") {
         payload += "\"unit_of_measurement\": \"" + unit + "\",";
@@ -290,8 +293,8 @@ bool publishMQTTDiscovery(int qos) {
     allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "wifiRSSI",    "Wi-Fi RSSI",           "wifi",                     "dBm",      qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "IP",          "IP",                   "network-outline",          "",         qos);
     // allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "",                  "diagnostic",       "",      "status",      "Status",               "list-status",              "",         qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "battery",     "Battery",              "",                         "%",        qos);
-    allSendsSuccessed |= sendMQTTDiscoveryTopic("",                 "measurement",       "diagnostic",       "",      "voltage",     "Voltage",              "",                         "V",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("battery",          "measurement",       "diagnostic",       "",      "battery",     "Battery",              "",                         "%",        qos);
+    allSendsSuccessed |= sendMQTTDiscoveryTopic("voltage",          "measurement",       "diagnostic",       "",      "voltage",     "Voltage",              "",                         "V",        qos);
 
     allSendsSuccessed |= sendMQTTDiscoveryTopic("carbon_dioxide",   "",                  "",                "",      "co2",         "CO2",                  "molecule-co2",                         "ppm",      qos);
     allSendsSuccessed |= sendMQTTDiscoveryTopic("temperature",      "",                  "",                "",      "temp",        "Temperature",          "temperature-celsius",                  "°C",       qos);
