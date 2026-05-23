@@ -680,12 +680,12 @@ void testRedrawValues(bool randomNumbers = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (einkDisplayUpdateInProgress) return;
+    if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (forceRedraw) {
         thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
     } else if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) {
         return;
     }
-    if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (redrawDisplayOnNextLoop) {
         shouldRedrawDisplay = true;
         redrawDisplayOnNextLoop = false;
@@ -757,12 +757,12 @@ void displayShowValues(bool forceRedraw = false) {
 void displayShowValues(bool forceRedraw = false) {
     static uint32_t lastDisplayUpdate = 0;
     if (einkDisplayUpdateInProgress) return;
+    if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (forceRedraw) {
         thresholdsManager.updatePreviousValues(DISPLAY_SHOW, co2, temp, hum);
     } else {
         if (!thresholdsManager.evaluateThresholds(DISPLAY_SHOW, co2, temp, hum)) return;
     }
-    if (isDownloadingBLE) return;  // Do not update display while downloading BLE data to MyAmbiance
     if (redrawDisplayOnNextLoop) {
         shouldRedrawDisplay = true;
         redrawDisplayOnNextLoop = false;
