@@ -736,7 +736,11 @@ void displayShowValues(bool forceRedraw = false) {
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, drawAllElements);
 
     einkDisplayUpdateInProgress = true;
-    display.display(true);  // Partial update
+    if (forceRedraw) {
+        display.display();  // Full update
+    } else {
+        display.display(true);  // Partial update
+    }
     einkDisplayUpdateInProgress = false;
 
 #ifdef TIMEDEBUG
