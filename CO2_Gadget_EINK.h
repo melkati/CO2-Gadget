@@ -709,12 +709,7 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
-        deepSleepData.cyclesLeftToRedrawDisplay--;
-#ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
-#endif
-    } else {
+    if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
         deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
@@ -786,12 +781,7 @@ void displayShowValues(bool forceRedraw = false) {
     timer.start();
 #endif
 
-    if (deepSleepData.cyclesLeftToRedrawDisplay > 0) {
-        deepSleepData.cyclesLeftToRedrawDisplay--;
-#ifdef DEBUG_EINK
-        Serial.println("-->[EINK] Cycles left to full refresh of display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
-#endif
-    } else {
+    if (deepSleepData.cyclesLeftToRedrawDisplay == 0) {
         deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         forceRedraw = true;
 #ifdef DEBUG_EINK
