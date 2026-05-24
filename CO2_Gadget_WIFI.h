@@ -10,6 +10,7 @@
 // clang-format on
 
 #include <Arduino.h>
+#include <esp_err.h>
 #include <esp_wifi.h>
 
 #ifdef SUPPORT_CAPTIVE_PORTAL
@@ -639,15 +640,23 @@ void initMDNS() {
 }
 
 void disableWiFi() {
-    WiFi.disconnect(false);  // Disconnect without clearing stored WiFi credentials.
+    WiFi.disconnect(true);  // Disconnect from the network
+    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    Serial.println("-->[WiFi] WiFi disabled!");
+}
+
+void stopWiFiForDeepSleep() {
+    WiFi.disconnect(false);  // Disconnect STA before stopping the radio for deep sleep.
     delay(50);
-    esp_err_t stopResult = esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+
+    esp_err_t stopResult = esp_wifi_stop();
     if ((stopResult != ESP_OK) && (stopResult != ESP_ERR_WIFI_NOT_INIT) && (stopResult != ESP_ERR_WIFI_NOT_STARTED)) {
-        Serial.println("-->[WiFi] Error stopping WiFi: " + String(stopResult) + ". Falling back to WIFI_OFF.");
+        Serial.println("-->[WiFi] Error stopping WiFi: " + String(esp_err_to_name(stopResult)) + " (" + String((int)stopResult) + "). Falling back to WIFI_OFF.");
         WiFi.mode(WIFI_OFF);
     }
+
     delay(20);
-    Serial.println("-->[WiFi] WiFi disabled!");
+    Serial.println("-->[WiFi] WiFi radio stopped for deep sleep!");
 }
 
 // Replaces placeholder with actual values

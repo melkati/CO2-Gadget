@@ -259,7 +259,7 @@ void prepareServicesForDeepSleep() {
 #endif
 
     if (WiFi.getMode() != WIFI_OFF) {
-        disableWiFi();
+        stopWiFiForDeepSleep();
     }
 }
 
