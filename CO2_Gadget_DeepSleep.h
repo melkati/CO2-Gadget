@@ -394,7 +394,9 @@ void doDeepSleepWiFiConnect() {
 void displayFromDeepSleep(bool forceRedraw = false) {
 #ifdef SUPPORT_EINK
     initDisplayFromDeepSleep(forceRedraw);
-    displayShowValues();
+    einkDisplayUpdateFromDeepSleep = true;
+    displayShowValues(forceRedraw);
+    einkDisplayUpdateFromDeepSleep = false;
 #endif
 }
 
@@ -668,7 +670,7 @@ void handleCycleCountersOnWake() {
 
 #if defined(DEEP_SLEEP_DEBUG)
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesLeftToWiFiConnect));
-    Serial.println("-->[DEEP] Cycles left to redraw E-Ink display: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
+    Serial.println("-->[DEEP] Display redraw cycles left: " + String(deepSleepData.cyclesLeftToRedrawDisplay));
 #endif
 }
 
@@ -686,8 +688,16 @@ void handleBLEOnWake() {
 
 void handleDisplayReverseOnWake() {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
+    RTC_DATA_ATTR static bool lastDisplayReverseOnWake = false;
+    RTC_DATA_ATTR static bool lastDisplayReverseOnWakeValid = false;
+    bool displayReverseChanged = !lastDisplayReverseOnWakeValid || (lastDisplayReverseOnWake != deepSleepData.displayReverseOnWake);
+
     displayReverse = deepSleepData.displayReverseOnWake;
-    setDisplayReverse(displayReverse);
+    if (displayReverseChanged) {
+        setDisplayReverse(displayReverse);
+        lastDisplayReverseOnWake = displayReverse;
+        lastDisplayReverseOnWakeValid = true;
+    }
     reverseButtons(displayReverse);
 #endif
 }
@@ -782,7 +792,7 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
 #if defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
             Serial.println("-->[DEEP] Turn display off before going to deep sleep *");
             delay(10);
-            displaySleep(false);
+            displaySleep(true);
 #endif
             toDeepSleep();
             break;
@@ -875,7 +885,7 @@ void deepSleepLoop() {
 #endif
             Serial.println("-->[DEEP] Display off before going to deep sleep");
             delay(20);
-            displaySleep(false);
+            displaySleep(true);
 #endif
             // deepSleepData.lowPowerMode = MEDIUM_LOWPOWER;
             toDeepSleep();
