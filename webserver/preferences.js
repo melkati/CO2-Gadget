@@ -523,9 +523,12 @@ function handleCalibrationWizard() {
     const countdownSpan = document.getElementById("countdown");
     const currentCO2ValueSpan = document.getElementById("currentCO2Value");
 
+    // Declared explicitly to avoid implicit global
+    let updateCO2Interval = null;
+
     // Function to fetch current CO2 value from /readCO2 endpoint as text
     function getCurrentCO2Value() {
-        fetch("/readCO2")
+        fetchWithTimeout('/readCO2', {}, 5000)
             .then((response) => response.text())
             .then((data) => {
                 let co2Value = parseFloat(data);
@@ -712,14 +715,17 @@ function showTempHumBatt() {
 }
 
 /**
- * Reads preferences with limited retries to tolerate transient network timeouts.
+ * Reads preferences with retries to tolerate transient network timeouts.
+ * Uses exponential backoff: 1 s, 2 s, 4 s between attempts.
  * @param {number} retries - Number of retry attempts after the first failure.
  * @returns {Promise<Object>} Preferences object.
  */
-function readPreferencesWithRetry(retries = 2) {
+function readPreferencesWithRetry(retries = 3) {
     return readPreferencesFromServer().catch(error => {
         if (retries <= 0) throw error;
-        return new Promise(resolve => setTimeout(resolve, 900))
+        const delay = 1000 * Math.pow(2, 3 - retries); // 1 s, 2 s, 4 s
+        console.warn(`Preferences fetch failed, retrying in ${delay}ms… (${retries} left)`);
+        return new Promise(resolve => setTimeout(resolve, delay))
             .then(() => readPreferencesWithRetry(retries - 1));
     });
 }
@@ -736,15 +742,42 @@ document.addEventListener("DOMContentLoaded", () => {
         forceCaptivePortalActive = currentURL.includes("forceCaptivePortalActive");
         handlePasswordFields();
 
-        // Load preferences from the server and populate the form
-        readPreferencesWithRetry(2)
-            .then(preferences => {
-                populateFormWithPreferences(preferences);
-                displayVersion();
-            })
-            .catch(error => {
-                console.error('Error initializing preferences page:', error);
-            });
+        // Show a loading banner while preferences are being fetched
+        const form = document.getElementById("preferencesForm");
+        const loadingBanner = document.createElement("div");
+        loadingBanner.id = "prefsLoadingBanner";
+        loadingBanner.style.cssText = "padding:10px 16px;margin-bottom:12px;border-radius:6px;background:var(--input-bg,#f0f0f0);color:var(--font-color,#333);font-size:.9rem;";
+        loadingBanner.textContent = "Loading preferences…";
+        if (form) form.insertAdjacentElement("beforebegin", loadingBanner);
+
+        function attemptLoad() {
+            loadingBanner.textContent = "Loading preferences…";
+            // Remove any previous retry button
+            const old = document.getElementById("prefsRetryBtn");
+            if (old) old.remove();
+
+            readPreferencesWithRetry(3)
+                .then(preferences => {
+                    populateFormWithPreferences(preferences);
+                    displayVersion();
+                    loadingBanner.remove();
+                })
+                .catch(error => {
+                    console.error('Error initializing preferences page:', error);
+                    loadingBanner.style.background = "var(--red-color,#c0392b)";
+                    loadingBanner.style.color = "#fff";
+                    loadingBanner.textContent = "Could not load preferences. ";
+                    const retryBtn = document.createElement("button");
+                    retryBtn.id = "prefsRetryBtn";
+                    retryBtn.type = "button";
+                    retryBtn.textContent = "Retry";
+                    retryBtn.style.cssText = "margin-left:8px;padding:3px 10px;cursor:pointer;border:none;border-radius:4px;background:#fff;color:#c0392b;font-weight:bold;";
+                    retryBtn.addEventListener("click", attemptLoad);
+                    loadingBanner.appendChild(retryBtn);
+                });
+        }
+
+        attemptLoad();
 
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
@@ -755,12 +788,14 @@ document.addEventListener("DOMContentLoaded", () => {
         handleWiFiMQTTDependency();
         handleCalibrationWizard();
 
-        // Update the battery voltage every second
-        setInterval(fetchAndUpdateBatteryVoltage, 1000);
+        // Update the battery voltage every 5 seconds (voltage changes slowly)
+        setInterval(fetchAndUpdateBatteryVoltage, 5000);
 
-        // Listen for input events on the voltage reference field with a delay of 100ms
+        // Listen for input events on the voltage reference field with a proper debounce
+        let _vRefDebounceId = null;
         document.getElementById('vRef').addEventListener('input', () => {
-            setTimeout(updateVRef, 100);
+            clearTimeout(_vRefDebounceId);
+            _vRefDebounceId = setTimeout(updateVRef, 400);
         });
 
         // Timezone selector — init and live preview
