@@ -26,7 +26,7 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
     //     captivePortalNoTimeout = true;
     // }
 
-    fetch('/setCaptivePortalSettings', {
+    fetchWithTimeout('/setCaptivePortalSettings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,7 +37,7 @@ function setCaptivePortalSettings(timeToWait, isInitialSetup = false) {
             captivePortalDebug,
             relaxedSecurity: relaxedSecurity ? true : undefined
         })
-    })
+    }, 5000)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -142,17 +142,12 @@ function updateActiveStates(data) {
  * Fetches the captive portal settings from the server.
  */
 function getCaptivePortalSettings() {
-    fetch("/getCaptivePortalStatusAsJson")
+    fetchWithTimeout('/getCaptivePortalStatusAsJson', {}, 5000)
         .then(response => {
-            // if (captivePortalDebug) console.log("Received response:", response);
-
-            // Check if the response status is OK
             if (!response.ok) {
-                console.error("Response not OK:", response.status, response.statusText);
-                throw new Error("Network response was not ok " + response.statusText);
+                console.error('Response not OK:', response.status, response.statusText);
+                throw new Error('Network response was not ok ' + response.statusText);
             }
-
-            // Convert the response body to JSON
             return response.json();
         })
         .then(captivePortalSettings => {
@@ -208,7 +203,9 @@ function initializeCaptivePortal() {
     // getCaptivePortalSettings(); // Fetch initial settings
     setupInitialSettings();
 
-    setInterval(getCaptivePortalSettings, 1000);
+    // Poll captive portal status every 5 s — sufficient for UI responsiveness
+    // while avoiding hammering the ESP32 web server.
+    setInterval(getCaptivePortalSettings, 5000);
 }
 
 

@@ -43,18 +43,15 @@ function displayServerStatusDot(show, colorClass = 'status-dot-cyan', title = ''
  * Checks the server connection periodically.
  */
 function checkServerConnection() {
-    fetch('/pingServer')
+    fetchWithTimeout('/pingServer', {}, 3000)
         .then(response => {
-            if (response.ok) {
-                canPingServer = true;
-            } else {
-                canPingServer = false;
-                captivePortalActive = false; // Mark captive portal as inactive
-            }
+            canPingServer = response.ok;
+            if (!response.ok) captivePortalActive = false;
         })
         .catch(error => {
             console.error('Error pinging server:', error);
-            captivePortalActive = false; // Mark captive portal as inactive
+            canPingServer = false;
+            captivePortalActive = false;
         });
 }
 
@@ -92,6 +89,7 @@ function updateServerStatusDot() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    setInterval(updateServerStatusDot, 1000);
-    setInterval(checkServerConnection, 1000);
+    // Poll at 5 s — reduces request rate on ESP32 while still detecting connectivity loss promptly
+    setInterval(updateServerStatusDot, 5000);
+    setInterval(checkServerConnection, 5000);
 });
