@@ -43,8 +43,11 @@ let uptimeIntervalId = null;
 
 // Function to Fetch status data from /getCaptivePortalStatusAsJson endpoint and populate the form
 function loadCaptivePortalStatusFromServer() {
-    fetch('/getCaptivePortalStatusAsJson')
-        .then(response => response.json())
+    fetchWithTimeout('/getCaptivePortalStatusAsJson', {}, 6000)
+        .then(response => {
+            if (!response.ok) throw new Error('Response not OK: ' + response.status);
+            return response.json();
+        })
         .then(data => {
             console.log('Fetching data successful!');
             // Update DOM with status data
@@ -90,8 +93,11 @@ function loadCaptivePortalStatusFromServer() {
 
 // Function to Fetch status data from /status endpoint and populate the form
 function loadStatusFromServer() {
-    fetch('/status')
-        .then(response => response.json())
+    fetchWithTimeout('/status', {}, 8000)
+        .then(response => {
+            if (!response.ok) throw new Error('Response not OK: ' + response.status);
+            return response.json();
+        })
         .then(data => {
             console.log('Fetching data successful!');
             // Update DOM with status data
@@ -367,16 +373,24 @@ function fetchAndUpdateMinFreeHeap() {
 }
 
 setInterval(function () {
-    // Call a function repetatively with 1 Second interval
+    // Clock update — purely local, no fetch
+    updateStatusClock();
+}, 1000);
+
+setInterval(function () {
+    // Sensor and heap data — polled every 5 s to avoid overloading the ESP32
     fetchAndUpdateBatteryVoltage();
     fetchAndUpdateFreeHeap();
     fetchAndUpdateMinFreeHeap();
     fetchAndUpdateCO2Value();
     fetchAndUpdateTemperatureValue();
     fetchAndUpdateHumidityValue();
+}, 5000);
+
+setInterval(function () {
+    // Captive-portal / connectivity status — sufficient at 5 s
     loadCaptivePortalStatusFromServer();
-    updateStatusClock();
-}, 1000); // 1000mS  update rate
+}, 5000);
 
 /** Updates the real-time clock display on the status page using the stored timezone. */
 function updateStatusClock() {
@@ -396,7 +410,11 @@ function updateStatusClock() {
 }
 
 window.onload = function () {
+    // Initial fetch on load so data shows immediately without waiting for first interval
     fetchAndUpdateBatteryVoltage();
+    fetchAndUpdateCO2Value();
+    fetchAndUpdateTemperatureValue();
+    fetchAndUpdateHumidityValue();
 };
 
 document.addEventListener("DOMContentLoaded", function () {

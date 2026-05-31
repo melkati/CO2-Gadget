@@ -354,8 +354,11 @@ function CreateChart() {
     // Si el filtro está desactivado (por defecto) siempre se muestran todos los puntos.
     // Si el filtro está activo, los inputs ya están fijados por el usuario → no se sobreescriben.
     function fetchAndRender() {
-        fetch('/circularBufferData')
-            .then(r => r.json())
+        fetchWithTimeout('/circularBufferData', {}, 10000)
+            .then(r => {
+                if (!r.ok) throw new Error('Response not OK: ' + r.status);
+                return r.json();
+            })
             .then(data => {
                 allPoints = buildPoints(data);
                 applyFilter();

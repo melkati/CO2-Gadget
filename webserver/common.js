@@ -114,18 +114,32 @@ var features = {
 };
 
 /**
+ * Wrapper around fetch() that automatically aborts after timeoutMs milliseconds.
+ * Prevents hung requests from blocking the retry logic when the ESP32 is busy
+ * (e.g. during an EINK refresh or CO2 measurement cycle).
+ * @param {string} url - The URL to fetch.
+ * @param {RequestInit} [options] - Standard fetch options.
+ * @param {number} [timeoutMs=6000] - Abort timeout in milliseconds.
+ * @returns {Promise<Response>}
+ */
+function fetchWithTimeout(url, options, timeoutMs) {
+    if (timeoutMs === undefined) timeoutMs = 6000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const fetchOptions = Object.assign({}, options || {}, { signal: controller.signal });
+    return fetch(url, fetchOptions)
+        .then(function(response) { clearTimeout(timeoutId); return response; })
+        .catch(function(error) { clearTimeout(timeoutId); throw error; });
+}
+
+/**
  * Restarts the ESP32 device after user confirmation.
  */
 function restartESP32() {
     const isConfirmed = confirm("Are you sure you want to restart the ESP32?");
     if (isConfirmed) {
         if (preferencesDebug) console.log("Restarting ESP32...");
-        fetch('/restart', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        })
+        fetchWithTimeout('/restart', { method: 'GET', headers: { 'Content-Type': 'text/plain' } }, 5000)
             .then(response => {
                 if (response.ok) {
                     console.log('ESP32 restart initiated');
@@ -155,7 +169,7 @@ function highlightCurrentPage() {
  * Loads features from the server and updates the global features object.
  */
 function loadFeaturesFromServer() {
-    fetch('/getFeaturesAsJson')
+    fetchWithTimeout('/getFeaturesAsJson', {}, 8000)
         .then(response => response.json())
         .then(data => {
             console.log('Fetching loadFeaturesFromServer successful!');
@@ -178,11 +192,9 @@ function loadFeaturesFromServer() {
  * @throws {Error} If the network response is not ok or if there is an error fetching the data.
  */
 function readBatteryVoltage() {
-    return fetch('/readBatteryVoltage')
+    return fetchWithTimeout('/readBatteryVoltage', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .catch(error => {
@@ -196,11 +208,9 @@ function readBatteryVoltage() {
  * @returns {Promise<string>} A promise that resolves to the CO2 value as a string.
  */
 function readCO2Data() {
-    return fetch("/readCO2")
+    return fetchWithTimeout('/readCO2', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok.");
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .then(data => parseFloat(data))
@@ -215,11 +225,9 @@ function readCO2Data() {
  * @returns {Promise<number>} A promise that resolves to the temperature value.
  */
 function readTemperatureData() {
-    return fetch("/readTemperature")
+    return fetchWithTimeout('/readTemperature', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok.");
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .then(data => parseFloat(data).toFixed(1))
@@ -234,11 +242,9 @@ function readTemperatureData() {
  * @returns {Promise<string>} A promise that resolves to the humidity value as a string.
  */
 function readHumidityData() {
-    return fetch("/readHumidity")
+    return fetchWithTimeout('/readHumidity', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok.");
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .then(data => parseFloat(data).toFixed(0))
@@ -254,11 +260,9 @@ function readHumidityData() {
  * @throws {Error} If the network response is not ok or an error occurs during the fetch operation.
  */
 function readMeasurementInterval() {
-    return fetch("/getMeasurementInterval")
+    return fetchWithTimeout('/getMeasurementInterval', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok.");
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .then(data => parseInt(data) * 1000)
@@ -274,11 +278,9 @@ function readMeasurementInterval() {
  * @throws {Error} If the network response is not ok or if there is an error fetching the data.
  */
 function readFreeHeap() {
-    return fetch('/getFreeHeap')
+    return fetchWithTimeout('/getFreeHeap', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .catch(error => {
@@ -293,11 +295,9 @@ function readFreeHeap() {
  * @throws {Error} If the network response is not ok or if there is an error fetching the data.
  */
 function readMinFreeHeap() {
-    return fetch('/getMinFreeHeap')
+    return fetchWithTimeout('/getMinFreeHeap', {}, 5000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.text();
         })
         .catch(error => {
@@ -329,11 +329,11 @@ function handleFeaturesData(data) {
  * @returns {Promise<void>}
  */
 function getFeaturesAsJson() {
-    return fetch("/getFeaturesAsJson")
+    return fetchWithTimeout('/getFeaturesAsJson', {}, 8000)
         .then(response => {
             if (!response.ok) {
-                console.error("Response not OK:", response.status, response.statusText);
-                throw new Error("Network response was not ok " + response.statusText);
+                console.error('Response not OK:', response.status, response.statusText);
+                throw new Error('Network response was not ok ' + response.statusText);
             }
             return response.json();
         })
@@ -352,13 +352,14 @@ function getFeaturesAsJson() {
  * @throws {Error} If the network response is not ok or if there is an error fetching the version.
  */
 function fetchVersion() {
-    return fetch('/getVersion')
+    return fetchWithTimeout('/getVersion', {}, 8000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            if (captivePortalDebug) console.log('Version information:', response.json());
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.json();
+        })
+        .then(data => {
+            if (captivePortalDebug) console.log('Version information:', data);
+            return data;
         })
         .catch(error => {
             console.error('Error fetching version:', error);
@@ -393,14 +394,15 @@ function getVersionStr() {
 /**
  * Retrieves a JSON from the server with the current settings
  * and returns a promise that resolves to the JSON object.
+ * Uses AbortController to enforce an 8-second timeout so that a hung
+ * request (e.g. when the device is busy with a CO2 measurement or EINK
+ * render) is rejected promptly and the retry logic can kick in.
  * @returns {Promise<Object>} A promise that resolves to the settings JSON object.
  */
 function readPreferencesFromServer() {
-    return fetch('/getActualSettingsAsJson')
+    return fetchWithTimeout('/getActualSettingsAsJson', {}, 8000)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
+            if (!response.ok) throw new Error('Network response was not ok.');
             return response.json();
         })
         .catch(error => {
@@ -437,13 +439,8 @@ function initNavBar() {
  * Handles the low power mode activation.
  */
 function goLowPower() {
-    console.log("Low power mode activated");
-    fetch('/goLowPower', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'text/plain'
-        }
-    })
+    console.log('Low power mode activated');
+    fetchWithTimeout('/goLowPower', { method: 'GET', headers: { 'Content-Type': 'text/plain' } }, 5000)
         .then(response => {
             if (response.ok) {
                 console.log('Low power mode activated');
@@ -459,8 +456,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add device hostName to the existing page title as document.title + (HostName)
     readPreferencesFromServer().then(data => {
-        document.title += ` (${data.hostName})`;
-    });
+        if (data && data.hostName) document.title += ` (${data.hostName})`;
+    }).catch(error => console.warn('Could not get hostName for title:', error));
 
     // Low power icon click handler (element may not be present in all pages)
     const lightingIcon = document.getElementById('lightingIcon');

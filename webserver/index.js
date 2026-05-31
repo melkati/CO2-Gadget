@@ -186,9 +186,9 @@ document.addEventListener('DOMContentLoaded', function () {
             updateCharts(preferences);
             highlightCurrentPage();
 
+            // updateCharts already calls updateTemperatureData() and updateHumidityData()
+            // internally, so only one interval is needed here.
             setInterval(() => updateCharts(preferences), co2Interval);
-            setInterval(() => updateTemperatureData(), temperatureInterval);
-            setInterval(() => updateHumidityData(), humidityInterval);
         }).catch(error => {
             console.error('Error initializing page:', error);
         });
