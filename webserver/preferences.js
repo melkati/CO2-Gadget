@@ -115,6 +115,7 @@ function populateFormWithPreferences(preferences) {
     setFormValue("neopixBright", preferences.neopixBright);
     setFormValue("selNeopxType", preferences.selNeopxType);
     setFormCheckbox("activeBLE", preferences.activeBLE);
+    setFormCheckbox("activeBTHome", preferences.activeBTHome);
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
     setFormValue("mqttClientId", preferences.mqttClientId);
@@ -214,6 +215,7 @@ function collectPreferencesData() {
         setValue("neopixBright");
         setValue("selNeopxType");
         setValue("activeBLE", 'checked');
+        setValue("activeBTHome", 'checked');
         setValue("activeWIFI", 'checked');
         setValue("activeMQTT", 'checked');
         setValue("activeESPNOW", 'checked');

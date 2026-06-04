@@ -79,10 +79,16 @@
                 </div>
                 <div class="pref-section-body">
                     <div class="form-group flex-align-center">
-                        <label for="activeBLE">BLE:</label>
+                        <label for="activeBLE">Sensirion BLE:</label>
                         <input type="checkbox" id="activeBLE" name="activeBLE">
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
-                        <span class="tooltip-text">Use Bluetooth Low Energy. Works with Sensirion's MyAmbiance App.</span>
+                        <span class="tooltip-text">Expose the Sensirion/MyAmbiance BLE service, history download, WiFi setup, and calibration.</span>
+                    </div>
+                    <div class="form-group flex-align-center">
+                        <label for="activeBTHome">BTHome:</label>
+                        <input type="checkbox" id="activeBTHome" name="activeBTHome">
+                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
+                        <span class="tooltip-text">Also expose CO2, temperature, humidity, and battery using BTHome v2 scan responses for Home Assistant.</span>
                     </div>
                     <div class="form-group flex-align-center">
                         <label for="activeWIFI">WiFi:</label>

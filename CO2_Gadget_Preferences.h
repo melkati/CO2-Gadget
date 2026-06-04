@@ -180,6 +180,9 @@ void printActualSettings() {
     Serial.println("-->[PREF] neopixBright:\t #" + String(neopixelBrightness) + "#");
     Serial.println("-->[PREF] selNeopxType:\t #" + String(selectedNeopixelType) + "#");
     Serial.println("-->[PREF] activeBLE is:\t#" + String(activeBLE ? "Enabled" : "Disabled") + "# (" + String(activeBLE) + ")");
+#ifdef SUPPORT_BTHOME_BLE
+    Serial.println("-->[PREF] activeBTHome is:\t#" + String(activeBTHome ? "Enabled" : "Disabled") + "# (" + String(activeBTHome) + ")");
+#endif
     Serial.println("-->[PREF] activeWIFI is:\t#" + String(activeWIFI ? "Enabled" : "Disabled") + "# (" + String(activeWIFI) + ")");
     Serial.println("-->[PREF] activeMQTT is:\t#" + String(activeMQTT ? "Enabled" : "Disabled") + "# (" + String(activeMQTT) + ")");
     Serial.println("-->[PREF] activeESPNOW is:\t#" + String(activeESPNOW ? "Enabled" : "Disabled") + "# (" + String(activeESPNOW) + ")");
@@ -309,6 +312,9 @@ void initPreferences() {
     neopixelBrightness = preferences.getUInt("neopixBright", 50);
     selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
     activeBLE = preferences.getBool("activeBLE", true);
+#ifdef SUPPORT_BTHOME_BLE
+    activeBTHome = preferences.getBool("activeBTHome", false);
+#endif
     activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
     activeESPNOW = preferences.getBool("activeESPNOW", false);
@@ -469,6 +475,9 @@ void putPreferences() {
     preferences.putUInt("neopixBright", neopixelBrightness);
     preferences.putUInt("selNeopxType", selectedNeopixelType);
     preferences.putBool("activeBLE", activeBLE);
+#ifdef SUPPORT_BTHOME_BLE
+    preferences.putBool("activeBTHome", activeBTHome);
+#endif
     preferences.putBool("activeWIFI", activeWIFI);
     preferences.putBool("activeMQTT", activeMQTT);
     preferences.putBool("activeESPNOW", activeESPNOW);
@@ -592,6 +601,11 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["neopixBright"] = neopixelBrightness;
     doc["selNeopxType"] = selectedNeopixelType;
     doc["activeBLE"] = activeBLE;
+#ifdef SUPPORT_BTHOME_BLE
+    doc["activeBTHome"] = activeBTHome;
+#else
+    doc["activeBTHome"] = false;
+#endif
     doc["activeWIFI"] = activeWIFI;
     doc["activeMQTT"] = activeMQTT;
     doc["activeESPNOW"] = activeESPNOW;
@@ -774,6 +788,11 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         if (JsonDocument.containsKey("activeBLE")) {
             activeBLE = JsonDocument["activeBLE"];
         }
+#ifdef SUPPORT_BTHOME_BLE
+        if (JsonDocument.containsKey("activeBTHome")) {
+            activeBTHome = JsonDocument["activeBTHome"];
+        }
+#endif
         if (JsonDocument.containsKey("activeWIFI")) {
             activeWIFI = JsonDocument["activeWIFI"];
         }

@@ -86,6 +86,11 @@ uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // BLE options
 bool activeBLE = true;
+#ifdef SUPPORT_BTHOME_BLE
+bool activeBTHome = false;
+#else
+constexpr bool activeBTHome = false;
+#endif
 bool isDownloadingBLE = false;
 
 // WIFI options

@@ -299,10 +299,26 @@ TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveBLE, exitEvent)
   ,VALUE("OFF", false, doSetActiveBLE, exitEvent));
 
+#ifdef SUPPORT_BTHOME_BLE
+result doSetActiveBTHome(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("activeBTHome", activeBTHome);
+  preferences.end();
+  return proceed;
+}
+
+TOGGLE(activeBTHome, activeBTHomeMenu, "BTHome: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveBTHome, exitEvent)
+  ,VALUE("OFF", false, doSetActiveBTHome, exitEvent));
+#endif
+
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
-  ,OP("You can't", doNothing, noEvent)
-  ,OP("disable BLE.", doNothing, noEvent)
+#ifdef SUPPORT_BTHOME_BLE
+  ,SUBMENU(activeBTHomeMenu)
+#endif
+  ,OP("Use one or", doNothing, noEvent)
+  ,OP("both outputs.", doNothing, noEvent)
   ,EXIT("<Back"));
 #endif
 
