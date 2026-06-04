@@ -237,6 +237,32 @@ void callbackTouch() {
     // placeholder callback function
 }
 
+void prepareServicesForDeepSleep() {
+#ifdef SUPPORT_MQTT
+    if (mqttClient.connected()) {
+        mqttClient.loop();
+        delay(10);
+        mqttClient.disconnect();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_ESPNOW
+    if (EspNowInititialized) {
+        disableESPNow();
+        delay(20);
+    }
+#endif
+
+#ifdef SUPPORT_BLE
+    disableBLE();
+#endif
+
+    if (WiFi.getMode() != WIFI_OFF) {
+        stopWiFiForDeepSleep();
+    }
+}
+
 void toDeepSleep() {
 #ifdef SUPPORT_EINK
 // display.hibernate();
@@ -290,6 +316,7 @@ void toDeepSleep() {
     Serial.println("");
     Serial.println("");
 #endif
+    prepareServicesForDeepSleep();
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
     // #ifdef BTN_WAKEUP
