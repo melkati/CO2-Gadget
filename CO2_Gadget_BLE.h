@@ -6,6 +6,11 @@
 #endif
 
 #ifdef SUPPORT_BLE
+#ifdef SUPPORT_BTHOME_BLE
+#include <esp_mac.h>
+#include <esp_random.h>
+#include <mbedtls/ccm.h>
+#endif
 #include <NimBLEDevice.h>
 #include "Sensirion_Gadget_BLE.h"
 #include "WifiMultiLibraryWrapper.h"
@@ -17,7 +22,15 @@ WifiMultiLibraryWrapper wifi;
 DataProvider provider(lib, DataType::T_RH_CO2, true, true, true, &wifi);
 static bool sensirionBLEInitialized = false;
 #ifdef SUPPORT_BTHOME_BLE
+static constexpr uint8_t BTHOME_DEVICE_INFO = 0x44;            // BTHome v2, irregular/trigger based, not encrypted.
+static constexpr uint8_t BTHOME_DEVICE_INFO_ENCRYPTED = 0x45;  // BTHome v2, irregular/trigger based, encrypted.
+static constexpr uint16_t BTHOME_UUID = 0xFCD2;
+static constexpr uint8_t BTHOME_ENCRYPTION_KEY_SIZE = 16;
+static constexpr uint8_t BTHOME_ENCRYPTION_MIC_SIZE = 4;
+static constexpr uint8_t BTHOME_ENCRYPTION_NONCE_SIZE = 13;
+static constexpr uint8_t BTHOME_COUNTER_SAVE_INTERVAL = 64;
 static uint8_t bthomePacketId = 0;
+static uint8_t bthomeCounterSaveSkips = 0;
 #endif
 #endif
 
@@ -57,7 +70,138 @@ void appendBTHomeInt16(std::string &payload, int16_t value) {
     appendBTHomeUInt16(payload, static_cast<uint16_t>(value));
 }
 
-std::string buildBTHomeServiceData(bool incrementPacketId) {
+bool decodeHexNibble(char c, uint8_t &value) {
+    if ((c >= '0') && (c <= '9')) {
+        value = c - '0';
+        return true;
+    }
+    if ((c >= 'a') && (c <= 'f')) {
+        value = c - 'a' + 10;
+        return true;
+    }
+    if ((c >= 'A') && (c <= 'F')) {
+        value = c - 'A' + 10;
+        return true;
+    }
+    return false;
+}
+
+bool decodeBTHomeBindKey(uint8_t key[BTHOME_ENCRYPTION_KEY_SIZE]) {
+    String normalizedKey = bthomeBindKey;
+    normalizedKey.trim();
+    normalizedKey.replace(" ", "");
+    normalizedKey.replace(":", "");
+    normalizedKey.replace("-", "");
+
+    if (normalizedKey.length() != BTHOME_ENCRYPTION_KEY_SIZE * 2) {
+        return false;
+    }
+
+    for (uint8_t i = 0; i < BTHOME_ENCRYPTION_KEY_SIZE; ++i) {
+        uint8_t high;
+        uint8_t low;
+        if (!decodeHexNibble(normalizedKey[i * 2], high) || !decodeHexNibble(normalizedKey[i * 2 + 1], low)) {
+            return false;
+        }
+        key[i] = (high << 4) | low;
+    }
+
+    return true;
+}
+
+void appendBTHomeCounter(std::string &payload, uint32_t counter) {
+    appendBTHomeUInt16(payload, static_cast<uint16_t>(counter & 0xFFFF));
+    appendBTHomeUInt16(payload, static_cast<uint16_t>((counter >> 16) & 0xFFFF));
+}
+
+void saveBTHomeCounter(bool force) {
+    if (!bthomeEncryption) {
+        return;
+    }
+    if (!force && (++bthomeCounterSaveSkips < BTHOME_COUNTER_SAVE_INTERVAL)) {
+        return;
+    }
+
+    bthomeCounterSaveSkips = 0;
+    preferences.begin("CO2-Gadget", false);
+    preferences.putUInt("bthomeCounter", bthomeCounter);
+    preferences.end();
+}
+
+void seedBTHomeCounter() {
+    if (!bthomeEncryption) {
+        return;
+    }
+
+    uint32_t counterJump = (esp_random() & 0x0FFF) + 1;
+    bthomeCounter += counterJump;
+    saveBTHomeCounter(true);
+}
+
+bool getBTHomeMacAddress(uint8_t mac[6]) {
+    return esp_read_mac(mac, ESP_MAC_BT) == ESP_OK;
+}
+
+bool encryptBTHomePayload(const std::string &plainPayload, std::string &encryptedPayload) {
+    uint8_t key[BTHOME_ENCRYPTION_KEY_SIZE];
+    if (!decodeBTHomeBindKey(key)) {
+        Serial.println("-->[BLE ] BTHome encryption enabled but bind key is invalid. Expected 32 hex characters.");
+        return false;
+    }
+
+    uint8_t mac[6];
+    if (!getBTHomeMacAddress(mac)) {
+        Serial.println("-->[BLE ] Could not read Bluetooth MAC address for BTHome encryption.");
+        return false;
+    }
+
+    ++bthomeCounter;
+
+    uint8_t nonce[BTHOME_ENCRYPTION_NONCE_SIZE];
+    memcpy(nonce, mac, sizeof(mac));
+    nonce[6] = 0xD2;
+    nonce[7] = 0xFC;
+    nonce[8] = BTHOME_DEVICE_INFO_ENCRYPTED;
+    nonce[9] = static_cast<uint8_t>(bthomeCounter & 0xFF);
+    nonce[10] = static_cast<uint8_t>((bthomeCounter >> 8) & 0xFF);
+    nonce[11] = static_cast<uint8_t>((bthomeCounter >> 16) & 0xFF);
+    nonce[12] = static_cast<uint8_t>((bthomeCounter >> 24) & 0xFF);
+
+    std::string cipherText(plainPayload.length(), '\0');
+    uint8_t mic[BTHOME_ENCRYPTION_MIC_SIZE];
+
+    mbedtls_ccm_context ccm;
+    mbedtls_ccm_init(&ccm);
+    int result = mbedtls_ccm_setkey(&ccm, MBEDTLS_CIPHER_ID_AES, key, BTHOME_ENCRYPTION_KEY_SIZE * 8);
+    if (result == 0) {
+        result = mbedtls_ccm_encrypt_and_tag(&ccm,
+                                             plainPayload.length(),
+                                             nonce,
+                                             sizeof(nonce),
+                                             nullptr,
+                                             0,
+                                             reinterpret_cast<const unsigned char *>(plainPayload.data()),
+                                             reinterpret_cast<unsigned char *>(&cipherText[0]),
+                                             mic,
+                                             sizeof(mic));
+    }
+    mbedtls_ccm_free(&ccm);
+
+    if (result != 0) {
+        Serial.println("-->[BLE ] BTHome encryption failed with mbedTLS error: " + String(result));
+        return false;
+    }
+
+    encryptedPayload.reserve(1 + cipherText.length() + 4 + BTHOME_ENCRYPTION_MIC_SIZE);
+    appendBTHomeUInt8(encryptedPayload, BTHOME_DEVICE_INFO_ENCRYPTED);
+    encryptedPayload += cipherText;
+    appendBTHomeCounter(encryptedPayload, bthomeCounter);
+    encryptedPayload.append(reinterpret_cast<const char *>(mic), sizeof(mic));
+    saveBTHomeCounter(false);
+    return true;
+}
+
+std::string buildBTHomeMeasurements(bool incrementPacketId) {
     std::string payload;
     if (!activeBTHome || !isValidBLEMeasurement()) {
         return payload;
@@ -67,8 +211,7 @@ std::string buildBTHomeServiceData(bool incrementPacketId) {
         ++bthomePacketId;
     }
 
-    payload.reserve(13);
-    appendBTHomeUInt8(payload, 0x40);  // BTHome v2, not encrypted, regular updates
+    payload.reserve(12);
     appendBTHomeUInt8(payload, 0x00);
     appendBTHomeUInt8(payload, bthomePacketId);
     appendBTHomeUInt8(payload, 0x01);
@@ -83,6 +226,27 @@ std::string buildBTHomeServiceData(bool incrementPacketId) {
     return payload;
 }
 
+std::string buildBTHomeServiceData(bool incrementPacketId) {
+    std::string measurements = buildBTHomeMeasurements(incrementPacketId);
+    if (measurements.empty()) {
+        return measurements;
+    }
+
+    if (bthomeEncryption) {
+        std::string encryptedPayload;
+        if (encryptBTHomePayload(measurements, encryptedPayload)) {
+            return encryptedPayload;
+        }
+        return std::string();
+    }
+
+    std::string payload;
+    payload.reserve(1 + measurements.length());
+    appendBTHomeUInt8(payload, BTHOME_DEVICE_INFO);
+    payload += measurements;
+    return payload;
+}
+
 void updateBTHomeAdvertisementData(bool incrementPacketId) {
     if (!activeBTHome || !isValidBLEMeasurement()) {
         return;
@@ -94,7 +258,7 @@ void updateBTHomeAdvertisementData(bool incrementPacketId) {
     }
 
     NimBLEAdvertisementData advertisementData;
-    advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(0xFCD2)), payload);
+    advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(BTHOME_UUID)), payload);
 
     NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
     if (sensirionBLEInitialized) {
@@ -109,7 +273,7 @@ void updateBTHomeAdvertisementData(bool incrementPacketId) {
     }
 
 #ifdef DEBUG_BLE
-    Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%");
+    Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
 #endif
 }
 #endif
@@ -161,6 +325,7 @@ void initBLE() {
         provider.setBatteryLevel(batteryLevel);
 #ifdef SUPPORT_BTHOME_BLE
         if (activeBTHome) {
+            seedBTHomeCounter();
             Serial.println("-->[BLE ] BTHome BLE scan response enabled");
         }
 #endif
@@ -172,6 +337,7 @@ void initBLE() {
         NimBLEDevice::init(hostName.c_str());
         NimBLEDevice::setPower(3);
         bleInitialized = true;
+        seedBTHomeCounter();
         updateBTHomeAdvertisementData(false);
         Serial.println("-->[BLE ] BTHome BLE initialized");
     }

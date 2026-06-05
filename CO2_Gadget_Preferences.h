@@ -3,6 +3,9 @@
 
 #include <ArduinoJson.h>
 #include <Preferences.h>
+#ifdef SUPPORT_BTHOME_BLE
+#include <esp_random.h>
+#endif
 Preferences preferences;
 
 uint8_t prefVersion = 0;
@@ -12,6 +15,76 @@ uint8_t firmVersionMinor = 0;
 uint8_t firmRevision = 0;
 String firmBranch = "";
 String firmFlavour = "";
+
+#ifdef SUPPORT_BTHOME_BLE
+bool isBTHomeHexChar(char c) {
+    return ((c >= '0') && (c <= '9')) ||
+           ((c >= 'a') && (c <= 'f')) ||
+           ((c >= 'A') && (c <= 'F'));
+}
+
+String normalizeBTHomeBindKey(String key) {
+    key.trim();
+    key.replace(" ", "");
+    key.replace(":", "");
+    key.replace("-", "");
+    key.toLowerCase();
+    return key;
+}
+
+bool isValidBTHomeBindKey(const String &key) {
+    if (key.length() != 32) {
+        return false;
+    }
+    for (uint8_t i = 0; i < key.length(); ++i) {
+        if (!isBTHomeHexChar(key[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+String generateBTHomeBindKey() {
+    static const char hexChars[] = "0123456789abcdef";
+    String key;
+    key.reserve(32);
+    for (uint8_t i = 0; i < 16; ++i) {
+        uint8_t value = static_cast<uint8_t>(esp_random() & 0xFF);
+        key += hexChars[value >> 4];
+        key += hexChars[value & 0x0F];
+    }
+    return key;
+}
+
+bool setBTHomeBindKey(String key, bool allowClear = true) {
+    key.trim();
+    if (allowClear && (key == "-")) {
+        bthomeBindKey = generateBTHomeBindKey();
+        Serial.println("-->[PREF] Regenerated BTHome bind key.");
+        return true;
+    }
+
+    String normalizedKey = normalizeBTHomeBindKey(key);
+    if (!isValidBTHomeBindKey(normalizedKey)) {
+        Serial.println("-->[PREF] Invalid BTHome bind key. Expected 32 hexadecimal characters.");
+        return false;
+    }
+
+    bthomeBindKey = normalizedKey;
+    return true;
+}
+
+void ensureBTHomeBindKey() {
+    bthomeBindKey = normalizeBTHomeBindKey(bthomeBindKey);
+    if (isValidBTHomeBindKey(bthomeBindKey)) {
+        return;
+    }
+
+    bthomeBindKey = generateBTHomeBindKey();
+    preferences.putString("bthomeBindKey", bthomeBindKey);
+    Serial.println("-->[PREF] Generated BTHome bind key.");
+}
+#endif
 
 // Function to extract the major version number as an integer
 int getCO2GadgetMajorVersion() {
@@ -182,6 +255,11 @@ void printActualSettings() {
     Serial.println("-->[PREF] activeBLE is:\t#" + String(activeBLE ? "Enabled" : "Disabled") + "# (" + String(activeBLE) + ")");
 #ifdef SUPPORT_BTHOME_BLE
     Serial.println("-->[PREF] activeBTHome is:\t#" + String(activeBTHome ? "Enabled" : "Disabled") + "# (" + String(activeBTHome) + ")");
+    Serial.println("-->[PREF] bthomeEncryption is:\t#" + String(bthomeEncryption ? "Enabled" : "Disabled") + "# (" + String(bthomeEncryption) + ")");
+#ifndef WIFI_PRIVACY
+    Serial.println("-->[PREF] bthomeBindKey:\t#" + bthomeBindKey + "#");
+#endif
+    Serial.println("-->[PREF] bthomeCounter:\t#" + String(bthomeCounter) + "#");
 #endif
     Serial.println("-->[PREF] activeWIFI is:\t#" + String(activeWIFI ? "Enabled" : "Disabled") + "# (" + String(activeWIFI) + ")");
     Serial.println("-->[PREF] activeMQTT is:\t#" + String(activeMQTT ? "Enabled" : "Disabled") + "# (" + String(activeMQTT) + ")");
@@ -314,6 +392,10 @@ void initPreferences() {
     activeBLE = preferences.getBool("activeBLE", true);
 #ifdef SUPPORT_BTHOME_BLE
     activeBTHome = preferences.getBool("activeBTHome", false);
+    bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
+    bthomeBindKey = preferences.getString("bthomeBindKey", "");
+    bthomeCounter = preferences.getUInt("bthomeCounter", 0);
+    ensureBTHomeBindKey();
 #endif
     activeWIFI = preferences.getBool("activeWIFI", true);
     activeMQTT = preferences.getBool("activeMQTT", false);
@@ -420,6 +502,14 @@ void initPreferences() {
     wifiSSID.trim();
     wifiPass.trim();
     hostName.trim();
+#ifdef SUPPORT_BTHOME_BLE
+    bthomeBindKey.trim();
+    if (!isValidBTHomeBindKey(normalizeBTHomeBindKey(bthomeBindKey))) {
+        ensureBTHomeBindKey();
+    } else {
+        bthomeBindKey = normalizeBTHomeBindKey(bthomeBindKey);
+    }
+#endif
     preferences.end();
 #ifdef DEBUG_PREFERENCES
     printActualSettings();
@@ -456,6 +546,15 @@ void putPreferences() {
     wifiSSID.trim();
     wifiPass.trim();
     hostName.trim();
+#ifdef SUPPORT_BTHOME_BLE
+    bthomeBindKey.trim();
+    if (!isValidBTHomeBindKey(normalizeBTHomeBindKey(bthomeBindKey))) {
+        bthomeBindKey = generateBTHomeBindKey();
+        Serial.println("-->[PREF] Generated BTHome bind key before saving preferences.");
+    } else {
+        bthomeBindKey = normalizeBTHomeBindKey(bthomeBindKey);
+    }
+#endif
     // preferences.end();
     preferences.begin("CO2-Gadget", false);
     preferences.putUInt("prefVersion", prefVersion);
@@ -477,6 +576,9 @@ void putPreferences() {
     preferences.putBool("activeBLE", activeBLE);
 #ifdef SUPPORT_BTHOME_BLE
     preferences.putBool("activeBTHome", activeBTHome);
+    preferences.putBool("bthomeEncrypt", bthomeEncryption);
+    preferences.putString("bthomeBindKey", bthomeBindKey);
+    preferences.putUInt("bthomeCounter", bthomeCounter);
 #endif
     preferences.putBool("activeWIFI", activeWIFI);
     preferences.putBool("activeMQTT", activeMQTT);
@@ -603,8 +705,15 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["activeBLE"] = activeBLE;
 #ifdef SUPPORT_BTHOME_BLE
     doc["activeBTHome"] = activeBTHome;
+    doc["bthomeEncryption"] = bthomeEncryption;
+    doc["bthomeCounter"] = bthomeCounter;
+    if (includePasswords) {
+        doc["bthomeBindKey"] = bthomeBindKey;
+    }
 #else
     doc["activeBTHome"] = false;
+    doc["bthomeEncryption"] = false;
+    doc["bthomeCounter"] = 0;
 #endif
     doc["activeWIFI"] = activeWIFI;
     doc["activeMQTT"] = activeMQTT;
@@ -791,6 +900,22 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 #ifdef SUPPORT_BTHOME_BLE
         if (JsonDocument.containsKey("activeBTHome")) {
             activeBTHome = JsonDocument["activeBTHome"];
+        }
+        if (JsonDocument.containsKey("bthomeEncryption")) {
+            bthomeEncryption = JsonDocument["bthomeEncryption"];
+        }
+        if (JsonDocument.containsKey("bthomeBindKey")) {
+            String newBTHomeBindKey = JsonDocument["bthomeBindKey"].as<String>();
+            newBTHomeBindKey.trim();
+            if (newBTHomeBindKey.length() > 0) {
+                if (!setBTHomeBindKey(newBTHomeBindKey)) {
+                    preferences.end();
+                    return false;
+                }
+            }
+        }
+        if (JsonDocument.containsKey("bthomeCounter")) {
+            bthomeCounter = JsonDocument["bthomeCounter"];
         }
 #endif
         if (JsonDocument.containsKey("activeWIFI")) {

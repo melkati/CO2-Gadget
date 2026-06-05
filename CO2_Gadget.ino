@@ -88,8 +88,14 @@ uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 bool activeBLE = true;
 #ifdef SUPPORT_BTHOME_BLE
 bool activeBTHome = false;
+bool bthomeEncryption = false;
+String bthomeBindKey = "";
+uint32_t bthomeCounter = 0;
 #else
 constexpr bool activeBTHome = false;
+constexpr bool bthomeEncryption = false;
+const String bthomeBindKey = "";
+constexpr uint32_t bthomeCounter = 0;
 #endif
 bool isDownloadingBLE = false;
 

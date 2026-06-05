@@ -81,6 +81,7 @@ const char *const hexChars[] MEMMODE = {"0123456789ABCDEF"};
 const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
 const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}?¿"};
 const char *const ssidChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@%&/()=-*^~:.{}¿"};
+const char *const bthomeKeyChars[] MEMMODE = {"0123456789abcdefABCDEF-"};
 const char *const reducedSet[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
 // field will initialize its size by this string length
@@ -93,6 +94,7 @@ char tempWiFiSSID[] = "                              ";
 char tempWiFiPasswrd[] = "                              ";
 char tempHostName[] = "                              ";
 char tempBLEDeviceId[] = "                              ";
+char tempBTHomeBindKey[33] = "                                ";
 char tempCO2Sensor[] = "                              ";
 char tempESPNowAddress[] = "            ";
 
@@ -310,12 +312,39 @@ result doSetActiveBTHome(eventMask e, navNode &nav, prompt &item) {
 TOGGLE(activeBTHome, activeBTHomeMenu, "BTHome: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveBTHome, exitEvent)
   ,VALUE("OFF", false, doSetActiveBTHome, exitEvent));
+
+result doSetBTHomeEncryption(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("bthomeEncrypt", bthomeEncryption);
+  preferences.end();
+  return proceed;
+}
+
+TOGGLE(bthomeEncryption, bthomeEncryptionMenu, "BTHome Enc: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeEncryption, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeEncryption, exitEvent));
+
+result doSetBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
+  String newBindKey = String(tempBTHomeBindKey);
+  newBindKey.trim();
+  if ((newBindKey.length() > 0) && !setBTHomeBindKey(newBindKey)) {
+    Serial.println("-->[MENU] BTHome bind key unchanged.");
+    copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+    return proceed;
+  }
+  preferences.begin("CO2-Gadget", false);
+  preferences.putString("bthomeBindKey", bthomeBindKey);
+  preferences.end();
+  return proceed;
+}
 #endif
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeBLEMenu)
 #ifdef SUPPORT_BTHOME_BLE
   ,SUBMENU(activeBTHomeMenu)
+  ,SUBMENU(bthomeEncryptionMenu)
+  ,EDIT("BT Key", tempBTHomeBindKey, bthomeKeyChars, doSetBTHomeBindKey, exitEvent, wrapStyle)
 #endif
   ,OP("Use one or", doNothing, noEvent)
   ,OP("both outputs.", doNothing, noEvent)
@@ -1047,6 +1076,13 @@ void loadTempArraysWithActualValues() {
     copyStringToCharArray(rightPad(provider.getDeviceIdString(), 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
 #else
     copyStringToCharArray(rightPad("Unavailable", 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
+#endif
+#ifdef SUPPORT_BTHOME_BLE
+#ifdef WIFI_PRIVACY
+    copyStringToCharArray(rightPad(" ", sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+#else
+    copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+#endif
 #endif
 
     String co2SensorString = (sensorsGetMainDeviceSelected() == "SCD30" || sensorsGetMainDeviceSelected() == "SCD4x")

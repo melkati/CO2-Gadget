@@ -116,6 +116,8 @@ function populateFormWithPreferences(preferences) {
     setFormValue("selNeopxType", preferences.selNeopxType);
     setFormCheckbox("activeBLE", preferences.activeBLE);
     setFormCheckbox("activeBTHome", preferences.activeBTHome);
+    setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
+    if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
     setFormValue("mqttClientId", preferences.mqttClientId);
@@ -189,6 +191,23 @@ function loadPreferencesFromServer() {
  * Collects preferences data from the form.
  * @returns {Object} - The collected preferences data.
  */
+function normalizeBTHomeBindKey(value) {
+    return String(value || '').trim().replace(/[\s:-]/g, '').toLowerCase();
+}
+
+function validateBTHomeBindKey(value) {
+    if (!value) return '';
+    const trimmedValue = String(value).trim();
+    if (trimmedValue === '-') return trimmedValue;
+
+    const normalizedValue = normalizeBTHomeBindKey(trimmedValue);
+    if (!/^[0-9a-f]{32}$/.test(normalizedValue)) {
+        throw new Error('BTHome bind key must be exactly 32 hexadecimal characters.');
+    }
+
+    return normalizedValue;
+}
+
 function collectPreferencesData() {
     try {
         const preferencesData = {};
@@ -216,6 +235,9 @@ function collectPreferencesData() {
         setValue("selNeopxType");
         setValue("activeBLE", 'checked');
         setValue("activeBTHome", 'checked');
+        setValue("bthomeEncryption", 'checked');
+        setValue("bthomeBindKey");
+        preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
         setValue("activeWIFI", 'checked');
         setValue("activeMQTT", 'checked');
         setValue("activeESPNOW", 'checked');
@@ -277,7 +299,7 @@ function collectPreferencesData() {
         return preferencesData;
     } catch (error) {
         console.error("Error collecting preferences data:", error);
-        alert("An error occurred while collecting preferences data. Please check the console for details.");
+        alert(error.message || "An error occurred while collecting preferences data. Please check the console for details.");
         throw error; // Re-throw the error after logging it
     }
 }
@@ -300,8 +322,8 @@ function showSavingPopup() {
  * Saves preferences to the server.
  */
 function savePreferences() {
-    showSavingPopup();
     const preferencesData = collectPreferencesData();
+    showSavingPopup();
     if (preferencesDebug) console.log("Sending preferences to server:", preferencesData);
 
     fetch('/savePreferences', {
