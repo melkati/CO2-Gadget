@@ -85,6 +85,7 @@ String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // BLE options
+bool enableBLE = true;
 bool activeBLE = true;
 #ifdef SUPPORT_BTHOME_BLE
 bool activeBTHome = false;

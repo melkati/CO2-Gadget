@@ -295,10 +295,31 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,EXIT("<Back"));
 
 #ifdef SUPPORT_BLE
+result doSetEnableBLE(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("enableBLE", enableBLE);
+  preferences.end();
+  if (enableBLE) {
+    initBLE();
+  } else {
+    disableBLE();
+  }
+  return proceed;
+}
+
+TOGGLE(enableBLE, enableBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetEnableBLE, exitEvent)
+  ,VALUE("OFF", false, doSetEnableBLE, exitEvent));
+
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("activeBLE", activeBLE);
   preferences.end();
+  if (enableBLE && activeBLE) {
+    initBLE();
+  } else if (!activeBLE && !activeBTHome) {
+    disableBLE();
+  }
   return proceed;
 }
 
@@ -311,6 +332,11 @@ result doSetActiveBTHome(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("activeBTHome", activeBTHome);
   preferences.end();
+  if (enableBLE && activeBTHome) {
+    initBLE();
+  } else if (!activeBLE && !activeBTHome) {
+    disableBLE();
+  }
   return proceed;
 }
 
@@ -387,6 +413,7 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
 #endif
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(enableBLEMenu)
   ,SUBMENU(activeBLEMenu)
 #ifdef SUPPORT_BTHOME_BLE
   ,SUBMENU(activeBTHomeMenu)

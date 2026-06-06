@@ -252,6 +252,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] DisplayBrightness:\t #" + String(DisplayBrightness) + "#");
     Serial.println("-->[PREF] neopixBright:\t #" + String(neopixelBrightness) + "#");
     Serial.println("-->[PREF] selNeopxType:\t #" + String(selectedNeopixelType) + "#");
+    Serial.println("-->[PREF] enableBLE is:\t#" + String(enableBLE ? "Enabled" : "Disabled") + "# (" + String(enableBLE) + ")");
     Serial.println("-->[PREF] activeBLE is:\t#" + String(activeBLE ? "Enabled" : "Disabled") + "# (" + String(activeBLE) + ")");
 #ifdef SUPPORT_BTHOME_BLE
     Serial.println("-->[PREF] activeBTHome is:\t#" + String(activeBTHome ? "Enabled" : "Disabled") + "# (" + String(activeBTHome) + ")");
@@ -389,6 +390,7 @@ void initPreferences() {
 #endif
     neopixelBrightness = preferences.getUInt("neopixBright", 50);
     selectedNeopixelType = preferences.getUInt("selNeopxType", NEO_GRB + NEO_KHZ800);
+    enableBLE = preferences.getBool("enableBLE", true);
     activeBLE = preferences.getBool("activeBLE", true);
 #ifdef SUPPORT_BTHOME_BLE
     activeBTHome = preferences.getBool("activeBTHome", false);
@@ -570,6 +572,7 @@ void putPreferences() {
     preferences.putUInt("DisplayBright", DisplayBrightness);
     preferences.putUInt("neopixBright", neopixelBrightness);
     preferences.putUInt("selNeopxType", selectedNeopixelType);
+    preferences.putBool("enableBLE", enableBLE);
     preferences.putBool("activeBLE", activeBLE);
 #ifdef SUPPORT_BTHOME_BLE
     preferences.putBool("activeBTHome", activeBTHome);
@@ -699,6 +702,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["DisplayBright"] = DisplayBrightness;
     doc["neopixBright"] = neopixelBrightness;
     doc["selNeopxType"] = selectedNeopixelType;
+    doc["enableBLE"] = enableBLE;
     doc["activeBLE"] = activeBLE;
 #ifdef SUPPORT_BTHOME_BLE
     doc["activeBTHome"] = activeBTHome;
@@ -890,6 +894,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
         if (JsonDocument.containsKey("selNeopxType")) {
             selectedNeopixelType = JsonDocument["selNeopxType"];
+        }
+        if (JsonDocument.containsKey("enableBLE")) {
+            enableBLE = JsonDocument["enableBLE"];
         }
         if (JsonDocument.containsKey("activeBLE")) {
             activeBLE = JsonDocument["activeBLE"];

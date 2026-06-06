@@ -34,6 +34,8 @@ static uint8_t bthomeCounterSaveSkips = 0;
 #endif
 #endif
 
+void disableBLE();
+
 bool isValidBLEMeasurement() {
     return (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100);
 }
@@ -294,7 +296,13 @@ void setBLEHistoryInterval(uint64_t interval) {
 
 void initBLE() {
 #ifdef SUPPORT_BLE
+    if (!enableBLE) {
+        disableBLE();
+        return;
+    }
+
     if (!activeBLE && !activeBTHome) {
+        disableBLE();
         return;
     }
 
@@ -379,6 +387,10 @@ void publishBLE() {
     static int64_t lastBatteryLevelUpdateMs = 0;
     static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
+    if (!enableBLE) {
+        return;
+    }
+
     if (sensirionBLEInitialized && isDownloadingBLE) {
         return;
     }
@@ -460,7 +472,7 @@ void handleFrcRequest() {
 void BLELoop() {
 #ifdef SUPPORT_BLE
     int connectTries = 0;
-    if (!activeBLE || !sensirionBLEInitialized) {
+    if (!enableBLE || !activeBLE || !sensirionBLEInitialized) {
         return;
     }
     provider.handleDownload();
