@@ -10,6 +10,7 @@
 // clang-format on
 
 #include <Arduino.h>
+#include <esp_err.h>
 #include <esp_wifi.h>
 
 #ifdef SUPPORT_CAPTIVE_PORTAL
@@ -672,6 +673,20 @@ void disableWiFi() {
     }
     delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
+}
+
+void stopWiFiForDeepSleep() {
+    WiFi.disconnect(false);  // Disconnect STA before stopping the radio for deep sleep.
+    delay(50);
+
+    esp_err_t stopResult = esp_wifi_stop();
+    if ((stopResult != ESP_OK) && (stopResult != ESP_ERR_WIFI_NOT_INIT) && (stopResult != ESP_ERR_WIFI_NOT_STARTED)) {
+        Serial.println("-->[WiFi] Error stopping WiFi: " + String(esp_err_to_name(stopResult)) + " (" + String((int)stopResult) + "). Falling back to WIFI_OFF.");
+        WiFi.mode(WIFI_OFF);
+    }
+
+    delay(20);
+    Serial.println("-->[WiFi] WiFi radio stopped for deep sleep!");
 }
 
 // Replaces placeholder with actual values
