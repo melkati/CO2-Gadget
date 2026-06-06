@@ -500,7 +500,6 @@ void initPreferences() {
     mqttUser.trim();
     mqttPass.trim();
     wifiSSID.trim();
-    wifiPass.trim();
     hostName.trim();
 #ifdef SUPPORT_BTHOME_BLE
     bthomeBindKey.trim();
@@ -519,7 +518,6 @@ void initPreferences() {
 
 void saveWifiCredentials() {
     wifiSSID.trim();
-    wifiPass.trim();
 
     preferences.begin("CO2-Gadget", false);
     String savedWifiSSID = preferences.getString("wifiSSID", "");
@@ -544,7 +542,6 @@ void putPreferences() {
     mqttUser.trim();
     mqttPass.trim();
     wifiSSID.trim();
-    wifiPass.trim();
     hostName.trim();
 #ifdef SUPPORT_BTHOME_BLE
     bthomeBindKey.trim();
