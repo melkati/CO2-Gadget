@@ -279,8 +279,7 @@ void prepareServicesForDeepSleep() {
 #endif
 
     if (WiFi.getMode() != WIFI_OFF) {
-        disableWiFi();
-        delay(50);
+        stopWiFiForDeepSleep();
     }
 }
 
@@ -342,6 +341,7 @@ void toDeepSleep() {
     Serial.println("");
     Serial.println("");
 #endif
+    prepareServicesForDeepSleep();
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
