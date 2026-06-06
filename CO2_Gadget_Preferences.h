@@ -412,7 +412,6 @@ void initPreferences() {
     mqttUser.trim();
     mqttPass.trim();
     wifiSSID.trim();
-    wifiPass.trim();
     hostName.trim();
     preferences.end();
 #ifdef DEBUG_PREFERENCES
@@ -423,7 +422,6 @@ void initPreferences() {
 
 void saveWifiCredentials() {
     wifiSSID.trim();
-    wifiPass.trim();
 
     preferences.begin("CO2-Gadget", false);
     String savedWifiSSID = preferences.getString("wifiSSID", "");
@@ -448,7 +446,6 @@ void putPreferences() {
     mqttUser.trim();
     mqttPass.trim();
     wifiSSID.trim();
-    wifiPass.trim();
     hostName.trim();
     // preferences.end();
     preferences.begin("CO2-Gadget", false);
