@@ -1400,21 +1400,8 @@ String getOnOffLabel(bool value) {
   return value ? "ON" : "OFF";
 }
 
-void saveSerialLowPowerSettings() {
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBool("displayReverse", displayReverse);
-  preferences.putUInt("lowPowerMode", deepSleepData.lowPowerMode);
-  preferences.putUInt("waitToDeep", deepSleepData.waitToGoDeepSleepOn1stBoot);
-  preferences.putUInt("timeSleeping", deepSleepData.timeSleeping);
-  preferences.putUInt("cyclsWifiConn", deepSleepData.activateWiFiEvery);
-  preferences.putUInt("cycRedrawDis", deepSleepData.redrawDisplayEveryCycles);
-  preferences.putBool("actBLEOnWake", deepSleepData.activeBLEOnWake);
-  preferences.putBool("actWifiOnWake", deepSleepData.activeWifiOnWake);
-  preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
-  preferences.putBool("actESPnowWake", deepSleepData.sendESPNowOnWake);
-  preferences.putBool("displayOnWake", deepSleepData.displayOnWake);
-  preferences.putBool("dispRevOnWake", deepSleepData.displayReverseOnWake);
-  preferences.end();
+void printLowPowerPendingSave() {
+  Serial.println("-->[MENU] Use Save preferences to persist this setting.");
 }
 
 bool readSerialLowPowerUInt(const char *promptText, uint16_t &target, uint16_t minValue, uint16_t maxValue, const char *wizardName) {
@@ -1501,8 +1488,8 @@ result doSerialLowPowerModeSetup(eventMask e, navNode &nav, prompt &item) {
     return proceed;
   }
 
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Low power mode saved: " + getLowPowerModeName(deepSleepData.lowPowerMode));
+  Serial.println("-->[MENU] Low power mode changed: " + getLowPowerModeName(deepSleepData.lowPowerMode));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1516,8 +1503,8 @@ result doSerialLowPowerWaitSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current wait: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " seconds");
   if (!readSerialLowPowerUInt("-->[MENU] Wait to deep sleep on 1st boot: ", deepSleepData.waitToGoDeepSleepOn1stBoot, 15, 900, "Serial wait to deep sleep on 1st boot setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] First boot wait saved: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " seconds");
+  Serial.println("-->[MENU] First boot wait changed: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + " seconds");
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1531,8 +1518,8 @@ result doSerialLowPowerSleepSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current sleep time: " + String(deepSleepData.timeSleeping) + " seconds");
   if (!readSerialLowPowerUInt("-->[MENU] Sleep seconds: ", deepSleepData.timeSleeping, 0, 65535, "Serial sleep time setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Sleep time saved: " + String(deepSleepData.timeSleeping) + " seconds");
+  Serial.println("-->[MENU] Sleep time changed: " + String(deepSleepData.timeSleeping) + " seconds");
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1547,8 +1534,8 @@ result doSerialLowPowerWiFiEverySetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("-->[MENU] Current activate WiFi every: " + String(deepSleepData.activateWiFiEvery) + " cycles");
   if (!readSerialLowPowerUInt("-->[MENU] Activate WiFi every cycles: ", deepSleepData.activateWiFiEvery, 0, 65535, "Serial WiFi wake cycle setup")) return proceed;
   deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Activate WiFi every saved: " + String(deepSleepData.activateWiFiEvery) + " cycles");
+  Serial.println("-->[MENU] Activate WiFi every changed: " + String(deepSleepData.activateWiFiEvery) + " cycles");
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1563,8 +1550,8 @@ result doSerialLowPowerRedrawEverySetup(eventMask e, navNode &nav, prompt &item)
   Serial.println("-->[MENU] Current redraw display every: " + String(deepSleepData.redrawDisplayEveryCycles) + " cycles");
   if (!readSerialLowPowerUInt("-->[MENU] Redraw display every cycles: ", deepSleepData.redrawDisplayEveryCycles, 0, 65535, "Serial display redraw cycle setup")) return proceed;
   deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Redraw display every saved: " + String(deepSleepData.redrawDisplayEveryCycles) + " cycles");
+  Serial.println("-->[MENU] Redraw display every changed: " + String(deepSleepData.redrawDisplayEveryCycles) + " cycles");
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1577,8 +1564,8 @@ result doSerialLowPowerBLEWakeSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current active BLE on wake: " + getOnOffLabel(deepSleepData.activeBLEOnWake));
   if (!readSerialLowPowerBool("-->[MENU] Active BLE on wake: ", deepSleepData.activeBLEOnWake, "Serial active BLE on wake setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Active BLE on wake saved: " + getOnOffLabel(deepSleepData.activeBLEOnWake));
+  Serial.println("-->[MENU] Active BLE on wake changed: " + getOnOffLabel(deepSleepData.activeBLEOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1591,8 +1578,8 @@ result doSerialLowPowerWiFiWakeSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current active WiFi on wake: " + getOnOffLabel(deepSleepData.activeWifiOnWake));
   if (!readSerialLowPowerBool("-->[MENU] Active WiFi on wake: ", deepSleepData.activeWifiOnWake, "Serial active WiFi on wake setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Active WiFi on wake saved: " + getOnOffLabel(deepSleepData.activeWifiOnWake));
+  Serial.println("-->[MENU] Active WiFi on wake changed: " + getOnOffLabel(deepSleepData.activeWifiOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1605,8 +1592,8 @@ result doSerialLowPowerMQTTWakeSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current send MQTT on wake: " + getOnOffLabel(deepSleepData.sendMQTTOnWake));
   if (!readSerialLowPowerBool("-->[MENU] Send MQTT on wake: ", deepSleepData.sendMQTTOnWake, "Serial send MQTT on wake setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Send MQTT on wake saved: " + getOnOffLabel(deepSleepData.sendMQTTOnWake));
+  Serial.println("-->[MENU] Send MQTT on wake changed: " + getOnOffLabel(deepSleepData.sendMQTTOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1619,8 +1606,8 @@ result doSerialLowPowerESPNowWakeSetup(eventMask e, navNode &nav, prompt &item) 
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current send ESP-NOW on wake: " + getOnOffLabel(deepSleepData.sendESPNowOnWake));
   if (!readSerialLowPowerBool("-->[MENU] Send ESP-NOW on wake: ", deepSleepData.sendESPNowOnWake, "Serial send ESP-NOW on wake setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Send ESP-NOW on wake saved: " + getOnOffLabel(deepSleepData.sendESPNowOnWake));
+  Serial.println("-->[MENU] Send ESP-NOW on wake changed: " + getOnOffLabel(deepSleepData.sendESPNowOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1633,8 +1620,8 @@ result doSerialLowPowerDisplayWakeSetup(eventMask e, navNode &nav, prompt &item)
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current display on wake: " + getOnOffLabel(deepSleepData.displayOnWake));
   if (!readSerialLowPowerBool("-->[MENU] Display on wake: ", deepSleepData.displayOnWake, "Serial display on wake setup")) return proceed;
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Display on wake saved: " + getOnOffLabel(deepSleepData.displayOnWake));
+  Serial.println("-->[MENU] Display on wake changed: " + getOnOffLabel(deepSleepData.displayOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1652,8 +1639,8 @@ result doSerialLowPowerDisplayReverseWakeSetup(eventMask e, navNode &nav, prompt
   setDisplayReverse(displayReverse);
   reverseButtons(displayReverse);
 #endif
-  saveSerialLowPowerSettings();
-  Serial.println("-->[MENU] Display reverse on wake saved: " + getOnOffLabel(deepSleepData.displayReverseOnWake));
+  Serial.println("-->[MENU] Display reverse on wake changed: " + getOnOffLabel(deepSleepData.displayReverseOnWake));
+  printLowPowerPendingSave();
   nav.target->dirty = true;
   return proceed;
 }
@@ -1785,8 +1772,8 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   ,SUBMENU(outputsConfigMenu)
-  ,SUBMENU(lowPowerConfigMenu)
   ,OP("Save preferences", doSavePreferences, enterEvent)
+  ,SUBMENU(lowPowerConfigMenu)
   ,EXIT("<Back"));
 
 std::string getUptime() {
