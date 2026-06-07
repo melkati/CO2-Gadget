@@ -294,9 +294,6 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
 
 #ifdef SUPPORT_BLE
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBool("activeBLE", activeBLE);
-  preferences.end();
   return proceed;
 }
 
@@ -387,6 +384,10 @@ bool serialWizardCanceled(const String &value, const char *wizardName) {
   return true;
 }
 
+void printSerialPendingSave() {
+  Serial.println("-->[MENU] Use Save preferences to persist this setting.");
+}
+
 void refreshWiFiTempArrays() {
   copyStringToCharArray(rightPad(wifiSSID, sizeof(tempWiFiSSID) - 1), tempWiFiSSID, sizeof(tempWiFiSSID), "tempWiFiSSID");
 #ifdef WIFI_PRIVACY
@@ -396,12 +397,8 @@ void refreshWiFiTempArrays() {
 #endif
 }
 
-void saveSerialWiFiSettings(bool reconnect) {
+void applySerialWiFiSettings(bool reconnect) {
   refreshWiFiTempArrays();
-  saveWifiCredentials();
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBool("activeWIFI", activeWIFI);
-  preferences.end();
 
   if (reconnect && activeWIFI) {
     Serial.println("-->[MENU] Trying to connect WiFi...");
@@ -430,8 +427,9 @@ result doSerialWiFiSSIDSetup(eventMask e, navNode &nav, prompt &item) {
 
   wifiSSID = newSSID;
   activeWIFI = true;
-  saveSerialWiFiSettings(true);
-  Serial.println("-->[MENU] WiFi SSID saved: " + wifiSSID);
+  applySerialWiFiSettings(true);
+  Serial.println("-->[MENU] WiFi SSID changed: " + wifiSSID);
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -463,12 +461,13 @@ result doSerialWiFiPasswordSetup(eventMask e, navNode &nav, prompt &item) {
   }
 
   activeWIFI = true;
-  saveSerialWiFiSettings(true);
+  applySerialWiFiSettings(true);
   Serial.println("-->[MENU] WiFi password: " + passwordStatus + ".");
   Serial.println("-->[MENU] WiFi password length: " + String(wifiPass.length()) + ".");
   if ((wifiPass.length() > 0) && (wifiPass.length() < 8)) {
     Serial.println("-->[MENU] Warning: WPA/WPA2 passwords are normally 8-63 characters.");
   }
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -496,11 +495,8 @@ result doSerialHostNameSetup(eventMask e, navNode &nav, prompt &item) {
   hostName = newHostName;
   copyStringToCharArray(rightPad(hostName, 30), tempHostName, 30, "tempHostName");
 
-  preferences.begin("CO2-Gadget", false);
-  preferences.putString("hostName", hostName);
-  preferences.end();
-
-  Serial.println("-->[MENU] Hostname saved: " + hostName);
+  Serial.println("-->[MENU] Hostname changed: " + hostName);
+  printSerialPendingSave();
   if (activeWIFI) {
     Serial.println("-->[MENU] Restarting WiFi with new hostname...");
     initWifi();
@@ -592,22 +588,14 @@ result doSerialFixedIPSetup(eventMask e, navNode &nav, prompt &item) {
   dns1 = newDns1;
   dns2 = newDns2;
 
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBool("useStaticIP", useStaticIP);
-  preferences.putString("staticIP", staticIP.toString());
-  preferences.putString("gateway", gateway.toString());
-  preferences.putString("subnet", subnet.toString());
-  preferences.putString("dns1", dns1.toString());
-  preferences.putString("dns2", dns2.toString());
-  preferences.end();
-
-  Serial.println("-->[MENU] Fixed IP settings saved.");
+  Serial.println("-->[MENU] Fixed IP settings changed.");
   Serial.println("-->[MENU] Static IP mode: " + String(useStaticIP ? "ON" : "OFF") + (staticModeChanged ? " (changed)" : " (kept)"));
   Serial.println("-->[MENU] IP address: " + staticIP.toString() + (ipChanged ? " (changed)" : " (kept)"));
   Serial.println("-->[MENU] Gateway: " + gateway.toString() + (gatewayChanged ? " (changed)" : " (kept)"));
   Serial.println("-->[MENU] Subnet: " + subnet.toString() + (subnetChanged ? " (changed)" : " (kept)"));
   Serial.println("-->[MENU] DNS1: " + dns1.toString() + (dns1Changed ? " (changed)" : " (kept)"));
   Serial.println("-->[MENU] DNS2: " + dns2.toString() + (dns2Changed ? " (changed)" : " (kept)"));
+  printSerialPendingSave();
   if (activeWIFI) {
     Serial.println("-->[MENU] Restarting WiFi with fixed IP settings...");
     initWifi();
@@ -811,15 +799,8 @@ void refreshMQTTTempArrays() {
 #endif
 }
 
-void saveSerialMQTTSettings(bool reconnect) {
+void applySerialMQTTSettings(bool reconnect) {
   refreshMQTTTempArrays();
-  preferences.begin("CO2-Gadget", false);
-  preferences.putString("rootTopic", rootTopic);
-  preferences.putString("mqttClientId", mqttClientId);
-  preferences.putString("mqttBroker", mqttBroker);
-  preferences.putString("mqttUser", mqttUser);
-  preferences.putString("mqttPass", mqttPass);
-  preferences.end();
 
   if (reconnect && activeMQTT && activeWIFI && WiFi.isConnected()) {
     Serial.println("-->[MENU] Reconnecting MQTT...");
@@ -854,8 +835,9 @@ result doSerialMQTTTopicSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current topic: " + String(rootTopic.length() > 0 ? rootTopic : "(not set)"));
   if (!readSerialMQTTText("-->[MENU] Topic: ", rootTopic, 63, "Serial MQTT topic setup", false)) return quit;
-  saveSerialMQTTSettings(true);
-  Serial.println("-->[MENU] MQTT topic saved: " + rootTopic);
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT topic changed: " + rootTopic);
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -868,8 +850,9 @@ result doSerialMQTTClientIdSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current client id: " + String(mqttClientId.length() > 0 ? mqttClientId : "(not set)"));
   if (!readSerialMQTTText("-->[MENU] Client id: ", mqttClientId, 63, "Serial MQTT client id setup", false)) return quit;
-  saveSerialMQTTSettings(true);
-  Serial.println("-->[MENU] MQTT client id saved: " + mqttClientId);
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT client id changed: " + mqttClientId);
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -882,8 +865,9 @@ result doSerialMQTTBrokerSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current broker: " + String(mqttBroker.length() > 0 ? mqttBroker : "(not set)"));
   if (!readSerialMQTTText("-->[MENU] Broker host/IP: ", mqttBroker, 63, "Serial MQTT broker setup", false)) return quit;
-  saveSerialMQTTSettings(true);
-  Serial.println("-->[MENU] MQTT broker saved: " + mqttBroker);
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT broker changed: " + mqttBroker);
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -897,8 +881,9 @@ result doSerialMQTTUserSetup(eventMask e, navNode &nav, prompt &item) {
   Serial.println("**********************************************************************");
   Serial.println("-->[MENU] Current user: " + String(mqttUser.length() > 0 ? mqttUser : "(not set)"));
   if (!readSerialMQTTText("-->[MENU] User: ", mqttUser, 63, "Serial MQTT user setup", true)) return quit;
-  saveSerialMQTTSettings(true);
+  applySerialMQTTSettings(true);
   Serial.println("-->[MENU] MQTT user: " + String(mqttUser.length() > 0 ? "changed." : "cleared."));
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -929,9 +914,10 @@ result doSerialMQTTPasswordSetup(eventMask e, navNode &nav, prompt &item) {
     passStatus = mqttPass.length() > 0 ? "kept existing" : "not set";
   }
 
-  saveSerialMQTTSettings(true);
+  applySerialMQTTSettings(true);
   Serial.println("-->[MENU] MQTT password: " + passStatus + ".");
   Serial.println("-->[MENU] MQTT password length: " + String(mqttPass.length()) + ".");
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -1159,11 +1145,8 @@ result doSerialESPNowPeerSetup(eventMask e, navNode &nav, prompt &item) {
     return quit;
   }
 
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBytes("peerESPNow", peerESPNowAddress, 6);
-  preferences.end();
-
-  Serial.println("-->[MENU] ESP-NOW peer saved: " + getESPNowPeerAddressString());
+  Serial.println("-->[MENU] ESP-NOW peer changed: " + getESPNowPeerAddressString());
+  printSerialPendingSave();
   nav.target->dirty = true;
   return quit;
 }
@@ -1219,9 +1202,6 @@ result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
     Serial.printf("-->[MENU] Setting setTempOffset to %.2f\n",tempOffset);
   #endif
   sensors.setTempOffset(tempOffset);
-  preferences.begin("CO2-Gadget", false);
-  preferences.putFloat("tempOffset", tempOffset);
-  preferences.end();
   nav.target-> dirty = true;
   return proceed;
 }
