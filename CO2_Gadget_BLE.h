@@ -34,6 +34,10 @@ static uint8_t bthomeCounterSaveSkips = 0;
 #endif
 #endif
 
+#ifndef BLE_WAKE_ADVERTISEMENT_MS
+#define BLE_WAKE_ADVERTISEMENT_MS 2500
+#endif
+
 void disableBLE();
 
 bool isValidBLEMeasurement() {
@@ -249,14 +253,20 @@ std::string buildBTHomeServiceData(bool incrementPacketId) {
     return payload;
 }
 
-void updateBTHomeAdvertisementData(bool incrementPacketId) {
-    if (!activeBTHome || !isValidBLEMeasurement()) {
-        return;
+bool updateBTHomeAdvertisementData(bool incrementPacketId) {
+    if (!activeBTHome) {
+        return false;
+    }
+
+    if (!isValidBLEMeasurement()) {
+        Serial.println("-->[BLE ] BTHome payload skipped: invalid measurement. CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        return false;
     }
 
     std::string payload = buildBTHomeServiceData(incrementPacketId);
     if (payload.empty()) {
-        return;
+        Serial.println("-->[BLE ] BTHome payload skipped: service data is empty.");
+        return false;
     }
 
     NimBLEAdvertisementData advertisementData;
@@ -277,6 +287,7 @@ void updateBTHomeAdvertisementData(bool incrementPacketId) {
 #ifdef DEBUG_BLE
     Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
 #endif
+    return true;
 }
 #endif
 
@@ -381,7 +392,7 @@ void disableBLE() {
  *
  * @note This function should be called periodically to publish the sensor data.
  */
-void publishBLE() {
+void publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = false) {
     static int64_t lastMeasurementTimeMs = 0;
     static int measurementIntervalMs = 1000;
     static int64_t lastBatteryLevelUpdateMs = 0;
@@ -394,8 +405,12 @@ void publishBLE() {
     if (sensirionBLEInitialized && isDownloadingBLE) {
         return;
     }
-    if (millis() - lastMeasurementTimeMs >= measurementIntervalMs) {
-        if ((activeBLE || activeBTHome) && isValidBLEMeasurement() && thresholdsManager.evaluateThresholds(BLE_SEND, co2, temp, hum)) {
+    if (ignoreMeasurementInterval || (millis() - lastMeasurementTimeMs >= measurementIntervalMs)) {
+        bool outputEnabled = activeBLE || activeBTHome;
+        bool validMeasurement = isValidBLEMeasurement();
+        bool thresholdsPassed = outputEnabled && validMeasurement && (bypassThresholds || thresholdsManager.evaluateThresholds(BLE_SEND, co2, temp, hum));
+
+        if (outputEnabled && validMeasurement && thresholdsPassed) {
             if (sensirionBLEInitialized) {
                 provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
                 provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
@@ -404,10 +419,15 @@ void publishBLE() {
             }
 #ifdef SUPPORT_BTHOME_BLE
             if (activeBTHome) {
-                updateBTHomeAdvertisementData(true);
+                bool bthomeAdvertised = updateBTHomeAdvertisementData(true);
+                if (ignoreMeasurementInterval) {
+                    Serial.println("-->[BLE ] BTHome wake payload " + String(bthomeAdvertised ? "installed" : "skipped") + ". thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Scan response: " + String(sensirionBLEInitialized ? "yes" : "no"));
+                }
             }
 #endif
             lastMeasurementTimeMs = millis();
+        } else if (ignoreMeasurementInterval) {
+            Serial.println("-->[BLE ] BLE wake publish skipped. activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome) + ", validMeasurement: " + String(validMeasurement) + ", thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         }
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");

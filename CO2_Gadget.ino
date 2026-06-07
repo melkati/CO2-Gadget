@@ -246,6 +246,7 @@ typedef struct {
     float lastTemperatureValue;
     float lastHumidityValue;
     bool activeBLEOnWake = true;
+    bool bleWakeSettingsValid = false;
     bool enableBLEOnWake = true;
     bool sensirionBLEOnWake = true;
     bool activeBTHomeOnWake = false;

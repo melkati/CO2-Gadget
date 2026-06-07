@@ -248,6 +248,7 @@ void callbackTouch() {
 
 void saveBLEWakeSettingsToRTC() {
 #ifdef SUPPORT_BLE
+    deepSleepData.bleWakeSettingsValid = true;
     deepSleepData.enableBLEOnWake = enableBLE;
     deepSleepData.sensirionBLEOnWake = activeBLE;
 #ifdef SUPPORT_BTHOME_BLE
@@ -261,11 +262,28 @@ void saveBLEWakeSettingsToRTC() {
     deepSleepData.bthomeCounterOnWake = 0;
     deepSleepData.bthomeBindKeyOnWake[0] = '\0';
 #endif
+    Serial.println("-->[DEEP] Saved BLE wake settings. actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(deepSleepData.activeBTHomeOnWake));
 #endif
 }
 
 void restoreBLEWakeSettingsFromRTC() {
 #ifdef SUPPORT_BLE
+    if (!deepSleepData.bleWakeSettingsValid) {
+        preferences.begin("CO2-Gadget", false);
+        enableBLE = preferences.getBool("enableBLE", true);
+        activeBLE = preferences.getBool("activeBLE", true);
+#ifdef SUPPORT_BTHOME_BLE
+        activeBTHome = preferences.getBool("activeBTHome", false);
+        bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
+        bthomeBindKey = preferences.getString("bthomeBindKey", "");
+        bthomeCounter = preferences.getUInt("bthomeCounter", 0);
+        ensureBTHomeBindKey();
+#endif
+        preferences.end();
+        saveBLEWakeSettingsToRTC();
+        Serial.println("-->[DEEP] Restored BLE wake settings from preferences because RTC snapshot was not valid.");
+        return;
+    }
     enableBLE = deepSleepData.enableBLEOnWake;
     activeBLE = deepSleepData.sensirionBLEOnWake;
 #ifdef SUPPORT_BTHOME_BLE
@@ -274,6 +292,7 @@ void restoreBLEWakeSettingsFromRTC() {
     bthomeCounter = deepSleepData.bthomeCounterOnWake;
     bthomeBindKey = String(deepSleepData.bthomeBindKeyOnWake);
 #endif
+    Serial.println("-->[DEEP] Restored BLE wake settings. actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
 #endif
 }
 
@@ -774,13 +793,15 @@ void handleCycleCountersOnWake() {
 
 void handleBLEOnWake() {
 #ifdef SUPPORT_BLE
-    if (deepSleepData.activeBLEOnWake) {
-        restoreBLEWakeSettingsFromRTC();
+    restoreBLEWakeSettingsFromRTC();
+    if (deepSleepData.activeBLEOnWake && enableBLE && (activeBLE || activeBTHome)) {
         initBLE();
-#ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] BLE initialized. enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
-#endif
-        publishBLE();
+        publishBLE(true);
+        Serial.println("-->[DEEP] BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+        delay(BLE_WAKE_ADVERTISEMENT_MS);
+    } else {
+        Serial.println("-->[DEEP] BLE wake skipped. actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
     }
 #endif
 }
