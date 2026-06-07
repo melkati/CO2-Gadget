@@ -1884,7 +1884,6 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   ,SUBMENU(outputsConfigMenu)
-  ,OP("Save preferences", doSavePreferences, enterEvent)
   ,SUBMENU(lowPowerConfigMenu)
   ,EXIT("<Back"));
 
@@ -1951,6 +1950,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(informationMenu)
   ,SUBMENU(configMenu)
   ,SUBMENU(calibrationMenu)
+  ,OP("Save preferences", doSavePreferences, enterEvent)
   ,SUBMENU(rebootMenu)
   ,EXIT("<Exit"));
 
