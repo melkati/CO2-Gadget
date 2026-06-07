@@ -246,6 +246,12 @@ typedef struct {
     float lastTemperatureValue;
     float lastHumidityValue;
     bool activeBLEOnWake = true;
+    bool enableBLEOnWake = true;
+    bool sensirionBLEOnWake = true;
+    bool activeBTHomeOnWake = false;
+    bool bthomeEncryptionOnWake = false;
+    char bthomeBindKeyOnWake[33] = "";
+    uint32_t bthomeCounterOnWake = 0;
     bool activeWifiOnWake;
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
@@ -763,6 +769,7 @@ void initGPIOLowPower() {
     initBattery();
     initOutputsGPIO();
 #ifdef SUPPORT_BLE
+    restoreBLEWakeSettingsFromRTC();
     initBLE();
 #endif
     // initSensors();

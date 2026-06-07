@@ -246,6 +246,37 @@ void callbackTouch() {
     // placeholder callback function
 }
 
+void saveBLEWakeSettingsToRTC() {
+#ifdef SUPPORT_BLE
+    deepSleepData.enableBLEOnWake = enableBLE;
+    deepSleepData.sensirionBLEOnWake = activeBLE;
+#ifdef SUPPORT_BTHOME_BLE
+    deepSleepData.activeBTHomeOnWake = activeBTHome;
+    deepSleepData.bthomeEncryptionOnWake = bthomeEncryption;
+    deepSleepData.bthomeCounterOnWake = bthomeCounter;
+    bthomeBindKey.toCharArray(deepSleepData.bthomeBindKeyOnWake, sizeof(deepSleepData.bthomeBindKeyOnWake));
+#else
+    deepSleepData.activeBTHomeOnWake = false;
+    deepSleepData.bthomeEncryptionOnWake = false;
+    deepSleepData.bthomeCounterOnWake = 0;
+    deepSleepData.bthomeBindKeyOnWake[0] = '\0';
+#endif
+#endif
+}
+
+void restoreBLEWakeSettingsFromRTC() {
+#ifdef SUPPORT_BLE
+    enableBLE = deepSleepData.enableBLEOnWake;
+    activeBLE = deepSleepData.sensirionBLEOnWake;
+#ifdef SUPPORT_BTHOME_BLE
+    activeBTHome = deepSleepData.activeBTHomeOnWake;
+    bthomeEncryption = deepSleepData.bthomeEncryptionOnWake;
+    bthomeCounter = deepSleepData.bthomeCounterOnWake;
+    bthomeBindKey = String(deepSleepData.bthomeBindKeyOnWake);
+#endif
+#endif
+}
+
 uint16_t getValidatedDeepSleepSeconds() {
     if ((deepSleepData.timeSleeping < DEEP_SLEEP_SECONDS_MIN) || (deepSleepData.timeSleeping > DEEP_SLEEP_SECONDS_MAX)) {
 #ifdef DEEP_SLEEP_DEBUG
@@ -294,6 +325,7 @@ void toDeepSleep() {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
                 deepSleepData.displayReverseOnWake = displayReverse;
 #endif
+    saveBLEWakeSettingsToRTC();
 
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         // sensors.scd30.stopContinuousMeasurement();
@@ -743,9 +775,10 @@ void handleCycleCountersOnWake() {
 void handleBLEOnWake() {
 #ifdef SUPPORT_BLE
     if (deepSleepData.activeBLEOnWake) {
+        restoreBLEWakeSettingsFromRTC();
         initBLE();
 #ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
+        Serial.println("-->[DEEP] BLE initialized. enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
 #endif
         publishBLE();
     }
