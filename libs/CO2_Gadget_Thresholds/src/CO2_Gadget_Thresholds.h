@@ -30,6 +30,7 @@ struct ThresholdConfig {
     bool co2CombineWithAnd;
     bool tempCombineWithAnd;
     bool humCombineWithAnd;
+    uint64_t lastPublishTimeMs;
 };
 
 void printThresholdsFromNVR();
