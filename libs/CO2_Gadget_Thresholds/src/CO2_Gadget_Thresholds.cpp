@@ -25,6 +25,7 @@ void ThresholdManager::setThresholds(OutputType outputType, bool enabled, bool u
     thresholds[outputType].co2CombineWithAnd = co2CombineWithAnd;
     thresholds[outputType].tempCombineWithAnd = tempCombineWithAnd;
     thresholds[outputType].humCombineWithAnd = humCombineWithAnd;
+    thresholds[outputType].lastPublishTimeMs = 0;
 #ifdef DEBUG_THRESHOLDS
     Serial.println("-->[THRE] Thresholds set for output type: " + String(outputType));
     Serial.println("-->[THRE] Setting enabled: " + String(enabled));
@@ -139,8 +140,26 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
 bool ThresholdManager::evaluateThresholds(OutputType outputType, uint16_t co2, float temp, float hum) {
     // If threshold is not enabled for outputType, return true
     if (!thresholds[outputType].enabled) return true;
+
+    ThresholdConfig& config = thresholds[outputType];
+    bool timeoutDue = false;
+    if (config.keepAlive > 0) {
+        uint32_t keepAliveMs = static_cast<uint32_t>(config.keepAlive) * 1000UL;
+        timeoutDue = (config.lastPublishTimeMs == 0) || ((millis() - config.lastPublishTimeMs) >= keepAliveMs);
+    }
+
     // Evaluate if the sensor readings pass the thresholds
-    return checkAndMaybeUpdateThresholds(outputType, co2, temp, hum);
+    bool thresholdPassed = checkAndMaybeUpdateThresholds(outputType, co2, temp, hum);
+    bool shouldPublish = timeoutDue || thresholdPassed;
+
+    if (shouldPublish) {
+        if (timeoutDue && !thresholdPassed) {
+            updatePreviousValues(outputType, co2, temp, hum);
+        }
+        config.lastPublishTimeMs = millis();
+    }
+
+    return shouldPublish;
 }
 
 /**
@@ -288,6 +307,7 @@ void ThresholdManager::setThresholdsFromJSON(String response) {
         thresholds[i].co2CombineWithAnd = doc["thresholds"][i]["thrCo2CombAnd"];
         thresholds[i].tempCombineWithAnd = doc["thresholds"][i]["thrTempCombAnd"];
         thresholds[i].humCombineWithAnd = doc["thresholds"][i]["thrHumCombAnd"];
+        thresholds[i].lastPublishTimeMs = 0;
     }
     saveThresholdsToNVR();
 }
@@ -319,6 +339,7 @@ void ThresholdManager::loadThresholdsFromNVR() {
         thresholds[i].co2CombineWithAnd = thresholdsPrefs.getBool((key + "_Co2CombAnd").c_str(), false);
         thresholds[i].tempCombineWithAnd = thresholdsPrefs.getBool((key + "_TempCombAnd").c_str(), false);
         thresholds[i].humCombineWithAnd = thresholdsPrefs.getBool((key + "_HumCombAnd").c_str(), false);
+        thresholds[i].lastPublishTimeMs = 0;
     }
     thresholdsPrefs.end();  // Finish using NVRAM
 }
