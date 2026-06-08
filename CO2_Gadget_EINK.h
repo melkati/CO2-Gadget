@@ -165,6 +165,8 @@ struct ElementLocations {
     int32_t mqttIconY;
     int32_t bleIconX;
     int32_t bleIconY;
+    int32_t bthomeIconX;
+    int32_t bthomeIconY;
     int32_t espNowIconX;
     int32_t espNowIconY;
 };
@@ -214,12 +216,23 @@ void setElementLocations() {
 
     elementPosition.bleIconX = 0;
     elementPosition.bleIconY = 0;
+#ifdef SUPPORT_BTHOME_BLE
+    elementPosition.bthomeIconX = 24;
+    elementPosition.bthomeIconY = 0;
+    elementPosition.wifiIconX = 48;
+    elementPosition.wifiIconY = 0;
+    elementPosition.mqttIconX = 72;
+    elementPosition.mqttIconY = 0;
+    elementPosition.espNowIconX = 96;
+    elementPosition.espNowIconY = 0;
+#else
     elementPosition.wifiIconX = 24;  // 16 pixels bleIcon + 8 pixels between icons
     elementPosition.wifiIconY = 0;
     elementPosition.mqttIconX = 48;  // 16 + 8 + 16 pixels wifiIcon + 8 pixels between icons
     elementPosition.mqttIconY = 0;
     elementPosition.espNowIconX = 72;  // 16 + 8 + 16 + 8 + 16 pixels mqttIcon + 8 pixels between icons
     elementPosition.espNowIconY = 0;
+#endif
 #if defined(EINKBOARDDEPG0213BN) || defined(EINKBOARDGDEM0213B74) || defined(EINKBOARDGDEM029T94)
     ;
 #endif
@@ -571,13 +584,35 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
 void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);
     //    display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (activeBLE) {
+    bool bleStatusActive = enableBLE && activeBLE;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        bleStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBLE;
+    }
+#endif
+    if (bleStatusActive) {
         display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
     } else {
         // if it's not active I think is better not to display it.
         display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
         // display.drawInvertedBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
     }
+}
+
+void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+#ifdef SUPPORT_BTHOME_BLE
+    bool bthomeStatusActive = enableBLE && activeBTHome;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        bthomeStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBTHome;
+    }
+#endif
+    if (bthomeStatusActive) {
+        display.drawBitmap(posX, posY, iconBTHome, 16, 16, GxEPD_BLACK);
+    } else {
+        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    }
+#endif
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
@@ -593,16 +628,19 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
 #endif
+    bool wifiStatusActive = activeWIFI;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        wifiStatusActive = deepSleepData.activeWifiOnWake;
+    }
+#endif
     int16_t rssi = getWiFiRSSIForStatus();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
         return;
     }
     // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (!activeWIFI) {
-        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
-        display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-    } else {
+    if (wifiStatusActive) {
         if ((WiFi.status() == WL_CONNECTED) || deepSleepData.lastWifiRSSIValid) {
             int16_t signalStrength = abs(rssi);
             if (signalStrength < 60)
@@ -622,7 +660,13 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_MQTT
     display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-    if (activeMQTT) {
+    bool mqttStatusActive = activeMQTT;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        mqttStatusActive = deepSleepData.sendMQTTOnWake;
+    }
+#endif
+    if (mqttStatusActive) {
         if (troubledMQTT) {
             display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
         } else {
@@ -736,6 +780,9 @@ void displayShowValues(bool forceRedraw = false) {
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
+#ifdef SUPPORT_BTHOME_BLE
+    showBTHomeIcon(elementPosition.bthomeIconX, elementPosition.bthomeIconY, drawAllElements);
+#endif
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, drawAllElements);
 
     einkDisplayUpdateInProgress = true;
@@ -814,6 +861,9 @@ void displayShowValues(bool forceRedraw = false) {
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
+#ifdef SUPPORT_BTHOME_BLE
+    showBTHomeIcon(elementPosition.bthomeIconX, elementPosition.bthomeIconY, drawAllElements);
+#endif
     showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, drawAllElements);
     // display.hibernate();
 

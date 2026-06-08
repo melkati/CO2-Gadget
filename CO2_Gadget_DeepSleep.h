@@ -1,4 +1,4 @@
-#ifndef CO2_Gadget_DeepSleep_h
+﻿#ifndef CO2_Gadget_DeepSleep_h
 #define CO2_Gadget_DeepSleep_h
 
 #include "esp32-hal-gpio.h"
@@ -829,7 +829,6 @@ void handleCycleCountersOnWake() {
 
 void handleBLEOnWake() {
 #ifdef SUPPORT_BLE
-    restoreBLEWakeSettingsFromRTC();
     if (deepSleepData.activeBLEOnWake && enableBLE && (activeBLE || activeBTHome)) {
         initBLE();
         Serial.println("-->[DEEP] BLE initialized. enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
@@ -906,6 +905,9 @@ void handleMQTTPublishOnWake() {
 void handleMediumLowPowerModeOnWake() {
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
+#endif
+#ifdef SUPPORT_BLE
+    restoreBLEWakeSettingsFromRTC();
 #endif
     initBattery();
     batteryLoop();
