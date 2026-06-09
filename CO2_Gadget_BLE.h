@@ -54,6 +54,17 @@ uint16_t encodeBTHomeHumidity(float value) {
     return static_cast<uint16_t>(round(value * 100.0f));
 }
 
+uint16_t encodeBTHomeBatteryVoltage(float value) {
+    if (value <= 0.0f) {
+        return 0;
+    }
+    uint32_t millivolts = static_cast<uint32_t>(round(value * 100.0f)) * 10;
+    if (millivolts > UINT16_MAX) {
+        return UINT16_MAX;
+    }
+    return static_cast<uint16_t>(millivolts);
+}
+
 uint8_t getBTHomeBatteryLevel() {
     if (batteryLevel == 0) {
         return 100;
@@ -208,25 +219,29 @@ bool encryptBTHomePayload(const std::string &plainPayload, std::string &encrypte
     return true;
 }
 
-std::string buildBTHomeMeasurements(bool incrementPacketId) {
+std::string buildBTHomeMeasurements(bool incrementPacketId, bool includePacketId = true) {
     std::string payload;
     if (!activeBTHome || !isValidBLEMeasurement()) {
         return payload;
     }
 
-    if (incrementPacketId) {
+    if (includePacketId && incrementPacketId) {
         ++bthomePacketId;
     }
 
-    payload.reserve(12);
-    appendBTHomeUInt8(payload, 0x00);
-    appendBTHomeUInt8(payload, bthomePacketId);
+    payload.reserve(includePacketId ? 16 : 14);
+    if (includePacketId) {
+        appendBTHomeUInt8(payload, 0x00);
+        appendBTHomeUInt8(payload, bthomePacketId);
+    }
     appendBTHomeUInt8(payload, 0x01);
     appendBTHomeUInt8(payload, getBTHomeBatteryLevel());
     appendBTHomeUInt8(payload, 0x02);
     appendBTHomeInt16(payload, encodeBTHomeTemperature(temp));
     appendBTHomeUInt8(payload, 0x03);
     appendBTHomeUInt16(payload, encodeBTHomeHumidity(hum));
+    appendBTHomeUInt8(payload, 0x0C);
+    appendBTHomeUInt16(payload, encodeBTHomeBatteryVoltage(batteryVoltage));
     appendBTHomeUInt8(payload, 0x12);
     appendBTHomeUInt16(payload, static_cast<uint16_t>(co2));
 
@@ -234,7 +249,7 @@ std::string buildBTHomeMeasurements(bool incrementPacketId) {
 }
 
 std::string buildBTHomeServiceData(bool incrementPacketId) {
-    std::string measurements = buildBTHomeMeasurements(incrementPacketId);
+    std::string measurements = buildBTHomeMeasurements(incrementPacketId, !bthomeEncryption);
     if (measurements.empty()) {
         return measurements;
     }
@@ -299,7 +314,7 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
     }
 
 #ifdef DEBUG_BLE
-    Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
+    Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Voltage: " + String(batteryVoltage, 2) + " V, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
 #endif
     return true;
 }
