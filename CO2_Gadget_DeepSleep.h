@@ -832,9 +832,29 @@ void handleBLEOnWake() {
     if (deepSleepData.activeBLEOnWake && enableBLE && (activeBLE || activeBTHome)) {
         initBLE();
         Serial.println("-->[DEEP] BLE initialized. enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
-        publishBLE(true);
-        Serial.println("-->[DEEP] BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
-        delay(BLE_WAKE_ADVERTISEMENT_MS);
+        bool wakePayloadPublished = publishBLE(true);
+        if (!wakePayloadPublished) {
+            Serial.println("-->[DEEP] BLE wake advertisement skipped because no payload was published.");
+        }
+#ifdef SUPPORT_BTHOME_BLE
+        else if (activeBLE && activeBTHome && sensirionBLEInitialized) {
+            Serial.println("-->[DEEP] Sensirion BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+            delay(BLE_WAKE_ADVERTISEMENT_MS);
+            bool bthomePrimaryAdvertised = updateBTHomeAdvertisementData(false, true);
+            if (bthomePrimaryAdvertised) {
+                Serial.println("-->[DEEP] BTHome BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+                delay(BLE_WAKE_ADVERTISEMENT_MS);
+                restoreSensirionAdvertisementData();
+                updateBTHomeAdvertisementData(false);
+            } else {
+                Serial.println("-->[DEEP] BTHome primary wake advertisement skipped.");
+            }
+        }
+#endif
+        else {
+            Serial.println("-->[DEEP] BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+            delay(BLE_WAKE_ADVERTISEMENT_MS);
+        }
     } else {
         Serial.println("-->[DEEP] BLE wake skipped. actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
     }

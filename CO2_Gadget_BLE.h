@@ -29,6 +29,7 @@ static constexpr uint8_t BTHOME_ENCRYPTION_KEY_SIZE = 16;
 static constexpr uint8_t BTHOME_ENCRYPTION_MIC_SIZE = 4;
 static constexpr uint8_t BTHOME_ENCRYPTION_NONCE_SIZE = 13;
 static constexpr uint8_t BTHOME_COUNTER_SAVE_INTERVAL = 64;
+static constexpr uint16_t BTHOME_ADV_INTERVAL = 320;  // 200 ms, in 0.625 ms units.
 static uint8_t bthomePacketId = 0;
 static uint8_t bthomeCounterSaveSkips = 0;
 #endif
@@ -253,7 +254,7 @@ std::string buildBTHomeServiceData(bool incrementPacketId) {
     return payload;
 }
 
-bool updateBTHomeAdvertisementData(bool incrementPacketId) {
+bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdvertisement = false) {
     if (!activeBTHome) {
         return false;
     }
@@ -273,21 +274,65 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId) {
     advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(BTHOME_UUID)), payload);
 
     NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
-    if (sensirionBLEInitialized) {
+    if (sensirionBLEInitialized && !forcePrimaryAdvertisement) {
         advertising->enableScanResponse(true);
-        advertising->setScanResponseData(advertisementData);
-        advertising->refreshAdvertisingData();
+        bool updated = advertising->setScanResponseData(advertisementData);
+        updated = advertising->refreshAdvertisingData() && updated;
+        if (!advertising->isAdvertising()) {
+            updated = advertising->start() && updated;
+        }
+        if (!updated) {
+            Serial.println("-->[BLE ] BTHome scan response update failed.");
+            return false;
+        }
     } else {
         advertisementData.setFlags(0x06);
+        advertising->enableScanResponse(false);
+        advertising->setAdvertisingInterval(BTHOME_ADV_INTERVAL);
         advertising->stop();
-        advertising->setAdvertisementData(advertisementData);
-        advertising->start();
+        bool updated = advertising->setAdvertisementData(advertisementData);
+        updated = advertising->start() && updated;
+        if (!updated) {
+            Serial.println("-->[BLE ] BTHome advertisement update failed.");
+            return false;
+        }
     }
 
 #ifdef DEBUG_BLE
     Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
 #endif
     return true;
+}
+
+bool restoreSensirionAdvertisementData() {
+    if (!sensirionBLEInitialized) {
+        return false;
+    }
+
+    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+    provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+    provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+    provider.commitSample();
+    return true;
+}
+
+void ensureBTHomeAdvertisingActive() {
+    if (!activeBTHome || !bleInitialized) {
+        return;
+    }
+
+    NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+    if (advertising->isAdvertising()) {
+        return;
+    }
+
+    Serial.println("-->[BLE ] BTHome advertising was stopped; restarting.");
+    if (sensirionBLEInitialized) {
+        advertising->start();
+        updateBTHomeAdvertisementData(false);
+    } else {
+        updateBTHomeAdvertisementData(false);
+    }
 }
 #endif
 
@@ -392,19 +437,20 @@ void disableBLE() {
  *
  * @note This function should be called periodically to publish the sensor data.
  */
-void publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = false) {
+bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = false) {
     static int64_t lastMeasurementTimeMs = 0;
     static int measurementIntervalMs = 1000;
     static int64_t lastBatteryLevelUpdateMs = 0;
     static int batteryLevelUpdateIntervalMs = 60000;
 #ifdef SUPPORT_BLE
     if (!enableBLE) {
-        return;
+        return false;
     }
 
     if (sensirionBLEInitialized && isDownloadingBLE) {
-        return;
+        return false;
     }
+    bool published = false;
     if (ignoreMeasurementInterval || (millis() - lastMeasurementTimeMs >= measurementIntervalMs)) {
         bool outputEnabled = activeBLE || activeBTHome;
         bool validMeasurement = isValidBLEMeasurement();
@@ -416,10 +462,12 @@ void publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
                 provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
                 provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
                 provider.commitSample();
+                published = true;
             }
 #ifdef SUPPORT_BTHOME_BLE
             if (activeBTHome) {
                 bool bthomeAdvertised = updateBTHomeAdvertisementData(true);
+                published = bthomeAdvertised || published;
                 if (ignoreMeasurementInterval) {
                     Serial.println("-->[BLE ] BTHome wake payload " + String(bthomeAdvertised ? "installed" : "skipped") + ". thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Scan response: " + String(sensirionBLEInitialized ? "yes" : "no"));
                 }
@@ -454,6 +502,9 @@ void publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
         delay(20);
 #endif
     }
+    return published;
+#else
+    return false;
 #endif
 }
 
@@ -492,7 +543,15 @@ void handleFrcRequest() {
 void BLELoop() {
 #ifdef SUPPORT_BLE
     int connectTries = 0;
-    if (!enableBLE || !activeBLE || !sensirionBLEInitialized) {
+    if (!enableBLE || (!activeBLE && !activeBTHome)) {
+        return;
+    }
+
+#ifdef SUPPORT_BTHOME_BLE
+    ensureBTHomeAdvertisingActive();
+#endif
+
+    if (!activeBLE || !sensirionBLEInitialized) {
         return;
     }
     provider.handleDownload();
