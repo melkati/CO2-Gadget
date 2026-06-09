@@ -45,6 +45,21 @@ bool isValidBLEMeasurement() {
     return (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100);
 }
 
+bool writeSensirionCurrentSample() {
+#ifdef SUPPORT_BLE
+    if (!isValidBLEMeasurement()) {
+        return false;
+    }
+
+    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+    provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+    provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+    return true;
+#else
+    return false;
+#endif
+}
+
 #ifdef SUPPORT_BTHOME_BLE
 int16_t encodeBTHomeTemperature(float value) {
     return static_cast<int16_t>(round(value * 100.0f));
@@ -324,9 +339,9 @@ bool restoreSensirionAdvertisementData() {
         return false;
     }
 
-    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-    provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-    provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+    if (!writeSensirionCurrentSample()) {
+        return false;
+    }
     provider.commitSample();
     return true;
 }
@@ -389,6 +404,7 @@ void initBLE() {
 
     if (activeBLE) {
         setBLEHistoryInterval(sampleInterval);
+        writeSensirionCurrentSample();
         provider.begin();
         sensirionBLEInitialized = true;
         bleInitialized = true;
@@ -473,11 +489,10 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 
         if (outputEnabled && validMeasurement && thresholdsPassed) {
             if (sensirionBLEInitialized) {
-                provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-                provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-                provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
-                provider.commitSample();
-                published = true;
+                if (writeSensirionCurrentSample()) {
+                    provider.commitSample();
+                    published = true;
+                }
             }
 #ifdef SUPPORT_BTHOME_BLE
             if (activeBTHome) {
