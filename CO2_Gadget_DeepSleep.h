@@ -268,6 +268,8 @@ void toDeepSleep() {
 // display.hibernate();
 #endif
 
+    deepSleepData.uptimeMillis += millis();
+
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
                 deepSleepData.displayReverseOnWake = displayReverse;
 #endif
