@@ -1484,8 +1484,23 @@ bool readSerialLowPowerBool(const char *promptText, bool &target, const char *wi
   return false;
 }
 
+void applyLowPowerModeRuntimeState() {
+  if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) {
+    deepSleepEnabled = false;
+    interactiveMode = false;
+    Serial.println("-->[MENU] Runtime mode applied: deep sleep disabled.");
+    return;
+  }
+
+  interactiveMode = true;
+  deepSleepEnabled = true;
+  restartTimerToDeepSleep();
+  Serial.println("-->[MENU] Runtime mode applied: deep sleep timer restarted.");
+}
+
 result doSerialLowPowerModeSetup(eventMask e, navNode &nav, prompt &item) {
   String value;
+  uint16_t newLowPowerMode = deepSleepData.lowPowerMode;
 
   Serial.println();
   Serial.println("**********************************************************************");
@@ -1506,14 +1521,21 @@ result doSerialLowPowerModeSetup(eventMask e, navNode &nav, prompt &item) {
   }
 
   if ((value == "0") || (value == "high")) {
-    deepSleepData.lowPowerMode = HIGH_PERFORMANCE;
+    newLowPowerMode = HIGH_PERFORMANCE;
   } else if ((value == "1") || (value == "low")) {
-    deepSleepData.lowPowerMode = 1;
+    newLowPowerMode = 1;
   } else {
     Serial.println("-->[MENU] Invalid mode. Low power mode unchanged.");
     return proceed;
   }
 
+  if (newLowPowerMode == deepSleepData.lowPowerMode) {
+    Serial.println("-->[MENU] Low power mode unchanged.");
+    return proceed;
+  }
+
+  deepSleepData.lowPowerMode = newLowPowerMode;
+  applyLowPowerModeRuntimeState();
   Serial.println("-->[MENU] Low power mode changed: " + getLowPowerModeName(deepSleepData.lowPowerMode));
   printLowPowerPendingSave();
   nav.target->dirty = true;
