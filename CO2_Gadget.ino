@@ -230,11 +230,11 @@ typedef struct {
     bool displayOnWake;
     bool displayReverseOnWake;  // Display reverse on wake. Here to avoid having to read preferences on wake
     uint16_t timeToDisplayOnWake = 3;
-    bool lastWifiRSSIValid;
-    int16_t lastWifiRSSI;
     bool measurementsStarted;
     uint64_t bootTimes;
     uint64_t uptimeMillis;
+    bool lastWifiRSSIValid;
+    int16_t lastWifiRSSI;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;

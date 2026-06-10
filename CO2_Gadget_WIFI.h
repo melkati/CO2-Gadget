@@ -381,7 +381,7 @@ void printDisconnectReason(int reasonCode) {
 }
 
 bool isValidWiFiRSSI(int16_t rssi) {
-    return (rssi <= 0) && (rssi >= -100);
+    return (rssi < 0) && (rssi >= -100);
 }
 
 void updateCachedWiFiRSSI() {
@@ -397,7 +397,6 @@ void updateCachedWiFiRSSI() {
 int16_t getWiFiRSSIForStatus() {
     if (WiFi.status() == WL_CONNECTED) {
         updateCachedWiFiRSSI();
-        return deepSleepData.lastWifiRSSI;
     }
 
     return deepSleepData.lastWifiRSSIValid ? deepSleepData.lastWifiRSSI : 0;
@@ -460,7 +459,6 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
     Serial.println(MACAddress);
 
     // Print the received signal strength:
-    updateCachedWiFiRSSI();
     Serial.print("-->[WiFi] Signal strength (RSSI):");
     Serial.print(getWiFiRSSIForStatus());
     Serial.println(" dBm");
