@@ -248,10 +248,13 @@ String getReliableUptimeFormatted() {
     uint8_t minutes = totalMinutes % 60;
     char uptime[32];
 
-    snprintf(uptime, sizeof(uptime), "%02llud %02uh %02um",
+    snprintf(uptime, sizeof(uptime), "%02llu%c %02u%c %02u%c",
              static_cast<unsigned long long>(days),
+             'd',
              static_cast<unsigned int>(hours),
-             static_cast<unsigned int>(minutes));
+             'h',
+             static_cast<unsigned int>(minutes),
+             'm');
     return String(uptime);
 }
 
@@ -818,7 +821,9 @@ void setup() {
     Serial.println("-->[STUP] lowPowerMode mode (from RTC memory): (" + String(deepSleepData.lowPowerMode) + ") " + getLowPowerModeName(deepSleepData.lowPowerMode));
 
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
-        deepSleepData.uptimeMillis += static_cast<uint64_t>(deepSleepData.timeSleeping) * 1000ULL;
+        if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+            deepSleepData.uptimeMillis += static_cast<uint64_t>(deepSleepData.timeSleeping) * 1000ULL;
+        }
         ++deepSleepData.bootTimes;
         Serial.println("-->[STUP] Boot times from Deep Sleep: " + String(deepSleepData.bootTimes));
         timeToWaitForImprov = 0;
