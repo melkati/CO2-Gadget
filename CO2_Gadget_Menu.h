@@ -506,6 +506,13 @@ result doSerialHostNameSetup(eventMask e, navNode &nav, prompt &item) {
   return quit;
 }
 
+bool menuIPAddressEquals(const IPAddress &left, const IPAddress &right) {
+  for (uint8_t i = 0; i < 4; ++i) {
+    if (left[i] != right[i]) return false;
+  }
+  return true;
+}
+
 bool readSerialIPAddress(const char *prompt, IPAddress &address, bool &changed) {
   String value;
   if (!readSerialLine(prompt, value, 15, false)) return false;
@@ -521,6 +528,11 @@ bool readSerialIPAddress(const char *prompt, IPAddress &address, bool &changed) 
     Serial.println("-->[MENU] Invalid IP address: " + value);
     Serial.println("-->[MENU] Fixed IP settings unchanged.");
     return false;
+  }
+
+  if (menuIPAddressEquals(parsedAddress, address)) {
+    changed = false;
+    return true;
   }
 
   address = parsedAddress;
@@ -580,6 +592,12 @@ result doSerialFixedIPSetup(eventMask e, navNode &nav, prompt &item) {
   if (!readSerialIPAddress("-->[MENU] Subnet: ", newSubnet, subnetChanged)) return quit;
   if (!readSerialIPAddress("-->[MENU] DNS1: ", newDns1, dns1Changed)) return quit;
   if (!readSerialIPAddress("-->[MENU] DNS2: ", newDns2, dns2Changed)) return quit;
+
+  bool settingsChanged = staticModeChanged || ipChanged || gatewayChanged || subnetChanged || dns1Changed || dns2Changed;
+  if (!settingsChanged) {
+    Serial.println("-->[MENU] Fixed IP settings unchanged.");
+    return quit;
+  }
 
   useStaticIP = newUseStaticIP;
   staticIP = newStaticIP;
@@ -1067,6 +1085,25 @@ void hexCharacterStringToBytes(byte *byteArray, const char *hexString) // https:
   }
 }
 
+bool applyESPNowPeerAddress(byte *newPeerAddress, bool &changed) {
+  changed = (memcmp(peerESPNowAddress, newPeerAddress, 6) != 0);
+  if (!changed) return true;
+
+  esp_now_peer_info_t newPeerInfo = peerInfo;
+  memcpy(newPeerInfo.peer_addr, newPeerAddress, 6);
+
+  esp_err_t addResult = esp_now_add_peer(&newPeerInfo);
+  if ((addResult != ESP_OK) && (addResult != ESP_ERR_ESPNOW_EXIST)) {
+    Serial.println("-->[MENU] Failed to add ESP-NOW peer. Existing peer kept.");
+    return false;
+  }
+
+  esp_now_del_peer(peerESPNowAddress);
+  memcpy(peerESPNowAddress, newPeerAddress, 6);
+  memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
+  return true;
+}
+
 result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] Setting ESP-NOW Peer to: #%s#\n", tempESPNowAddress);
@@ -1075,14 +1112,15 @@ result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
   Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
   Serial.flush();
 #endif
-  esp_now_del_peer(peerESPNowAddress);
-  hexCharacterStringToBytes(peerESPNowAddress, tempESPNowAddress);
-  memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
-  esp_now_add_peer(&peerInfo);
+  byte newPeerAddress[6];
+  bool peerChanged = false;
+  hexCharacterStringToBytes(newPeerAddress, tempESPNowAddress);
+  applyESPNowPeerAddress(newPeerAddress, peerChanged);
   return proceed;
 }
 
-bool setESPNowPeerAddressFromString(String peerAddress) {
+bool setESPNowPeerAddressFromString(String peerAddress, bool &changed) {
+  changed = false;
   peerAddress.trim();
   peerAddress.replace(":", "");
   peerAddress.replace("-", "");
@@ -1101,10 +1139,12 @@ bool setESPNowPeerAddressFromString(String peerAddress) {
     }
   }
 
-  esp_now_del_peer(peerESPNowAddress);
-  hexCharacterStringToBytes(peerESPNowAddress, peerAddress.c_str());
-  memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
-  esp_now_add_peer(&peerInfo);
+  byte newPeerAddress[6];
+  hexCharacterStringToBytes(newPeerAddress, peerAddress.c_str());
+  if (!applyESPNowPeerAddress(newPeerAddress, changed)) {
+    return false;
+  }
+
   snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X",
            peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
            peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
@@ -1140,7 +1180,13 @@ result doSerialESPNowPeerSetup(eventMask e, navNode &nav, prompt &item) {
     return quit;
   }
 
-  if (!setESPNowPeerAddressFromString(newPeerAddress)) {
+  bool peerChanged = false;
+  if (!setESPNowPeerAddressFromString(newPeerAddress, peerChanged)) {
+    Serial.println("-->[MENU] ESP-NOW peer unchanged.");
+    return quit;
+  }
+
+  if (!peerChanged) {
     Serial.println("-->[MENU] ESP-NOW peer unchanged.");
     return quit;
   }
