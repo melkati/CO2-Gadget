@@ -546,7 +546,8 @@ void handleBLEwifiChanged() {
     wifiSSID = provider.getWifiSSID();
     wifiPass = provider.getWifiPassword();
     wifiSSID.trim();
-    wifiPass.trim();
+    // Do not trim wifiPass: leading/trailing spaces are valid password characters
+    // and must be preserved to match the save/load paths.
     wifiChanged = true;
     activeWIFI = true;
     Serial.println("-->[BLE ] Wifi SSID changed to: #" + wifiSSID + "#");
