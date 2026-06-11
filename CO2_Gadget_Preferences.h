@@ -709,6 +709,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["enableBLE"] = enableBLE;
     doc["activeBLE"] = activeBLE;
 #ifdef SUPPORT_BTHOME_BLE
+    doc["supportBTHomeBLE"] = true;
     doc["activeBTHome"] = activeBTHome;
     doc["bthomeEncryption"] = bthomeEncryption;
     doc["bthomeCounter"] = bthomeCounter;
@@ -716,6 +717,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
         doc["bthomeBindKey"] = bthomeBindKey;
     }
 #else
+    doc["supportBTHomeBLE"] = false;
     doc["activeBTHome"] = false;
     doc["bthomeEncryption"] = false;
     doc["bthomeCounter"] = 0;

@@ -2,6 +2,8 @@
  * Loads WHO/ASHRAE recommended CO2 quality thresholds into the form fields.
  * Warning: 800 ppm, Danger: 1000 ppm
  */
+let supportBTHomeBLE = false;
+
 function loadWHOPreset() {
     const orangeEl = document.getElementById('co2OrangeRange');
     const redEl    = document.getElementById('co2RedRange');
@@ -64,6 +66,9 @@ function displayVersion() {
  * @param {Object} preferences - The preferences data to populate the form with.
  */
 function populateFormWithPreferences(preferences) {
+    supportBTHomeBLE = preferences.supportBTHomeBLE === true;
+    setBTHomeSupportVisibility(supportBTHomeBLE);
+
     // Update relaxedSecurity if present in data
     if (preferences.relaxedSecurity !== undefined) {
         if (preferencesDebug) console.log(`Setting relaxedSecurity field to:`, preferences.relaxedSecurity);
@@ -115,9 +120,11 @@ function populateFormWithPreferences(preferences) {
     setFormValue("neopixBright", preferences.neopixBright);
     setFormValue("selNeopxType", preferences.selNeopxType);
     setFormCheckbox("activeBLE", preferences.activeBLE);
-    setFormCheckbox("activeBTHome", preferences.activeBTHome);
-    setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
-    if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
+    if (supportBTHomeBLE) {
+        setFormCheckbox("activeBTHome", preferences.activeBTHome);
+        setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
+        if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
+    }
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
     setFormValue("mqttClientId", preferences.mqttClientId);
@@ -191,6 +198,14 @@ function loadPreferencesFromServer() {
  * Collects preferences data from the form.
  * @returns {Object} - The collected preferences data.
  */
+function setBTHomeSupportVisibility(isSupported) {
+    ["activeBTHome", "bthomeEncryption", "bthomeBindKey"].forEach((id) => {
+        const element = document.getElementById(id);
+        const formGroup = element ? element.closest(".form-group") : null;
+        if (formGroup) formGroup.classList.toggle("hidden", !isSupported);
+    });
+}
+
 function normalizeBTHomeBindKey(value) {
     return String(value || '').trim().replace(/[\s:-]/g, '').toLowerCase();
 }
@@ -234,10 +249,12 @@ function collectPreferencesData() {
         setValue("neopixBright");
         setValue("selNeopxType");
         setValue("activeBLE", 'checked');
-        setValue("activeBTHome", 'checked');
-        setValue("bthomeEncryption", 'checked');
-        setValue("bthomeBindKey");
-        preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
+        if (supportBTHomeBLE) {
+            setValue("activeBTHome", 'checked');
+            setValue("bthomeEncryption", 'checked');
+            setValue("bthomeBindKey");
+            preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
+        }
         setValue("activeWIFI", 'checked');
         setValue("activeMQTT", 'checked');
         setValue("activeESPNOW", 'checked');

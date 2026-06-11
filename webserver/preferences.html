@@ -84,19 +84,19 @@
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
                         <span class="tooltip-text">Expose the Sensirion/MyAmbiance BLE service, history download, WiFi setup, and calibration.</span>
                     </div>
-                    <div class="form-group flex-align-center">
+                    <div class="form-group flex-align-center hidden">
                         <label for="activeBTHome">BTHome:</label>
                         <input type="checkbox" id="activeBTHome" name="activeBTHome">
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
                         <span class="tooltip-text">Also expose CO2, temperature, humidity, and battery using BTHome v2 scan responses for Home Assistant.</span>
                     </div>
-                    <div class="form-group flex-align-center">
+                    <div class="form-group flex-align-center hidden">
                         <label for="bthomeEncryption">BTHome encryption:</label>
                         <input type="checkbox" id="bthomeEncryption" name="bthomeEncryption">
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
                         <span class="tooltip-text">Encrypt BTHome advertisements with AES-CCM. A bind key is generated automatically and can be replaced.</span>
                     </div>
-                    <div class="form-group flex-align-center">
+                    <div class="form-group flex-align-center hidden">
                         <label for="bthomeBindKey">BTHome bind key:</label>
                         <input type="password" id="bthomeBindKey" name="bthomeBindKey" maxlength="32" pattern="[0-9a-fA-F]{32}" value="" disabled>
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24-10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
