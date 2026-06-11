@@ -13,6 +13,21 @@ WifiMultiLibraryWrapper wifi;
 DataProvider provider(lib, DataType::T_RH_CO2, true, true, true, &wifi);
 #endif
 
+static inline bool writeSensirionCurrentSample() {
+#ifdef SUPPORT_BLE
+    if ((co2 < 400) || (co2 > 5000) || (temp < -40) || (temp > 85) || (hum < 0) || (hum > 100)) {
+        return false;
+    }
+
+    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+    provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+    provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+    return true;
+#else
+    return false;
+#endif
+}
+
 void setBLEHistoryInterval(uint64_t interval) {
 #ifdef SUPPORT_BLE
     if (provider.getHistoryInterval() != interval * 1000) {
@@ -37,7 +52,11 @@ void initBLE() {
             return;
         } else {
             setBLEHistoryInterval(sampleInterval);
+            bool initialSampleReady = writeSensirionCurrentSample();
             provider.begin();
+            if (initialSampleReady) {
+                provider.commitSample();
+            }
             Serial.print("-->[BLE ] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
             Serial.print("-->[BLE ] History interval set to: ");
@@ -85,11 +104,10 @@ void publishBLE() {
     }
     if (millis() - lastMeasurementTimeMs >= measurementIntervalMs) {
         if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100) && thresholdsManager.evaluateThresholds(BLE_SEND, co2, temp, hum)) {
-            provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-            provider.writeValueToCurrentSample(temp, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-            provider.writeValueToCurrentSample(hum, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
-            provider.commitSample();
-            lastMeasurementTimeMs = millis();
+            if (writeSensirionCurrentSample()) {
+                provider.commitSample();
+                lastMeasurementTimeMs = millis();
+            }
         }
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
