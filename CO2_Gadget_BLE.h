@@ -41,11 +41,11 @@ static uint8_t bthomeCounterSaveSkips = 0;
 
 void disableBLE();
 
-bool isValidBLEMeasurement() {
+static inline bool isValidBLEMeasurement() {
     return (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100);
 }
 
-bool writeSensirionCurrentSample() {
+static inline bool writeSensirionCurrentSample() {
 #ifdef SUPPORT_BLE
     if (!isValidBLEMeasurement()) {
         return false;
@@ -404,8 +404,11 @@ void initBLE() {
 
     if (activeBLE) {
         setBLEHistoryInterval(sampleInterval);
-        writeSensirionCurrentSample();
+        bool initialSampleReady = writeSensirionCurrentSample();
         provider.begin();
+        if (initialSampleReady) {
+            provider.commitSample();
+        }
         sensirionBLEInitialized = true;
         bleInitialized = true;
 #ifdef SUPPORT_BTHOME_BLE
