@@ -1089,34 +1089,34 @@ bool applyESPNowPeerAddress(byte *newPeerAddress, bool &changed) {
   changed = (memcmp(peerESPNowAddress, newPeerAddress, 6) != 0);
   if (!changed) return true;
 
+  // Try to (re)register the peer with ESP-NOW. We only mutate the ESP-NOW peer
+  // table when ESP-NOW is initialized; an ESP_ERR_ESPNOW_NOT_INIT result is
+  // treated as a non-fatal "defer until ESP-NOW comes up", so the address is
+  // still stored and can be saved/applied later.
   esp_now_peer_info_t newPeerInfo = peerInfo;
   memcpy(newPeerInfo.peer_addr, newPeerAddress, 6);
 
   esp_err_t addResult = esp_now_add_peer(&newPeerInfo);
-  if ((addResult != ESP_OK) && (addResult != ESP_ERR_ESPNOW_EXIST)) {
-    Serial.println("-->[MENU] Failed to add ESP-NOW peer. Existing peer kept.");
+  if (addResult == ESP_ERR_ESPNOW_EXIST) {
+    // Entry already present: refresh it so channel/encrypt match peerInfo.
+    addResult = esp_now_mod_peer(&newPeerInfo);
+  }
+
+  if ((addResult != ESP_OK) && (addResult != ESP_ERR_ESPNOW_NOT_INIT)) {
+    Serial.println("-->[MENU] Failed to register ESP-NOW peer. Existing peer kept.");
     return false;
   }
 
-  esp_now_del_peer(peerESPNowAddress);
+  // Drop the previous peer entry only after the new one is registered.
+  if (addResult == ESP_OK) {
+    esp_now_del_peer(peerESPNowAddress);
+  }
+
+  // Always update the stored address so it persists and is applied once
+  // ESP-NOW is initialized, even if registration was deferred.
   memcpy(peerESPNowAddress, newPeerAddress, 6);
   memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
   return true;
-}
-
-result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
-#ifdef DEBUG_ARDUINOMENU
-  Serial.printf("-->[MENU] Setting ESP-NOW Peer to: #%s#\n", tempESPNowAddress);
-  Serial.print(F("-->[MENU] action1 event:"));
-  Serial.println(e);
-  Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
-  Serial.flush();
-#endif
-  byte newPeerAddress[6];
-  bool peerChanged = false;
-  hexCharacterStringToBytes(newPeerAddress, tempESPNowAddress);
-  applyESPNowPeerAddress(newPeerAddress, peerChanged);
-  return proceed;
 }
 
 bool setESPNowPeerAddressFromString(String peerAddress, bool &changed) {
