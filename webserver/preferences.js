@@ -67,7 +67,6 @@ function displayVersion() {
  */
 function populateFormWithPreferences(preferences) {
     supportBTHomeBLE = preferences.supportBTHomeBLE === true;
-    setBTHomeSupportVisibility(supportBTHomeBLE);
 
     // Update relaxedSecurity if present in data
     if (preferences.relaxedSecurity !== undefined) {
@@ -179,6 +178,7 @@ function populateFormWithPreferences(preferences) {
 
     // Handle dependencies after form is populated
     handleWiFiMQTTDependency();
+    applyFeatureVisibility();
 }
 
 /**
@@ -204,6 +204,37 @@ function setBTHomeSupportVisibility(isSupported) {
         const formGroup = element ? element.closest(".form-group") : null;
         if (formGroup) formGroup.classList.toggle("hidden", !isSupported);
     });
+}
+
+function setFormGroupVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    const formGroup = element ? element.closest(".form-group") : null;
+    if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
+    if (element && !isVisible && element.type === 'checkbox') {
+        element.checked = false;
+        element.disabled = true;
+    } else if (element) {
+        element.disabled = false;
+    }
+}
+
+function setSectionVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    if (element) element.classList.toggle("hidden", !isVisible);
+}
+
+function applyFeatureVisibility() {
+    const activeMQTT = document.getElementById("activeMQTT");
+    const activeESPNOW = document.getElementById("activeESPNOW");
+
+    setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
+    setBTHomeSupportVisibility(features.SUPPORT_BLE && supportBTHomeBLE);
+    setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
+    setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
+    setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
+    setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
+    setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
 }
 
 function normalizeBTHomeBindKey(value) {
@@ -248,26 +279,26 @@ function collectPreferencesData() {
         setValue("DisplayBright");
         setValue("neopixBright");
         setValue("selNeopxType");
-        setValue("activeBLE", 'checked');
-        if (supportBTHomeBLE) {
+        if (features.SUPPORT_BLE) setValue("activeBLE", 'checked');
+        if (features.SUPPORT_BLE && supportBTHomeBLE) {
             setValue("activeBTHome", 'checked');
             setValue("bthomeEncryption", 'checked');
             setValue("bthomeBindKey");
             preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
         }
         setValue("activeWIFI", 'checked');
-        setValue("activeMQTT", 'checked');
-        setValue("activeESPNOW", 'checked');
-        setValue("rootTopic");
+        if (features.SUPPORT_MQTT) setValue("activeMQTT", 'checked');
+        if (features.SUPPORT_ESPNOW) setValue("activeESPNOW", 'checked');
+        if (features.SUPPORT_MQTT) setValue("rootTopic");
         setValue("hasBattery", 'checked');
         setValue("batDischgd");
         setValue("batChargd");
         setValue("vRef");
         setValue("tToDispOff");
-        setValue("tToPubMQTT");
-        setValue("tToPubESPNow");
-        setValue("tKeepAlMQTT");
-        setValue("tKeepAlESPNow");
+        if (features.SUPPORT_MQTT) setValue("tToPubMQTT");
+        if (features.SUPPORT_ESPNOW) setValue("tToPubESPNow");
+        if (features.SUPPORT_MQTT) setValue("tKeepAlMQTT");
+        if (features.SUPPORT_ESPNOW) setValue("tKeepAlESPNow");
         setValue("dispOffOnExP", 'checked');
         setValue("wifiSSID");
         setValue("hostName");
@@ -292,17 +323,19 @@ function collectPreferencesData() {
         setValue("showStatusIcons", 'checked');
         setValue("wakeOnCO2Alert", 'checked');
         setValue("showCO2", 'checked');
-        setValue("mqttClientId");
-        setValue("mqttShowInCon", 'checked');
-        setValue("mqttBroker");
-        setValue("mqttUser");
+        if (features.SUPPORT_MQTT) {
+            setValue("mqttClientId");
+            if (features.SUPPORT_MQTT_DISCOVERY) setValue("mqttShowInCon", 'checked');
+            setValue("mqttBroker");
+            setValue("mqttUser");
+        }
         setValue("toneBzrBeep");
         setValue("durBzrBeep");
         setValue("timeBtwnBzr");
 
         if (relaxedSecurity) {
             setValue("wifiPass");
-            setValue("mqttPass");
+            if (features.SUPPORT_MQTT) setValue("mqttPass");
         }
 
         // New fields for Captive Portal
@@ -451,7 +484,7 @@ function handleWiFiMQTTDependency() {
     }
 
     const updateMQTTState = () => {
-        if (!wifiCheckbox.checked) {
+        if (!features.SUPPORT_MQTT || !wifiCheckbox.checked) {
             mqttCheckbox.checked = false;
             mqttCheckbox.disabled = true;
             document.getElementById('mqttConfig').style.display = 'none';
@@ -465,6 +498,7 @@ function handleWiFiMQTTDependency() {
             wifiCheckbox.checked = true;
         }
         toggleVisibility('activeMQTT', 'mqttConfig');
+        applyFeatureVisibility();
     };
 
     wifiCheckbox.addEventListener('change', updateMQTTState);
@@ -818,15 +852,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
 
-        attemptLoad();
-
         toggleVisibility('activeWIFI', 'wifiNetworks', (isChecked) => {
             document.getElementById('mqttConfig').style.display = isChecked ? 'block' : 'none';
+            applyFeatureVisibility();
         });
         toggleVisibility('activeMQTT', 'mqttConfig');
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
         handleWiFiMQTTDependency();
+        getFeaturesAsJson()
+            .then(() => {
+                applyFeatureVisibility();
+                attemptLoad();
+            });
         handleCalibrationWizard();
 
         // Update the battery voltage every 5 seconds (voltage changes slowly)

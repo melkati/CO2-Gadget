@@ -776,6 +776,11 @@ String getCO2GadgetFeaturesAsJson() {
 #else
     doc["BLE"] = false;
 #endif
+#ifdef SUPPORT_BTHOME_BLE
+    doc["BTHomeBLE"] = true;
+#else
+    doc["BTHomeBLE"] = false;
+#endif
 #ifdef SUPPORT_BUZZER
     doc["Buzzer"] = true;
 #else
