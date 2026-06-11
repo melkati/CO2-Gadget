@@ -13,7 +13,7 @@ WifiMultiLibraryWrapper wifi;
 DataProvider provider(lib, DataType::T_RH_CO2, true, true, true, &wifi);
 #endif
 
-bool writeSensirionCurrentSample() {
+static inline bool writeSensirionCurrentSample() {
 #ifdef SUPPORT_BLE
     if ((co2 < 400) || (co2 > 5000) || (temp < -40) || (temp > 85) || (hum < 0) || (hum > 100)) {
         return false;
@@ -52,8 +52,11 @@ void initBLE() {
             return;
         } else {
             setBLEHistoryInterval(sampleInterval);
-            writeSensirionCurrentSample();
+            bool initialSampleReady = writeSensirionCurrentSample();
             provider.begin();
+            if (initialSampleReady) {
+                provider.commitSample();
+            }
             Serial.print("-->[BLE ] Sensirion Gadget BLE Lib initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
             Serial.print("-->[BLE ] History interval set to: ");
@@ -103,8 +106,8 @@ void publishBLE() {
         if ((activeBLE) && (co2 >= 400) && (co2 <= 5000) && (temp >= -40) && (temp <= 85) && (hum >= 0) && (hum <= 100) && thresholdsManager.evaluateThresholds(BLE_SEND, co2, temp, hum)) {
             if (writeSensirionCurrentSample()) {
                 provider.commitSample();
+                lastMeasurementTimeMs = millis();
             }
-            lastMeasurementTimeMs = millis();
         }
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
