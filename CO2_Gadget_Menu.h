@@ -89,8 +89,8 @@ char tempMQTTClientId[] = "                              ";
 char tempMQTTBrokerIP[] = "                              ";
 char tempMQTTUser[] = "                              ";
 char tempMQTTPass[] = "                              ";
-char tempWiFiSSID[] = "                              ";
-char tempWiFiPasswrd[] = "                              ";
+char tempWiFiSSID[33] = "                                ";
+char tempWiFiPasswrd[64] = "                                                               ";
 char tempHostName[] = "                              ";
 char tempBLEDeviceId[] = "                              ";
 char tempCO2Sensor[] = "                              ";
@@ -248,6 +248,11 @@ void SetTempCO2Sensor(int8_t sensor) {
   #endif
 }
 
+void copyStringToCharArray(const String &source, char *destination, size_t size, const char *label);
+void clearSerialLineEndings();
+bool readSerialLine(const char *prompt, String &value, size_t maxLength, bool hideInput, unsigned long timeoutMs);
+bool serialWizardCanceled(const String &value, const char *wizardName);
+
 result doSetCO2Sensor(eventMask e, navNode &nav, prompt &item) {
   if (selectedCO2Sensor != setCO2Sensor) {
     Serial.printf("-->[MENU] New CO2 Sensor selected: %d\n", setCO2Sensor);
@@ -289,9 +294,6 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
 
 #ifdef SUPPORT_BLE
 result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
-  preferences.begin("CO2-Gadget", false);
-  preferences.putBool("activeBLE", activeBLE);
-  preferences.end();
   return proceed;
 }
 
@@ -327,6 +329,300 @@ result doSetActiveWIFI(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+void clearSerialLineEndings() {
+  while (Serial.available() && (Serial.peek() == '\r' || Serial.peek() == '\n')) {
+    Serial.read();
+  }
+}
+
+bool readSerialLine(const char *prompt, String &value, size_t maxLength, bool hideInput, unsigned long timeoutMs = 120000) {
+  clearSerialLineEndings();
+  value = "";
+  Serial.print(prompt);
+  unsigned long start = millis();
+
+  while (millis() - start < timeoutMs) {
+    while (Serial.available()) {
+      char c = static_cast<char>(Serial.read());
+
+      if (c == '\r' || c == '\n') {
+        Serial.println();
+        clearSerialLineEndings();
+        return true;
+      }
+
+      if ((c == '\b') || (c == 0x7F)) {
+        if (value.length() > 0) {
+          value.remove(value.length() - 1);
+          Serial.print("\b \b");
+        }
+        continue;
+      }
+
+      if ((c >= 32) && (c <= 126) && (value.length() < maxLength)) {
+        value += c;
+        Serial.write(hideInput ? '*' : c);
+      }
+
+      start = millis();
+    }
+    delay(10);
+    yield();
+  }
+
+  Serial.println();
+  Serial.println("-->[MENU] Serial input timed out. Settings unchanged.");
+  return false;
+}
+
+bool serialWizardCanceled(const String &value, const char *wizardName) {
+  if (value != "/") {
+    return false;
+  }
+
+  Serial.println("-->[MENU] " + String(wizardName) + " canceled. Settings unchanged.");
+  return true;
+}
+
+void printSerialPendingSave() {
+  Serial.println("-->[MENU] Use Save preferences to persist this setting.");
+}
+
+void refreshWiFiTempArrays() {
+  copyStringToCharArray(rightPad(wifiSSID, sizeof(tempWiFiSSID) - 1), tempWiFiSSID, sizeof(tempWiFiSSID), "tempWiFiSSID");
+#ifdef WIFI_PRIVACY
+  copyStringToCharArray(rightPad(" ", sizeof(tempWiFiPasswrd) - 1), tempWiFiPasswrd, sizeof(tempWiFiPasswrd), "tempWiFiPasswrd");
+#else
+  copyStringToCharArray(rightPad(wifiPass, sizeof(tempWiFiPasswrd) - 1), tempWiFiPasswrd, sizeof(tempWiFiPasswrd), "tempWiFiPasswrd");
+#endif
+}
+
+void applySerialWiFiSettings(bool reconnect) {
+  refreshWiFiTempArrays();
+
+  if (reconnect && activeWIFI) {
+    Serial.println("-->[MENU] Trying to connect WiFi...");
+    initWifi();
+    fillTempIPAddress();
+  }
+}
+
+result doSerialWiFiSSIDSetup(eventMask e, navNode &nav, prompt &item) {
+  String newSSID;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial WiFi SSID setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current SSID: " + String(wifiSSID.length() > 0 ? wifiSSID : "(not set)"));
+
+  if (!readSerialLine("-->[MENU] SSID: ", newSSID, 32, false)) return quit;
+  if (serialWizardCanceled(newSSID, "Serial WiFi SSID setup")) return quit;
+  newSSID.trim();
+  if (newSSID.length() == 0) {
+    Serial.println("-->[MENU] Empty SSID. WiFi SSID unchanged.");
+    return quit;
+  }
+
+  wifiSSID = newSSID;
+  activeWIFI = true;
+  applySerialWiFiSettings(true);
+  Serial.println("-->[MENU] WiFi SSID changed: " + wifiSSID);
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialWiFiPasswordSetup(eventMask e, navNode &nav, prompt &item) {
+  String newPassword;
+  String passwordStatus;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial WiFi password setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Leave blank to keep the current password.");
+  Serial.println("-->[MENU] Enter a single dash (-) to clear the password for open WiFi.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current password: " + String(wifiPass.length() > 0 ? "(set)" : "(not set)"));
+  Serial.println("-->[MENU] Current password length: " + String(wifiPass.length()) + ".");
+
+  if (!readSerialLine("-->[MENU] Password: ", newPassword, 63, true)) return quit;
+  if (serialWizardCanceled(newPassword, "Serial WiFi password setup")) return quit;
+  if (newPassword == "-") {
+    wifiPass = "";
+    passwordStatus = "cleared";
+  } else if (newPassword.length() > 0) {
+    wifiPass = newPassword;
+    passwordStatus = "changed";
+  } else {
+    passwordStatus = wifiPass.length() > 0 ? "kept existing" : "not set";
+  }
+
+  activeWIFI = true;
+  applySerialWiFiSettings(true);
+  Serial.println("-->[MENU] WiFi password: " + passwordStatus + ".");
+  Serial.println("-->[MENU] WiFi password length: " + String(wifiPass.length()) + ".");
+  if ((wifiPass.length() > 0) && (wifiPass.length() < 8)) {
+    Serial.println("-->[MENU] Warning: WPA/WPA2 passwords are normally 8-63 characters.");
+  }
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialHostNameSetup(eventMask e, navNode &nav, prompt &item) {
+  String newHostName;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial hostname setup");
+  Serial.println("-->[MENU] Type the hostname, then press Enter.");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Leave blank to keep the current hostname.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current hostname: " + hostName);
+
+  if (!readSerialLine("-->[MENU] Hostname: ", newHostName, 31, false)) return quit;
+  if (serialWizardCanceled(newHostName, "Serial hostname setup")) return quit;
+  newHostName.trim();
+  if (newHostName.length() == 0) {
+    Serial.println("-->[MENU] Hostname unchanged.");
+    return quit;
+  }
+
+  hostName = newHostName;
+  copyStringToCharArray(rightPad(hostName, 30), tempHostName, 30, "tempHostName");
+
+  Serial.println("-->[MENU] Hostname changed: " + hostName);
+  printSerialPendingSave();
+  if (activeWIFI) {
+    Serial.println("-->[MENU] Restarting WiFi with new hostname...");
+    initWifi();
+    fillTempIPAddress();
+  }
+  nav.target->dirty = true;
+  return quit;
+}
+
+bool menuIPAddressEquals(const IPAddress &left, const IPAddress &right) {
+  for (uint8_t i = 0; i < 4; ++i) {
+    if (left[i] != right[i]) return false;
+  }
+  return true;
+}
+
+bool readSerialIPAddress(const char *prompt, IPAddress &address, bool &changed) {
+  String value;
+  if (!readSerialLine(prompt, value, 15, false)) return false;
+  if (serialWizardCanceled(value, "Serial fixed IP setup")) return false;
+  value.trim();
+  if (value.length() == 0) {
+    changed = false;
+    return true;
+  }
+
+  IPAddress parsedAddress;
+  if (!parsedAddress.fromString(value)) {
+    Serial.println("-->[MENU] Invalid IP address: " + value);
+    Serial.println("-->[MENU] Fixed IP settings unchanged.");
+    return false;
+  }
+
+  if (menuIPAddressEquals(parsedAddress, address)) {
+    changed = false;
+    return true;
+  }
+
+  address = parsedAddress;
+  changed = true;
+  return true;
+}
+
+result doSerialFixedIPSetup(eventMask e, navNode &nav, prompt &item) {
+  String staticMode;
+  bool newUseStaticIP = useStaticIP;
+  bool staticModeChanged = false;
+  bool ipChanged = false;
+  bool gatewayChanged = false;
+  bool subnetChanged = false;
+  bool dns1Changed = false;
+  bool dns2Changed = false;
+
+  IPAddress newStaticIP = staticIP;
+  IPAddress newGateway = gateway;
+  IPAddress newSubnet = subnet;
+  IPAddress newDns1 = dns1;
+  IPAddress newDns2 = dns2;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial fixed IP setup");
+  Serial.println("-->[MENU] Leave a value blank to keep the current value.");
+  Serial.println("-->[MENU] Enter / alone at any prompt to cancel.");
+  Serial.println("-->[MENU] Static IP mode: enter on, off, 1, or 0.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current static IP mode: " + String(useStaticIP ? "ON" : "OFF"));
+  Serial.println("-->[MENU] Current IP: " + staticIP.toString());
+  Serial.println("-->[MENU] Current gateway: " + gateway.toString());
+  Serial.println("-->[MENU] Current subnet: " + subnet.toString());
+  Serial.println("-->[MENU] Current DNS1: " + dns1.toString());
+  Serial.println("-->[MENU] Current DNS2: " + dns2.toString());
+
+  if (!readSerialLine("-->[MENU] Static IP mode: ", staticMode, 3, false)) return quit;
+  if (serialWizardCanceled(staticMode, "Serial fixed IP setup")) return quit;
+  staticMode.trim();
+  staticMode.toLowerCase();
+  if (staticMode.length() > 0) {
+    if ((staticMode == "on") || (staticMode == "1")) {
+      newUseStaticIP = true;
+      staticModeChanged = (newUseStaticIP != useStaticIP);
+    } else if ((staticMode == "off") || (staticMode == "0")) {
+      newUseStaticIP = false;
+      staticModeChanged = (newUseStaticIP != useStaticIP);
+    } else {
+      Serial.println("-->[MENU] Invalid static IP mode. Fixed IP settings unchanged.");
+      return quit;
+    }
+  }
+
+  if (!readSerialIPAddress("-->[MENU] IP address: ", newStaticIP, ipChanged)) return quit;
+  if (!readSerialIPAddress("-->[MENU] Gateway: ", newGateway, gatewayChanged)) return quit;
+  if (!readSerialIPAddress("-->[MENU] Subnet: ", newSubnet, subnetChanged)) return quit;
+  if (!readSerialIPAddress("-->[MENU] DNS1: ", newDns1, dns1Changed)) return quit;
+  if (!readSerialIPAddress("-->[MENU] DNS2: ", newDns2, dns2Changed)) return quit;
+
+  bool settingsChanged = staticModeChanged || ipChanged || gatewayChanged || subnetChanged || dns1Changed || dns2Changed;
+  if (!settingsChanged) {
+    Serial.println("-->[MENU] Fixed IP settings unchanged.");
+    return quit;
+  }
+
+  useStaticIP = newUseStaticIP;
+  staticIP = newStaticIP;
+  gateway = newGateway;
+  subnet = newSubnet;
+  dns1 = newDns1;
+  dns2 = newDns2;
+
+  Serial.println("-->[MENU] Fixed IP settings changed.");
+  Serial.println("-->[MENU] Static IP mode: " + String(useStaticIP ? "ON" : "OFF") + (staticModeChanged ? " (changed)" : " (kept)"));
+  Serial.println("-->[MENU] IP address: " + staticIP.toString() + (ipChanged ? " (changed)" : " (kept)"));
+  Serial.println("-->[MENU] Gateway: " + gateway.toString() + (gatewayChanged ? " (changed)" : " (kept)"));
+  Serial.println("-->[MENU] Subnet: " + subnet.toString() + (subnetChanged ? " (changed)" : " (kept)"));
+  Serial.println("-->[MENU] DNS1: " + dns1.toString() + (dns1Changed ? " (changed)" : " (kept)"));
+  Serial.println("-->[MENU] DNS2: " + dns2.toString() + (dns2Changed ? " (changed)" : " (kept)"));
+  printSerialPendingSave();
+  if (activeWIFI) {
+    Serial.println("-->[MENU] Restarting WiFi with fixed IP settings...");
+    initWifi();
+    fillTempIPAddress();
+  }
+  nav.target->dirty = true;
+  return quit;
+}
+
 result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
 #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] Setting WiFi SSID to #%s#\n", tempWiFiSSID);
@@ -347,7 +643,6 @@ result doSetWiFiPasswrd(eventMask e, navNode &nav, prompt &item) {
   Serial.flush();
 #endif
   wifiPass = String(tempWiFiPasswrd);
-  wifiPass.trim();
   return proceed;
 }
 
@@ -377,16 +672,51 @@ TOGGLE(activeOTA, activeOTAMenu, "OTA Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("OFF", false, doSetActiveOTA, exitEvent));
 #endif
 
+class altPromptWiFiSSID:public prompt {
+public:
+  altPromptWiFiSSID(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "SSID: " + String(wifiSSID.length() > 0 ? wifiSSID : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptWiFiPass:public prompt {
+public:
+  altPromptWiFiPass(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Pass: " + String(wifiPass.length() > 0 ? "(set)" : "(not set)") + " len " + String(wifiPass.length());
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptHostName:public prompt {
+public:
+  altPromptHostName(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Host: " + String(hostName.length() > 0 ? hostName : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptFixedIP:public prompt {
+public:
+  altPromptFixedIP(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Fixed IP: " + String(useStaticIP ? "ON " : "OFF ") + staticIP.toString();
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
 MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
-  ,EDIT("SSID", tempWiFiSSID, ssidChars, doSetWiFiSSID, exitEvent, wrapStyle)
-  ,EDIT("Pass:", tempWiFiPasswrd, allChars, doSetWiFiPasswrd, exitEvent, wrapStyle)
-  ,EDIT("Host:", tempHostName, allChars, doSetHostName, exitEvent, wrapStyle)
+  ,altOP(altPromptWiFiSSID, "", doSerialWiFiSSIDSetup, enterEvent)
+  ,altOP(altPromptWiFiPass, "", doSerialWiFiPasswordSetup, enterEvent)
+  ,altOP(altPromptHostName, "", doSerialHostNameSetup, enterEvent)
 #ifdef SUPPORT_OTA
   ,SUBMENU(activeOTAMenu)
 #endif
-  ,OP("Set fixed IP", doNothing, noEvent)
-  ,OP("in WEB config.", doNothing, noEvent)
+  ,altOP(altPromptFixedIP, "", doSerialFixedIPSetup, enterEvent)
   ,EXIT("<Back"));
 
 
@@ -475,6 +805,141 @@ result doSetMQTTPass(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+void refreshMQTTTempArrays() {
+  copyStringToCharArray(rightPad(rootTopic, 30), tempMQTTTopic, 30, "tempMQTTTopic");
+  copyStringToCharArray(rightPad(mqttClientId, 30), tempMQTTClientId, 30, "tempMQTTClientId");
+  copyStringToCharArray(rightPad(mqttBroker, 30), tempMQTTBrokerIP, 30, "tempMQTTBrokerIP");
+  copyStringToCharArray(rightPad(mqttUser, 30), tempMQTTUser, 30, "tempMQTTUser");
+#ifdef WIFI_PRIVACY
+  copyStringToCharArray(rightPad(" ", 30), tempMQTTPass, 30, "tempMQTTPass");
+#else
+  copyStringToCharArray(rightPad(mqttPass, 30), tempMQTTPass, 30, "tempMQTTPass");
+#endif
+}
+
+void applySerialMQTTSettings(bool reconnect) {
+  refreshMQTTTempArrays();
+
+  if (reconnect && activeMQTT && activeWIFI && WiFi.isConnected()) {
+    Serial.println("-->[MENU] Reconnecting MQTT...");
+    initMQTT();
+  }
+}
+
+bool readSerialMQTTText(const char *promptText, String &target, size_t maxLength, const char *wizardName, bool allowClear) {
+  String value;
+  if (!readSerialLine(promptText, value, maxLength, false)) return false;
+  if (serialWizardCanceled(value, wizardName)) return false;
+  value.trim();
+
+  if (allowClear && (value == "-")) {
+    target = "";
+    return true;
+  }
+  if (value.length() == 0) {
+    Serial.println("-->[MENU] Value unchanged.");
+    return false;
+  }
+
+  target = value;
+  return true;
+}
+
+result doSerialMQTTTopicSetup(eventMask e, navNode &nav, prompt &item) {
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial MQTT topic setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current topic: " + String(rootTopic.length() > 0 ? rootTopic : "(not set)"));
+  if (!readSerialMQTTText("-->[MENU] Topic: ", rootTopic, 63, "Serial MQTT topic setup", false)) return quit;
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT topic changed: " + rootTopic);
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialMQTTClientIdSetup(eventMask e, navNode &nav, prompt &item) {
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial MQTT client id setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current client id: " + String(mqttClientId.length() > 0 ? mqttClientId : "(not set)"));
+  if (!readSerialMQTTText("-->[MENU] Client id: ", mqttClientId, 63, "Serial MQTT client id setup", false)) return quit;
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT client id changed: " + mqttClientId);
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialMQTTBrokerSetup(eventMask e, navNode &nav, prompt &item) {
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial MQTT broker setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current broker: " + String(mqttBroker.length() > 0 ? mqttBroker : "(not set)"));
+  if (!readSerialMQTTText("-->[MENU] Broker host/IP: ", mqttBroker, 63, "Serial MQTT broker setup", false)) return quit;
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT broker changed: " + mqttBroker);
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialMQTTUserSetup(eventMask e, navNode &nav, prompt &item) {
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial MQTT user setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Enter a single dash (-) to clear the user.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current user: " + String(mqttUser.length() > 0 ? mqttUser : "(not set)"));
+  if (!readSerialMQTTText("-->[MENU] User: ", mqttUser, 63, "Serial MQTT user setup", true)) return quit;
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT user: " + String(mqttUser.length() > 0 ? "changed." : "cleared."));
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+result doSerialMQTTPasswordSetup(eventMask e, navNode &nav, prompt &item) {
+  String newPass;
+  String passStatus;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial MQTT password setup");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Leave blank to keep the current password.");
+  Serial.println("-->[MENU] Enter a single dash (-) to clear the password.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current password: " + String(mqttPass.length() > 0 ? "(set)" : "(not set)"));
+  Serial.println("-->[MENU] Current password length: " + String(mqttPass.length()) + ".");
+
+  if (!readSerialLine("-->[MENU] Password: ", newPass, 63, true)) return quit;
+  if (serialWizardCanceled(newPass, "Serial MQTT password setup")) return quit;
+  if (newPass == "-") {
+    mqttPass = "";
+    passStatus = "cleared";
+  } else if (newPass.length() > 0) {
+    mqttPass = newPass;
+    passStatus = "changed";
+  } else {
+    passStatus = mqttPass.length() > 0 ? "kept existing" : "not set";
+  }
+
+  applySerialMQTTSettings(true);
+  Serial.println("-->[MENU] MQTT password: " + passStatus + ".");
+  Serial.println("-->[MENU] MQTT password length: " + String(mqttPass.length()) + ".");
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
 result doSetActiveMQTT(eventMask e, navNode &nav, prompt &item) {
   if ((activeWIFI) && (activeMQTT)) {
     initMQTT();
@@ -488,13 +953,58 @@ TOGGLE(activeMQTT, activeMQTTMenu, "MQTT Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveMQTT, exitEvent)
   ,VALUE("OFF", false, doSetActiveMQTT, exitEvent));
 
+class altPromptMQTTTopic:public prompt {
+public:
+  altPromptMQTTTopic(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Topic: " + String(rootTopic.length() > 0 ? rootTopic : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptMQTTClientId:public prompt {
+public:
+  altPromptMQTTClientId(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Id: " + String(mqttClientId.length() > 0 ? mqttClientId : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptMQTTBroker:public prompt {
+public:
+  altPromptMQTTBroker(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Broker: " + String(mqttBroker.length() > 0 ? mqttBroker : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptMQTTUser:public prompt {
+public:
+  altPromptMQTTUser(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "User: " + String(mqttUser.length() > 0 ? mqttUser : "(not set)");
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
+class altPromptMQTTPass:public prompt {
+public:
+  altPromptMQTTPass(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Pass: " + String(mqttPass.length() > 0 ? "(set)" : "(not set)") + " len " + String(mqttPass.length());
+    return out.printRaw(label.c_str(),len);
+  }
+};
+
 MENU(mqttConfigMenu, "MQTT Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeMQTTMenu)
-  ,EDIT("Topic", tempMQTTTopic, alphaNum, doSetMQTTTopic, exitEvent, wrapStyle)
-  ,EDIT("Id", tempMQTTClientId, alphaNum, doSetMQTTClientId, exitEvent, wrapStyle)
-  ,EDIT("Broker IP", tempMQTTBrokerIP, reducedSet, doSetMQTTBrokerIP, exitEvent, wrapStyle)
-  ,EDIT("User", tempMQTTUser, alphaNum, doSetMQTTUser, exitEvent, wrapStyle)
-  ,EDIT("Pass", tempMQTTPass, alphaNum, doSetMQTTPass, exitEvent, wrapStyle)
+  ,altOP(altPromptMQTTTopic, "", doSerialMQTTTopicSetup, enterEvent)
+  ,altOP(altPromptMQTTClientId, "", doSerialMQTTClientIdSetup, enterEvent)
+  ,altOP(altPromptMQTTBroker, "", doSerialMQTTBrokerSetup, enterEvent)
+  ,altOP(altPromptMQTTUser, "", doSerialMQTTUserSetup, enterEvent)
+  ,altOP(altPromptMQTTPass, "", doSerialMQTTPasswordSetup, enterEvent)
   ,EXIT("<Back"));
 
 #ifdef SUPPORT_ESPNOW
@@ -521,6 +1031,12 @@ byte nibble(char c)
   if (c >= 'A' && c <= 'F')
     return c - 'A' + 10;
   return 0;  // Not a valid hexadecimal character
+}
+
+bool isMenuHexChar(char c) {
+  return ((c >= '0') && (c <= '9')) ||
+         ((c >= 'a') && (c <= 'f')) ||
+         ((c >= 'A') && (c <= 'F'));
 }
 
 void hexCharacterStringToBytes(byte *byteArray, const char *hexString) // https://forum.arduino.cc/t/hex-string-to-byte-array/563827/4
@@ -569,26 +1085,132 @@ void hexCharacterStringToBytes(byte *byteArray, const char *hexString) // https:
   }
 }
 
-result doSetPeerESPNow(eventMask e, navNode &nav, prompt &item) {
-#ifdef DEBUG_ARDUINOMENU
-  Serial.printf("-->[MENU] Setting ESP-NOW Peer to: #%s#\n", tempESPNowAddress);
-  Serial.print(F("-->[MENU] action1 event:"));
-  Serial.println(e);
-  Serial.printf("-->[MENU] peerESPNow: #%02X:%02X:%02X:%02X:%02X:%02X#\n", peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2], peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
-  Serial.flush();
-#endif
-  esp_now_del_peer(peerESPNowAddress);
-  hexCharacterStringToBytes(peerESPNowAddress, tempESPNowAddress);
+bool applyESPNowPeerAddress(byte *newPeerAddress, bool &changed) {
+  changed = (memcmp(peerESPNowAddress, newPeerAddress, 6) != 0);
+  if (!changed) return true;
+
+  // Try to (re)register the peer with ESP-NOW. We only mutate the ESP-NOW peer
+  // table when ESP-NOW is initialized; an ESP_ERR_ESPNOW_NOT_INIT result is
+  // treated as a non-fatal "defer until ESP-NOW comes up", so the address is
+  // still stored and can be saved/applied later.
+  esp_now_peer_info_t newPeerInfo = peerInfo;
+  memcpy(newPeerInfo.peer_addr, newPeerAddress, 6);
+
+  esp_err_t addResult = esp_now_add_peer(&newPeerInfo);
+  if (addResult == ESP_ERR_ESPNOW_EXIST) {
+    // Entry already present: refresh it so channel/encrypt match peerInfo.
+    addResult = esp_now_mod_peer(&newPeerInfo);
+  }
+
+  if ((addResult != ESP_OK) && (addResult != ESP_ERR_ESPNOW_NOT_INIT)) {
+    Serial.println("-->[MENU] Failed to register ESP-NOW peer. Existing peer kept.");
+    return false;
+  }
+
+  // Drop the previous peer entry only after the new one is registered.
+  if (addResult == ESP_OK) {
+    esp_now_del_peer(peerESPNowAddress);
+  }
+
+  // Always update the stored address so it persists and is applied once
+  // ESP-NOW is initialized, even if registration was deferred.
+  memcpy(peerESPNowAddress, newPeerAddress, 6);
   memcpy(peerInfo.peer_addr, peerESPNowAddress, 6);
-  esp_now_add_peer(&peerInfo);
-  return proceed;
+  return true;
 }
+
+bool setESPNowPeerAddressFromString(String peerAddress, bool &changed) {
+  changed = false;
+  peerAddress.trim();
+  peerAddress.replace(":", "");
+  peerAddress.replace("-", "");
+  peerAddress.replace(" ", "");
+  peerAddress.toUpperCase();
+
+  if (peerAddress.length() != 12) {
+    Serial.println("-->[MENU] Invalid ESP-NOW peer MAC. Expected 12 hex characters.");
+    return false;
+  }
+
+  for (uint8_t i = 0; i < peerAddress.length(); ++i) {
+    if (!isMenuHexChar(peerAddress[i])) {
+      Serial.println("-->[MENU] Invalid ESP-NOW peer MAC. Use hexadecimal characters only.");
+      return false;
+    }
+  }
+
+  byte newPeerAddress[6];
+  hexCharacterStringToBytes(newPeerAddress, peerAddress.c_str());
+  if (!applyESPNowPeerAddress(newPeerAddress, changed)) {
+    return false;
+  }
+
+  snprintf(tempESPNowAddress, sizeof(tempESPNowAddress), "%02X%02X%02X%02X%02X%02X",
+           peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+           peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+  return true;
+}
+
+String getESPNowPeerAddressString() {
+  char peerAddress[18];
+  snprintf(peerAddress, sizeof(peerAddress), "%02X:%02X:%02X:%02X:%02X:%02X",
+           peerESPNowAddress[0], peerESPNowAddress[1], peerESPNowAddress[2],
+           peerESPNowAddress[3], peerESPNowAddress[4], peerESPNowAddress[5]);
+  return String(peerAddress);
+}
+
+result doSerialESPNowPeerSetup(eventMask e, navNode &nav, prompt &item) {
+  String newPeerAddress;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial ESP-NOW peer setup");
+  Serial.println("-->[MENU] Enter peer MAC, then press Enter.");
+  Serial.println("-->[MENU] Accepted formats: AABBCCDDEEFF or AA:BB:CC:DD:EE:FF.");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Leave blank to keep the current peer.");
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Current peer: " + getESPNowPeerAddressString());
+
+  if (!readSerialLine("-->[MENU] Peer MAC: ", newPeerAddress, 17, false)) return quit;
+  if (serialWizardCanceled(newPeerAddress, "Serial ESP-NOW peer setup")) return quit;
+  newPeerAddress.trim();
+  if (newPeerAddress.length() == 0) {
+    Serial.println("-->[MENU] ESP-NOW peer unchanged.");
+    return quit;
+  }
+
+  bool peerChanged = false;
+  if (!setESPNowPeerAddressFromString(newPeerAddress, peerChanged)) {
+    Serial.println("-->[MENU] ESP-NOW peer unchanged.");
+    return quit;
+  }
+
+  if (!peerChanged) {
+    Serial.println("-->[MENU] ESP-NOW peer unchanged.");
+    return quit;
+  }
+
+  Serial.println("-->[MENU] ESP-NOW peer changed: " + getESPNowPeerAddressString());
+  printSerialPendingSave();
+  nav.target->dirty = true;
+  return quit;
+}
+
+class altPromptESPNowPeer:public prompt {
+public:
+  altPromptESPNowPeer(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String label = "Peer MAC: " + getESPNowPeerAddressString();
+    return out.printRaw(label.c_str(),len);
+  }
+};
 
 MENU(espnowConfigMenu, "ESP-NOW Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeESPNOWMenu)
   ,FIELD(timeBetweenESPNowPublish, "TX Time: ", " Secs", 10, 360, 10, 100, doNothing, noEvent, noStyle)
   ,FIELD(boardIdESPNow, "Board ID: ", "", 0, 254, 1, 10, doNothing, noEvent, noStyle)
-  ,EDIT("Peer MAC: ", tempESPNowAddress, hexChars, doSetPeerESPNow,  exitEvent, wrapStyle)
+  ,altOP(altPromptESPNowPeer, "", doSerialESPNowPeerSetup, enterEvent)
   ,EXIT("<Back"));
 #endif // SUPPORT_ESPNOW
 
@@ -604,9 +1226,18 @@ TOGGLE(hasBattery, hasBatteryMenu, "Has battery: ", doNothing, noEvent, wrapStyl
   ,VALUE("ON", true, doNothing, noEvent)
   ,VALUE("OFF", false, doNothing, noEvent));
 
+class altPromptBatteryVoltage:public prompt {
+public:
+  altPromptBatteryVoltage(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String batteryStatus = "Battery: " + String(batteryVoltage, 2) + "V";
+    return out.printRaw(batteryStatus.c_str(),len);
+  }
+};
+
 MENU(batteryConfigMenu, "Battery Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(hasBatteryMenu)
-  ,FIELD(batteryVoltage, "Battery:", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,altOP(altPromptBatteryVoltage, "", doNothing, noEvent)
   ,FIELD(vRef, "Voltage ref:", "", 0, 2000, 10, 10, doSetvRef, anyEvent, noStyle)
   ,FIELD(batteryFullyChargedMillivolts, "Bat Full (mV):", "", 0, 4200, 10, 10, doNothing, noEvent, noStyle)
   ,FIELD(batteryDischargedMillivolts, "Bat Empty (mV):", "", 2700, 3700, 10, 10, doNothing, noEvent, noStyle)
@@ -617,9 +1248,6 @@ result doSetTempOffset(eventMask e, navNode &nav, prompt &item) {
     Serial.printf("-->[MENU] Setting setTempOffset to %.2f\n",tempOffset);
   #endif
   sensors.setTempOffset(tempOffset);
-  preferences.begin("CO2-Gadget", false);
-  preferences.putFloat("tempOffset", tempOffset);
-  preferences.end();
   nav.target-> dirty = true;
   return proceed;
 }
@@ -833,14 +1461,32 @@ public:
   }
 };
 
+class altPromptIPAddress:public prompt {
+public:
+  altPromptIPAddress(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String ipStatus = "IP: " + String(tempIPAddress);
+    return out.printRaw(ipStatus.c_str(),len);
+  }
+};
+
+class altPromptBLEDeviceId:public prompt {
+public:
+  altPromptBLEDeviceId(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+    String bleStatus = "BLE Dev. Id: " + String(tempBLEDeviceId);
+    return out.printRaw(bleStatus.c_str(),len);
+  }
+};
+
 MENU(informationMenu, "Information", doNothing, noEvent, wrapStyle
-  ,FIELD(batteryVoltage, "Battery", "V", 0, 9, 0, 0, doNothing, noEvent, noStyle)
+  ,altOP(altPromptBatteryVoltage, "", doNothing, noEvent)
   ,OP("Comp " __DATE__ " at " __TIME__, doNothing, noEvent)
   ,OP("Version " CO2_GADGET_VERSION CO2_GADGET_REV, doNothing, noEvent)
   ,OP("" FLAVOUR, doNothing, noEvent)
   ,altOP(altPromptUptime, "", doNothing, noEvent)
-  ,EDIT("IP", tempIPAddress, alphaNum, doNothing, noEvent, wrapStyle)
-  ,EDIT("BLE Dev. Id", tempBLEDeviceId, alphaNum, doNothing, noEvent, wrapStyle)  
+  ,altOP(altPromptIPAddress, "", doNothing, noEvent)
+  ,altOP(altPromptBLEDeviceId, "", doNothing, noEvent)  
   ,EXIT("<Back"));
 
 // when entering main menu
@@ -1017,12 +1663,12 @@ void loadTempArraysWithActualValues() {
     copyStringToCharArray(rightPad(mqttPass, 30), tempMQTTPass, 30, "tempMQTTPass");
 #endif
 
-    copyStringToCharArray(rightPad(wifiSSID, 30), tempWiFiSSID, 30, "tempWiFiSSID");
+    copyStringToCharArray(rightPad(wifiSSID, sizeof(tempWiFiSSID) - 1), tempWiFiSSID, sizeof(tempWiFiSSID), "tempWiFiSSID");
 
 #ifdef WIFI_PRIVACY
-    copyStringToCharArray(rightPad(" ", 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
+    copyStringToCharArray(rightPad(" ", sizeof(tempWiFiPasswrd) - 1), tempWiFiPasswrd, sizeof(tempWiFiPasswrd), "tempWiFiPasswrd");
 #else
-    copyStringToCharArray(rightPad(wifiPass, 30), tempWiFiPasswrd, 30, "tempWiFiPasswrd");
+    copyStringToCharArray(rightPad(wifiPass, sizeof(tempWiFiPasswrd) - 1), tempWiFiPasswrd, sizeof(tempWiFiPasswrd), "tempWiFiPasswrd");
 #endif
 
     copyStringToCharArray(rightPad(hostName, 30), tempHostName, 30, "tempHostName");
@@ -1109,7 +1755,6 @@ void menuLoopTFT() {
         delay(1000);
     }
 
-    nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(shouldRedrawDisplay);
         shouldRedrawDisplay = false;
@@ -1138,7 +1783,6 @@ void menuLoopOLED() {
 
 void menuLoopEINK() {
 #ifdef SUPPORT_EINK
-    nav.doInput();
     if (nav.sleepTask) {
         displayShowValues(false);
         shouldRedrawDisplay = false;
@@ -1164,6 +1808,7 @@ void initMenu() {
     nav.idleTask = idle;  // function to be called when menu is suspended
     nav.idleOn(idle);     // start the menu in idle state
     nav.timeOut = 20;
+    nav.inputBurst = 16;
     nav.showTitle = true;
     options->invertFieldKeys = true;
     nav.useUpdateEvent = true;
@@ -1173,6 +1818,7 @@ void initMenu() {
     informationMenu[3].disable();
     informationMenu[4].disable();
     informationMenu[5].disable();
+    informationMenu[6].disable();
     // bleConfigMenu[0].disable(); // Disable turning OFF BLE to avoid restart of device
     if (!activeWIFI) {
         activeMQTTMenu[0].disable();  // Make MQTT active field unselectable if WIFI is not active
@@ -1188,13 +1834,14 @@ void initMenu() {
     loadTempArraysWithActualValues();
     Serial.println("");
     Serial.println("**********************************************************************");
-    Serial.println("-->[MENU] Use keys + - * /");
-    Serial.println("-->[MENU] to control the menu navigation");
+    Serial.println("-->[MENU] Use keys + - * / to control the menu navigation.");
+    Serial.println("-->[MENU] Press * to enter/open, / to go back/cancel.");
     Serial.println("**********************************************************************");
     Serial.println("");
 }
 
 bool menuEntryCharacterReceived() {
+    clearSerialLineEndings();
     // If the first byte is '*', then it's a command from the serial menu
     if (Serial.available() && Serial.peek() == 0x2A) {
 #ifdef DEBUG_ARDUINOMENU
@@ -1253,6 +1900,8 @@ void menuLoop() {
 #endif
         return;
     }
+
+    nav.doInput();
 
 #ifdef DEBUG_ARDUINOMENU
     if (Serial.available()) {
