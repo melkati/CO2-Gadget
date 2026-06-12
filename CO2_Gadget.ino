@@ -233,6 +233,8 @@ typedef struct {
     bool measurementsStarted;
     uint64_t bootTimes;
     uint64_t uptimeMillis;
+    bool lastWifiRSSIValid;
+    int16_t lastWifiRSSI;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -864,6 +866,8 @@ void setup() {
         // Normal boot from any reason
         if ((esp_reset_reason() == ESP_RST_POWERON) || (esp_reset_reason() == ESP_RST_BROWNOUT) || (esp_reset_reason() == ESP_RST_SW) || (esp_reset_reason() == ESP_RST_PANIC) || (esp_reset_reason() == ESP_RST_INT_WDT) || (esp_reset_reason() == ESP_RST_TASK_WDT) || (esp_reset_reason() == ESP_RST_WDT)) {
             deepSleepData.uptimeMillis = 0;
+            deepSleepData.lastWifiRSSIValid = false;
+            deepSleepData.lastWifiRSSI = 0;
             Serial.println("-->[STUP] Initializing from: " + getResetReason());
             initPreferences();
             initThresholds();
