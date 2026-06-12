@@ -204,6 +204,19 @@ function setBTHomeSupportVisibility(isSupported) {
         const formGroup = element ? element.closest(".form-group") : null;
         if (formGroup) formGroup.classList.toggle("hidden", !isSupported);
     });
+    updateBTHomeControlsState();
+}
+
+function updateBTHomeControlsState() {
+    const bthomeCheckbox = document.getElementById("activeBTHome");
+    const encryptionCheckbox = document.getElementById("bthomeEncryption");
+    const bindKeyInput = document.getElementById("bthomeBindKey");
+    const bthomeSupported = features.SUPPORT_BLE && supportBTHomeBLE;
+    const bthomeActive = bthomeSupported && !!(bthomeCheckbox && bthomeCheckbox.checked);
+
+    if (bthomeCheckbox) bthomeCheckbox.disabled = !bthomeSupported;
+    if (encryptionCheckbox) encryptionCheckbox.disabled = !bthomeActive;
+    if (bindKeyInput) bindKeyInput.disabled = !bthomeActive || !relaxedSecurity;
 }
 
 function setFormGroupVisibility(elementId, isVisible) {
@@ -859,6 +872,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeMQTT', 'mqttConfig');
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
+        const bthomeCheckbox = document.getElementById("activeBTHome");
+        if (bthomeCheckbox) bthomeCheckbox.addEventListener("change", updateBTHomeControlsState);
         handleWiFiMQTTDependency();
         getFeaturesAsJson()
             .then(() => {
