@@ -302,6 +302,9 @@ function collectPreferencesData() {
             setValue("bthomeBindKey");
             preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
         }
+        if (features.SUPPORT_BLE) {
+            preferencesData.enableBLE = !!(preferencesData.activeBLE || preferencesData.activeBTHome);
+        }
         setValue("activeWIFI", 'checked');
         if (features.SUPPORT_MQTT) setValue("activeMQTT", 'checked');
         if (features.SUPPORT_ESPNOW) setValue("activeESPNOW", 'checked');

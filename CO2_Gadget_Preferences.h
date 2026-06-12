@@ -926,6 +926,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             }
         }
 #endif
+        if (!JsonDocument.containsKey("enableBLE") && (activeBLE || activeBTHome)) {
+            enableBLE = true;
+        }
         if (JsonDocument.containsKey("activeWIFI")) {
             activeWIFI = JsonDocument["activeWIFI"];
         }
