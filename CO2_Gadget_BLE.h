@@ -165,10 +165,14 @@ void seedBTHomeCounter() {
     if (!bthomeEncryption) {
         return;
     }
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && !bthomeCounterNeedsSeed) {
+        return;
+    }
 
     uint32_t counterJump = (esp_random() & 0x0FFF) + 1;
     bthomeCounter += counterJump;
     saveBTHomeCounter(true);
+    bthomeCounterNeedsSeed = false;
 }
 
 bool getBTHomeMacAddress(uint8_t mac[6]) {

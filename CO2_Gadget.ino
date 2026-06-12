@@ -92,6 +92,7 @@ bool activeBTHome = false;
 bool bthomeEncryption = false;
 String bthomeBindKey = "";
 uint32_t bthomeCounter = 0;
+bool bthomeCounterNeedsSeed = false;
 #else
 constexpr bool activeBTHome = false;
 constexpr bool bthomeEncryption = false;

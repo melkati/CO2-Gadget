@@ -925,9 +925,6 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
                 }
             }
         }
-        if (JsonDocument.containsKey("bthomeCounter")) {
-            bthomeCounter = JsonDocument["bthomeCounter"];
-        }
 #endif
         if (JsonDocument.containsKey("activeWIFI")) {
             activeWIFI = JsonDocument["activeWIFI"];

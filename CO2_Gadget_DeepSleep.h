@@ -1,4 +1,4 @@
-﻿#ifndef CO2_Gadget_DeepSleep_h
+#ifndef CO2_Gadget_DeepSleep_h
 #define CO2_Gadget_DeepSleep_h
 
 #include "esp32-hal-gpio.h"
@@ -313,6 +313,7 @@ void restoreBLEWakeSettingsFromRTC() {
         bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
         bthomeBindKey = preferences.getString("bthomeBindKey", "");
         bthomeCounter = preferences.getUInt("bthomeCounter", 0);
+        bthomeCounterNeedsSeed = true;
         ensureBTHomeBindKey();
 #endif
         preferences.end();
