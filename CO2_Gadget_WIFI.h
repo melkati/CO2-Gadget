@@ -380,6 +380,28 @@ void printDisconnectReason(int reasonCode) {
 #endif  // DEBUG_WIFI_EVENTS
 }
 
+bool isValidWiFiRSSI(int16_t rssi) {
+    return (rssi < 0) && (rssi >= -100);
+}
+
+void updateCachedWiFiRSSI() {
+    if (WiFi.status() != WL_CONNECTED) return;
+
+    int16_t rssi = WiFi.RSSI();
+    if (!isValidWiFiRSSI(rssi)) return;
+
+    deepSleepData.lastWifiRSSI = rssi;
+    deepSleepData.lastWifiRSSIValid = true;
+}
+
+int16_t getWiFiRSSIForStatus() {
+    if (WiFi.status() == WL_CONNECTED) {
+        updateCachedWiFiRSSI();
+    }
+
+    return deepSleepData.lastWifiRSSIValid ? deepSleepData.lastWifiRSSI : 0;
+}
+
 void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Get current status
@@ -438,7 +460,7 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
 
     // Print the received signal strength:
     Serial.print("-->[WiFi] Signal strength (RSSI):");
-    Serial.print(WiFi.RSSI());
+    Serial.print(getWiFiRSSIForStatus());
     Serial.println(" dBm");
 
     /*
@@ -824,7 +846,7 @@ String getCO2GadgetStatusAsJson() {
     doc["wifiPass"] = wifiPass;
 #endif
     doc["IP"] = WiFi.localIP().toString();
-    doc["RSSI"] = WiFi.RSSI();
+    doc["RSSI"] = getWiFiRSSIForStatus();
     doc["MACAddress"] = MACAddress;
     doc["hostName"] = hostName;
     doc["useStaticIP"] = useStaticIP;
@@ -1918,6 +1940,7 @@ bool connectToWiFi() {
         Serial.println(MACAddress);
         Serial.print("-->[WiFi] WiFi connected - IP = ");
         Serial.println(WiFi.localIP());
+        updateCachedWiFiRSSI();
         return true;
     }
 }

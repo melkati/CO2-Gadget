@@ -381,7 +381,7 @@ void publishMQTTSystemData() {
     publishFloatMQTT("/voltage", batteryVoltage);
     publishIntMQTT("/battery", batteryLevel);
     publishIntMQTT("/freeMem", ESP.getFreeHeap());
-    publishIntMQTT("/wifiRSSI", WiFi.RSSI());
+    publishIntMQTT("/wifiRSSI", getWiFiRSSIForStatus());
     publishStrMQTT("/IP", WiFi.localIP().toString());
     publishStrMQTT("/MAC", WiFi.macAddress());
     publishStrMQTT("/hostname", hostName);
