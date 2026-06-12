@@ -207,11 +207,15 @@ function setBTHomeSupportVisibility(isSupported) {
     updateBTHomeControlsState();
 }
 
+function isBTHomeSupported() {
+    return features.SUPPORT_BLE && (features.SUPPORT_BTHOME_BLE || supportBTHomeBLE);
+}
+
 function updateBTHomeControlsState() {
     const bthomeCheckbox = document.getElementById("activeBTHome");
     const encryptionCheckbox = document.getElementById("bthomeEncryption");
     const bindKeyInput = document.getElementById("bthomeBindKey");
-    const bthomeSupported = features.SUPPORT_BLE && supportBTHomeBLE;
+    const bthomeSupported = isBTHomeSupported();
     const bthomeActive = bthomeSupported && !!(bthomeCheckbox && bthomeCheckbox.checked);
 
     if (bthomeCheckbox) bthomeCheckbox.disabled = !bthomeSupported;
@@ -224,7 +228,6 @@ function setFormGroupVisibility(elementId, isVisible) {
     const formGroup = element ? element.closest(".form-group") : null;
     if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
     if (element && !isVisible && element.type === 'checkbox') {
-        element.checked = false;
         element.disabled = true;
     } else if (element) {
         element.disabled = false;
@@ -241,7 +244,7 @@ function applyFeatureVisibility() {
     const activeESPNOW = document.getElementById("activeESPNOW");
 
     setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
-    setBTHomeSupportVisibility(features.SUPPORT_BLE && supportBTHomeBLE);
+    setBTHomeSupportVisibility(isBTHomeSupported());
     setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
     setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
     setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
@@ -293,7 +296,7 @@ function collectPreferencesData() {
         setValue("neopixBright");
         setValue("selNeopxType");
         if (features.SUPPORT_BLE) setValue("activeBLE", 'checked');
-        if (features.SUPPORT_BLE && supportBTHomeBLE) {
+        if (isBTHomeSupported()) {
             setValue("activeBTHome", 'checked');
             setValue("bthomeEncryption", 'checked');
             setValue("bthomeBindKey");
