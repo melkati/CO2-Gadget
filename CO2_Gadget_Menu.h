@@ -1344,8 +1344,9 @@ class altPromptBatteryVoltage:public prompt {
 public:
   altPromptBatteryVoltage(constMEM promptShadow& p):prompt(p) {}
   Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
-    String batteryStatus = "Battery: " + String(batteryVoltage, 2) + "V";
-    return out.printRaw(batteryStatus.c_str(),len);
+    char batteryStatus[24];
+    snprintf(batteryStatus, sizeof(batteryStatus), "Battery: %.2fV", batteryVoltage);
+    return out.printRaw(batteryStatus, len);
   }
 };
 

@@ -385,7 +385,10 @@ void toDeepSleep() {
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         // sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
+        // SCD41 supports powerDown() (idle→sleep: ~0.5 mA → <0.1 mA).
+        // SCD40 does NOT support powerDown — use startLowPowerPeriodicMeasurement() instead.
         sensors.scd4x.stopPeriodicMeasurement();
+        sensors.scd4x.powerDown();
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
@@ -598,6 +601,11 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     if (!initialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
+        // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
+        // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
+        // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
+        sensors.scd4x.wakeUp();
+        delay(20);
         initialized = true;
     }
 
@@ -642,8 +650,8 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         if (currentMillis - previousMillis >= 1000) {
             previousMillis = currentMillis;
             Serial.print("+");
-            delay(10);
         }
+        delay(1);  // Feed the interrupt watchdog every iteration
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {

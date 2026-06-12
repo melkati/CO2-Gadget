@@ -828,7 +828,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    if ((WiFi.status() == WL_CONNECTED) || deepSleepData.lastWifiRSSIValid) {
+    if (deepSleepData.lastWifiRSSIValid) {
         int16_t signalStrength = abs(rssi);
         if (signalStrength < 60)
             tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
