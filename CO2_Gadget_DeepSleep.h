@@ -447,13 +447,15 @@ void doDeepSleepWiFiConnect() {
         doDeepSleepMQTTConnect();
     }
 #endif
-    if (wifiConnected) {
-        deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
-    } else {
-        deepSleepData.cyclesLeftToWiFiConnect = 1;
+    if (deepSleepData.activateWiFiEvery > 0) {
+        if (wifiConnected) {
+            deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+        } else {
+            deepSleepData.cyclesLeftToWiFiConnect = 1;
 #ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] WiFi connection failed. Will retry on next wake cycle.");
+            Serial.println("-->[DEEP] WiFi connection failed. Will retry on next wake cycle.");
 #endif
+        }
     }
 }
 
@@ -737,10 +739,14 @@ bool handleLowPowerSensors() {
 }
 
 void handleCycleCountersOnWake() {
-    --deepSleepData.cyclesLeftToWiFiConnect;
-    --deepSleepData.cyclesLeftToRedrawDisplay;
-    if (deepSleepData.cyclesLeftToWiFiConnect == 65535) deepSleepData.cyclesLeftToWiFiConnect = 0;
-    if (deepSleepData.cyclesLeftToRedrawDisplay == 65535) deepSleepData.cyclesLeftToRedrawDisplay = 0;
+    if (deepSleepData.activateWiFiEvery > 0) {
+        --deepSleepData.cyclesLeftToWiFiConnect;
+        if (deepSleepData.cyclesLeftToWiFiConnect == 65535) deepSleepData.cyclesLeftToWiFiConnect = 0;
+    }
+    if (deepSleepData.redrawDisplayEveryCycles > 0) {
+        --deepSleepData.cyclesLeftToRedrawDisplay;
+        if (deepSleepData.cyclesLeftToRedrawDisplay == 65535) deepSleepData.cyclesLeftToRedrawDisplay = 0;
+    }
 
 #if defined(DEEP_SLEEP_DEBUG)
     Serial.println("-->[DEEP] Cycles left to connect to WiFi: " + String(deepSleepData.cyclesLeftToWiFiConnect));
@@ -784,18 +790,22 @@ void handleDisplayRedrawOnWake() {
 #endif
         initDisplay(true);
         displayShowValues(true);
+        if (deepSleepData.redrawDisplayEveryCycles > 0) {
+            deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
+        }
     }
 #endif
 }
 
 void handleDisplayOnWake() {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED)
-    if (deepSleepData.displayOnWake && deepSleepData.cyclesLeftToRedrawDisplay == 0) {
+    if (deepSleepData.displayOnWake && deepSleepData.cyclesLeftToRedrawDisplay == 0 && deepSleepData.redrawDisplayEveryCycles > 0) {
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP] Displaying values momentarily for " + String(deepSleepData.timeToDisplayOnWake) + " seconds");
 #endif
         initDisplay(true);
         displayShowValues(true);
+        deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
         esp_sleep_enable_timer_wakeup(deepSleepData.timeToDisplayOnWake * 1000000);
         Serial.flush();
         delay(deepSleepData.timeToDisplayOnWake * 1000);
@@ -804,7 +814,7 @@ void handleDisplayOnWake() {
 }
 
 void handleWiFiConnectionOnWake() {
-    if (deepSleepData.cyclesLeftToWiFiConnect == 0) {
+    if (deepSleepData.cyclesLeftToWiFiConnect == 0 && deepSleepData.activateWiFiEvery > 0) {
         doDeepSleepWiFiConnect();
     }
 }
@@ -831,6 +841,7 @@ void handleMediumLowPowerModeOnWake() {
         displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
     }
     handleBLEOnWake();
+    handleDisplayRedrawOnWake();
     handleDisplayOnWake();
     handleWiFiConnectionOnWake();
 #ifdef DEEP_SLEEP_DEBUG
