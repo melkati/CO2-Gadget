@@ -257,6 +257,8 @@ void printActualSettings() {
                   ((deepSleepData.sendESPNowOnWake) ? "Enabled" : "Disabled"));
     Serial.printf("-->[PREF] displayOnWake is:\t#%s#\n",
                   ((deepSleepData.displayOnWake) ? "Enabled" : "Disabled"));
+    Serial.printf("-->[PREF] displayReverseOnWake is:\t#%s#\n",
+                  ((deepSleepData.displayReverseOnWake) ? "Enabled" : "Disabled"));
 
     Serial.printf("-->[PREF] \n");
     // Captive Portal preferences
@@ -390,6 +392,7 @@ void initPreferences() {
     deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
     deepSleepData.sendESPNowOnWake = preferences.getBool("actESPnowWake", false);
     deepSleepData.displayOnWake = preferences.getBool("displayOnWake", false);
+    deepSleepData.displayReverseOnWake = preferences.getBool("dispRevOnWake", displayReverse);
 
     // Check if the values are within the expected range
     if ((deepSleepData.waitToGoDeepSleepOn1stBoot < 15) || (deepSleepData.waitToGoDeepSleepOn1stBoot > 900)) {
@@ -534,6 +537,7 @@ void putPreferences() {
     preferences.putBool("actMQTTOnWake", deepSleepData.sendMQTTOnWake);
     preferences.putBool("actESPnowWake", deepSleepData.sendESPNowOnWake);
     preferences.putBool("displayOnWake", deepSleepData.displayOnWake);
+    preferences.putBool("dispRevOnWake", deepSleepData.displayReverseOnWake);
 
     // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
@@ -672,6 +676,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
     doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
     doc["displayOnWake"] = deepSleepData.displayOnWake;
+    doc["displayReverseOnWake"] = deepSleepData.displayReverseOnWake;
 
     // Captive Portal preferences
 #ifdef SUPPORT_CAPTIVE_PORTAL
@@ -996,6 +1001,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
         if (JsonDocument.containsKey("displayOnWake")) {
             deepSleepData.displayOnWake = JsonDocument["displayOnWake"];
+        }
+        if (JsonDocument.containsKey("displayReverseOnWake")) {
+            deepSleepData.displayReverseOnWake = JsonDocument["displayReverseOnWake"];
         }
 
         // Captive Portal preferences
