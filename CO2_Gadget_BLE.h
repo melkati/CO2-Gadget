@@ -244,7 +244,16 @@ std::string buildBTHomeMeasurements(bool incrementPacketId, bool includePacketId
         ++bthomePacketId;
     }
 
-    payload.reserve(includePacketId ? 16 : 14);
+    // Particulate matter (PM2.5/PM10) export. Only PM2.5 (0x0D) and PM10 (0x0E) have standard
+    // BTHome v2 object IDs; PM1.0/PM4.0 do not and are intentionally omitted. The 31-byte BLE
+    // legacy advert leaves only ~1 free byte when encrypted, so when a PM sensor is present we
+    // drop Battery Voltage (0x0C) to make room for PM2.5; PM10 only fits when unencrypted.
+    bool hasPM = sensors.isUnitRegistered(UNIT::PM25);
+    bool includeVolt = !(bthomeEncryption && hasPM);
+    bool includePM25 = hasPM;
+    bool includePM10 = hasPM && !bthomeEncryption;
+
+    payload.reserve((includePacketId ? 16 : 14) + 6);
     if (includePacketId) {
         appendBTHomeUInt8(payload, 0x00);
         appendBTHomeUInt8(payload, bthomePacketId);
@@ -255,8 +264,18 @@ std::string buildBTHomeMeasurements(bool incrementPacketId, bool includePacketId
     appendBTHomeInt16(payload, encodeBTHomeTemperature(temp));
     appendBTHomeUInt8(payload, 0x03);
     appendBTHomeUInt16(payload, encodeBTHomeHumidity(hum));
-    appendBTHomeUInt8(payload, 0x0C);
-    appendBTHomeUInt16(payload, encodeBTHomeBatteryVoltage(batteryVoltage));
+    if (includeVolt) {
+        appendBTHomeUInt8(payload, 0x0C);
+        appendBTHomeUInt16(payload, encodeBTHomeBatteryVoltage(batteryVoltage));
+    }
+    if (includePM25) {
+        appendBTHomeUInt8(payload, 0x0D);
+        appendBTHomeUInt16(payload, pm25);
+    }
+    if (includePM10) {
+        appendBTHomeUInt8(payload, 0x0E);
+        appendBTHomeUInt16(payload, pm10);
+    }
     appendBTHomeUInt8(payload, 0x12);
     appendBTHomeUInt16(payload, static_cast<uint16_t>(co2));
 
@@ -329,7 +348,12 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
     }
 
 #ifdef DEBUG_BLE
-    Serial.println("-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Voltage: " + String(batteryVoltage, 2) + " V, Encrypted: " + String(bthomeEncryption ? "yes" : "no"));
+    String bthomeDebug = "-->[BLE ] BTHome CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Battery: " + String(getBTHomeBatteryLevel()) + "%, Voltage: " + String(batteryVoltage, 2) + " V";
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+        bthomeDebug += ", PM2.5: " + String(pm25) + " ug/m3, PM10: " + String(pm10) + " ug/m3";
+    }
+    bthomeDebug += ", Encrypted: " + String(bthomeEncryption ? "yes" : "no");
+    Serial.println(bthomeDebug);
 #endif
     return true;
 }
