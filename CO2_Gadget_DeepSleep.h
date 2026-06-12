@@ -272,27 +272,16 @@ void saveBLEWakeSettingsToRTC() {
     bleWakeSettingsRTC.magic = BLE_WAKE_SETTINGS_MAGIC;
     bleWakeSettingsRTC.enableBLEOnWake = enableBLE;
     bleWakeSettingsRTC.sensirionBLEOnWake = activeBLE;
-    deepSleepData.bleWakeSettingsValid = true;
-    deepSleepData.enableBLEOnWake = enableBLE;
-    deepSleepData.sensirionBLEOnWake = activeBLE;
 #ifdef SUPPORT_BTHOME_BLE
     bleWakeSettingsRTC.activeBTHomeOnWake = activeBTHome;
     bleWakeSettingsRTC.bthomeEncryptionOnWake = bthomeEncryption;
     bleWakeSettingsRTC.bthomeCounterOnWake = bthomeCounter;
     bthomeBindKey.toCharArray(bleWakeSettingsRTC.bthomeBindKeyOnWake, sizeof(bleWakeSettingsRTC.bthomeBindKeyOnWake));
-    deepSleepData.activeBTHomeOnWake = activeBTHome;
-    deepSleepData.bthomeEncryptionOnWake = bthomeEncryption;
-    deepSleepData.bthomeCounterOnWake = bthomeCounter;
-    bthomeBindKey.toCharArray(deepSleepData.bthomeBindKeyOnWake, sizeof(deepSleepData.bthomeBindKeyOnWake));
 #else
     bleWakeSettingsRTC.activeBTHomeOnWake = false;
     bleWakeSettingsRTC.bthomeEncryptionOnWake = false;
     bleWakeSettingsRTC.bthomeCounterOnWake = 0;
     bleWakeSettingsRTC.bthomeBindKeyOnWake[0] = '\0';
-    deepSleepData.activeBTHomeOnWake = false;
-    deepSleepData.bthomeEncryptionOnWake = false;
-    deepSleepData.bthomeCounterOnWake = 0;
-    deepSleepData.bthomeBindKeyOnWake[0] = '\0';
 #endif
     bleWakeSettingsRTC.checksum = calculateBLEWakeSettingsChecksum();
     Serial.println("-->[DEEP] Saved BLE wake settings. magic: 0x" + String(bleWakeSettingsRTC.magic, HEX) + ", checksum: 0x" + String(bleWakeSettingsRTC.checksum, HEX) + ", actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(bleWakeSettingsRTC.activeBTHomeOnWake));

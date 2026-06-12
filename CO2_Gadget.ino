@@ -91,6 +91,8 @@ bool activeBLE = true;
 bool activeBTHome = false;
 bool bthomeEncryption = false;
 String bthomeBindKey = "";
+// BTHome encryption uses a 32-bit packet counter in the nonce. A long-lived key
+// must be replaced before this counter wraps.
 uint32_t bthomeCounter = 0;
 bool bthomeCounterNeedsSeed = false;
 #else
@@ -264,13 +266,6 @@ typedef struct {
     float lastTemperatureValue;
     float lastHumidityValue;
     bool activeBLEOnWake = true;
-    bool bleWakeSettingsValid = false;
-    bool enableBLEOnWake = true;
-    bool sensirionBLEOnWake = true;
-    bool activeBTHomeOnWake = false;
-    bool bthomeEncryptionOnWake = false;
-    char bthomeBindKeyOnWake[33] = "";
-    uint32_t bthomeCounterOnWake = 0;
     bool activeWifiOnWake;
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
