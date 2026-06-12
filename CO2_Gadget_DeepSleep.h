@@ -420,7 +420,9 @@ void doDeepSleepWiFiConnect() {
         doDeepSleepMQTTConnect();
     }
 #endif
-    deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+    if (deepSleepData.activateWiFiEvery > 0) {
+        deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+    }
 }
 
 void displayFromDeepSleep(bool forceRedraw = false) {
@@ -747,6 +749,9 @@ void handleDisplayRedrawOnWake() {
 #endif
         initDisplay(true);
         displayShowValues(true);
+        if (deepSleepData.redrawDisplayEveryCycles > 0) {
+            deepSleepData.cyclesLeftToRedrawDisplay = deepSleepData.redrawDisplayEveryCycles;
+        }
     }
 #endif
 }
