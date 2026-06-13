@@ -916,6 +916,11 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #endif
 }
 
+void clearStatusIconArea() {
+    int32_t clearWidth = elementPosition.espNowIconX + 22;
+    tft.fillRect(0, 0, clearWidth, 22, TFT_BLACK);
+}
+
 void showTemperatureIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowTemperature) return;
     tft.setSwapBytes(true);
@@ -1072,6 +1077,7 @@ void displayShowValues(bool forceRedraw = false) {
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
     showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
+    clearStatusIconArea();
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);

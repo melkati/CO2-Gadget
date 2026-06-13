@@ -701,6 +701,11 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #endif
 }
 
+void clearStatusIconArea() {
+    int32_t clearWidth = elementPosition.espNowIconX + 16;
+    display.fillRect(0, 0, clearWidth, 16, GxEPD_WHITE);
+}
+
 void testRedrawValues(bool randomNumbers = false) {
     static String textToDraw = "1234";
     static String textDrawn = "1234";
@@ -780,6 +785,7 @@ void displayShowValues(bool forceRedraw = false) {
     showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, drawAllElements);
     showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, drawAllElements);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    clearStatusIconArea();
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
@@ -861,6 +867,7 @@ void displayShowValues(bool forceRedraw = false) {
     showTemperature(temp, elementPosition.tempXValue, elementPosition.tempYValue, drawAllElements);
     showHumidity(hum, elementPosition.humidityXValue, elementPosition.humidityYValue, drawAllElements);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, true);
+    clearStatusIconArea();
     showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, drawAllElements);
     showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, drawAllElements);
     showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, drawAllElements);
