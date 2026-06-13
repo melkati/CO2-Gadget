@@ -495,9 +495,11 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
 
     if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
+        // Start a single-shot measurement without blocking so data is ready
+        // on the next wake cycle. Without this, the sensor never starts
+        // measuring in non-blocking mode, causing perpetual CO2: 0 readings.
+        sensors.scd4x.measureSingleShot(false);
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
-                                                       // Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
-                                                       // Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
