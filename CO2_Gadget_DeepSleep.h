@@ -277,10 +277,13 @@ void toDeepSleep() {
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         // sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
-        // SCD41 supports powerDown() (idle→sleep: ~0.5 mA → <0.1 mA).
-        // SCD40 does NOT support powerDown — use startLowPowerPeriodicMeasurement() instead.
+        // SCD41 supports powerDown() but it kills in-progress single-shot
+        // measurements. Instead, leave the sensor in idle mode and start a
+        // non-blocking single-shot measurement that will complete during the
+        // ESP32's deep sleep (~5s vs ~30s interval). On next wake, data is
+        // already ready and can be read immediately.
         sensors.scd4x.stopPeriodicMeasurement();
-        sensors.scd4x.powerDown();
+        sensors.scd4x.measureSingleShot(false);
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
@@ -471,31 +474,35 @@ bool cm1106HandleFromDeepSleep() {
 }
 
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
-    static bool initialized = false;
+    static bool i2cInitialized = false;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
 
-    if (!initialized) {
+    if (!i2cInitialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
-        // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
-        // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
-        // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
-        sensors.scd4x.wakeUp();
-        delay(20);
-        initialized = true;
+        i2cInitialized = true;
     }
+    // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
+    // MUST be called on EVERY wake cycle, not just the first one — toDeepSleep()
+    // calls powerDown() before each deep sleep, leaving the sensor in sleep mode.
+    // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
+    // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
+    sensors.scd4x.wakeUp();
+    delay(20);
 
     Serial.print("-->[DEEP] ");
     Serial.print(__func__);
     Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
 
     if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
+        // Start a single-shot measurement without blocking so data is ready
+        // on the next wake cycle. Without this, the sensor never starts
+        // measuring in non-blocking mode, causing perpetual CO2: 0 readings.
+        sensors.scd4x.measureSingleShot(false);
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
-                                                       // Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
-                                                       // Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
