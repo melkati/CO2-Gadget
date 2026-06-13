@@ -472,7 +472,6 @@ bool cm1106HandleFromDeepSleep() {
 
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     static bool initialized = false;
-    unsigned long previousMillis = 0;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
@@ -525,13 +524,21 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     timerLightSleep.pause();
 #endif
 
-    while (!isDataReadySCD4x()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("+");
-        }
-        delay(1);  // Feed the interrupt watchdog every iteration
+    // Use repeated short light sleeps instead of busy-wait to minimize power consumption.
+    // Each iteration sleeps 100 ms (~0.8 mA) vs. the old busy-wait (~14 mA).
+    // Timeout after 50 iterations (5 additional seconds) as a safety measure.
+    uint8_t pollAttempts = 0;
+    const uint8_t maxPollAttempts = 50;
+    while (!isDataReadySCD4x() && pollAttempts < maxPollAttempts) {
+        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms light sleep
+#ifdef TIMEDEBUG
+        timerLightSleep.resume();
+#endif
+        esp_light_sleep_start();
+#ifdef TIMEDEBUG
+        timerLightSleep.pause();
+#endif
+        pollAttempts++;
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
