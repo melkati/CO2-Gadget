@@ -208,7 +208,7 @@ function setBTHomeSupportVisibility(isSupported) {
 }
 
 function isBTHomeSupported() {
-    return features.SUPPORT_BLE && (features.SUPPORT_BTHOME_BLE || supportBTHomeBLE);
+    return features.SUPPORT_BTHOME_BLE || supportBTHomeBLE;
 }
 
 function updateBTHomeControlsState() {
@@ -302,7 +302,7 @@ function collectPreferencesData() {
             setValue("bthomeBindKey");
             preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
         }
-        if (features.SUPPORT_BLE) {
+        if (features.SUPPORT_BLE || isBTHomeSupported()) {
             preferencesData.enableBLE = !!(preferencesData.activeBLE || preferencesData.activeBTHome);
         }
         setValue("activeWIFI", 'checked');
