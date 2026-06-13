@@ -472,7 +472,6 @@ bool cm1106HandleFromDeepSleep() {
 
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     static bool initialized = false;
-    unsigned long previousMillis = 0;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
@@ -525,13 +524,31 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     timerLightSleep.pause();
 #endif
 
-    while (!isDataReadySCD4x()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("+");
+    // Use repeated short light sleeps instead of busy-wait to minimize power consumption.
+    // Each iteration sleeps 100 ms (~0.8 mA) vs. the old busy-wait (~14 mA).
+    // Timeout after 50 iterations (5 additional seconds) as a safety measure.
+    uint8_t pollAttempts = 0;
+    const uint8_t maxPollAttempts = 50;
+    while (!isDataReadySCD4x() && pollAttempts < maxPollAttempts) {
+        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms light sleep
+#ifdef TIMEDEBUG
+        timerLightSleep.resume();
+#endif
+        if (esp_light_sleep_start() != ESP_OK) {
+#ifdef TIMEDEBUG
+            timerLightSleep.pause();
+#endif
+            Serial.println("-->[DEEP][ERROR] SCD41 poll: esp_light_sleep_start() failed — aborting poll");
+            return (false);
         }
-        delay(1);  // Feed the interrupt watchdog every iteration
+#ifdef TIMEDEBUG
+        timerLightSleep.pause();
+#endif
+        pollAttempts++;
+    }
+    if (!isDataReadySCD4x()) {
+        Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — aborting, will retry next wake");
+        return (false);
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
@@ -863,8 +880,31 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
     }
 }
 
+void reloadWakeFlagsFromNVS() {
+    // Defaults must match initPreferences(): BLE=true, MQTT/WiFi=false
+    if (preferences.begin("CO2-Gadget", true)) {
+        deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
+        deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+        deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+        preferences.end();
+    } else {
+        // Safe fallback: conservatively disable radios to avoid unexpected
+        // power drain from corrupted RTC flags.
+        Serial.println("-->[DEEP][WARN] NVS unavailable — using safe defaults (BLE=Off, MQTT=Off, WiFi=Off)");
+        deepSleepData.activeBLEOnWake = false;
+        deepSleepData.sendMQTTOnWake = false;
+        deepSleepData.activeWifiOnWake = false;
+    }
+}
+
 void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+
+    // Belt-and-suspenders: reload flags now even though setup() already
+    // called reloadWakeFlagsFromNVS() for GPIO wake paths. This catches
+    // the timer-wake path and also serves as a safety net.
+    reloadWakeFlagsFromNVS();
+
 #ifdef DEEP_SLEEP_DEBUG
     printRTCMemoryExit();
     Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
