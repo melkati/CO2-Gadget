@@ -540,6 +540,9 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
 #endif
         pollAttempts++;
     }
+    if (!isDataReadySCD4x()) {
+        Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — proceeding to readMeasurement() anyway");
+    }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
         Serial.println("-->[DEEP] Waking up from deep sleep. readMeasurement() error " + String(error));
@@ -877,11 +880,16 @@ void fromDeepSleep() {
     // where activeBLEOnWake flips from 0 to 1 across deep sleep cycles.
     // Only the boolean flags are reloaded; numeric fields (timeSleeping, etc.)
     // are stable in RTC memory and don't need this workaround.
-    preferences.begin("CO2-Gadget", true);
-    deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", false);
-    deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
-    deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
-    preferences.end();
+    // Defaults must match initPreferences() to preserve intended behavior:
+    //   actBLEOnWake=true, actMQTTOnWake=false, actWifiOnWake=false
+    if (preferences.begin("CO2-Gadget", true)) {
+        deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
+        deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+        deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+        preferences.end();
+    } else {
+        Serial.println("-->[DEEP][WARN] Failed to open NVS preferences — wake flags may be unreliable");
+    }
 
 #ifdef DEEP_SLEEP_DEBUG
     printRTCMemoryExit();
