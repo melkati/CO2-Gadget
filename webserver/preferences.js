@@ -185,7 +185,7 @@ function populateFormWithPreferences(preferences) {
  * Fetches preferences data from the server and populates the form.
  */
 function loadPreferencesFromServer() {
-    fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
+    return fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
         .then(response => response.json())
         .then(preferences => {
             if (preferencesDebug) console.log('Get preferences from server response:', preferences);
@@ -228,6 +228,7 @@ function setFormGroupVisibility(elementId, isVisible) {
     const formGroup = element ? element.closest(".form-group") : null;
     if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
     if (element && !isVisible && element.type === 'checkbox') {
+        element.checked = false;
         element.disabled = true;
     } else if (element) {
         element.disabled = false;
@@ -240,6 +241,8 @@ function setSectionVisibility(elementId, isVisible) {
 }
 
 function applyFeatureVisibility() {
+    if (!featuresLoaded) return;
+
     const activeMQTT = document.getElementById("activeMQTT");
     const activeESPNOW = document.getElementById("activeESPNOW");
 
@@ -247,7 +250,7 @@ function applyFeatureVisibility() {
     setBTHomeSupportVisibility(isBTHomeSupported());
     setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
     setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
-    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
     setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
     setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
     setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
@@ -295,7 +298,7 @@ function collectPreferencesData() {
         setValue("DisplayBright");
         setValue("neopixBright");
         setValue("selNeopxType");
-        if (features.SUPPORT_BLE) setValue("activeBLE", 'checked');
+        if (!featuresLoaded || features.SUPPORT_BLE) setValue("activeBLE", 'checked');
         if (isBTHomeSupported()) {
             setValue("activeBTHome", 'checked');
             setValue("bthomeEncryption", 'checked');
@@ -306,18 +309,18 @@ function collectPreferencesData() {
             preferencesData.enableBLE = !!(preferencesData.activeBLE || preferencesData.activeBTHome);
         }
         setValue("activeWIFI", 'checked');
-        if (features.SUPPORT_MQTT) setValue("activeMQTT", 'checked');
-        if (features.SUPPORT_ESPNOW) setValue("activeESPNOW", 'checked');
-        if (features.SUPPORT_MQTT) setValue("rootTopic");
+        if (!featuresLoaded || features.SUPPORT_MQTT) setValue("activeMQTT", 'checked');
+        if (!featuresLoaded || features.SUPPORT_ESPNOW) setValue("activeESPNOW", 'checked');
+        if (!featuresLoaded || features.SUPPORT_MQTT) setValue("rootTopic");
         setValue("hasBattery", 'checked');
         setValue("batDischgd");
         setValue("batChargd");
         setValue("vRef");
         setValue("tToDispOff");
-        if (features.SUPPORT_MQTT) setValue("tToPubMQTT");
-        if (features.SUPPORT_ESPNOW) setValue("tToPubESPNow");
-        if (features.SUPPORT_MQTT) setValue("tKeepAlMQTT");
-        if (features.SUPPORT_ESPNOW) setValue("tKeepAlESPNow");
+        if (!featuresLoaded || features.SUPPORT_MQTT) setValue("tToPubMQTT");
+        if (!featuresLoaded || features.SUPPORT_ESPNOW) setValue("tToPubESPNow");
+        if (!featuresLoaded || features.SUPPORT_MQTT) setValue("tKeepAlMQTT");
+        if (!featuresLoaded || features.SUPPORT_ESPNOW) setValue("tKeepAlESPNow");
         setValue("dispOffOnExP", 'checked');
         setValue("wifiSSID");
         setValue("hostName");
@@ -342,9 +345,9 @@ function collectPreferencesData() {
         setValue("showStatusIcons", 'checked');
         setValue("wakeOnCO2Alert", 'checked');
         setValue("showCO2", 'checked');
-        if (features.SUPPORT_MQTT) {
+        if (!featuresLoaded || features.SUPPORT_MQTT) {
             setValue("mqttClientId");
-            if (features.SUPPORT_MQTT) setValue("mqttShowInCon", 'checked');
+            if (!featuresLoaded || features.SUPPORT_MQTT_DISCOVERY) setValue("mqttShowInCon", 'checked');
             setValue("mqttBroker");
             setValue("mqttUser");
         }
@@ -354,7 +357,7 @@ function collectPreferencesData() {
 
         if (relaxedSecurity) {
             setValue("wifiPass");
-            if (features.SUPPORT_MQTT) setValue("mqttPass");
+            if (!featuresLoaded || features.SUPPORT_MQTT) setValue("mqttPass");
         }
 
         // New fields for Captive Portal
@@ -503,7 +506,7 @@ function handleWiFiMQTTDependency() {
     }
 
     const updateMQTTState = () => {
-        if (!features.SUPPORT_MQTT || !wifiCheckbox.checked) {
+        if ((featuresLoaded && !features.SUPPORT_MQTT) || !wifiCheckbox.checked) {
             mqttCheckbox.checked = false;
             mqttCheckbox.disabled = true;
             document.getElementById('mqttConfig').style.display = 'none';

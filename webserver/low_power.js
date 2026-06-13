@@ -140,6 +140,8 @@ function showLowPowerUnsupportedMessage() {
 }
 
 function applyFeatureVisibility() {
+    if (!featuresLoaded) return;
+
     const form = document.getElementById("preferencesForm");
     const infoCard = document.querySelector(".lp-info-card");
 
@@ -152,6 +154,8 @@ function applyFeatureVisibility() {
 
     if (form) form.classList.remove("hidden");
     if (infoCard) infoCard.classList.remove("hidden");
+    const stale = document.getElementById("lowPowerUnsupportedMessage");
+    if (stale) stale.remove();
 
     setFormGroupVisibility("actBLEOnWake", features.SUPPORT_BLE);
     setFormGroupVisibility("actMQTTOnWake", features.SUPPORT_MQTT);
@@ -162,7 +166,7 @@ function applyFeatureVisibility() {
 }
 
 function loadThresholdsFromServer() {
-    fetch('/getThresholdsAsJson')
+    return fetch('/getThresholdsAsJson')
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -230,7 +234,7 @@ function loadThresholdsFromServer() {
 }
 
 function loadPreferencesFromServer() {
-    fetch('/getActualSettingsAsJson')
+    return fetch('/getActualSettingsAsJson')
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -359,9 +363,9 @@ function savePreferencesToServer() {
         "actWifiOnWake": document.getElementById("actWifiOnWake").checked,
         "displayOnWake": document.getElementById("deepSleepData.displayOnWake").checked
     };
-    if (features.SUPPORT_BLE) lowPowerData.actBLEOnWake = document.getElementById("actBLEOnWake").checked;
-    if (features.SUPPORT_MQTT) lowPowerData.actMQTTOnWake = document.getElementById("actMQTTOnWake").checked;
-    if (features.SUPPORT_ESPNOW) lowPowerData.actESPnowWake = document.getElementById("actESPnowWake").checked;
+    if (!featuresLoaded || features.SUPPORT_BLE) lowPowerData.actBLEOnWake = document.getElementById("actBLEOnWake").checked;
+    if (!featuresLoaded || features.SUPPORT_MQTT) lowPowerData.actMQTTOnWake = document.getElementById("actMQTTOnWake").checked;
+    if (!featuresLoaded || features.SUPPORT_ESPNOW) lowPowerData.actESPnowWake = document.getElementById("actESPnowWake").checked;
 
     console.log("Sending Low Power preferences to server:", lowPowerData);
     fetch('/savePreferences', {
@@ -382,7 +386,7 @@ function savePreferencesToServer() {
 }
 
 function saveLowPowerToServer() {
-    if (!features.SUPPORT_LOW_POWER) {
+    if (featuresLoaded && !features.SUPPORT_LOW_POWER) {
         console.warn("Low power support is not compiled into this firmware.");
         return;
     }
@@ -405,8 +409,11 @@ document.addEventListener("DOMContentLoaded", function () {
     getFeaturesAsJson()
         .then(() => {
             applyFeatureVisibility();
-            if (!features.SUPPORT_LOW_POWER) return;
-            loadPreferencesFromServer();
-            loadThresholdsFromServer();
+            if (featuresLoaded && !features.SUPPORT_LOW_POWER) return;
+            Promise.all([loadPreferencesFromServer(), loadThresholdsFromServer()])
+                .then(() => {
+                    applyFeatureVisibility();
+                    openFirstAvailableTab();
+                });
         });
 });

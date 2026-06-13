@@ -114,6 +114,7 @@ var features = {
     SUPPORT_LOW_POWER: false,
     SUPPORT_CIRCULAR_BUFFER: false
 };
+var featuresLoaded = false;
 
 /**
  * Wrapper around fetch() that automatically aborts after timeoutMs milliseconds.
@@ -175,16 +176,7 @@ function loadFeaturesFromServer() {
         .then(response => response.json())
         .then(data => {
             console.log('Fetching loadFeaturesFromServer successful!');
-            features.SUPPORT_BLE = data.BLE !== undefined ? data.BLE : false;
-            features.SUPPORT_BTHOME_BLE = data.BTHomeBLE !== undefined ? data.BTHomeBLE : false;
-            features.SUPPORT_BUZZER = data.Buzzer !== undefined ? data.Buzzer : false;
-            features.SUPPORT_ESPNOW = data.EspNow !== undefined ? data.EspNow : false;
-            features.SUPPORT_MDNS = data.mDNS !== undefined ? data.mDNS : false;
-            features.SUPPORT_MQTT = data.MQTT !== undefined ? data.MQTT : false;
-            features.SUPPORT_MQTT_DISCOVERY = data.MQTTDiscovery !== undefined ? data.MQTTDiscovery : false;
-            features.SUPPORT_OTA = data.OTA !== undefined ? data.OTA : false;
-            features.SUPPORT_LOW_POWER = data.LowPower !== undefined ? data.LowPower : false;
-            features.SUPPORT_CIRCULAR_BUFFER = data.CircularBuffer !== undefined ? data.CircularBuffer : false;
+            handleFeaturesData(data);
         })
         .catch(error => console.error('Error fetching features:', error));
 }
@@ -324,6 +316,7 @@ function handleFeaturesData(data) {
     features.SUPPORT_OTA = data.OTA !== undefined ? data.OTA : false;
     features.SUPPORT_LOW_POWER = data.LowPower !== undefined ? data.LowPower : false;
     features.SUPPORT_CIRCULAR_BUFFER = data.CircularBuffer !== undefined ? data.CircularBuffer : false;
+    featuresLoaded = true;
 
     if (captivePortalDebug) console.log('Mapped Features:', features);
 }
@@ -332,7 +325,8 @@ function handleFeaturesData(data) {
  * Fetches features as JSON from the server and processes the data.
  * @returns {Promise<void>}
  */
-function getFeaturesAsJson() {
+function getFeaturesAsJson(retries) {
+    if (retries === undefined) retries = 3;
     return fetchWithTimeout('/getFeaturesAsJson', {}, 8000)
         .then(response => {
             if (!response.ok) {
@@ -346,8 +340,26 @@ function getFeaturesAsJson() {
             handleFeaturesData(data);
         })
         .catch(error => {
-            console.error("Error fetching CO2 Gadget features:", error);
+            if (retries > 0) {
+                const delay = 1000 * Math.pow(2, 3 - retries); // 1 s, 2 s, 4 s
+                console.warn(`CO2 Gadget features fetch failed, retrying in ${delay}ms... (${retries} left)`, error);
+                return new Promise(resolve => setTimeout(resolve, delay))
+                    .then(() => getFeaturesAsJson(retries - 1));
+            }
+            console.error("Error fetching CO2 Gadget features, leaving WebUI settings visible:", error);
         });
+}
+
+function setFormGroupVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    const formGroup = element ? element.closest(".form-group") : null;
+    if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
+    if (element && !isVisible && element.type === "checkbox") {
+        element.checked = false;
+        element.disabled = true;
+    } else if (element) {
+        element.disabled = false;
+    }
 }
 
 /**
@@ -439,14 +451,14 @@ function initNavBar() {
     }
 
     const lowPowerIcon = document.getElementById("lightingIcon");
-    if (lowPowerIcon) lowPowerIcon.classList.toggle("hidden", !features.SUPPORT_LOW_POWER);
+    if (lowPowerIcon && featuresLoaded) lowPowerIcon.classList.toggle("hidden", !features.SUPPORT_LOW_POWER);
 }
 
 /**
  * Handles the low power mode activation.
  */
 function goLowPower() {
-    if (!features.SUPPORT_LOW_POWER) {
+    if (featuresLoaded && !features.SUPPORT_LOW_POWER) {
         console.warn('Low power support is not compiled into this firmware.');
         return;
     }
