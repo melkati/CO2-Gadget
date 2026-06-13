@@ -119,7 +119,7 @@ function populateFormWithPreferences(preferences) {
     setFormValue("neopixBright", preferences.neopixBright);
     setFormValue("selNeopxType", preferences.selNeopxType);
     setFormCheckbox("activeBLE", preferences.activeBLE);
-    if (supportBTHomeBLE) {
+    if (isBTHomeSupported()) {
         setFormCheckbox("activeBTHome", preferences.activeBTHome);
         setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
         if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
@@ -247,7 +247,7 @@ function applyFeatureVisibility() {
     setBTHomeSupportVisibility(isBTHomeSupported());
     setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
     setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
-    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT);
     setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
     setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
     setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
@@ -344,7 +344,7 @@ function collectPreferencesData() {
         setValue("showCO2", 'checked');
         if (features.SUPPORT_MQTT) {
             setValue("mqttClientId");
-            if (features.SUPPORT_MQTT_DISCOVERY) setValue("mqttShowInCon", 'checked');
+            if (features.SUPPORT_MQTT) setValue("mqttShowInCon", 'checked');
             setValue("mqttBroker");
             setValue("mqttUser");
         }
