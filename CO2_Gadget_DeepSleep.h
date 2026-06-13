@@ -535,6 +535,9 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         timerLightSleep.resume();
 #endif
         if (esp_light_sleep_start() != ESP_OK) {
+#ifdef TIMEDEBUG
+            timerLightSleep.pause();
+#endif
             Serial.println("-->[DEEP][ERROR] SCD41 poll: esp_light_sleep_start() failed — aborting poll");
             return (false);
         }
@@ -877,23 +880,30 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
     }
 }
 
-void fromDeepSleep() {
-    esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
-
-    // Reload boolean wake flags from NVS to work around RTC memory corruption
-    // where activeBLEOnWake flips from 0 to 1 across deep sleep cycles.
-    // Only the boolean flags are reloaded; numeric fields (timeSleeping, etc.)
-    // are stable in RTC memory and don't need this workaround.
-    // Defaults must match initPreferences() to preserve intended behavior:
-    //   actBLEOnWake=true, actMQTTOnWake=false, actWifiOnWake=false
+void reloadWakeFlagsFromNVS() {
+    // Defaults must match initPreferences(): BLE=true, MQTT/WiFi=false
     if (preferences.begin("CO2-Gadget", true)) {
         deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
         deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
         deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
         preferences.end();
     } else {
-        Serial.println("-->[DEEP][WARN] Failed to open NVS preferences — wake flags may be unreliable");
+        // Safe fallback: conservatively disable radios to avoid unexpected
+        // power drain from corrupted RTC flags.
+        Serial.println("-->[DEEP][WARN] NVS unavailable — using safe defaults (BLE=Off, MQTT=Off, WiFi=Off)");
+        deepSleepData.activeBLEOnWake = false;
+        deepSleepData.sendMQTTOnWake = false;
+        deepSleepData.activeWifiOnWake = false;
     }
+}
+
+void fromDeepSleep() {
+    esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+
+    // Belt-and-suspenders: reload flags now even though setup() already
+    // called reloadWakeFlagsFromNVS() for GPIO wake paths. This catches
+    // the timer-wake path and also serves as a safety net.
+    reloadWakeFlagsFromNVS();
 
 #ifdef DEEP_SLEEP_DEBUG
     printRTCMemoryExit();
