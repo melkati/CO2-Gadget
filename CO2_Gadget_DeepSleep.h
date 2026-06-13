@@ -534,14 +534,18 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
-        esp_light_sleep_start();
+        if (esp_light_sleep_start() != ESP_OK) {
+            Serial.println("-->[DEEP][ERROR] SCD41 poll: esp_light_sleep_start() failed — aborting poll");
+            return (false);
+        }
 #ifdef TIMEDEBUG
         timerLightSleep.pause();
 #endif
         pollAttempts++;
     }
     if (!isDataReadySCD4x()) {
-        Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — proceeding to readMeasurement() anyway");
+        Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — aborting, will retry next wake");
+        return (false);
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
