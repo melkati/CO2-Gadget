@@ -872,6 +872,17 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
 
 void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+
+    // Reload boolean wake flags from NVS to work around RTC memory corruption
+    // where activeBLEOnWake flips from 0 to 1 across deep sleep cycles.
+    // Only the boolean flags are reloaded; numeric fields (timeSleeping, etc.)
+    // are stable in RTC memory and don't need this workaround.
+    preferences.begin("CO2-Gadget", true);
+    deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", false);
+    deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+    deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+    preferences.end();
+
 #ifdef DEEP_SLEEP_DEBUG
     printRTCMemoryExit();
     Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
