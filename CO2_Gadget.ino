@@ -830,19 +830,13 @@ void setup() {
         Serial.println("-->[STUP] Boot times from Deep Sleep: " + String(deepSleepData.bootTimes));
         timeToWaitForImprov = 0;
 
-        // Reload boolean wake flags from NVS early, before any wake-path
-        // handler runs. This is critical for GPIO wakes (EXT0/EXT1/Touchpad)
-        // where setup() calls initGPIOLowPower() before fromDeepSleep(), and
-        // initGPIOLowPower() reads deepSleepData.activeWifiOnWake to decide
-        // whether to reconnect WiFi. Without this early reload, corrupted
-        // RTC flags can trigger an unwanted WiFi reconnect on GPIO wake.
-        // Defaults must match initPreferences(): BLE=true, MQTT/WiFi=false
-        if (preferences.begin("CO2-Gadget", true)) {
-            deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
-            deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
-            deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
-            preferences.end();
-        }
+        // Reload wake flags from NVS before any wake-path handler runs.
+        // This is critical for GPIO wakes (EXT0/EXT1/Touchpad) where setup()
+        // calls initGPIOLowPower() before fromDeepSleep(), and initGPIOLowPower()
+        // reads deepSleepData.activeWifiOnWake to decide whether to reconnect WiFi.
+        // Without this early reload, corrupted RTC flags can trigger an unwanted
+        // WiFi reconnect on GPIO wake.
+        reloadWakeFlagsFromNVS();
 
         switch (esp_sleep_get_wakeup_cause()) {
             case ESP_SLEEP_WAKEUP_TIMER:
