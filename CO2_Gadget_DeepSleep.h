@@ -278,11 +278,12 @@ void toDeepSleep() {
         // sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
         // SCD41 supports powerDown() but it kills in-progress single-shot
-        // measurements started in non-blocking mode. Instead, leave the sensor
-        // in idle mode (~0.5 mA) so the measurement from measureSingleShot()
-        // can complete during the ESP32's deep sleep. The measurement takes
-        // ~5s vs ~30s deep sleep interval, so data is ready on next wake.
+        // measurements. Instead, leave the sensor in idle mode and start a
+        // non-blocking single-shot measurement that will complete during the
+        // ESP32's deep sleep (~5s vs ~30s interval). On next wake, data is
+        // already ready and can be read immediately.
         sensors.scd4x.stopPeriodicMeasurement();
+        sensors.scd4x.measureSingleShot(false);
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
