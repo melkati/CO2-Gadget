@@ -375,10 +375,13 @@ void toDeepSleep() {
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         // sensors.scd30.stopContinuousMeasurement();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
-        // SCD41 supports powerDown() (idle→sleep: ~0.5 mA → <0.1 mA).
-        // SCD40 does NOT support powerDown — use startLowPowerPeriodicMeasurement() instead.
+        // SCD41 supports powerDown() but it kills in-progress single-shot
+        // measurements. Instead, leave the sensor in idle mode and start a
+        // non-blocking single-shot measurement that will complete during the
+        // ESP32's deep sleep (~5s vs ~30s interval). On next wake, data is
+        // already ready and can be read immediately.
         sensors.scd4x.stopPeriodicMeasurement();
-        sensors.scd4x.powerDown();
+        sensors.scd4x.measureSingleShot(false);
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
@@ -583,32 +586,35 @@ bool cm1106HandleFromDeepSleep() {
 }
 
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
-    static bool initialized = false;
-    unsigned long previousMillis = 0;
+    static bool i2cInitialized = false;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
 
-    if (!initialized) {
+    if (!i2cInitialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
-        // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
-        // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
-        // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
-        sensors.scd4x.wakeUp();
-        delay(20);
-        initialized = true;
+        i2cInitialized = true;
     }
+    // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
+    // MUST be called on EVERY wake cycle, not just the first one — toDeepSleep()
+    // calls powerDown() before each deep sleep, leaving the sensor in sleep mode.
+    // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
+    // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
+    sensors.scd4x.wakeUp();
+    delay(20);
 
     Serial.print("-->[DEEP] ");
     Serial.print(__func__);
     Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
 
     if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
+        // Start a single-shot measurement without blocking so data is ready
+        // on the next wake cycle. Without this, the sensor never starts
+        // measuring in non-blocking mode, causing perpetual CO2: 0 readings.
+        sensors.scd4x.measureSingleShot(false);
         esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
-                                                       // Serial.println("-->[DEEP] Light sleep for 0.3 seconds");
-                                                       // Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
@@ -637,13 +643,31 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     timerLightSleep.pause();
 #endif
 
-    while (!isDataReadySCD4x()) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - previousMillis >= 1000) {
-            previousMillis = currentMillis;
-            Serial.print("+");
+    // Use repeated short light sleeps instead of busy-wait to minimize power consumption.
+    // Each iteration sleeps 100 ms (~0.8 mA) vs. the old busy-wait (~14 mA).
+    // Timeout after 50 iterations (5 additional seconds) as a safety measure.
+    uint8_t pollAttempts = 0;
+    const uint8_t maxPollAttempts = 50;
+    while (!isDataReadySCD4x() && pollAttempts < maxPollAttempts) {
+        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms light sleep
+#ifdef TIMEDEBUG
+        timerLightSleep.resume();
+#endif
+        if (esp_light_sleep_start() != ESP_OK) {
+#ifdef TIMEDEBUG
+            timerLightSleep.pause();
+#endif
+            Serial.println("-->[DEEP][ERROR] SCD41 poll: esp_light_sleep_start() failed — aborting poll");
+            return (false);
         }
-        delay(1);  // Feed the interrupt watchdog every iteration
+#ifdef TIMEDEBUG
+        timerLightSleep.pause();
+#endif
+        pollAttempts++;
+    }
+    if (!isDataReadySCD4x()) {
+        Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — aborting, will retry next wake");
+        return (false);
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     if (error != 0) {
@@ -784,7 +808,15 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
 bool handleLowPowerSensors() {
     bool readOK = false;
     bool blockingMode = true;
-    if ((deepSleepEnabled) && (interactiveMode)) blockingMode = false;
+    // Non-blocking mode for timer wakes so the wake cycle ends quickly
+    // (~0.3s) when sensor data isn't ready, instead of burning ~14 mA for ~5s.
+    // NOTE: deepSleepEnabled is false during timer wakes (set by menu logic),
+    // so we use wakeup_cause directly instead of checking deepSleepEnabled.
+    if (interactiveMode) {
+        blockingMode = false;
+    } else if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+        blockingMode = false;
+    }
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
@@ -1002,8 +1034,31 @@ void handleWakeupCauseOnWake(esp_sleep_wakeup_cause_t wakeupCause) {
     }
 }
 
+void reloadWakeFlagsFromNVS() {
+    // Defaults must match initPreferences(): BLE=true, MQTT/WiFi=false
+    if (preferences.begin("CO2-Gadget", true)) {
+        deepSleepData.activeBLEOnWake = preferences.getBool("actBLEOnWake", true);
+        deepSleepData.sendMQTTOnWake = preferences.getBool("actMQTTOnWake", false);
+        deepSleepData.activeWifiOnWake = preferences.getBool("actWifiOnWake", false);
+        preferences.end();
+    } else {
+        // Safe fallback: conservatively disable radios to avoid unexpected
+        // power drain from corrupted RTC flags.
+        Serial.println("-->[DEEP][WARN] NVS unavailable — using safe defaults (BLE=Off, MQTT=Off, WiFi=Off)");
+        deepSleepData.activeBLEOnWake = false;
+        deepSleepData.sendMQTTOnWake = false;
+        deepSleepData.activeWifiOnWake = false;
+    }
+}
+
 void fromDeepSleep() {
     esp_sleep_wakeup_cause_t wakeupCause = esp_sleep_get_wakeup_cause();
+
+    // Belt-and-suspenders: reload flags now even though setup() already
+    // called reloadWakeFlagsFromNVS() for GPIO wake paths. This catches
+    // the timer-wake path and also serves as a safety net.
+    reloadWakeFlagsFromNVS();
+
 #ifdef DEEP_SLEEP_DEBUG
     printRTCMemoryExit();
     Serial.println("-->[STUP] Initializing from deep sleep mode working with sensor (" + String(deepSleepData.co2Sensor) + "): " + getDeepSleepDataCo2SensorName());
