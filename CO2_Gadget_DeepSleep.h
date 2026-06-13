@@ -471,22 +471,24 @@ bool cm1106HandleFromDeepSleep() {
 }
 
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
-    static bool initialized = false;
+    static bool i2cInitialized = false;
     uint16_t error = 0;
     uint16_t co2value = 0;
     float temperature = 0;
     float humidity = 0;
 
-    if (!initialized) {
+    if (!i2cInitialized) {
         reInitI2C();
         sensors.scd4x.begin(Wire);
-        // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
-        // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
-        // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
-        sensors.scd4x.wakeUp();
-        delay(20);
-        initialized = true;
+        i2cInitialized = true;
     }
+    // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
+    // MUST be called on EVERY wake cycle, not just the first one — toDeepSleep()
+    // calls powerDown() before each deep sleep, leaving the sensor in sleep mode.
+    // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
+    // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
+    sensors.scd4x.wakeUp();
+    delay(20);
 
     Serial.print("-->[DEEP] ");
     Serial.print(__func__);
