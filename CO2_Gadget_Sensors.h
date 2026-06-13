@@ -300,7 +300,19 @@ void sensorsLoopLowPower() {
 
 void sensorsLoop() {
     static unsigned long lastDotPrintTime = 0;
+    static unsigned long sensorWarmupStart = 0;
+    static bool sensorWarmupDone = false;
     if (isDownloadingBLE) return;
+    // Warmup: skip first ~5s of sensor.loop() after boot to let the sensor
+    // produce its first measurement before we ask for data. The SCD41 needs
+    // ~5s after begin() before the first reading is available; calling loop()
+    // earlier triggers a "No data from any sensor!" warning from the library.
+    // This is harmless for other sensor types (they just return sooner).
+    if (!sensorWarmupDone) {
+        if (sensorWarmupStart == 0) sensorWarmupStart = millis();
+        if (millis() - sensorWarmupStart < 5000) return;
+        sensorWarmupDone = true;
+    }
     if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
         if (millis() - lastDotPrintTime >= 100) {
             Serial.print("[-]");  // Print a - every loop to show that the device is alive
