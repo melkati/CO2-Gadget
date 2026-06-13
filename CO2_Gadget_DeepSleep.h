@@ -689,7 +689,15 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
 bool handleLowPowerSensors() {
     bool readOK = false;
     bool blockingMode = true;
-    if ((deepSleepEnabled) && (interactiveMode)) blockingMode = false;
+    // Non-blocking mode for timer wakes so the wake cycle ends quickly
+    // (~0.3s) when sensor data isn't ready, instead of burning ~14 mA for ~5s.
+    // NOTE: deepSleepEnabled is false during timer wakes (set by menu logic),
+    // so we use wakeup_cause directly instead of checking deepSleepEnabled.
+    if (interactiveMode) {
+        blockingMode = false;
+    } else if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+        blockingMode = false;
+    }
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
 #ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
