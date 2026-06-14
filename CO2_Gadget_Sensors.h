@@ -1,6 +1,9 @@
 #ifndef CO2_Gadget_Sensors_h
 #define CO2_Gadget_Sensors_h
 
+// LOW_POWER mode constants (shared with CO2_Gadget_DeepSleep.h)
+#define LOW_POWER 1  // Binary: 0 = HIGH_PERFORMANCE, 1 = LOW_POWER
+
 #include <Sensors.hpp>
 
 #include "CO2_Gadget_Thresholds.h"
