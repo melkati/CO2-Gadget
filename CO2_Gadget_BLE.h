@@ -616,6 +616,28 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 #endif
 }
 
+void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
+#ifdef SUPPORT_BLE
+    String logReason = reason ? String(reason) : String("BTHome settings changed");
+    Serial.println("-->[BLE ] " + logReason + "; restarting BLE advertising.");
+
+    if (bleInitialized) {
+        disableBLE();
+    }
+
+    if (!enableBLE || (!activeBLE && !activeBTHome)) {
+        Serial.println("-->[BLE ] BLE remains disabled after BTHome settings refresh.");
+        return;
+    }
+
+    initBLE();
+    if (forcePublish) {
+        bool published = publishBLE(true, true);
+        Serial.println("-->[BLE ] BLE refresh publish " + String(published ? "completed." : "skipped."));
+    }
+#endif
+}
+
 void handleBLEwifiChanged() {
 #ifdef SUPPORT_BLE
     wifiSSID = provider.getWifiSSID();

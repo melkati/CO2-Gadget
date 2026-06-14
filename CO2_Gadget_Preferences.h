@@ -858,6 +858,12 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     Serial.println(debugMessage);
 #endif
 
+#ifdef SUPPORT_BTHOME_BLE
+    bool previousActiveBTHome = activeBTHome;
+    bool previousBTHomeEncryption = bthomeEncryption;
+    String previousBTHomeBindKey = bthomeBindKey;
+#endif
+
     // Save preferences to non-volatile memory (Preferences)
     try {
         preferences.begin("CO2-Gadget", false);
@@ -1217,6 +1223,11 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     }
 
     putPreferences();
+#ifdef SUPPORT_BTHOME_BLE
+    if ((previousActiveBTHome != activeBTHome) || (previousBTHomeEncryption != bthomeEncryption) || (previousBTHomeBindKey != bthomeBindKey)) {
+        refreshBTHomeBLESettings("BTHome settings changed from Web UI", true);
+    }
+#endif
     return true;
 }
 

@@ -348,11 +348,7 @@ result doSetActiveBTHome(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("activeBTHome", activeBTHome);
   preferences.end();
-  if (enableBLE && activeBTHome) {
-    initBLE();
-  } else if (!activeBLE && !activeBTHome) {
-    disableBLE();
-  }
+  refreshBTHomeBLESettings(activeBTHome ? "BTHome output enabled" : "BTHome output disabled", true);
   return proceed;
 }
 
@@ -364,6 +360,7 @@ result doSetBTHomeEncryption(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("bthomeEncrypt", bthomeEncryption);
   preferences.end();
+  refreshBTHomeBLESettings(bthomeEncryption ? "BTHome encryption enabled" : "BTHome encryption disabled", true);
   return proceed;
 }
 
@@ -382,6 +379,8 @@ result doSetBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putString("bthomeBindKey", bthomeBindKey);
   preferences.end();
+  Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
+  refreshBTHomeBLESettings("BTHome bind key updated", true);
   return proceed;
 }
 
@@ -396,6 +395,8 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
   Serial.println("-->[MENU] Enter / alone to cancel.");
   Serial.println("-->[MENU] Leave blank to keep the current key.");
   Serial.println("-->[MENU] Enter a single dash (-) to generate a new key.");
+  ensureBTHomeBindKey();
+  Serial.println("-->[MENU] Current BTHome bind key: " + bthomeBindKey);
   Serial.println("**********************************************************************");
 
   if (!readSerialLine("-->[MENU] BTHome key: ", newBindKey, 47, true, 120000)) return quit;
@@ -403,6 +404,7 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
   newBindKey.trim();
   if (newBindKey.length() == 0) {
     Serial.println("-->[MENU] BTHome bind key unchanged.");
+    Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
     return quit;
   }
 
@@ -419,8 +421,10 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
 
   Serial.println("-->[MENU] BTHome bind key changed.");
   Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
-  printSerialPendingSave();
-  nav.target->dirty = true;
+  preferences.begin("CO2-Gadget", false);
+  preferences.putString("bthomeBindKey", bthomeBindKey);
+  preferences.end();
+  refreshBTHomeBLESettings("BTHome bind key updated", true);
   return quit;
 }
 #endif

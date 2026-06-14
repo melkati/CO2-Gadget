@@ -49,6 +49,7 @@ void publishMQTTLogData(String logData);            // Defined in CO2_Gadget_MQT
 void putPreferences();                              // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
 void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
+void refreshBTHomeBLESettings(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
 String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
 uint64_t getReliableUptimeSeconds();                // Accumulated uptime across deep sleep cycles
 String getReliableUptimeFormatted();                // Accumulated uptime formatted as <dd>d <hh>h <mm>m
