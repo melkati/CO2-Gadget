@@ -404,6 +404,8 @@ void doDeepSleepMQTTConnect() {
             Serial.print("-->[DEEP] rootTopic: ");
             Serial.println(rootTopic);
         }
+    } else {
+        Serial.println("-->[DEEP][WARN] MQTT on wake skipped: WiFi not connected.");
     }
 }
 

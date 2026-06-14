@@ -199,6 +199,20 @@ result doSavePreferences(eventMask e, navNode &nav, prompt &item) {
     Serial.println(e);
     Serial.flush();
 #endif
+    // MQTT on wake requires WiFi on wake — auto-enable WiFi if MQTT is set
+    if (deepSleepData.sendMQTTOnWake && !deepSleepData.activeWifiOnWake) {
+        Serial.println();
+        Serial.println("-->[MENU] WARNING: MQTT on wake requires WiFi on wake.");
+        Serial.println("-->[MENU] Enabling WiFi on wake automatically.");
+        Serial.println();
+        deepSleepData.activeWifiOnWake = true;
+    }
+    // ESP-NOW on wake also requires WiFi on wake (for MQTT transport once implemented)
+    if (deepSleepData.sendESPNowOnWake && !deepSleepData.activeWifiOnWake) {
+        Serial.println();
+        Serial.println("-->[MENU] WARNING: ESP-NOW on wake requires WiFi on wake.");
+        Serial.println();
+    }
     putPreferences();
     return quit;
 }
