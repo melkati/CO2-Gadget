@@ -68,7 +68,7 @@ This folder contains official datasheets, manuals, and technical documentation f
 | **SenseAir MH-Z19C** | NDIR | UART | [MH-Z19C_Datasheet.pdf](CO2_Sensors/MH-Z19C_Datasheet.pdf) |
 | **SenseAir S8** | NDIR | UART | [S8_Datasheet.pdf](CO2_Sensors/S8_Datasheet.pdf) |
 | **SenseAir CM1106** | NDIR | UART | ⚠️ *Not found - please provide* |
-| **SenseAir CM1106SL-NS** | NDIR | UART | ⚠️ *Not found - please provide* |
+| **SenseAir CM1106SL-NS** | NDIR | UART | [CM1106SL-NS_Datasheet.pdf](CO2_Sensors/CM1106SL-NS_Datasheet.pdf) |
 
 ---
 
@@ -123,7 +123,6 @@ The following datasheets could not be found online. If you have access to these 
 
 ### CO2 Sensors
 - **SenseAir CM1106** datasheet
-- **SenseAir CM1106SL-NS** datasheet
 
 ### Other
 - **LilyGo T-Display-S3** board schematic
