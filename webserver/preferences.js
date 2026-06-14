@@ -250,7 +250,7 @@ function applyFeatureVisibility() {
     setBTHomeSupportVisibility(isBTHomeSupported());
     setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
     setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
-    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT);
     setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
     setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
     setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
@@ -347,7 +347,7 @@ function collectPreferencesData() {
         setValue("showCO2", 'checked');
         if (!featuresLoaded || features.SUPPORT_MQTT) {
             setValue("mqttClientId");
-            if (!featuresLoaded || features.SUPPORT_MQTT_DISCOVERY) setValue("mqttShowInCon", 'checked');
+            if (!featuresLoaded || features.SUPPORT_MQTT) setValue("mqttShowInCon", 'checked');
             setValue("mqttBroker");
             setValue("mqttUser");
         }
@@ -491,26 +491,6 @@ function toggleVisibility(checkboxId, elementId, callback) {
 
     toggleElement();
     checkbox.addEventListener('change', toggleElement);
-}
-
-function setSectionVisibility(elementId, isVisible) {
-    const element = document.getElementById(elementId);
-    if (element) element.classList.toggle("hidden", !isVisible);
-}
-
-function applyFeatureVisibility() {
-    if (!featuresLoaded) return;
-
-    const activeMQTT = document.getElementById("activeMQTT");
-    const activeESPNOW = document.getElementById("activeESPNOW");
-
-    setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
-    setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
-    setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
-    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
-    setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
-    setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
-    setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
 }
 
 /**
