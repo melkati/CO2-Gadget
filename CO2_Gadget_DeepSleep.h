@@ -646,7 +646,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         sensors.setSampleTime(measurementInterval);
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
-        sensors.initCO2LowPowerMode(SENSORS::SSCD30, LOW_POWER);
+        sensors.initCO2LowPowerMode(SENSORS::SSCD30, (LowPowerModes)LOW_POWER);
         initialized = true;
     }
 

@@ -166,7 +166,7 @@ void initSensorsLowPower() {
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
         deepSleepData.measurementsStarted = false;
-        sensors.initCO2LowPowerMode(SENSORS::Auto, LOW_POWER);  // Always use LOW_POWER internally regardless of the binary lowPowerMode value
+        sensors.initCO2LowPowerMode(SENSORS::Auto, (LowPowerModes)LOW_POWER);  // Always use LOW_POWER internally regardless of the binary lowPowerMode value
         return;
     }
 
