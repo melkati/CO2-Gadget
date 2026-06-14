@@ -40,7 +40,7 @@ String getLowPowerModeName(uint16_t mode) {
     switch (mode) {
         case HIGH_PERFORMANCE:
             return "HIGH_PERFORMANCE";
-        case 1:
+        case LOW_POWER:
             return "LOW_POWER";
         default:
             return "UNKNOWN";
@@ -417,6 +417,7 @@ bool isDataReadySCD4x() {
     return dataReadyFlag;
 }
 
+#ifdef SUPPORT_MQTT
 void doDeepSleepMQTTConnect() {
     if (WiFi.status() == WL_CONNECTED) {
         // Serial.printf("-->[DEEP] Initializing MQTT to broker IP: %s\n", mqttBroker.c_str());
@@ -430,8 +431,11 @@ void doDeepSleepMQTTConnect() {
             Serial.print("-->[DEEP] rootTopic: ");
             Serial.println(rootTopic);
         }
+    } else {
+        Serial.println("-->[DEEP][WARN] MQTT on wake skipped: WiFi not connected.");
     }
 }
+#endif // SUPPORT_MQTT
 
 void doDeepSleepWiFiConnect() {
     initPreferences();
@@ -681,7 +685,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         sensors.setSampleTime(measurementInterval);
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
-        sensors.initCO2LowPowerMode(SENSORS::SSCD30, MEDIUM_LOWPOWER);
+        sensors.initCO2LowPowerMode(SENSORS::SSCD30, (LowPowerModes)LOW_POWER);
         initialized = true;
     }
 
@@ -863,9 +867,9 @@ void handleMQTTPublishOnWake() {
 #endif
 }
 
-void handleMediumLowPowerModeOnWake() {
+void handleLowPowerModeOnWake() {
 #ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
+    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: LOW_POWER");
 #endif
     initBattery();
     batteryLoop();
@@ -886,7 +890,7 @@ void fromDeepSleepTimer() {
     handleCycleCountersOnWake();
 
     if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
-        handleMediumLowPowerModeOnWake();
+        handleLowPowerModeOnWake();
     }
 
     Serial.flush();
