@@ -493,6 +493,26 @@ function toggleVisibility(checkboxId, elementId, callback) {
     checkbox.addEventListener('change', toggleElement);
 }
 
+function setSectionVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    if (element) element.classList.toggle("hidden", !isVisible);
+}
+
+function applyFeatureVisibility() {
+    if (!featuresLoaded) return;
+
+    const activeMQTT = document.getElementById("activeMQTT");
+    const activeESPNOW = document.getElementById("activeESPNOW");
+
+    setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
+    setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
+    setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
+    setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
+    setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
+    setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
+}
+
 /**
  * Ensures that MQTT is disabled when WiFi is disabled, and enabled when WiFi is enabled.
  */
