@@ -289,21 +289,6 @@ void toDeepSleep() {
         sensors.scd4x.startLowPowerPeriodicMeasurement();
     }
 
-    // Carry any still-pending calibration / ambient pressure command into RTC
-    // memory so it survives deep sleep and is applied on the next wake. Without
-    // this, a command set in RAM during the wake window (web/BLE/MQTT) is lost
-    // before processPendingCommands() ever runs, because that only executes in
-    // loop()/loopOLD(), never in the deep-sleep wake path.
-    // See: https://github.com/melkati/CO2-Gadget/issues/250
-    if (pendingCalibration) {
-        deepSleepData.calibrateOnNextWake = true;
-        deepSleepData.pendingCalibrationValue = calibrationValue;
-    }
-    if (pendingAmbientPressure) {
-        deepSleepData.setAmbientPressureOnNextWake = true;
-        deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
-    }
-
     Serial.println("");
     Serial.println("-->***********************************************************************************");
     Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
@@ -390,6 +375,24 @@ void toDeepSleep() {
 #if CONFIG_IDF_TARGET_ESP32
     esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
 #endif
+
+    // Capture any still-pending calibration / ambient pressure command into RTC
+    // memory as the LAST step before sleep — AFTER prepareServicesForDeepSleep()
+    // has torn down WiFi/BLE/MQTT. Those handlers run in their own FreeRTOS tasks
+    // and can set pendingCalibration at any moment while the radios are up, so
+    // capturing earlier would race: a command arriving between the capture and
+    // esp_deep_sleep_start() would be lost with volatile RAM. processPendingCommands()
+    // applies it while the device is awake; this only catches the late, about-to-
+    // sleep case. With the radios down here, the flag can no longer change.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (pendingCalibration) {
+        deepSleepData.calibrateOnNextWake = true;
+        deepSleepData.pendingCalibrationValue = calibrationValue;
+    }
+    if (pendingAmbientPressure) {
+        deepSleepData.setAmbientPressureOnNextWake = true;
+        deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
+    }
 
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
