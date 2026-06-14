@@ -33,7 +33,7 @@ This folder contains official datasheets, manuals, and technical documentation f
 
 | Board | MCU | Display | File |
 |-------|-----|---------|------|
-| **LilyGo T-Display-S3** | ESP32-S3 | 1.9" TFT 170×320 | ⚠️ *Not found - please provide* |
+| **LilyGo T-Display-S3** | ESP32-S3 | 1.9" TFT 170×320 | [LilyGo_T-Display-S3_Schematic.pdf](ESP32/LilyGo_T-Display-S3_Schematic.pdf) |
 | **LilyGo TTGO T7 Mini32** | ESP32 | Depends on configuration | ⚠️ *Not found - please provide* |
 | **Generic ESP32 DevKit** | ESP32 | None (bring your own) | *(See ESP32 datasheet)* |
 
