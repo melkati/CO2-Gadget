@@ -29,6 +29,7 @@ static constexpr uint8_t BTHOME_ENCRYPTION_KEY_SIZE = 16;
 static constexpr uint8_t BTHOME_ENCRYPTION_MIC_SIZE = 4;
 static constexpr uint8_t BTHOME_ENCRYPTION_NONCE_SIZE = 13;
 static constexpr uint8_t BTHOME_COUNTER_SAVE_INTERVAL = 64;
+static constexpr uint32_t BTHOME_COUNTER_NVS_RESERVE = 4096;
 static constexpr uint16_t BTHOME_ADV_INTERVAL = 320;  // 200 ms, in 0.625 ms units.
 static uint8_t bthomePacketId = 0;
 static uint8_t bthomeCounterSaveSkips = 0;
@@ -192,6 +193,16 @@ void appendBTHomeCounter(std::string &payload, uint32_t counter) {
     appendBTHomeUInt16(payload, static_cast<uint16_t>((counter >> 16) & 0xFFFF));
 }
 
+uint32_t getBTHomeCounterNVSValue() {
+    if (!bthomeEncryption) {
+        return bthomeCounter;
+    }
+    if (UINT32_MAX - bthomeCounter < BTHOME_COUNTER_NVS_RESERVE) {
+        return UINT32_MAX;
+    }
+    return bthomeCounter + BTHOME_COUNTER_NVS_RESERVE;
+}
+
 void saveBTHomeCounter(bool force) {
     if (!bthomeEncryption) {
         return;
@@ -202,7 +213,7 @@ void saveBTHomeCounter(bool force) {
 
     bthomeCounterSaveSkips = 0;
     preferences.begin("CO2-Gadget", false);
-    preferences.putUInt("bthomeCounter", bthomeCounter);
+    preferences.putUInt("bthomeCounter", getBTHomeCounterNVSValue());
     preferences.end();
 }
 
@@ -426,11 +437,17 @@ bool restoreSensirionAdvertisementData() {
     if (!writeSensirionCurrentSample()) {
         return false;
     }
+    NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+    NimBLEAdvertisementData emptyScanResponse;
+    advertising->stop();
+    advertising->setScanResponseData(emptyScanResponse);
+    advertising->enableScanResponse(false);
     provider.commitSample();
     return true;
 }
 
 bool clearBTHomeAdvertisementData() {
+    invalidateBTHomeServiceDataCache();
     if (!bleInitialized) {
         return true;
     }
@@ -554,6 +571,9 @@ void disableBLE() {
         return;
     }
 
+#ifdef SUPPORT_BTHOME_BLE
+    invalidateBTHomeServiceDataCache();
+#endif
     if (sensirionBLEInitialized) {
         lib.stopAdvertising();
     } else {

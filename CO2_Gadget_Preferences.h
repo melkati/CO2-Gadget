@@ -590,7 +590,7 @@ void putPreferences() {
     preferences.putBool("activeBTHome", activeBTHome);
     preferences.putBool("bthomeEncrypt", bthomeEncryption);
     preferences.putString("bthomeBindKey", bthomeBindKey);
-    preferences.putUInt("bthomeCounter", bthomeCounter);
+    preferences.putUInt("bthomeCounter", getBTHomeCounterNVSValue());
 #endif
     preferences.putBool("activeWIFI", activeWIFI);
     preferences.putBool("activeMQTT", activeMQTT);
