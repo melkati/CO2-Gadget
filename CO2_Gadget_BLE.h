@@ -60,6 +60,49 @@ static inline bool writeSensirionCurrentSample() {
 #endif
 }
 
+static inline bool isBLETimerWakeFromDeepSleep() {
+#ifdef SUPPORT_LOW_POWER
+    return (esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode;
+#else
+    return false;
+#endif
+}
+
+#ifdef SUPPORT_LOW_POWER
+typedef struct {
+    bool valid = false;
+    uint16_t previousCO2Value = 0;
+    float previousTemperatureValue = 0.0f;
+    float previousHumidityValue = 0.0f;
+    uint64_t lastPublishTimeMs = 0;
+} bleThresholdState_t;
+
+RTC_DATA_ATTR bleThresholdState_t bleThresholdStateRTC;
+#endif
+
+bool evaluateBLEPublishThresholds(uint16_t currentCO2, float currentTemp, float currentHum) {
+#ifdef SUPPORT_LOW_POWER
+    if (isBLETimerWakeFromDeepSleep()) {
+        if (bleThresholdStateRTC.valid) {
+            thresholdsManager.setRuntimeState(BLE_SEND, bleThresholdStateRTC.previousCO2Value, bleThresholdStateRTC.previousTemperatureValue, bleThresholdStateRTC.previousHumidityValue, bleThresholdStateRTC.lastPublishTimeMs);
+        }
+
+        uint64_t nowMs = (deepSleepData.uptimeMillis + millis());
+        bool shouldPublish = thresholdsManager.evaluateThresholdsAt(BLE_SEND, currentCO2, currentTemp, currentHum, nowMs);
+        ThresholdConfig config = thresholdsManager.getThresholds(BLE_SEND);
+        if (shouldPublish || !bleThresholdStateRTC.valid) {
+            bleThresholdStateRTC.valid = true;
+            bleThresholdStateRTC.previousCO2Value = config.previousCO2Value;
+            bleThresholdStateRTC.previousTemperatureValue = config.previousTemperatureValue;
+            bleThresholdStateRTC.previousHumidityValue = config.previousHumidityValue;
+            bleThresholdStateRTC.lastPublishTimeMs = config.lastPublishTimeMs;
+        }
+        return shouldPublish;
+    }
+#endif
+    return thresholdsManager.evaluateThresholds(BLE_SEND, currentCO2, currentTemp, currentHum);
+}
+
 #ifdef SUPPORT_BTHOME_BLE
 int16_t encodeBTHomeTemperature(float value) {
     return static_cast<int16_t>(round(value * 100.0f));
@@ -432,7 +475,7 @@ void initBLE() {
 
     if (activeBLE) {
         setBLEHistoryInterval(sampleInterval);
-        bool initialSampleReady = writeSensirionCurrentSample();
+        bool initialSampleReady = !isBLETimerWakeFromDeepSleep() && writeSensirionCurrentSample();
         provider.begin();
         if (initialSampleReady) {
             provider.commitSample();
@@ -440,7 +483,9 @@ void initBLE() {
         sensirionBLEInitialized = true;
         bleInitialized = true;
 #ifdef SUPPORT_BTHOME_BLE
-        updateBTHomeAdvertisementData(false);
+        if (!isBLETimerWakeFromDeepSleep()) {
+            updateBTHomeAdvertisementData(false);
+        }
 #endif
         Serial.print("-->[BLE ] Sensirion Gadget BLE Lib initialized with deviceId = ");
         Serial.println(provider.getDeviceIdString());
@@ -464,7 +509,9 @@ void initBLE() {
         NimBLEDevice::setPower(3);
         bleInitialized = true;
         seedBTHomeCounter();
-        updateBTHomeAdvertisementData(false);
+        if (!isBLETimerWakeFromDeepSleep()) {
+            updateBTHomeAdvertisementData(false);
+        }
         Serial.println("-->[BLE ] BTHome BLE initialized");
     }
 #endif
@@ -516,7 +563,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
     if (ignoreMeasurementInterval || (millis() - lastMeasurementTimeMs >= measurementIntervalMs)) {
         bool outputEnabled = activeBLE || activeBTHome;
         bool validMeasurement = isValidBLEMeasurement();
-        bool thresholdsPassed = outputEnabled && validMeasurement && (bypassThresholds || thresholdsManager.evaluateThresholds(BLE_SEND, co2, temp, hum));
+        bool thresholdsPassed = outputEnabled && validMeasurement && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum));
 
         if (outputEnabled && validMeasurement && thresholdsPassed) {
             if (sensirionBLEInitialized) {

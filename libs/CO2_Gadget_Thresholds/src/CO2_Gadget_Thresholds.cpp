@@ -138,14 +138,18 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
  * @return True if the sensor readings pass the thresholds, false otherwise.
  */
 bool ThresholdManager::evaluateThresholds(OutputType outputType, uint16_t co2, float temp, float hum) {
+    return evaluateThresholdsAt(outputType, co2, temp, hum, millis());
+}
+
+bool ThresholdManager::evaluateThresholdsAt(OutputType outputType, uint16_t co2, float temp, float hum, uint64_t nowMs) {
     // If threshold is not enabled for outputType, return true
     if (!thresholds[outputType].enabled) return true;
 
     ThresholdConfig& config = thresholds[outputType];
     bool timeoutDue = false;
     if (config.keepAlive > 0) {
-        uint32_t keepAliveMs = static_cast<uint32_t>(config.keepAlive) * 1000UL;
-        timeoutDue = (config.lastPublishTimeMs == 0) || ((millis() - config.lastPublishTimeMs) >= keepAliveMs);
+        uint64_t keepAliveMs = static_cast<uint64_t>(config.keepAlive) * 1000ULL;
+        timeoutDue = (config.lastPublishTimeMs == 0) || ((nowMs - config.lastPublishTimeMs) >= keepAliveMs);
     }
 
     // Evaluate if the sensor readings pass the thresholds
@@ -156,10 +160,18 @@ bool ThresholdManager::evaluateThresholds(OutputType outputType, uint16_t co2, f
         if (timeoutDue && !thresholdPassed) {
             updatePreviousValues(outputType, co2, temp, hum);
         }
-        config.lastPublishTimeMs = millis();
+        config.lastPublishTimeMs = nowMs;
     }
 
     return shouldPublish;
+}
+
+void ThresholdManager::setRuntimeState(OutputType outputType, uint16_t previousCO2Value, float previousTemperatureValue, float previousHumidityValue, uint64_t lastPublishTimeMs) {
+    ThresholdConfig& config = thresholds[outputType];
+    config.previousCO2Value = previousCO2Value;
+    config.previousTemperatureValue = previousTemperatureValue;
+    config.previousHumidityValue = previousHumidityValue;
+    config.lastPublishTimeMs = lastPublishTimeMs;
 }
 
 /**
