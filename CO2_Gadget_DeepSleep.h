@@ -27,9 +27,6 @@
 //     CO2Sensor_DEMO = 127
 // } CO2SENSORS_t;
 
-// LOW_POWER mode constants
-#define LOW_POWER 1  // Binary: 0 = HIGH_PERFORMANCE, 1 = LOW_POWER
-
 String getLowPowerModeName(uint16_t mode) {
     switch (mode) {
         case HIGH_PERFORMANCE:
