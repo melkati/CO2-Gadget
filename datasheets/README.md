@@ -35,56 +35,56 @@ This folder contains official datasheets, manuals, and technical documentation f
 
 ### TFT Displays
 
-| Component | Resolution | Controller | File |
-|-----------|------------|------------|------|
-| **ST7789** | 240×135 / 170×320 / 240×320 | ST7789 | *(See library docs below)* |
+| Component | Resolution | Controller | Manufacturer | File |
+|-----------|------------|------------|--------------|------|
+| **ST7789** | 240×135 / 170×320 / 240×320 | ST7789 | Sitronix | ⚠️ *Not found - please provide* |
 
 ### OLED Displays
 
-| Component | Resolution | Interface | File |
-|-----------|------------|-----------|------|
-| **SSD1306** | 128×64 | I2C | [SSD1306_Datasheet.pdf](Displays/SSD1306_Datasheet.pdf) |
-| **SH1106** | 128×64 | I2C | ⚠️ *Not found - please provide* |
+| Component | Manufacturer | Resolution | Interface | File |
+|-----------|-------------|------------|-----------|------|
+| **SSD1306** | Solomon Systech | 128×64 | I2C | [SSD1306_Datasheet.pdf](Displays/SSD1306_Datasheet.pdf) |
+| **SH1106** | Sinadax | 128×64 | I2C | ⚠️ *Not found - please provide* |
 
 ### E-Ink Displays
 
-| Component | Resolution | Controller | File |
-|-----------|------------|------------|------|
-| **DEPG0213BN** | 250×122 | SSD1608 | *(See SSD1608 controller)* |
-| **GDEM0213B74** | 250×122 | - | *(See library docs)* |
-| **GDEW0213M21** | 212×104 | SSD1608 | *(See SSD1608 controller)* |
-| **GDEM029T94** | 296×128 | SSD1680 | *(See library docs)* |
-| **GDEH0154D67** | 200×200 | SSD1681 | *(See library docs)* |
+| Component | Resolution | Controller | Manufacturer | File |
+|-----------|------------|------------|--------------|------|
+| **DEPG0213BN** | 250×122 | SSD1608 | Good Display | ⚠️ *Not found - please provide* |
+| **GDEM0213B74** | 250×122 | - | Good Display | *(See library docs)* |
+| **GDEW0213M21** | 212×104 | SSD1608 | Good Display | ⚠️ *Not found - please provide* |
+| **GDEM029T94** | 296×128 | SSD1680 | Good Display | ⚠️ *Not found - please provide* |
+| **GDEH0154D67** | 200×200 | SSD1681 | Good Display | ⚠️ *Not found - please provide* |
 
 ---
 
 ## CO2 Sensors
 
-| Component | Type | Protocol | File |
-|-----------|------|----------|------|
-| **Sensirion SCD30** | NDIR | I2C | [SCD30_Datasheet.pdf](CO2_Sensors/SCD30_Datasheet.pdf) |
-| **Sensirion SCD40** | NDIR | I2C | [SCD40_SCD41_Datasheet.pdf](CO2_Sensors/SCD40_SCD41_Datasheet.pdf) |
-| **Sensirion SCD41** | NDIR | I2C | [SCD40_SCD41_Datasheet.pdf](CO2_Sensors/SCD40_SCD41_Datasheet.pdf) |
-| **SenseAir MH-Z19C** | NDIR | UART | [MH-Z19C_Datasheet.pdf](CO2_Sensors/MH-Z19C_Datasheet.pdf) |
-| **SenseAir S8** | NDIR | UART | [S8_Datasheet.pdf](CO2_Sensors/S8_Datasheet.pdf) |
-| **SenseAir CM1106** | NDIR | UART | ⚠️ *Not found - please provide* |
-| **SenseAir CM1106SL-NS** | NDIR | UART | [CM1106SL-NS_Datasheet.pdf](CO2_Sensors/CM1106SL-NS_Datasheet.pdf) |
+| Component | Manufacturer | Type | Protocol | File |
+|-----------|---------------|------|----------|------|
+| **SCD30** | Sensirion | NDIR | I2C | [SCD30_Datasheet.pdf](CO2_Sensors/SCD30_Datasheet.pdf) |
+| **SCD40** | Sensirion | NDIR | I2C | [SCD40_SCD41_Datasheet.pdf](CO2_Sensors/SCD40_SCD41_Datasheet.pdf) |
+| **SCD41** | Sensirion | NDIR | I2C | [SCD40_SCD41_Datasheet.pdf](CO2_Sensors/SCD40_SCD41_Datasheet.pdf) |
+| **MH-Z19C** | Winsen | NDIR | UART | [MH-Z19C_Datasheet.pdf](CO2_Sensors/MH-Z19C_Datasheet.pdf) |
+| **S8** | SenseAir | NDIR | UART | [S8_Datasheet.pdf](CO2_Sensors/S8_Datasheet.pdf) |
+| **CM1106** | SenseAir | NDIR | UART | ⚠️ *Not found - please provide* |
+| **CM1106SL-NS** | SenseAir | NDIR | UART | [CM1106SL-NS_Datasheet.pdf](CO2_Sensors/CM1106SL-NS_Datasheet.pdf) |
 
 ---
 
 ## Particulate Matter (PM) Sensors
 
-| Component | Type | File |
-|-----------|------|------|
-| **Sensirion SPS30** | PM Sensor | [SPS30_Datasheet.pdf](PM_Sensors/SPS30_Datasheet.pdf) |
+| Component | Manufacturer | Type | File |
+|-----------|-------------|------|------|
+| **SPS30** | Sensirion | PM Sensor | [SPS30_Datasheet.pdf](PM_Sensors/SPS30_Datasheet.pdf) |
 
 ---
 
 ## LEDs & Lighting
 
-| Component | Type | File |
-|-----------|------|------|
-| **WS2812B** | RGB LED Strip (NeoPixel) | [WS2812B_Datasheet.pdf](Other/WS2812B_Datasheet.pdf) |
+| Component | Manufacturer | Type | File |
+|-----------|-------------|------|------|
+| **WS2812B** | Worldsemi | RGB LED Strip (NeoPixel) | [WS2812B_Datasheet.pdf](Other/WS2812B_Datasheet.pdf) |
 
 ---
 
