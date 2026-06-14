@@ -413,11 +413,7 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
     return quit;
   }
 
-#ifdef WIFI_PRIVACY
-  copyStringToCharArray(rightPad(" ", sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
-#else
   copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
-#endif
 
   Serial.println("-->[MENU] BTHome bind key changed.");
   Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
@@ -790,6 +786,14 @@ result doSetHostName(eventMask e, navNode &nav, prompt &item) {
   return proceed;
 }
 
+result doEnableWebPasswordVisibility(eventMask e, navNode &nav, prompt &item) {
+  relaxedSecurity = true;
+  Serial.println("-->[MENU] Web UI password visibility enabled for this runtime session.");
+  Serial.println("-->[MENU] Open /preferences.html?relaxedSecurity to show and edit protected fields.");
+  Serial.println("-->[MENU] This is not saved; rebooting returns Web UI password visibility to normal.");
+  return proceed;
+}
+
 TOGGLE(activeWIFI, activeWIFIMenu, "WIFI Enable: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveWIFI, exitEvent)
   ,VALUE("OFF", false, doSetActiveWIFI, exitEvent));
@@ -844,6 +848,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
   ,altOP(altPromptWiFiSSID, "", doSerialWiFiSSIDSetup, enterEvent)
   ,altOP(altPromptWiFiPass, "", doSerialWiFiPasswordSetup, enterEvent)
+  ,OP("Web pwd visible", doEnableWebPasswordVisibility, enterEvent)
   ,altOP(altPromptHostName, "", doSerialHostNameSetup, enterEvent)
 #ifdef SUPPORT_OTA
   ,SUBMENU(activeOTAMenu)
@@ -2195,11 +2200,7 @@ void loadTempArraysWithActualValues() {
 #ifdef SUPPORT_BLE
     copyStringToCharArray(rightPad(provider.getDeviceIdString(), 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
 #ifdef SUPPORT_BTHOME_BLE
-#ifdef WIFI_PRIVACY
-    copyStringToCharArray(rightPad(" ", sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
-#else
     copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
-#endif
 #endif
 #else
     copyStringToCharArray(rightPad("Unavailable", 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
