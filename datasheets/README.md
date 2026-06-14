@@ -29,6 +29,14 @@ This folder contains official datasheets, manuals, and technical documentation f
 | **ESP32** | Main ESP32 chip datasheet | [ESP32_Datasheet.pdf](ESP32/ESP32_Datasheet.pdf) |
 | **ESP32-S3** | ESP32-S3 chip datasheet (used in T-Display-S3) | [ESP32-S3_Datasheet.pdf](ESP32/ESP32-S3_Datasheet.pdf) |
 
+## Development Boards
+
+| Board | MCU | Display | File |
+|-------|-----|---------|------|
+| **LilyGo T-Display-S3** | ESP32-S3 | 1.9" TFT 170×320 | ⚠️ *Not found - please provide* |
+| **LilyGo TTGO T7 Mini32** | ESP32 | Depends on configuration | ⚠️ *Not found - please provide* |
+| **Generic ESP32 DevKit** | ESP32 | None (bring your own) | *(See ESP32 datasheet)* |
+
 ---
 
 ## Displays
@@ -67,8 +75,8 @@ This folder contains official datasheets, manuals, and technical documentation f
 | **SCD41** | Sensirion | NDIR | I2C | [SCD40_SCD41_Datasheet.pdf](CO2_Sensors/SCD40_SCD41_Datasheet.pdf) |
 | **MH-Z19C** | Winsen | NDIR | UART | [MH-Z19C_Datasheet.pdf](CO2_Sensors/MH-Z19C_Datasheet.pdf) |
 | **S8** | SenseAir | NDIR | UART | [S8_Datasheet.pdf](CO2_Sensors/S8_Datasheet.pdf) |
-| **CM1106** | SenseAir | NDIR | UART | ⚠️ *Not found - please provide* |
-| **CM1106SL-NS** | SenseAir | NDIR | UART | [CM1106SL-NS_Datasheet.pdf](CO2_Sensors/CM1106SL-NS_Datasheet.pdf) |
+| **CM1106** | Cubic | NDIR | UART | ⚠️ *Not found - please provide* |
+| **CM1106SL-NS** | Cubic | NDIR | UART | [CM1106SL-NS_Datasheet.pdf](CO2_Sensors/CM1106SL-NS_Datasheet.pdf) |
 
 ---
 
