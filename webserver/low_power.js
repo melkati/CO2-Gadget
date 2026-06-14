@@ -11,6 +11,8 @@ function displayVersion() {
 
 function openTab(evt, tabName) {
     var i, tabContent, tabLinks;
+    const targetTab = document.getElementById(tabName);
+    if (!targetTab || targetTab.classList.contains("hidden")) return;
     tabContent = document.getElementsByClassName("tab-content");
     for (i = 0; i < tabContent.length; i++) {
         tabContent[i].style.display = "none";
@@ -26,6 +28,7 @@ function openTab(evt, tabName) {
 function toggleTab(tabName) {
     var tabContent = document.getElementById(tabName);
     var checkbox = document.getElementById("chk" + tabName);
+    if (!tabContent || !checkbox || tabContent.classList.contains("hidden")) return;
     if (checkbox.checked) {
         tabContent.style.display = "block";
     } else {
@@ -69,8 +72,89 @@ function setCombineMode(andRadioId, orRadioId, combineWithAnd) {
     document.getElementById(orRadioId).checked = !useAnd;
 }
 
+function setThresholdTabVisibility(tabName, isVisible) {
+    const checkbox = document.getElementById("chk" + tabName);
+    const tabContent = document.getElementById(tabName);
+    const tabButton = checkbox ? checkbox.closest(".tab") : null;
+
+    if (tabButton) tabButton.classList.toggle("hidden", !isVisible);
+    if (tabContent) {
+        tabContent.classList.toggle("hidden", !isVisible);
+        if (!isVisible) tabContent.style.display = "none";
+    }
+    if (checkbox && !isVisible) {
+        checkbox.checked = false;
+        checkbox.disabled = true;
+    } else if (checkbox) {
+        checkbox.disabled = false;
+    }
+}
+
+function openFirstAvailableTab() {
+    const tabs = document.querySelectorAll(".tab-content:not(.hidden)");
+    let firstActiveTab = null;
+
+    for (let tab of tabs) {
+        const checkbox = document.getElementById("chk" + tab.id);
+        if (checkbox && checkbox.checked) {
+            firstActiveTab = tab;
+            break;
+        }
+    }
+
+    if (!firstActiveTab && tabs.length > 0) {
+        firstActiveTab = tabs[0];
+    }
+
+    if (firstActiveTab) {
+        firstActiveTab.style.display = "block";
+        const checkbox = document.getElementById("chk" + firstActiveTab.id);
+        const tabLink = checkbox ? checkbox.closest(".tab") : null;
+        if (tabLink && tabLink.className.indexOf(" active") === -1) {
+            tabLink.className += " active";
+        }
+    }
+}
+
+function showLowPowerUnsupportedMessage() {
+    const content = document.querySelector(".content");
+    if (!content || document.getElementById("lowPowerUnsupportedMessage")) return;
+
+    const message = document.createElement("div");
+    message.id = "lowPowerUnsupportedMessage";
+    message.className = "lp-info-card";
+    message.textContent = "Low power support is not compiled into this firmware.";
+    content.insertBefore(message, document.getElementById("preferencesForm"));
+}
+
+function applyFeatureVisibility() {
+    if (!featuresLoaded) return;
+
+    const form = document.getElementById("preferencesForm");
+    const infoCard = document.querySelector(".lp-info-card");
+
+    if (!features.SUPPORT_LOW_POWER) {
+        if (form) form.classList.add("hidden");
+        if (infoCard) infoCard.classList.add("hidden");
+        showLowPowerUnsupportedMessage();
+        return;
+    }
+
+    if (form) form.classList.remove("hidden");
+    if (infoCard) infoCard.classList.remove("hidden");
+    const stale = document.getElementById("lowPowerUnsupportedMessage");
+    if (stale) stale.remove();
+
+    setFormGroupVisibility("actBLEOnWake", features.SUPPORT_BLE);
+    setFormGroupVisibility("actMQTTOnWake", features.SUPPORT_MQTT);
+    setFormGroupVisibility("actESPnowWake", features.SUPPORT_ESPNOW);
+    setThresholdTabVisibility("Bluetooth", features.SUPPORT_BLE);
+    setThresholdTabVisibility("MQTT", features.SUPPORT_MQTT);
+    setThresholdTabVisibility("ESPNOW", features.SUPPORT_ESPNOW);
+}
+
 function loadThresholdsFromServer() {
-    fetch('/getThresholdsAsJson')
+    return fetch('/getThresholdsAsJson')
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -136,7 +220,7 @@ function loadThresholdsFromServer() {
 }
 
 function loadPreferencesFromServer() {
-    fetch('/getActualSettingsAsJson')
+    return fetch('/getActualSettingsAsJson')
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -262,12 +346,13 @@ function savePreferencesToServer() {
         "timeSleeping": document.getElementById("timeSleeping").value,
         "cyclsWifiConn": document.getElementById("cyclsWifiConn").value,
         "cycRedrawDis": document.getElementById("cycRedrawDis").value,
-        "actBLEOnWake": document.getElementById("actBLEOnWake").checked,
         "actWifiOnWake": document.getElementById("actWifiOnWake").checked,
-        "actMQTTOnWake": document.getElementById("actMQTTOnWake").checked,
-        "actESPnowWake": document.getElementById("actESPnowWake").checked,
         "displayOnWake": document.getElementById("deepSleepData.displayOnWake").checked
     };
+    if (!featuresLoaded || features.SUPPORT_BLE) lowPowerData.actBLEOnWake = document.getElementById("actBLEOnWake").checked;
+    if (!featuresLoaded || features.SUPPORT_MQTT) lowPowerData.actMQTTOnWake = document.getElementById("actMQTTOnWake").checked;
+    if (!featuresLoaded || features.SUPPORT_ESPNOW) lowPowerData.actESPnowWake = document.getElementById("actESPnowWake").checked;
+
     console.log("Sending Low Power preferences to server:", lowPowerData);
     fetch('/savePreferences', {
         method: 'POST',
@@ -287,6 +372,10 @@ function savePreferencesToServer() {
 }
 
 function saveLowPowerToServer() {
+    if (featuresLoaded && !features.SUPPORT_LOW_POWER) {
+        console.warn("Low power support is not compiled into this firmware.");
+        return;
+    }
     // Show a popup to indicate that the preferences are being saved
     showSavingPopup();
     saveThresholdsToServer();
@@ -303,26 +392,14 @@ document.addEventListener("DOMContentLoaded", function () {
         displayVersion();
     }
 
-    loadPreferencesFromServer();
-    loadThresholdsFromServer();
-
-    // Open the first active tab by default
-    const tabs = document.querySelectorAll(".tab-content");
-    let firstActiveTab = null;
-
-    for (let tab of tabs) {
-        const checkbox = document.getElementById("chk" + tab.id);
-        if (checkbox && checkbox.checked) {
-            firstActiveTab = tab;
-            break;
-        }
-    }
-
-    if (firstActiveTab) {
-        firstActiveTab.style.display = "block";
-        const tabLink = document.querySelector(`.tab[href="#${firstActiveTab.id}"]`);
-        if (tabLink) {
-            tabLink.className += " active";
-        }
-    }
+    getFeaturesAsJson()
+        .then(() => {
+            applyFeatureVisibility();
+            if (featuresLoaded && !features.SUPPORT_LOW_POWER) return;
+            Promise.all([loadPreferencesFromServer(), loadThresholdsFromServer()])
+                .then(() => {
+                    applyFeatureVisibility();
+                    openFirstAvailableTab();
+                });
+        });
 });
