@@ -505,7 +505,7 @@ void initBLE() {
 
     if (activeBLE) {
         setBLEHistoryInterval(sampleInterval);
-        bool initialSampleReady = !isBLETimerWakeFromDeepSleep() && writeSensirionCurrentSample();
+        bool initialSampleReady = writeSensirionCurrentSample();
         provider.begin();
         if (initialSampleReady) {
             provider.commitSample();
