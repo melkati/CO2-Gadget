@@ -391,6 +391,7 @@ bool isDataReadySCD4x() {
     return dataReadyFlag;
 }
 
+#ifdef SUPPORT_MQTT
 void doDeepSleepMQTTConnect() {
     if (WiFi.status() == WL_CONNECTED) {
         // Serial.printf("-->[DEEP] Initializing MQTT to broker IP: %s\n", mqttBroker.c_str());
@@ -404,8 +405,11 @@ void doDeepSleepMQTTConnect() {
             Serial.print("-->[DEEP] rootTopic: ");
             Serial.println(rootTopic);
         }
+    } else {
+        Serial.println("-->[DEEP][WARN] MQTT on wake skipped: WiFi not connected.");
     }
 }
+#endif // SUPPORT_MQTT
 
 void doDeepSleepWiFiConnect() {
     initPreferences();
