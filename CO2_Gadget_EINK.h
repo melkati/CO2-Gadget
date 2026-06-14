@@ -593,9 +593,7 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (bleStatusActive) {
         display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
     } else {
-        // if it's not active I think is better not to display it.
-        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-        // display.drawInvertedBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
+        return;
     }
 }
 
@@ -610,13 +608,20 @@ void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (bthomeStatusActive) {
         display.drawBitmap(posX, posY, iconBTHome, 16, 16, GxEPD_BLACK);
     } else {
-        display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+        return;
     }
 #endif
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
-    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
+    bool wifiStatusActive = activeWIFI;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        wifiStatusActive = deepSleepData.activeWifiOnWake;
+    }
+#endif
+    if (!wifiStatusActive) return;
+
 #ifdef SUPPORT_CAPTIVE_PORTAL
     // If captivePortalActive = true; draw a filled circle instead of the WiFi icon.  If forceCaptivePortalActive is also true, draw a non filled circle
     if (captivePortalActive) {
@@ -628,41 +633,28 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
 #endif
-    bool wifiStatusActive = activeWIFI;
-#ifdef SUPPORT_LOW_POWER
-    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
-        wifiStatusActive = deepSleepData.activeWifiOnWake;
-    }
-#endif
     int16_t rssi = getWiFiRSSIForStatus();
     if (troubledWIFI) {
         display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
         return;
     }
-    // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-    if (!wifiStatusActive) {
-        // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
-        display.drawBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-    } else {
-        if (deepSleepData.lastWifiRSSIValid) {
-            int16_t signalStrength = abs(rssi);
-            if (signalStrength < 60)
-                display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
-            else if (signalStrength < 70)
-                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
-            else if (signalStrength < 80)
-                display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
-            else
-                display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
-        } else {
+    if (deepSleepData.lastWifiRSSIValid) {
+        int16_t signalStrength = abs(rssi);
+        if (signalStrength < 60)
+            display.drawInvertedBitmap(posX, posY, iconWiFi, 16, 16, GxEPD_BLACK);
+        else if (signalStrength < 70)
+            display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+        else if (signalStrength < 80)
+            display.drawInvertedBitmap(posX, posY, iconWiFiMed, 16, 16, GxEPD_BLACK);
+        else
             display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
-        }
+    } else {
+        display.drawInvertedBitmap(posX, posY, iconWiFiLow, 16, 16, GxEPD_BLACK);
     }
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #ifdef SUPPORT_MQTT
-    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
     bool mqttStatusActive = activeMQTT;
 #ifdef SUPPORT_LOW_POWER
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {

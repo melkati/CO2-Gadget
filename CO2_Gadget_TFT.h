@@ -799,6 +799,14 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowStatusIcons) return;
+    bool wifiStatusActive = activeWIFI;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        wifiStatusActive = deepSleepData.activeWifiOnWake;
+    }
+#endif
+    if (!wifiStatusActive) return;
+
     // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If forceCaptivePortalActive is also true, draw it blue
 
     if (captivePortalActive) {
@@ -811,17 +819,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         return;
     }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    bool wifiStatusActive = activeWIFI;
-#ifdef SUPPORT_LOW_POWER
-    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
-        wifiStatusActive = deepSleepData.activeWifiOnWake;
-    }
-#endif
     int16_t rssi = getWiFiRSSIForStatus();
-    if (!wifiStatusActive) {
-        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, TFT_DARKGREY);
-        return;
-    }
     if (troubledWIFI) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
         tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
@@ -845,35 +843,31 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 
 void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowStatusIcons) return;
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     bool bleStatusActive = enableBLE && activeBLE;
 #ifdef SUPPORT_LOW_POWER
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
         bleStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBLE;
     }
 #endif
-    if (!bleStatusActive) {
-        tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, TFT_DARKGREY);
-    } else {
-        tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, iconDefaultColor);
-    }
+    if (!bleStatusActive) return;
+
+    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, iconDefaultColor);
 }
 
 void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_BTHOME_BLE
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     bool bthomeStatusActive = enableBLE && activeBTHome;
 #ifdef SUPPORT_LOW_POWER
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
         bthomeStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBTHome;
     }
 #endif
-    if (!bthomeStatusActive) {
-        tft.drawBitmap(posX, posY, iconBTHome, 16, 16, TFT_BLACK, TFT_DARKGREY);
-    } else {
-        tft.drawBitmap(posX, posY, iconBTHome, 16, 16, TFT_BLACK, iconDefaultColor);
-    }
+    if (!bthomeStatusActive) return;
+
+    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    tft.drawBitmap(posX, posY, iconBTHome, 16, 16, TFT_BLACK, iconDefaultColor);
 #endif
 }
 
@@ -885,11 +879,8 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         mqttStatusActive = deepSleepData.sendMQTTOnWake;
     }
 #endif
-    if (!mqttStatusActive) {
-        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, TFT_DARKGREY);
-        return;
-    }
+    if (!mqttStatusActive) return;
+
     if (troubledMQTT) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
         tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
