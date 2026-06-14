@@ -929,7 +929,7 @@ String getCO2GadgetStatusAsJson() {
     // Calibration state (sensor-aware). See: https://github.com/melkati/CO2-Gadget/issues/250
     doc["customCalibrationValue"] = customCalibrationValue;
     doc["autoSelfCalibration"] = autoSelfCalibration;
-    doc["calibrateOnNextWake"] = deepSleepData.calibrateOnNextWake;
+    doc["calibrationInProgress"] = (deepSleepData.calPhase != CAL_IDLE);
     doc["ambientPressureValue"] = ambientPressureValue;
     doc["pendingAmbientPressure"] = pendingAmbientPressure;
     doc["freeHeap"] = ESP.getFreeHeap();
@@ -963,12 +963,19 @@ String getCalibrationStatusAsJson() {
     doc["calibrationValue"] = calibrationValue;
     doc["customCalibrationValue"] = customCalibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
-    doc["calibrateOnNextWake"] = deepSleepData.calibrateOnNextWake;
     doc["autoSelfCalibration"] = autoSelfCalibration;
     doc["ambientPressureValue"] = ambientPressureValue;
     doc["pendingAmbientPressure"] = pendingAmbientPressure;
-    // Derived per-sensor facts (see getCalibrationTraits): lets the UI warn that,
-    // e.g., an SCD4x will not retain a forced recalibration across deep sleep.
+    // Live warm-up sequence progress so the UI shows real state, not a static note.
+    CalWarmup w = getCalWarmup();
+    bool calibrating = (deepSleepData.calPhase != CAL_IDLE);
+    uint16_t usableReadings = (deepSleepData.calReadingsSeen > 0) ? (deepSleepData.calReadingsSeen - 1) : 0;
+    doc["calibrationInProgress"] = calibrating;
+    doc["calibrationTargetPpm"] = deepSleepData.calTargetPpm;
+    doc["warmupReadings"] = usableReadings;
+    doc["warmupReadingsRequired"] = w.minReadings;
+    doc["warmupSecondsRequired"] = w.minSeconds;
+    // Derived per-sensor facts (see getCalibrationTraits).
     doc["calibrationRetainedAcrossReboot"] = traits.retainedAcrossReboot;
     doc["autoSelfCalibrationSupported"] = traits.autoSelfCalSupported;
 

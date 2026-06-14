@@ -55,6 +55,8 @@ String getReliableUptimeFormatted();                // Accumulated uptime format
 void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
 void toDeepSleep();                                 // Defined in CO2_Gadget_DeepSleep.h
 void processPendingCommands();                      // Defined below; called from CO2_Gadget_DeepSleep.h wake path
+void beginCalibrationSequence(uint16_t ppm);        // Defined below; starts the warm-up sequence
+void advanceCalibrationSequence();                  // Defined below; advances one warm-up reading (also called on wake)
 void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 
@@ -207,6 +209,17 @@ typedef enum {
     CO2Sensor_DEMO = 127
 } CO2SENSORS_t;
 
+// Calibration warm-up sequence phase (stored in RTC, survives deep sleep).
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+enum CalPhase : uint8_t { CAL_IDLE = 0, CAL_WARMUP = 1 };
+
+// Per-sensor warm-up requirement before a field calibration may be applied.
+struct CalWarmup {
+    uint16_t minReadings;  // usable readings required (excludes the discarded first)
+    uint16_t minSeconds;   // minimum elapsed warm-up time
+};
+CalWarmup getCalWarmup();  // Defined after the sensor includes; used by the web status endpoints too
+
 // LOW POWER MODES
 // typedef enum LowPowerMode { HIGH_PERFORMANCE, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER };
 
@@ -236,12 +249,14 @@ typedef struct {
     uint64_t uptimeMillis;
     bool lastWifiRSSIValid;
     int16_t lastWifiRSSI;
-    // Pending calibration / ambient pressure carried across deep sleep so a
-    // command received during a brief wake window is applied on the next wake
-    // instead of being lost with volatile RAM.
-    // See: https://github.com/melkati/CO2-Gadget/issues/250
-    bool calibrateOnNextWake;
-    uint16_t pendingCalibrationValue;
+    // Calibration warm-up sequence + pending ambient pressure, carried across deep
+    // sleep so a calibration runs the datasheet-required warm-up (collect N readings
+    // over a minimum time, discarding the first) even when that warm-up spans
+    // several low-power wake cycles. See: https://github.com/melkati/CO2-Gadget/issues/250
+    uint8_t calPhase;            // CalPhase: CAL_IDLE / CAL_WARMUP
+    uint16_t calTargetPpm;       // reference ppm to calibrate to
+    uint16_t calReadingsSeen;    // readings since the sequence began (the first is discarded)
+    uint32_t calStartUptimeSec;  // reliable uptime when the sequence began (min-time gate)
     bool setAmbientPressureOnNextWake;
     uint16_t pendingAmbientPressureValue;
 } deepSleepData_t;
@@ -484,17 +499,76 @@ void wakeUpDisplay() {
     return;
 }
 
+// ---- Datasheet-compliant calibration warm-up sequence ----------------------
+// Field calibration on these sensors is only valid after the sensor has been
+// measuring in a stable, homogeneous CO2 environment for a sensor-specific
+// warm-up, and the first reading after start-up must be discarded. In low-power
+// mode the warm-up spans several deep-sleep wakes, so progress lives in RTC
+// (deepSleepData) and advances one reading at a time.
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+CalWarmup getCalWarmup() {
+    switch (deepSleepData.co2Sensor) {
+        case CO2Sensor_SCD40:
+        case CO2Sensor_SCD41:        return {5, 180};   // >3 min / 5 single shots (SCD4x Low Power Operation)
+        case CO2Sensor_SCD30:        return {4, 120};   // >2 min continuous (SCD30 interface description)
+        case CO2Sensor_MHZ19:        return {3, 1200};  // ~20 min at 400 ppm before zero-point calibration
+        case CO2Sensor_CM1106:
+        case CO2Sensor_CM1106SL_NS:  return {3, 120};   // warm-up before start_calibration()
+        case CO2Sensor_SENSEAIRS8:   return {3, 120};   // fresh-air exposure, then background manual_calibration()
+        default:                     return {1, 0};     // DEMO / NONE: immediate (for testing)
+    }
+}
+
+void beginCalibrationSequence(uint16_t ppm) {
+    if (ppm > 2000) {
+        Serial.println("-->[CAL] Ignoring calibration request: invalid value " + String(ppm) + " ppm");
+        return;
+    }
+    deepSleepData.calPhase = CAL_WARMUP;
+    deepSleepData.calTargetPpm = ppm;
+    deepSleepData.calReadingsSeen = 0;
+    deepSleepData.calStartUptimeSec = (uint32_t)getReliableUptimeSeconds();
+    CalWarmup w = getCalWarmup();
+    Serial.println("-->[CAL] Starting calibration to " + String(ppm) + " ppm. Warm-up needs " +
+                   String(w.minReadings) + " readings over >=" + String(w.minSeconds) + " s (first reading discarded).");
+}
+
+// Advance the warm-up by one fresh sensor reading. Called once per reading:
+// from readingsLoop() in high-performance mode and from the deep-sleep wake
+// handler in low-power mode (one reading per wake).
+void advanceCalibrationSequence() {
+    if (deepSleepData.calPhase != CAL_WARMUP) return;
+    deepSleepData.calReadingsSeen++;
+    if (deepSleepData.calReadingsSeen == 1) {
+        Serial.println("-->[CAL] Warm-up: discarding first reading after start.");
+        return;
+    }
+    CalWarmup w = getCalWarmup();
+    uint16_t usable = deepSleepData.calReadingsSeen - 1;  // first reading is discarded
+    uint32_t elapsed = (uint32_t)getReliableUptimeSeconds() - deepSleepData.calStartUptimeSec;
+    Serial.println("-->[CAL] Warm-up: reading " + String(usable) + "/" + String(w.minReadings) +
+                   ", elapsed " + String(elapsed) + "/" + String(w.minSeconds) + " s (CO2 " + String(co2) + " ppm)");
+    if (usable < w.minReadings || elapsed < w.minSeconds) return;
+
+    // Warm-up satisfied: issue the sensor-specific recalibration now.
+    Serial.println("-->[CAL] Warm-up complete. Calibrating sensor to " + String(deepSleepData.calTargetPpm) + " ppm.");
+    calibrationValue = deepSleepData.calTargetPpm;
+    sensors.setCO2RecalibrationFactor(calibrationValue);
+    saveCalibrationValue();  // persist so the value survives reboot. See issue #250
+    deepSleepData.calPhase = CAL_IDLE;
+    Serial.println("-->[CAL] Calibration command sent and value persisted.");
+}
+
 void processPendingCommands() {
     if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
-        if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
-            Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
-            pendingCalibration = false;
-            sensors.setCO2RecalibrationFactor(calibrationValue);
-            saveCalibrationValue();  // Persist so the value survives reboot. See: https://github.com/melkati/CO2-Gadget/issues/250
+        pendingCalibration = false;
+        // Don't calibrate immediately — start the datasheet warm-up sequence, which
+        // collects/discards readings (across wakes in low power) before recalibrating.
+        if (calibrationValue <= 2000) {
+            if (deepSleepData.calPhase == CAL_IDLE) beginCalibrationSequence(calibrationValue);
         } else {
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
-            pendingCalibration = false;
         }
     }
 
@@ -524,6 +598,10 @@ void readingsLoop() {
         if (newReadingsAvailable) {
             lastReadingsCommunicationTime = esp_timer_get_time();
             newReadingsAvailable = false;
+            // Advance any calibration warm-up on each fresh reading. Gated to
+            // high-performance mode; in low power the deep-sleep wake handler
+            // advances it once per wake. See issue #250.
+            if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) advanceCalibrationSequence();
             nav.idleChanged = true;  // Must redraw display as there are new readings
 #ifdef SUPPORT_CIRCULAR_BUFFER
             addCO2Value(co2);

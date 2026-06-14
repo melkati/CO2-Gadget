@@ -376,19 +376,20 @@ void toDeepSleep() {
     esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
 #endif
 
-    // Capture any still-pending calibration / ambient pressure command into RTC
-    // memory as the LAST step before sleep — AFTER prepareServicesForDeepSleep()
-    // has torn down WiFi/BLE/MQTT. Those handlers run in their own FreeRTOS tasks
-    // and can set pendingCalibration at any moment while the radios are up, so
-    // capturing earlier would race: a command arriving between the capture and
-    // esp_deep_sleep_start() would be lost with volatile RAM. processPendingCommands()
-    // applies it while the device is awake; this only catches the late, about-to-
-    // sleep case. With the radios down here, the flag can no longer change.
+    // Handle any still-pending command as the LAST step before sleep — AFTER
+    // prepareServicesForDeepSleep() has torn down WiFi/BLE/MQTT. Those handlers run
+    // in their own FreeRTOS tasks and can set pendingCalibration at any moment while
+    // the radios are up, so doing this earlier would race: a command arriving between
+    // here and esp_deep_sleep_start() would be lost with volatile RAM. With the radios
+    // down, the flag can no longer change. If a calibration was requested but its
+    // warm-up sequence hasn't started yet (the command landed too late for
+    // processPendingCommands()), kick it off now so the warm-up resumes on the next
+    // wake; the sequence state itself lives in RTC and survives sleep.
     // See: https://github.com/melkati/CO2-Gadget/issues/250
-    if (pendingCalibration) {
-        deepSleepData.calibrateOnNextWake = true;
-        deepSleepData.pendingCalibrationValue = calibrationValue;
+    if (pendingCalibration && (deepSleepData.calPhase == CAL_IDLE) && (calibrationValue <= 2000)) {
+        beginCalibrationSequence(calibrationValue);
     }
+    pendingCalibration = false;
     if (pendingAmbientPressure) {
         deepSleepData.setAmbientPressureOnNextWake = true;
         deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
@@ -855,32 +856,12 @@ void handleLowPowerModeOnWake() {
     initBattery();
     batteryLoop();
     if (handleLowPowerSensors()) {
-        // Apply a calibration / ambient pressure command that was queued before
-        // sleep, now that the sensor is awake and has produced a fresh reading.
-        // Restore the RAM flags from RTC and reuse processPendingCommands() so
-        // range validation and the actual sensor calls live in one place.
+        // This wake produced one fresh sensor reading — advance any in-progress
+        // calibration warm-up by one step (collect/discard across wakes; the
+        // sensor-specific recalibration fires once the warm-up is satisfied).
+        // The sequence state lives in RTC, so it resumes seamlessly across sleeps.
         // See: https://github.com/melkati/CO2-Gadget/issues/250
-        if (deepSleepData.calibrateOnNextWake) {
-            bool isScd4x = (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) ||
-                           (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41));
-            if (isScd4x) {
-                // SCD4x forced recalibration (FRC) requires >3 min of prior
-                // measurement (Sensirion app note "SCD4x Low Power Operation"),
-                // which a single wake-shot cannot provide — the command would
-                // return 0xffff and the library leaves the sensor in periodic
-                // mode, fighting the single-shot-idle deep-sleep flow. The value
-                // is already persisted; calibrate the SCD4x in interactive mode
-                // (sensor runs periodic long enough) or enable Auto Self-Cal.
-                Serial.println("-->[DEEP][WARN] Skipping on-wake FRC for SCD4x (needs >3 min warm-up). Calibrate interactively or enable ASC.");
-                deepSleepData.calibrateOnNextWake = false;
-            } else {
-                // SCD30/MH-Z19/CM1106/S8 store calibration in their own
-                // non-volatile memory and accept recalibration immediately.
-                pendingCalibration = true;
-                calibrationValue = deepSleepData.pendingCalibrationValue;
-                deepSleepData.calibrateOnNextWake = false;
-            }
-        }
+        advanceCalibrationSequence();
         if (deepSleepData.setAmbientPressureOnNextWake) {
             pendingAmbientPressure = true;
             ambientPressureValue = deepSleepData.pendingAmbientPressureValue;
