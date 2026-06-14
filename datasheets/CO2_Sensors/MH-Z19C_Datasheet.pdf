@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Winsen Gas Sensor_CO2 Sensor_Air Quality Sensor_Dust Sensor_CO Sensor-Winsen Electronics</title>
+		<meta name="keywords" content="Gas Sensor,CO2 Sensor,Air Quality Sensor,Dust Sensor,CO Sensor" />
+		<meta name="description" content="Zhengzhou Winsen Electronics Technology Co., Ltd.-Professional gas sensing solution supplier with over 30-year gas sensor manufacturing experience, offers innovative semiconductor type, catalytic type, electrochemical type, infrared NDIR type, and laser type gas sensors for the detection of carbon dioxide, methane, propane, butane, combustible gases, PM2.5, air quality, carbon monoxide(CO), alcohol, VOC, and oxygen.">
+		<!-- Favicon -->
+		<link rel="shortcut icon" href="https://www.winsen-sensor.com/skin/static/img/favicon.ico" type="image/x-icon" />
+		<link rel="apple-touch-icon" href="https://www.winsen-sensor.com/skin/static/img/apple-touch-icon.png">
+
+		<!-- Mobile Metas -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
+
+		<!-- Web Fonts  -->
+		<link id="googleFonts" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" type="text/css">
+
+		<!-- Vendor CSS -->
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/bootstrap/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/fontawesome-free/css/all.min.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/animate/animate.compat.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/simple-line-icons/css/simple-line-icons.min.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/owl.carousel/assets/owl.carousel.min.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/owl.carousel/assets/owl.theme.default.min.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/vendor/magnific-popup/magnific-popup.min.css">
+
+		<!-- Theme CSS -->
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/theme.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/theme-elements.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/theme-blog.css">
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/theme-shop.css">
+
+		<!-- Demo CSS -->
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/demos/demo-law-firm-2.css">
+
+		<!-- Skin CSS -->
+		<link id="skinCSS" rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/skins/skin-law-firm-2.css">
+		
+		<style>
+		.table{
+				background-color:#f4f4f4;
+				}
+		</style>
+		<!-- Theme Custom CSS -->
+		<link rel="stylesheet" href="https://www.winsen-sensor.com/skin/static/css/custom.css">
+		<!-- Head Libs -->
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/modernizr/modernizr.min.js"></script>
+		<script> function getCookie(cookieName) { let cookie = {}; document.cookie.split(“;”).forEach(function (el) { let [key, value] = el.split(“=”); cookie[key.trim()] = value; }); return cookie[cookieName]; } window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } var json_consent_status; var cookievalue = JSON.stringify(getCookie(“consentstatus”))?.split(‘\”‘); //默认意见 if (cookievalue == undefined) { gtag(“consent”, “default”, { ‘ad_storage’: ‘denied’, ‘ad_user_data’: ‘denied’, ‘ad_personalization’: ‘denied’, ‘analytics_storage’: ‘denied’, ‘wait_for_update’: 500, region: [ ‘AT’, ‘BE’, ‘BG’, ‘CY’, ‘CZ’, ‘DE’, ‘DK’, ‘EE’, ‘ES’, ‘FI’, ‘FR’, ‘GR’, ‘HR’, ‘HU’, ‘IE’, ‘IS’, ‘IT’, ‘LI’, ‘LT’, ‘LU’, ‘LV’, ‘MT’, ‘NL’, ‘NO’, ‘PL’, ‘PT’, ‘RO’, ‘SE’, ‘SI’, ‘SK’ ], // apply default to specific regions only }); } //过往意见 if (cookievalue != undefined) { if ((cookievalue == ‘”granted”‘)) { gtag(“consent”, “default”, { ‘ad_storage’: ‘granted’, ‘ad_user_data’: ‘granted’, ‘ad_personalization’: ‘granted’, ‘analytics_storage’: ‘granted’, ‘wait_for_update’: 500, }); } else { gtag(“consent”, “default”, { ‘ad_storage’: ‘denied’, ‘ad_user_data’: ‘denied’, ‘ad_personalization’: ‘denied’, ‘analytics_storage’: ‘denied’, ‘wait_for_update’: 500, }); } } function setCookies(json_consent_status) { var currentDate = new Date(); var expirationDate = new Date(currentDate); expirationDate.setFullYear(currentDate.getFullYear() + 1); var expires = expirationDate.toUTCString(); document.cookie = “consentstatus=” + json_consent_status + “;expires=” + expires + “;path=/”; } //客户点击拒绝 document.addEventListener(‘click’, function (e) { const dom = e.target.closest(‘.cky-btn-reject’); if (dom === null) return; json_consent_status = ‘denied’; setCookies(json_consent_status); gtag(‘consent’, ‘update’, { ‘ad_storage’: ‘denied’, ‘ad_user_data’: ‘denied’, ‘ad_personalization’: ‘denied’, ‘analytics_storage’: ‘denied’ }); }); //客户点击授权 document.addEventListener(‘click’, function (e) { const dom = e.target.closest(‘.cky-btn-accept’); if (dom === null) return; json_consent_status = ‘granted’; setCookies(json_consent_status); gtag(‘consent’, ‘update’, { ‘ad_storage’: ‘granted’, ‘ad_user_data’: ‘granted’, ‘ad_personalization’: ‘granted’, ‘analytics_storage’: ‘granted’ }); }); </script>
+		
+		<!-- Google Tag Manager -->
+		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','GTM-PP7N8CT');</script>
+		<!-- End Google Tag Manager -->
+		<!-- Hotjar Tracking Code for my site -->
+		<script>
+			(function(h,o,t,j,a,r){
+				h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+				h._hjSettings={hjid:3374383,hjsv:6};
+				a=o.getElementsByTagName('head')[0];
+				r=o.createElement('script');r.async=1;
+				r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+				a.appendChild(r);
+			})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+		</script>
+		<!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date(); for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }} k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(93534610, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/93534610" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+		<!-- Start cookieyes banner --> <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/cfb14f3d308f3f708bf981d3/script.js"></script> <!-- End cookieyes banner -->
+	</head>
+	<body>
+		<div class="body">
+			<header id="header" class="header-effect-shrink" data-plugin-options="{'stickyEnabled': true, 'stickyEffect': 'shrink', 'stickyEnableOnBoxed': true, 'stickyEnableOnMobile': false, 'stickyChangeLogo': true, 'stickyStartAt': 30, 'stickyHeaderContainerHeight': 70}">
+				<div class="text-center text-color-light " style="background-color: #1f2466">
+					<div class="container">Winsen has updated offical website. Bookmark for the latest!</div>
+				</div>
+				<div class="header-body header-body-bottom-border border-top-0">
+					<div class="header-top">
+						<div class="container">
+							<div class="header-row">
+								<div class="header-column justify-content-start">
+									<div class="header-row">
+										<ul class="list list-unstyled list-inline mb-0">
+											<li class="list-inline-item text-color-dark me-md-4 mb-0">
+												<i class="icons icon-phone text-color-primary text-4 position-relative top-2 me-1"></i>
+												<a href="tel:+0086-371-67169097" class="text-color-dark text-color-hover-primary text-decoration-none">
+													<strong>0086-371-67169097</strong>
+												</a>
+											</li>
+											<li class="list-inline-item text-color-dark me-4 mb-0 d-none d-md-inline-block">
+												<i class="icons icon-envelope text-color-primary text-4 position-relative top-4 me-1"></i>
+												<a href="mailto:sales@winsensor.com" class="text-color-dark text-color-hover-primary text-decoration-none text-2">
+													sales@winsensor.com												</a>
+											</li>
+											<li class="list-inline-item text-color-dark text-2 mb-0 d-none d-lg-inline-block">
+												<i class="icons icon-calendar text-color-primary text-3-5 position-relative top-1 me-1"></i>
+												Mon - Fri 9am - 6pm
+											</li>
+										</ul>
+									</div>
+								</div>
+								<div class="header-column justify-content-end">
+									<div class="header-row">
+										<ul class="header-social-icons social-icons social-icons-clean d-none d-lg-block">
+												<li class="social-icons-facebook" style="background: #3b5a9a">
+													<a href="https://www.facebook.com/profile.php?id=61586665046807" target="_blank" data-bs-toggle="tooltip" data-bs-animation="false" aria-label="Click to jump to Facebook" data-bs-placement="top" title="Facebook" >
+														<i class="fab fa-facebook-f" style="color:#fff"></i>
+													</a>
+												</li>
+												<!-- Youtube -->
+												<li class="social-icons-youtube" style="background: #c3191e">
+													<a href="https://www.youtube.com/channel/UCRk261sfEI0BY4bEqzP_g2Q" target="_blank" data-bs-toggle="tooltip" data-bs-animation="false" aria-label="Click to jump to Youtube"  data-bs-placement="top" title="Youtube">
+														<i class="fab fa-youtube" style="color:#fff"></i>
+													</a>
+												</li>
+												<!-- Linkedin -->
+												<li class="social-icons-linkedin" style="background: #0073b2">
+													<a href="https://www.linkedin.com/company/zhengzhou-winsen-electronics-technology-co-ltd" target="_blank" data-bs-toggle="tooltip" data-bs-animation="false" aria-label="Click to jump to Linkedin" data-bs-placement="top" title="Linkedin">
+														<i class="fab fa-linkedin" style="color:#fff"></i>
+													</a>
+												</li>
+										</ul>
+										<a href="#demo-form" class="popup-with-form btn btn-modern btn btn-primary btn-px-4 py-3 font-weight-bold text-2 rounded-0 ms-lg-4">REQUEST CONSULTATION</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="header-container container">
+						<div class="header-row">
+							<div class="header-column">
+								<div class="header-row">
+									<div class="header-logo">
+										<a href="/" aria-label="Click to jump to Home">
+											<img src="https://www.winsen-sensor.com/skin/static/image/logo-blue.png" class="img-fluid" width="123" height="49" alt="Winsen logo" />
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="header-column justify-content-end">
+								<div class="header-row">
+									<div class="header-nav header-nav-links">
+										<div class="header-nav-main header-nav-main-text-capitalize header-nav-main-effect-2 header-nav-main-sub-effect-1">
+											<nav class="collapse">
+												<ul class="nav nav-pills" id="mainNav">
+													<li>
+														<a href="/" class="nav-link">Home</a>
+													</li>
+													<li class="dropdown dropdown-mega">
+														<a class="dropdown-item dropdown-toggle" href="https://www.winsen-sensor.com/co2-sensor/">
+															Products
+														</a>
+														<ul class="dropdown-menu">
+															<li>
+																<div class="dropdown-mega-content">
+																	<div class="row">
+																		<div class="col-lg-3">
+																			<span class="dropdown-mega-sub-title">Gas Sensor</span>
+																			<ul class="dropdown-mega-sub-nav">
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/multi-in-one-module/">Multi-in-one module</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/indoor-air-quality/">IAQ sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/co2-sensor/">CO2 sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/co-sensor/">CO Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/h2-sensor/">H2 sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/ch2o-sensor/">HCHO sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/voc-sensor/">VOC sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/o3-sensor/">O3 sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/o2-sensor/">O2 sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/dust-sensor/">PM Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/combusitable-sensor/">Combustible gas sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/toxic-sensor/">Odor/Toxic Gas Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/nh3-sensor.html">NH3 Gas Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/alcohol-sensor/">Alcohol sensor</a></li>
+																			</ul>
+																		</div>
+																		<div class="col-lg-3">
+																			<span class="dropdown-mega-sub-title">Other Sensor</span>
+																			<ul class="dropdown-mega-sub-nav">
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/temperature-and-humidity-sensor/">Temperature and humidity sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/flow-sensor/">Flow sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/refrigerant-sensor/">Refrigerant sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/pir-sensor/">PIR sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/flame-sensor/">Flame sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/photoconductivity-sensor/">Photoconductivity Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/thermopile-sensor/">Thermopile Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/water-quality-sensor/">Water quality sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/pressure-sensor/">Pressure sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/automotive-sensor/">Automotive Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/piezoelectric-acceleration-sensor/">Piezoelectric Acceleration Sensor</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/product/zmt510-a.html">Non-contact Boil-dry Protection Sensor</a></li>
+																			</ul>
+																		</div>
+																		<div class="col-lg-3">
+																			<span class="dropdown-mega-sub-title">Application</span>
+																			<ul class="dropdown-mega-sub-nav">
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/security-monitoring/">Security Monitoring</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/environmental-protection/">Environmental Protection</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/health-medical/">Health & Medical</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/industrial-safety-and-automation/">Industrial Safety & Automation</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/new-energy-and-automotive/">Energy Storage</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/household-appliances/">Household Appliances</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/selection-guide/co2-sensor.html">Winsen CO2 Sensor Selection Guide</a></li>
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/atmospheric-monitoring/">Atmospheric Monitoring</a></li>
+																			</ul>
+																		</div>
+																		<div class="col-lg-3">
+																			<span class="dropdown-mega-sub-title">Test System</span>
+																			<ul class="dropdown-mega-sub-nav">
+																				<li><a class="dropdown-item" href="https://www.winsen-sensor.com/gas-sensor-test-system/">Gas Sensor Test System</a></li>
+																			</ul>
+																		</div>
+																	</div>
+																</div>
+															</li>
+														</ul>
+													</li>
+													<li>
+														<a href="/about-us.html" class="nav-link">About Winsen</a>
+													</li>
+													<li class="dropdown">
+														<a href="https://www.winsen-sensor.com/selection-guide/" class="dropdown-item dropdown-toggle">Application</a>
+														<ul class="dropdown-menu border-radius-0">
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-smart-farming-sensor-solution.html">Smart Farming Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/medical-health-sensor-solution.html">Medical & Health Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/environmental-monitoring-sensor-solution.html">Environmental Monitoring Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-pressure-sensors-solutions.html">Pressure Sensors Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-smart-fire-safety-solutions.html">Smart Fire Safety Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/industrial-gas-sensor-for-safety.html">Industrial Gas Sensor Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/to-become-the-mainstream-energy-storage-technology-in-the-future.html">Energy Storage Sensor Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/smart-household-sensor-solutions.html">Smart Household Sensor Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-refrigerant-sensor-solution.html">Refrigerant Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/automotive-sensor-solution.html">Automotive Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-sensors-for-smart-building-solutions.html">Smart Building Sensor Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/co2-sensor.html">CO2 Sensor Solutions</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/selection-guide/winsen-water-quality-sensor-solution.html">Water Quality Sensor Solution</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/mining-sensor-solution.html">Mining Sensor Solutions </a></li>
+														</ul>
+													</li>
+													<li class="dropdown">
+														<a href="#" class="dropdown-item dropdown-toggle">News</a>
+														<ul class="dropdown-menu border-radius-0">
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/articles/">Blog</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/new_faq/">FAQ</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/video/">Video</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/exhibition/">Exhibition</a></li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/knowledge">Sensor Knowledge</a></li>
+															<li class="dropdown-submenu">
+																<a class="dropdown-item" href="#">Principles<i class="fas fa-chevron-down"></i></a>
+																<ul class="dropdown-menu">
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/photoconductive-sensors.html">Photoconductive</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/pyroelectric-materials-and-sensors.html">Pyroelectric</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/electrochemical-principles.html">Electrochemical</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/semiconductor-sensors.html">Semiconductor</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/ndir-sensor.html">NDIR</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/what-is-tdlas.html">TDLAS</a></li>
+																	<li><a class="dropdown-item" href="https://www.winsen-sensor.com/knowledge/catalytic-sensors.html">Catalytic</a></li>
+																</ul>
+															</li>
+															<li><a class="nav-link" href="https://www.winsen-sensor.com/distributor-recruitment.html">Distributor Recruitment</a></li>
+														</ul>
+													</li>
+													<li>
+														<a href="https://www.winsen-sensor.com/newdownload/" class="nav-link">Download</a>
+													</li>
+													<li>
+														<a href="/contact-us.html" class="nav-link">Contact</a>
+													</li>
+												</ul>
+											</nav>
+										</div>
+									</div>
+									<a class="btn btn-gradient btn-rounded font-weight-semibold px-6 ms-3" href="https://shop.winsen-sensor.com/" target="_blank">Shop Online</a>
+									<div class="header-nav-features header-nav-features-no-border">
+										<div class="header-nav-feature header-nav-features-search d-inline-flex">
+											<a href="#" class="header-nav-features-toggle text-decoration-none" data-focus="headerSearch" aria-label="Click to Search">
+												<i class="icons icon-magnifier header-nav-top-icon font-weight-bold text-4 top-2 text-color-hover-primary"></i>
+											</a>
+											<div class="header-nav-features-dropdown header-nav-features-dropdown-mobile-fixed" id="headerTopSearchDropdown">
+												<form role="search" name="search_js1" action="/e/search/index.php" method="post">
+													<div class="simple-search input-group">
+														<input value="title,jcyl,jcqt,yljs,cpyy" type="hidden" name="show">
+														<input type="hidden" name="classid" value="147">
+														<input type="hidden" name="tempid" value="3" />
+														<input class="form-control text-1" name="keyboard" type="text" id="searchfield" onfocus="if (value =='Search'){value =''}" onblur="if (value ==''){value='Search'}" onkeypress="if(event.keyCode==13) {hd_btnSearch.click();return false;}">
+														
+														<button class="btn" type="submit">
+															<i class="icons icon-magnifier header-nav-top-icon font-weight-bold text-color-dark text-4 text-color-hover-primary top-2"></i>
+														</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+									<button class="btn header-btn-collapse-nav" data-bs-toggle="collapse" data-bs-target=".header-nav-main nav">
+										<i class="fas fa-bars"></i>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
+			<form id="demo-form" class="white-popup-block mfp-hide notranslate" name="form1" method="post" action="/e/enews/index.php" onsubmit="return(CheckInputdd(form1))">
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            <h4>Contact Us</h4>
+            <p class="mb-4">Thank you for your interest in Winsen. Please fill out the form below so we can best respond to your inquiry.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group col-lg-6">
+            <label class="form-label">Your name</label>
+            <input type="text" value="" data-msg-required="Please enter your name." maxlength="100" class="form-control" name="name" >
+        </div>
+        <div class="form-group col-lg-6">
+            <label class="form-label">Your email address *</label>
+            <input type="email" value="" data-msg-required="Please enter your email address." data-msg-email="Please enter a valid email address." maxlength="100" class="form-control" name="email" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-lg-6">
+            <label class="form-label">Your country *</label>
+            <input type="text" value="" data-msg-required="Please enter your country." maxlength="100" class="form-control" name="country" required>
+        </div>
+        <div class="form-group col-lg-6">
+            <label class="form-label">Your company</label>
+            <input type="text" value="" data-msg-required="Please enter your company"  maxlength="100" class="form-control" name="company" >
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-lg-6">
+            <label class="form-label">WhatsApp</label>
+            <input type="text" value="" data-msg-required="Please enter your WhatsApp." maxlength="100" class="form-control" name="tel">
+        </div>
+        <div class="form-group col-lg-6">
+            <label class="form-label">Skype</label>
+            <input type="text" value="" data-msg-required="Please enter your Skype"  maxlength="100" class="form-control" name="Skype" >
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col">
+            <label class="form-label">Inquiry *</label>
+            <textarea maxlength="5000" data-msg-required="Please enter your message." rows="5" class="form-control" name="title" required></textarea>
+        </div>
+    </div>
+
+    <!-- 新增隐私政策勾选框 -->
+    <div class="row mt-3">
+        <div class="form-group col">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="privacy_agree" name="privacy_agree">
+                <label class="form-check-label" for="privacy_agree">
+                    I have read and agree to the <a href="https://www.winsen-sensor.com/privacy-policy.html" target="_blank">Privacy Policy</a>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group col">
+            <input name="submit" class="btn btn-modern btn-primary"  type="submit" value="Send message">
+            <input name='enews' type='hidden' value='AddFeedback'>
+            <input name="fromurl" value="" type="hidden"  />
+            <input name="bid" value="3" type="hidden" />
+        </div>
+    </div>
+
+</form>
+<script type="text/javascript" language="javascript">
+document.addEventListener( 'click', function( event ) {
+    ym(93534610,'reachGoal','Liuyan');
+}, false );
+
+function is_email(str) {
+    if ((str.indexOf("@") == -1) || (str.indexOf(".") == -1)) {
+        return false;
+    }
+    return true;
+}
+
+function CheckInputdd(form) {
+    // 设置当前页面URL
+    form.fromurl.value = window.location.href;
+
+    // 验证留言内容
+    if ((form.title.value == '') || (form.title.value == 'Please input your inquiry')) {
+        alert("Please input your Message.");
+        form.title.focus();
+        return false;
+    }
+
+    // 验证邮箱格式
+    if (!is_email(form.email.value)) {
+        alert("Please specify a valid email address.");
+        form.email.focus();
+        return false;
+    }
+
+    // 验证国家
+    if (form.country.value == '') {
+        alert("Please select your Country.");
+        form.country.focus();
+        return false;
+    }
+
+    // 新增：验证隐私政策勾选
+    if (!form.privacy_agree.checked) {
+        alert("Please read and agree to the privacy policy.");
+        form.privacy_agree.focus();
+        return false;
+    }
+
+    return true;
+}
+</script>
+			<div role="main" class="main">
+				<section class="page-header page-header-modern page-header-lg overlay overlay-show overlay-op-9 m-0" style="background-image: url(img/demos/law-firm-2/backgrounds/background-5.jpg); background-size: cover; background-position: center;">
+					<div class="container py-5">
+						<div class="row py-5">
+							<div class="col text-center">
+								<ul class="breadcrumb d-flex justify-content-center text-4-5 font-weight-medium mb-2">
+									<li><a href="/" class="text-color-primary text-decoration-none">HOME</a></li>
+									<li class="text-color-primary active">404</li>
+								</ul>
+								<h1 class="text-color-light font-weight-bold text-12">404</h1>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<div class="container">
+
+					<section class="http-error">
+						<div class="row justify-content-center py-3">
+							<div class="col-md-7 text-center">
+								<div class="http-error-main">
+									<h2>404!</h2>
+									<p>We're sorry, but the page you were looking for doesn't exist.</p>
+								</div>
+							</div>
+							<div class="col-md-4 mt-4 mt-md-0">
+								<h4 class="text-primary">Here are some useful links</h4>
+								<ul class="nav nav-list flex-column">
+									<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+									<li class="nav-item"><a class="nav-link" href="https://www.winsen-sensor.com/about-us.html">About Us</a></li>
+									<li class="nav-item"><a class="nav-link" href="https://www.winsen-sensor.com/co2-sensor/">CO2 Sensor</a></li>
+									<li class="nav-item"><a class="nav-link" href="https://www.winsen-sensor.com/co-sensor/">CO Sensor</a></li>
+									<li class="nav-item"><a class="nav-link" href="https://www.winsen-sensor.com/voc-sensor/">VOC Sensor</a></li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</div>
+				<div class="container py-5 my-3">
+					<div class="row align-items-center">
+						<div class="col-lg-6 mb-5 mb-lg-0">
+							<div class="card bg-primary border-0 border-radius-0">
+								<div class="card-body p-5">
+									<h3 class="d-block alternative-font-4 text-color-light font-weight-medium opacity-8 text-4 mb-0">ANY QUESTIONS?</h3>
+									<h2 class="text-color-light font-weight-bold text-9 pb-2 mb-4">Frequent Asked Questions</h2>
+
+									<div class="custom-seemore-overlay mb-4" style="max-height: 400px;">
+										<div class="custom-accordion-style-1 accordion accordion-modern" id="FAQAccordion">
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ1">
+																1- Why choose Winsen？															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ1" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Professional manufacturer of gas sensors, global sensing solutions provider with over 30 years of experience. Top quality guarantee, Excellent service, Customized products, Fast delivery!</p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ2">
+																2- What's your Lead Time of delivery?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ2" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Reference lead times: 1-15 days after receiving deposit depending on volume. The actual lead time can be confirmed with Winsen Order Processing Dept.</p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ3">
+																3- What's your Shipping Methods?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ3" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Winsen will recommend the most appropriate way of transportation (express, air, sea, train, etc.) according to customer's requirement on cost and time.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ4">
+																4- What’s your Payment Methods for online orders?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ4" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">T/T, Paypal, West Union, Credit Card, etc.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ5">
+																5- What’s your MOQ?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ5" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">MOQ is different depending on product models. Please contact Winsen sales for details.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ6">
+																6- Do you accept Customized Products?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ6" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Customer LOGO and packing design are acceptable.<br />
+Customized design and function will be provided without extra charge (including molding fee).<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ7">
+																7- Do you accept Sample Order?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ7" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Sample order is acceptable and the fees will be borne by buyer.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ8">
+																8- What's your Quality Control and Inspection process for outgoing?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ8" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">Winsen has a complete and strict flow for offline sensors: aging-reject defective-sampling inspection-issue reports-finished ingoing...outgoing.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ9">
+																9- What ‘s your company’s Quality Policy?															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ9" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">All Winsen products go through strict inspections and tests to make sure they are 100% qualified before shipping out.<br /></p>
+														</div>
+													</div>
+												</div>
+																							<div class="card card-default">
+													<div class="card-header">
+														<h4 class="card-title m-0">
+															<a class="accordion-toggle text-color-dark font-weight-semibold text-2-5 collapsed" data-bs-toggle="collapse" href="#collapseFAQ10">
+																10- Common abbreviations															</a>
+														</h4>
+													</div>
+													<div id="collapseFAQ10" class="collapse" data-bs-parent="#FAQAccordion">
+														<div class="card-body ps-4 pt-2">
+															<p class="mb-0">ppm: parts per million<br />
+ppb: parts per billion<br />
+VOL: volume ratio<br />
+LEL: lower explosive limit<br />
+NDIR: Non-Dispersive Infra-Red<br /></p>
+														</div>
+													</div>
+												</div>
+																					</div>
+										<a href="#" class="custom-seemore-overlay-button text-color-light text-5"><i class="fas fa-chevron-down position-relative z-index-1"></i></a>
+									</div>
+
+									<a href="/contact-us.html" class="btn custom-btn-primary-darken font-weight-bold btn-px-5 btn-py-3">CONTACT US</a>
+								</div>
+							</div>
+						</div>
+						<div id="requestConsultation" class="col-lg-6 col-xl-5 offset-xl-1">
+							<h3 class="d-block alternative-font-4 text-color-primary font-weight-medium text-4 text-lg-end mb-0 appear-animation" data-appear-animation="fadeInUpShorterPlus" data-appear-animation-delay="400">LET'S TALK</h3>
+							<h2 class="text-color-dark font-weight-bold text-9 text-lg-end pb-2 mb-4 appear-animation" data-appear-animation="fadeInUpShorterPlus" data-appear-animation-delay="600">Request Consultation</h2>
+
+							<form class="custom-form-style-1 appear-animation" data-appear-animation="fadeInUpShorterPlus" data-appear-animation-delay="800" name="form3" method="post" action="/e/enews/index.php" onsubmit="return(CheckInputdd(form3))">
+    <div class="row">
+        <div class="form-group col mb-3">
+            <input type="text" value="" data-msg-required="Please enter your name." maxlength="100" class="form-control border-radius-0" name="name" placeholder="Name ">
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col mb-3">
+            <input type="email" value="" data-msg-required="Please enter your email address." data-msg-email="Please enter a valid email address." maxlength="100" class="form-control border-radius-0" name="email" required placeholder="E-mail *">
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col mb-3">
+            <input type="text" value="" data-msg-required="Please enter your phone number." maxlength="100" class="form-control border-radius-0" name="phone" placeholder="Phone">
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col mb-4">
+            <textarea maxlength="5000" data-msg-required="Please enter your message." rows="9" class="form-control border-radius-0" name="title" required placeholder="Message *"></textarea>
+        </div>
+    </div>
+
+    <!-- 新增隐私政策勾选框 -->
+    <div class="row mb-4">
+        <div class="form-group col">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input border-radius-0" id="privacy_agree3" name="privacy_agree">
+                <label class="form-check-label" for="privacy_agree3">
+                    I have read and agree to the <a href="https://www.winsen-sensor.com/privacy-policy.html" target="_blank">Privacy Policy</a>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group col text-lg-end mb-0">
+            <button name="submit" type="submit" class="btn btn-primary font-weight-bold btn-px-5 btn-py-3 appear-animation" data-appear-animation="fadeInUpShorterPlus" data-appear-animation-delay="350" >REQUEST CONSULTATION</button>
+            <input name='enews' type='hidden' value='AddFeedback'>
+            <input name="fromurl" value="" type="hidden"  />
+            <input name="bid" value="3" type="hidden" />
+        </div>
+    </div>
+</form>
+
+<!-- 补充完整的验证函数（如果页面中还没有的话） -->
+<script type="text/javascript" language="javascript">
+function is_email(str) {
+    if ((str.indexOf("@") == -1) || (str.indexOf(".") == -1)) {
+        return false;
+    }
+    return true;
+}
+
+function CheckInputdd(form) {
+    // 设置当前页面URL
+    form.fromurl.value = window.location.href;
+
+    // 验证邮箱格式（如果有邮箱字段）
+    if (form.email && !is_email(form.email.value)) {
+        alert("Please specify a valid email address.");
+        form.email.focus();
+        return false;
+    }
+
+    // 验证留言内容
+    if ((form.title.value == '') || (form.title.value == 'Message *')) {
+        alert("Please input your Message.");
+        form.title.focus();
+        return false;
+    }
+
+    // 验证隐私政策勾选
+    if (!form.privacy_agree.checked) {
+        alert("Please read and agree to the privacy policy.");
+        form.privacy_agree.focus();
+        return false;
+    }
+
+    return true;
+}
+</script>
+						</div>
+					</div>
+				</div>
+			</div> 
+			<footer id="footer" class="border-0 pt-4 mt-0">
+				<div class="container py-5">
+					<div class="row py-4">
+						<div class="col-lg-3 mb-5 mb-lg-0">
+							<h5 class="text-transform-none font-weight-bold text-color-light text-5-5 mb-4">Gas Sensor</h5>
+							<style>
+								.hidden {
+									display: none;
+								}
+							</style>
+							
+							<ul class="list list-unstyled text-4-5 mb-0">
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/multi-in-one-module/">Multi-in-one module</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/indoor-air-quality/">IAQ sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/co2-sensor/">CO2 sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/co-sensor/">CO Sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/h2-sensor/">H2 sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/ch2o-sensor/">HCHO sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/voc-sensor/">VOC sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/o3-sensor/">O3 sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/o2-sensor/">O2 sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/dust-sensor/">Particle Sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/combusitable-sensor/">Combustible gas sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/toxic-sensor/">Odor/Toxic Gas Sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/alcohol-sensor/">Alcohol sensor</a></li>
+							</ul>
+							<a style="color:#0088CC" class="moreBtn">More <i class="fas fa-chevron-down text-2 ms-1"></i></a>
+						</div>
+						<div class="col-lg-3 mb-5 mb-lg-0">
+							<h5 class="text-transform-none font-weight-bold text-color-light text-5-5 mb-4">Other Sensor</h5>
+							<ul class="list list-unstyled text-4-5 mb-0">
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/temperature-and-humidity-sensor/">Temperature and humidity sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/flow-sensor/">Flow sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/refrigerant-sensor/">Refrigerant sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/pir-sensor/">PIR sensor</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/flame-sensor/">Flame sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/thermopile-sensor/">Thermopile Sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/water-quality-sensor/">Water quality sensor</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/pressure-sensor/">Pressure sensor</a></li>
+							</ul>
+							<a style="color:#0088CC" class="moreBtn">More <i class="fas fa-chevron-down text-2 ms-1"></i></a>
+						</div>
+						<div class="col-lg-3 mb-5 mb-lg-0">
+							<h5 class="text-transform-none font-weight-bold text-color-light text-5-5 mb-4">Application</h5>
+							<ul class="list list-unstyled text-4-5 mb-0">
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/security-monitoring/">Security Monitoring</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/environmental-protection/">Environmental Protection</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/health-medical/">Health &amp; Medical</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/industrial-safety-and-automation/">Industrial Safety &amp; Automation</a></li>
+								<li class="mb-0"><a href="https://www.winsen-sensor.com/new-energy-and-automotive/">Energy Storage</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/household-appliances/">Household Appliances</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/selection-guide/co2-sensor.html">Winsen CO2 Sensor Selection Guide</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/atmospheric-monitoring/">Atmospheric Monitoring</a></li>
+								<li class="mb-0 hidden"><a href="https://www.winsen-sensor.com/automotive-sensor/">Automotive Sensor</a></li>
+							</ul>
+							<a style="color:#0088CC" class="moreBtn">More <i class="fas fa-chevron-down text-2 ms-1"></i></a>
+						</div>
+						<script>
+                    var moreBtns = document.querySelectorAll('.moreBtn');
+
+moreBtns.forEach(function(btn) {
+  var parentList = btn.previousElementSibling;
+  var hiddenItems = parentList.querySelectorAll('.hidden');
+
+  btn.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    hiddenItems.forEach(function(item) {
+      item.classList.toggle('hidden');
+    });
+
+    if (btn.classList.contains('expanded')) {
+      btn.classList.remove('expanded');
+      btn.innerHTML = 'More <i class="fas fa-chevron-down text-2 ms-1"></i>';
+    } else {
+      btn.classList.add('expanded');
+      btn.innerHTML = 'Less <i class="fas fa-chevron-up text-2 ms-1"></i>';
+    }
+  });
+});
+                </script>
+						<div class="col-lg-3">
+							<h5 class="text-transform-none font-weight-bold text-color-light text-5-5 mb-4">Contact Us</h5>
+							<ul class="list list-unstyled mb-4">
+								<li>
+									<i class="fab fa-whatsapp  text-color-primary text-5-5 position-relative top-2 me-2"></i>
+									<a href="https://api.whatsapp.com/send/?phone=8618595618735" class="text-color-light font-weight-bold text-decoration-none text-5 whatsapp-link">+8618595618735</a>
+								</li>
+								<li>
+									<i class="icons icon-phone text-color-primary text-5-5 position-relative top-2 me-2"></i>
+									<a href="tel:0086-371-67169097" class="text-color-light font-weight-bold text-decoration-none text-5">0086-371-67169097</a>
+								</li>
+								<li class="mb-3">
+									<i class="icons icon-envelope text-color-primary text-6 position-relative top-6 me-2"></i>
+									<a href="mailto:sales@winsensor.com" class="text-color-light text-decoration-none text-4">sales@winsensor.com</a>
+								</li>
+								<li class="text-color-light text-4">
+									<i class="icons icon-calendar text-color-primary text-5 position-relative top-3 me-2"></i>
+									Mon - Fri 9am - 6pm
+								</li>
+							</ul>
+							<ul class="custom-social-icons-style-1 social-icons social-icons-clean">
+								<li class="social-icons-instagram">
+									<a href="https://www.linkedin.com/company/zhengzhou-winsen-electronics-technology-co-ltd" class="no-footer-css" target="_blank" title="Linkedin"><i class="fab fa-linkedin"></i></a>
+								</li>
+								<li class="social-icons-twitter mx-4">
+									<a href="https://www.youtube.com/channel/UCRk261sfEI0BY4bEqzP_g2Q" class="no-footer-css" target="_blank" title="Youtube"><i class="fab fa-youtube"></i></a>
+								</li>
+								<li class="social-icons-facebook">
+									<a href="https://www.facebook.com/profile.php?id=61586665046807" class="no-footer-css" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="footer-copyright py-4">
+					<div class="container py-2">
+						<div class="row">
+							<div class="col">
+								<p class="text-center text-3 mb-0">Winsen © 2025. All Rights Reserved. | <a href="https://www.winsen-sensor.com/privacy-policy.html" target="_blank">Privacy Policy</a></p> 
+							</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+<div class="elementor-widget-container">
+			<style>
+                .m-foot {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    z-index: 999;
+                    width: 100%;
+                    background: #004ba5;
+                    display: none;
+                }
+
+                .m-foot ul {
+                    font-size: 0;
+                    text-align: center;
+                    height: 54px;
+                    margin-bottom: auto;
+                }
+
+                .m-foot ul li {
+                    float: left;
+                    width: 25%;
+                    height: 54px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: #004ba5;
+                    border-left: 1px solid #dbdbdb;
+                    border-top: 1px solid #dbdbdb;
+                }
+
+                .m-foot ul li:hover {
+                    background: #004ba5;
+                }
+
+                .m-foot ul li svg {
+                    color: #ffffff;
+                    margin-top: 10px;
+                    fill: #ffffff;
+                }
+
+                .m-foot ul li:nth-child(3) {
+                    background: #004ba5;
+                    border-left: none;
+                    border-right: 1px solid #ffffff;
+                    border-left: 1px solid #ffffff;
+                }
+
+                .m-foot ul li:nth-child(3) span {
+                    color: #fff !important;
+                }
+
+                .m-foot ul li:first-child,
+                .m-foot ul li:nth-child(4) {
+                    border-left: none;
+                }
+
+                .m-foot ul li span,
+                .m-foot ul li img {
+                    display: block;
+                    margin: 6px auto;
+                }
+
+                .m-foot ul li span {
+                    line-height: 14px;
+                    font-size: 12px;
+                    color: #ffffff;
+                    transition: all 0.4s;
+                }
+
+                .wyz-top .icon {
+                    font-size: 16px;
+                    width: 30px;
+                    height: 30px;
+                    margin-right: 3px;
+                    font-style: normal;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    vertical-align: middle;
+                    margin-top: -3px;
+                    fill: #FF6600;
+                }
+
+                .m-foot ul li:hover span {
+                    color: #ffffff;
+                }
+
+                @media only screen and (max-width: 768px) {
+
+                    .m-foot {
+                        display: block;
+                    }
+
+                }
+
+
+                .icon {
+                    font-size: 16px;
+                    width: 20px;
+                    height: 20px;
+                    margin-right: 3px;
+                    font-style: normal;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    vertical-align: middle;
+                    margin-top: -3px;
+                    fill: currentColor
+                }
+            </style>
+            <div class="m-foot">
+                <ul class="row">
+                    <li>
+                        <a href="#demo-form" class="popup-with-form" style="cursor: pointer;">
+                            <svg t="1677317669124" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6548" width="200" height="200">
+                                <path d="M804.977778 457.955556C804.977778 284.444444 637.155556 142.222222 429.511111 142.222222 224.711111 142.222222 56.888889 284.444444 56.888889 457.955556c0 76.8 34.133333 150.755556 91.022222 207.644444 8.533333 11.377778 8.533333 73.955556 2.844445 130.844444l-5.688889 48.355556 39.822222-25.6c45.511111-28.444444 102.4-62.577778 119.466667-62.577778 39.822222 11.377778 82.488889 17.066667 125.155555 17.066667 207.644444 0 375.466667-142.222222 375.466667-315.733333zM253.155556 494.933333c-22.755556 0-42.666667-19.911111-42.666667-42.666666s19.911111-42.666667 42.666667-42.666667 42.666667 19.911111 42.666666 42.666667c0 25.6-19.911111 42.666667-42.666666 42.666666z m179.2 0c-22.755556 0-42.666667-19.911111-42.666667-42.666666s19.911111-42.666667 42.666667-42.666667 42.666667 19.911111 42.666666 42.666667c0 25.6-19.911111 42.666667-42.666666 42.666666z m170.666666 0c-22.755556 0-42.666667-19.911111-42.666666-42.666666s19.911111-42.666667 42.666666-42.666667 42.666667 19.911111 42.666667 42.666667c0 25.6-19.911111 42.666667-42.666667 42.666666z" fill="#ffffff" p-id="6549"></path>
+                                <path d="M967.111111 534.755556c0-88.177778-42.666667-173.511111-122.311111-233.244445-8.533333-8.533333-22.755556-5.688889-31.288889 2.844445-2.844444 2.844444-2.844444 5.688889-2.844444 8.533333 25.6 45.511111 39.822222 96.711111 39.822222 150.755555 0 170.666667-145.066667 312.888889-335.644445 347.022223-2.844444 2.844444-2.844444 5.688889-2.844444 8.533333-2.844444 11.377778 5.688889 22.755556 19.911111 25.6 62.577778 8.533333 128 5.688889 187.733333-14.222222 17.066667 0 73.955556 34.133333 119.466667 62.577778l39.822222 25.6-5.688889-48.355556c-5.688889-59.733333-5.688889-119.466667 0-130.844444 59.733333-54.044444 93.866667-128 93.866667-204.8z" fill="#ffffff" p-id="6550"></path>
+                            </svg>
+                            <span>Inquiry</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://wa.me/8618595618735" class="whatsapp-link" target="_blank">
+                            <svg t="1659174738158" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4108" width="200" height="200">
+                                <path d="M520.124 64C277.21 64 80.268 259.402 80.268 500.464c0 82.46 23.064 159.58 63.118 225.374L64 960l243.528-77.364c63.016 34.57 135.49 54.292 212.596 54.292C763.07 936.928 960 741.498 960 500.464 960 259.402 763.07 64 520.124 64z m218.724 602.22c-10.348 25.654-57.148 49.066-77.798 50.144-20.628 1.094-21.216 15.988-133.68-32.868-112.45-48.868-180.104-167.688-185.438-175.34-5.338-7.624-43.56-62.094-41.498-116.91 2.076-54.826 32.094-80.692 42.808-91.45 10.702-10.774 22.972-12.704 30.464-12.826 8.856-0.144 14.592-0.264 21.146-0.022 6.548 0.248 16.384-1.37 24.9 21.278 8.512 22.646 28.886 78.306 31.492 83.978 2.604 5.678 4.216 12.252 0.204 19.542-4.024 7.306-6.084 11.87-11.922 18.166-5.87 6.296-12.348 14.084-17.584 18.898-5.84 5.33-11.94 11.144-5.8 22.538 6.136 11.386 27.306 48.712 59.558 79.472 41.45 39.542 77.196 52.658 88.196 58.634 11.03 6.008 17.612 5.34 24.452-1.858 6.808-7.198 29.278-31.492 37.192-42.338 7.91-10.876 15.322-8.746 25.484-4.658 10.156 4.104 64.314 33.112 75.346 39.102 11.02 5.978 18.386 9.058 21.02 13.8 2.634 4.76 1.802 27.062-8.542 52.718z" p-id="2523"></path>
+                            </svg>
+                            <span>Whatsapp</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mailto:sales@winsensor.com?subject=Winsen Sensor" rel="nofollow">
+                            <svg t="1659174738158" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4108" width="200" height="200">
+                                <path d="M1021.407 146.857L512.645 574.783 3.909 146.857zM0.007 183.402L339.886 471.24 0.007 876.743z" p-id="4109"></path>
+                                <path d="M39.354 877.144L363.529 494.4 512.54 616.772l149.274-126.179 324.157 386.551zM1023.993 876.743L684.122 471.24l339.871-287.838z" p-id="4110"></path>
+                            </svg>
+                            <span>Email</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            <svg t="1677318261567" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7556" width="200" height="200">
+                                <path d="M853.333333 170.666667H170.666667v85.333333h288L221.866667 571.733333A42.624 42.624 0 0 0 256 640h85.333333v170.666667a42.666667 42.666667 0 0 0 42.666667 42.666666h256a42.666667 42.666667 0 0 0 42.666667-42.666666v-170.666667h85.333333a42.709333 42.709333 0 0 0 34.133333-68.266667L565.333333 256H853.333333V170.666667z m-213.333333 384a42.666667 42.666667 0 0 0-42.666667 42.666666v170.666667h-170.666666v-170.666667a42.666667 42.666667 0 0 0-42.666667-42.666666H341.333333l170.666667-227.541334L682.666667 554.666667h-42.666667z" fill="#ffffff" p-id="7557"></path>
+                            </svg>
+                            <span>Top</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+	  // 固定电话号码
+	  const PHONE_NUMBER = '8618595618735';
+	  
+	  // 通过类名获取所有 WhatsApp 链接（替换 id 选择器为 class 选择器）
+	  const whatsappLinks = document.querySelectorAll('.whatsapp-link'); // 使用 .class 选择器
+	  
+	  whatsappLinks.forEach(link => {
+		if (!link) return;
+		
+		// 获取当前 URL 并编码
+		const currentUrl = window.location.href;
+		
+		// 拼接参数
+		const textParam = `Please send this message first, From url: ${currentUrl}`;
+		const newHref = `https://api.whatsapp.com/send/?phone=${PHONE_NUMBER}&text=${encodeURIComponent(textParam)}&type=phone_number&app_absent=0`;
+		
+		// 更新所有匹配链接的 href
+		link.href = newHref;
+	  });
+	});
+</script>
+
+		</div>
+				<!-- Vendor -->
+		<script>
+			testA();
+
+			function testA(){
+			d=document.domain;
+					 c=location.search;
+			if (c==null || c == undefined || c == ""){
+			   return;
+			}
+			tags=document.getElementsByTagName("a");
+			for(var i=0;i<tags.length;i++){
+				if(tags[i].href.indexOf('?')==-1&&tags[i].href.indexOf(d)>-1){
+				   tags[i].href=tags[i].href+c;
+				}
+			}}
+		</script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery/jquery.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.appear/jquery.appear.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.easing/jquery.easing.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.cookie/jquery.cookie.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.validation/jquery.validate.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.easy-pie-chart/jquery.easypiechart.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/jquery.gmap/jquery.gmap.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/lazysizes/lazysizes.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/isotope/jquery.isotope.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/owl.carousel/owl.carousel.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/vide/jquery.vide.min.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/vendor/vivus/vivus.min.js"></script>
+
+		<!-- Theme Base, Components and Settings -->
+		<script src="https://www.winsen-sensor.com/skin/static/js/theme.js"></script>
+
+		<!-- Current Page Vendor and Views -->
+		<script src="https://www.winsen-sensor.com/skin/static/js/views/view.contact.js"></script>
+
+		<!-- Demo -->
+		<script src="https://www.winsen-sensor.com/skin/static/js/demos/demo-law-firm-2.js"></script>
+
+		<!-- Theme Custom -->
+		<script src="https://www.winsen-sensor.com/skin/static/js/custom.js"></script>
+
+		<!-- Theme Initialization Files -->
+		<script src="https://www.winsen-sensor.com/skin/static/js/theme.init.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/js/examples.lightboxes.js"></script>
+		<script src="https://www.winsen-sensor.com/skin/static/js/examples/examples.portfolio.js"></script>
+		<script language="javascript" src="https://lr.zoosnet.net/JS/LsJS.aspx?siteid=LEF55473249&float=1&lng=en"></script>
+		<!-- Google Tag Manager (noscript) -->
+		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7N8CT"
+		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+<div class="gtranslate_wrapper"></div>
+<script>
+window.gtranslateSettings = {
+    "default_language":"en",
+    "url_structure":"sub_domain",
+    "languages":["en","ko","ja","ru","uz","es","it","de","fr","pt","pl","tr","iw","id","ar","zh-TW","lb","ky","my","mn","la","lo","bn","hy","ga","ms","fa","th","hu","et","vi","uk","sl","sk","sr","lt","lv","tl","sv","ro","no","hi","el","fi","nl","da","cs"],
+    "wrapper_selector":".gtranslate_wrapper",
+    "switcher_horizontal_position":"right",
+    "switcher_vertical_position":"top",
+    "float_switcher_open_direction":"bottom",
+    "alt_flags":{
+        "en":"usa",
+        "zh-TW":"https://cdn.gtranslate.net/flags/svg/countries/cn.svg"
+    }
+};
+</script>
+<script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+	</body>
+</html>
