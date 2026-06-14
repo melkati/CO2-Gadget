@@ -417,6 +417,23 @@ bool restoreSensirionAdvertisementData() {
     return true;
 }
 
+bool clearBTHomeAdvertisementData() {
+    if (!bleInitialized) {
+        return true;
+    }
+
+    NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+    if (sensirionBLEInitialized) {
+        NimBLEAdvertisementData emptyScanResponse;
+        advertising->setScanResponseData(emptyScanResponse);
+        advertising->enableScanResponse(false);
+        return advertising->refreshAdvertisingData();
+    }
+
+    advertising->stop();
+    return true;
+}
+
 void ensureBTHomeAdvertisingActive() {
     if (!activeBTHome || !bleInitialized) {
         return;
@@ -619,21 +636,34 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
 #ifdef SUPPORT_BLE
     String logReason = reason ? String(reason) : String("BTHome settings changed");
-    Serial.println("-->[BLE ] " + logReason + "; restarting BLE advertising.");
-
-    if (bleInitialized) {
-        disableBLE();
-    }
+    Serial.println("-->[BLE ] " + logReason + "; refreshing BLE advertising.");
 
     if (!enableBLE || (!activeBLE && !activeBTHome)) {
-        Serial.println("-->[BLE ] BLE remains disabled after BTHome settings refresh.");
+        if (bleInitialized) {
+            clearBTHomeAdvertisementData();
+        }
+        Serial.println("-->[BLE ] BLE output is disabled after BTHome settings refresh.");
         return;
     }
 
-    initBLE();
+    if (!bleInitialized) {
+        initBLE();
+    }
+
+    if (!activeBTHome) {
+        bool cleared = clearBTHomeAdvertisementData();
+        if (activeBLE && sensirionBLEInitialized) {
+            restoreSensirionAdvertisementData();
+        }
+        Serial.println("-->[BLE ] BTHome advertisement " + String(cleared ? "cleared." : "clear failed."));
+        return;
+    }
+
     if (forcePublish) {
         bool published = publishBLE(true, true);
         Serial.println("-->[BLE ] BLE refresh publish " + String(published ? "completed." : "skipped."));
+    } else if (activeBTHome) {
+        updateBTHomeAdvertisementData(false);
     }
 #endif
 }
