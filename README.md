@@ -50,7 +50,7 @@ If you don't have a CO2 Monitor you will also find some complete tutorials to bu
 - **NEW: Apple-inspired web UI** with dark/light mode, responsive design, and card-based layout
 - **NEW: Interactive charts page** — historical CO2/temperature/humidity data with date filter and CSV/JSON export
 - **NEW: Calibration web page** — forced recalibration (FRC) with live CO2 readings
-- **NEW: Low power / deep sleep mode** with configurable sleep cycles, wake-up tracking and boot counters
+- **NEW: Low power / deep sleep mode** — two power modes: `HIGH_PERFORMANCE` (continuous operation, no deep sleep) and `LOW_POWER` (deep sleep enabled for battery operation), with configurable sleep cycles, wake-up tracking and boot counters
 - **NEW: Threshold-gated publishing** — MQTT, BLE and ESP-NOW messages only sent when values change by a configured amount (saves bandwidth and power)
 - **NEW: Particulate sensor support** (SPS30, SN-GCJA5) — PM1.0, PM2.5, PM4.0, PM10 published via MQTT with Home Assistant discovery
 - **NEW: Wake display on CO2 alert** — display automatically wakes when CO2 rises above warning threshold

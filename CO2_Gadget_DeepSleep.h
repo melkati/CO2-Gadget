@@ -27,11 +27,14 @@
 //     CO2Sensor_DEMO = 127
 // } CO2SENSORS_t;
 
+// LOW_POWER mode constants
+#define LOW_POWER 1  // Binary: 0 = HIGH_PERFORMANCE, 1 = LOW_POWER
+
 String getLowPowerModeName(uint16_t mode) {
     switch (mode) {
         case HIGH_PERFORMANCE:
             return "HIGH_PERFORMANCE";
-        case 1:
+        case LOW_POWER:
             return "LOW_POWER";
         default:
             return "UNKNOWN";
@@ -646,7 +649,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         sensors.setSampleTime(measurementInterval);
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
-        sensors.initCO2LowPowerMode(SENSORS::SSCD30, MEDIUM_LOWPOWER);
+        sensors.initCO2LowPowerMode(SENSORS::SSCD30, LOW_POWER);
         initialized = true;
     }
 
@@ -826,9 +829,9 @@ void handleMQTTPublishOnWake() {
 #endif
 }
 
-void handleMediumLowPowerModeOnWake() {
+void handleLowPowerModeOnWake() {
 #ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: MEDIUM_LOWPOWER");
+    Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: LOW_POWER");
 #endif
     initBattery();
     batteryLoop();
@@ -849,7 +852,7 @@ void fromDeepSleepTimer() {
     handleCycleCountersOnWake();
 
     if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
-        handleMediumLowPowerModeOnWake();
+        handleLowPowerModeOnWake();
     }
 
     Serial.flush();
