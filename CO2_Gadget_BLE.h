@@ -32,6 +32,8 @@ static constexpr uint8_t BTHOME_COUNTER_SAVE_INTERVAL = 64;
 static constexpr uint16_t BTHOME_ADV_INTERVAL = 320;  // 200 ms, in 0.625 ms units.
 static uint8_t bthomePacketId = 0;
 static uint8_t bthomeCounterSaveSkips = 0;
+static std::string bthomeCachedServiceData;
+static bool bthomeCachedServiceDataValid = false;
 #endif
 #endif
 
@@ -350,24 +352,35 @@ std::string buildBTHomeServiceData(bool incrementPacketId) {
     return payload;
 }
 
-bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdvertisement = false) {
+void invalidateBTHomeServiceDataCache() {
+    bthomeCachedServiceData.clear();
+    bthomeCachedServiceDataValid = false;
+}
+
+bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdvertisement = false, bool rebuildPayload = true) {
     if (!activeBTHome) {
+        invalidateBTHomeServiceDataCache();
         return false;
     }
 
     if (!isValidBLEMeasurement()) {
+        invalidateBTHomeServiceDataCache();
         Serial.println("-->[BLE ] BTHome payload skipped: invalid measurement. CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         return false;
     }
 
-    std::string payload = buildBTHomeServiceData(incrementPacketId);
-    if (payload.empty()) {
+    if (rebuildPayload || !bthomeCachedServiceDataValid) {
+        bthomeCachedServiceData = buildBTHomeServiceData(incrementPacketId);
+        bthomeCachedServiceDataValid = !bthomeCachedServiceData.empty();
+    }
+
+    if (!bthomeCachedServiceDataValid) {
         Serial.println("-->[BLE ] BTHome payload skipped: service data is empty.");
         return false;
     }
 
     NimBLEAdvertisementData advertisementData;
-    advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(BTHOME_UUID)), payload);
+    advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(BTHOME_UUID)), bthomeCachedServiceData);
 
     NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
     if (sensirionBLEInitialized && !forcePrimaryAdvertisement) {

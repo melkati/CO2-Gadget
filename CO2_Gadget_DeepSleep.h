@@ -880,12 +880,12 @@ void handleBLEOnWake() {
         else if (activeBLE && activeBTHome && sensirionBLEInitialized) {
             Serial.println("-->[DEEP] Sensirion BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
             delay(BLE_WAKE_ADVERTISEMENT_MS);
-            bool bthomePrimaryAdvertised = updateBTHomeAdvertisementData(false, true);
+            bool bthomePrimaryAdvertised = updateBTHomeAdvertisementData(false, true, false);
             if (bthomePrimaryAdvertised) {
                 Serial.println("-->[DEEP] BTHome BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
                 delay(BLE_WAKE_ADVERTISEMENT_MS);
                 restoreSensirionAdvertisementData();
-                updateBTHomeAdvertisementData(false);
+                updateBTHomeAdvertisementData(false, false, false);
             } else {
                 Serial.println("-->[DEEP] BTHome primary wake advertisement skipped.");
             }
