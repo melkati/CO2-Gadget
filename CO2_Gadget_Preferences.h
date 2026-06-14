@@ -541,6 +541,15 @@ void saveWifiCredentials() {
 
 void putPreferences() {
     Serial.println("-->[PREF] Saving preferences to NVR");
+    // MQTT on wake requires WiFi on wake — auto-enable WiFi if MQTT is set.
+    // This catches ALL save paths: menu, serial, and web UI (which calls putPreferences() directly).
+    if (deepSleepData.sendMQTTOnWake && !deepSleepData.activeWifiOnWake) {
+        Serial.println();
+        Serial.println("-->[PREF] WARNING: MQTT on wake requires WiFi on wake.");
+        Serial.println("-->[PREF] Enabling WiFi on wake automatically.");
+        Serial.println();
+        deepSleepData.activeWifiOnWake = true;
+    }
     rootTopic.trim();
     mqttClientId.trim();
     mqttBroker.trim();

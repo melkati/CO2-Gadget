@@ -1,0 +1,430 @@
+# Button2
+
+Arduino/ESP library to simplify working with buttons.
+
+- Author: Lennart Hennigs (<https://www.lennarthennigs.de>)
+- Copyright (C) 2017-2026 Lennart Hennigs.
+- Released under the MIT license.
+
+## Description
+
+This library allows you to use callback functions to track single, double, triple and long clicks. Alternatively, it provides function to use in your main `loop()`.
+The library also takes care of debouncing. Using this lib will reduce and simplify your source code significantly.
+
+It has been tested with Arduino, ESP8266 and ESP32 devices.
+
+To see the latest changes to the library please take a look at the [Changelog](https://github.com/LennartHennigs/Button2/blob/master/CHANGELOG.md).
+
+If you find this library helpful please consider giving it a ⭐️ at [GitHub](https://github.com/LennartHennigs/Button2) and/or [buy me a ☕️](https://ko-fi.com/lennart0815).
+
+Thank you!
+
+## How To Use
+
+This library allows you to define a button and uses callback functions to detect different types of button interactions.
+If you don't want to use callback there are also functions available for using it in your code's main `loop()`.
+
+### Definition
+
+- Include the library on top
+
+```c++
+ #include "Button2.h"
+```
+
+- Define the button either using the `constructor` or the `begin()` function.
+
+```c++
+  void begin(uint8_t attachTo, uint8_t buttonMode = INPUT_PULLUP, bool activeLow = true);
+```
+
+### Button Types
+
+- You can use the class for "real" buttons (*pullup*, *pulldown*, and *active low*).
+- Per default the button pins are defined as `INPUT_PULLUP`. You can override this upon creation.
+
+```c++
+   #include "Button2.h"
+   #define BUTTON_PIN D3
+
+   Button2 button;
+
+   void setup() {
+     button.begin(BUTTON_PIN);
+  }
+```
+
+- You can also the library with other types of buttons, e.g. capacitive touch or ones handled via I2C. See the section on defining custom handlers below.
+
+### Callback Handler
+
+- Instead of frequently checking the button state in your main `loop()` this class allows you to assign callback functions.
+- You can define callback functions to track various types of clicks:
+  - `setTapHandler()` will be be called when any click occurs. This is the most basic handler. It ignores all timings built-in the library for double or triple click detection.
+  - `setClickHandler()` will be triggered after a single click occurred.
+  - `setChangedHandler()`, `setPressedHandler()` and `setReleasedHandler()` allow to detect basic interactions.
+  - `setLongClickDetectedHandler()` will be triggered as soon as the long click timeout has passed.
+  - `setLongClickHandler()` will be triggered after the button has released.
+  - `setDoubleClickHandler()` and `setTripleClickHandler()` detect complex interactions.
+
+- **Note:** You will experience a short delay with `setClickHandler()` and `setLongClickHandler()` as need to check whether a long or multi-click is in progress. For immediate feedback use `setTapHandler()`or `setLongClickDetectedHandler()`
+
+- You can assign callback functions for single or for multiple buttons.
+- You can track individual or multiple events with a single handler.
+- Please take a look at the included examples (see below) to get an overview over the different callback handlers and their usage.
+- All callback functions need a `Button2` reference parameter. There the reference to the triggered button is stored. This can used to call status functions, e.g. `wasPressedFor()`.
+
+### Longpress Handling
+
+- There are two possible callback functions: `setLongClickDetectedHandler()` and `setLongClickHandler()`.
+- `setLongClickDetectedHandler()` will be called as soon as the defined timeout has passed.
+- `setLongClickHandler()` will only be called after the button has been released.
+- `setLongClickDetectedRetriggerable(bool retriggerable)` allows you to define whether want to get multiple notifications for a **single** long click depending on the timeout.
+- `setLongClickDetectedRetriggerable(bool retriggerable, unsigned int retrigger_ms)` overload lets you set the retrigger interval in the same call instead of relying on the longclick timeout.
+- `getLongClickCount()` gets you the number of long clicks – this is useful when `retriggerable` is set.
+
+### The Loop
+
+- For the class to work, you need to call the button's `loop()` member function in your sketch's `loop()` function.
+
+```c++
+   #include "Button2.h"
+   #define BUTTON_PIN D3
+
+   Button2 button;
+
+   void handleTap(Button2& b) {
+    // check for really long clicks
+    if (b.wasPressedFor() > 1000) {
+    // do something
+    }
+   }
+
+   void setup() {
+     button.begin(BUTTON_PIN);
+     button.setTapHandler(handleTap);
+  }
+
+  void loop() {
+     button.loop();
+  }
+```
+
+- As the `loop()`function needs to be called continuously, `delay()` and other blocking functions will interfere with the detection of clicks. Consider cleaning up your loop or call the `loop()` function via an interrupt.
+- Please see the *examples* below for more details.
+
+### Using an timer interrupt instead
+
+- Alternatively, you can call the button's `loop()` function via a timer interrupt.
+- I haven't tried this extensively, USE THIS AT YOUR OWN RISK!
+- You need make sure that the interval is quick enough that it can detect your timeouts (see below).
+- There is an example for the ESP32 [ESP32TimerInterrupt.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32TimerInterrupt/ESP32TimerInterrupt.ino) that I tested.
+
+### Timeouts
+
+- The default timeouts for events are (in ms):
+
+```c++
+  #define BTN_DEBOUNCE_MS 50
+  #define BTN_LONGCLICK_MS 200
+  #define BTN_DOUBLECLICK_MS 300
+```
+
+- You can define your own timeouts by using these setter functions:
+  - `void setDebounceTime(unsigned int ms)`
+  - `void setLongClickTime(unsigned int ms)`
+  - `void setDoubleClickTime(unsigned int ms)`
+- There are also getter functions available, if needed.
+  
+### Using Button2 in the main `loop()`
+
+- Even though I suggest to use handlers for tracking events, you can also use Button2 to check button's state in the main loop
+- `bool wasPressed()` allows you to check whether the button was pressed
+- `clickType read(bool keepState = false)` gives you the type of click that took place
+- `clickType wait(bool keepState = false)` combines `read()` and `wasPressed()` and halts execution until a button click was detected. Thus, it is blocking code.
+- The `clickType` is an enum defined as...
+
+```c++
+    enum clickType {
+      single_click,
+      double_click,
+      triple_click,
+      long_click,
+      empty
+    };
+```
+
+- **Note:** When using the `empty` enum value in your code, it's recommended to use the scoped syntax `clickType::empty` to avoid potential naming conflicts with other libraries (particularly when using libraries that do `using namespace std;` which imports `std::empty()` from the C++17 standard library).
+
+```c++
+// Recommended - explicit scope avoids ambiguity
+if (button.getType() == clickType::empty) {
+  // handle no click
+}
+
+// Also works, but may cause compilation errors with some library combinations
+if (button.getType() == empty) {
+  // handle no click
+}
+```
+
+- There are also dedicated waits (`waitForClick()`, `waitForDouble()`, `waitForTriple()` and `waitForLong()`) to detect a specific type
+- The `read()` and the *wait* functions will reset the state of `wasPressed()` unless specified otherwise (via a `bool` parameter)
+- `resetPressedState()` allows you to clear value returned by `wasPressed()` – it is similar to passing `keepState = false` for `read()` or `wait()`.
+- Check out the [ButtonLoop.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ButtonLoop/ButtonLoop.ino) example to see it in action
+
+### Status Functions
+
+- There are several status functions available to check the status of a button:
+
+``` c++
+unsigned int wasPressedFor() const;
+uint8_t getNumberOfClicks() const;
+clickType getType() const;
+bool isPressed() const;
+bool isPressedRaw() const;
+bool wasPressed() const;
+```
+
+#### wasPressedFor() - Press Duration
+
+Returns the duration (in milliseconds) that the button was held down during the most recent press.
+
+**Important**: For multi-click scenarios (double/triple clicks), this returns the duration of the **most recent click only**, not the cumulative time across all clicks.
+
+**Examples**:
+
+- Single click held for 500ms → `wasPressedFor()` returns `500`
+- Long click held for 1200ms → `wasPressedFor()` returns `1200`
+- Double click (1st press: 50ms, 2nd press: 80ms) → `wasPressedFor()` returns `80`
+- Triple click (1st: 40ms, 2nd: 60ms, 3rd: 70ms) → `wasPressedFor()` returns `70`
+
+This behavior was confirmed in [issue #35](https://github.com/LennartHennigs/Button2/issues/35).
+
+### IDs for Button Instances
+
+- Each button instance gets a unique (auto incremented) ID upon creation.
+- You can get a buttons' ID via `getID()`.
+- Alternatively, you can use `setID(int newID)` to set a new one. But then you need to make sure that they are unique.
+
+### Attaching Context Data to a Button
+
+- You can attach a pointer to any caller-owned data with `setContext(void*)` and retrieve it inside any callback via `getContext()`.
+- This avoids the need for global variables — especially useful on AVR where lambda captures are not available.
+- Context is **not** cleared by `reset()` or `resetPressedState()`.
+
+```c++
+struct LedCtx { uint8_t pin; const char* label; };
+
+void onClick(Button2& btn) {
+  LedCtx* ctx = (LedCtx*)btn.getContext();
+  digitalWrite(ctx->pin, !digitalRead(ctx->pin));
+  Serial.println(ctx->label);
+}
+
+LedCtx ctx = { 13, "my button" };
+button.setContext(&ctx);
+button.setClickHandler(onClick);
+```
+
+- See [CallbackContext.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/CallbackContext/CallbackContext.ino) for a complete example with two buttons sharing the same handlers via context structs.
+
+### Virtual Buttons and Custom State Handlers
+
+Button2 supports "virtual buttons" - buttons not directly connected to GPIO pins. This is useful for:
+
+- **I2C/SPI port expander buttons** (e.g., PCF8574, MCP23017)
+- **Capacitive touch sensors** (e.g., ESP32 touch pins, TTP223)
+- **Custom button sources** (e.g., M5Stack Core2 touch buttons)
+- **Any non-standard input** that can be read as a digital state
+
+#### Setup Requirements
+
+To use a virtual button, you need:
+
+1. **Use `BTN_VIRTUAL_PIN`** instead of a real pin number when calling `begin()`
+2. **Define a state handler function** that returns the current button state
+3. **Initialize your hardware** either manually or via the optional initialization callback parameter
+
+`begin()` accepts an optional initialization callback parameter. This is especially useful for virtual buttons that require hardware setup (I2C, SPI, touch sensors, etc.). The callback is invoked immediately by `begin()`, ensuring your hardware is ready before the button starts polling.
+
+#### Efficient Pattern for Multiple I2C Buttons
+
+**Important:** When using multiple buttons on an I2C port expander (PCF8574, MCP23017, etc.), read the entire port **once per loop cycle** and cache the value. Each button's state handler then reads from the cache using bit masking. This minimizes I2C bus traffic from N transactions per cycle to just 1.
+
+See [I2CPortExpanderButtons.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/I2CPortExpanderButtons/I2CPortExpanderButtons.ino) for a complete example showing this efficient caching pattern ([issue #70](https://github.com/LennartHennigs/Button2/issues/70)).
+
+#### Virtual Button Examples
+
+- [I2CPortExpanderButtons.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/I2CPortExpanderButtons/I2CPortExpanderButtons.ino) - **Multiple buttons on I2C expander with efficient caching**
+- [CustomButtonStateHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/CustomButtonStateHandler/CustomButtonStateHandler.ino) - Basic virtual button with initialization callback
+- [ESP32CapacitiveTouch.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32CapacitiveTouch/ESP32CapacitiveTouch.ino) - ESP32 capacitive touch implementation
+- [M5StackCore2CustomHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/M5StackCore2CustomHandler/M5StackCore2CustomHandler.ino) - M5Stack Core2 touch buttons
+- [ESP32MultiCapTouch.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32MultiCapTouch/ESP32MultiCapTouch.ino) - **Two capacitive touch buttons sharing one state handler via `btn.getID()`**
+
+This feature was enhanced in [issue #69](https://github.com/LennartHennigs/Button2/issues/69) to support initialization callbacks.
+
+## Callback Handler Support and Compatibility
+
+Button2 uses callback handlers for button events. On platforms that support C++11 and `<functional>` (such as ESP32 and ESP8266), Button2 uses `std::function` for maximum flexibility, allowing you to use lambdas and other advanced C++ features as handlers.
+
+On platforms that do not support `std::function` (such as AVR/Arduino Uno), Button2 falls back to using regular function pointers for handlers.
+
+### `std::function` Support
+
+Button2 automatically detects and enables `std::function` support on platforms with C++11 or later, **except AVR** (Arduino Uno, Nano, Mega).
+
+**Supported platforms**:
+
+- ESP32 (all variants)
+- ESP8266
+- Teensy
+- Raspberry Pi Pico (RP2040)
+- SAMD (Arduino Zero, MKR series)
+- STM32
+- nRF52
+- Other C++11+ platforms with STL support
+
+**Not supported**:
+
+- AVR (Arduino Uno, Nano, Mega) - uses function pointers instead
+
+The library automatically detects support using `#if __cplusplus >= 201103L && !defined(__AVR__)`.
+This improvement was implemented in response to [issue #58](https://github.com/LennartHennigs/Button2/issues/58).
+
+#### Forcing or Disabling `std::function` Support
+
+You can override the automatic detection by defining these macros before including Button2:
+
+- To force-enable:
+  `#define BUTTON2_HAS_STD_FUNCTION`
+- To force-disable:
+  `#define BUTTON2_DISABLE_STD_FUNCTION`
+
+This is useful if you are using a custom toolchain or want to override the default detection logic.
+
+> **Note:** On platforms that use `std::function`, Button2 uses `std::move` internally when assigning handlers for better performance and efficiency.
+
+## Troubleshooting
+
+- If you see errors about `<functional>` not being found, your platform does not have C++11 STL support. Supported platforms include ESP32, ESP8266, Teensy, RP2040, SAMD, STM32, and other modern boards. AVR boards (Uno, Nano, Mega) automatically use function pointers instead. You can force-disable with `#define BUTTON2_DISABLE_STD_FUNCTION` before including Button2.
+
+## Examples
+
+- [SingleButtonSimple.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/SingleButtonSimple/SingleButtonSimple.ino) – the most basic example, shows how to assign event handlers
+- [LongpressHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/LongpressHandler/LongpressHandler.ino) – shows how determine the time of a button press
+- [SingleButton.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/SingleButton/SingleButton.ino) – shows the different event handlers
+- [MultipleButtons.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/MultipleButtons/MultipleButtons.ino) – how to use two buttons
+- [MultiHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/MultiHandler/MultiHandler.ino) – how to use a single handler for multiple events
+- [MultiHandlerTwoButtons.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/MultiHandlerTwoButtons/MultiHandlerTwoButtons.ino) – a single handler for multiple buttons
+- [TrackDualButtonClick.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/TrackDualButtonClick/TrackDualButtonClick.ino) – how to detect when two buttons are clicked at the same time
+- [I2CPortExpanderButtons.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/I2CPortExpanderButtons/I2CPortExpanderButtons.ino) – efficient pattern for multiple buttons on I2C port expanders (PCF8574, MCP23017)
+- [CustomButtonStateHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/CustomButtonStateHandler/CustomButtonStateHandler.ino) - how to assign your own button handler
+- [ESP32CapacitiveTouch.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32CapacitiveTouch/ESP32CapacitiveTouch.ino) – how to access the ESP32s capacitive touch handlers
+- [M5StackCore2CustomHandler.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/M5StackCore2CustomHandler/M5StackCore2CustomHandler.ino) - example for the M5Stack Core2 touch buttons
+- [ESP32TimerInterrupt.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32TimerInterrupt/ESP32TimerInterrupt.ino) - how to use a timer interrupt with the library.
+- [CallbackContext.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/CallbackContext/CallbackContext.ino) – how to attach context data to a button so shared handlers can distinguish between instances without globals
+- [ESP32MultiCapTouch.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ESP32MultiCapTouch/ESP32MultiCapTouch.ino) – two ESP32 capacitive touch buttons sharing a single state handler via `btn.getID()`
+- [ButtonLoop.ino](https://github.com/LennartHennigs/Button2/blob/master/examples/ButtonLoop/ButtonLoop.ino) – how to use the button class in the main loop (I recommend using handlers, but well...)
+
+## Class Definition
+
+The button class offers a few additional functions, please take a look at the *Class Definition* below.
+
+See below the constructors and member functions the library provides:
+
+```c++
+Button2();
+Button2(uint8_t attachTo, uint8_t buttonMode = INPUT_PULLUP, bool activeLow = true);
+
+void begin(uint8_t attachTo, uint8_t buttonMode = INPUT_PULLUP, bool activeLow = true,
+           InitCallbackFunction initCallback = NULL);
+
+void setDebounceTime(unsigned int ms);
+void setLongClickTime(unsigned int ms);
+void setDoubleClickTime(unsigned int ms);
+
+unsigned int getDebounceTime() const;
+unsigned int getLongClickTime() const;
+unsigned int getLongClickInterval() const;
+unsigned int getDoubleClickTime() const;
+uint8_t getPin() const;
+
+void  setContext(void* ctx);  // attach caller-owned data; retrieve via getContext() in any handler
+void* getContext() const;
+
+void reset();
+
+void setButtonStateFunction(StateCallbackFunction f);
+void setButtonStateFunction(StateCallbackFunctionBtn f); // overload: callback receives const Button2& reference
+
+void setChangedHandler(CallbackFunction f);
+void setPressedHandler(CallbackFunction f);
+void setReleasedHandler(CallbackFunction f);
+
+void setTapHandler(CallbackFunction f);
+void setClickHandler(CallbackFunction f);
+void setDoubleClickHandler(CallbackFunction f);
+void setTripleClickHandler(CallbackFunction f);
+
+void setLongClickHandler(CallbackFunction f);
+void setLongClickDetectedHandler(CallbackFunction f);
+void setLongClickDetectedRetriggerable(bool retriggerable);
+void setLongClickDetectedRetriggerable(bool retriggerable, unsigned int retrigger_ms); // overload: set retrigger interval in one call
+uint16_t getLongClickCount() const;
+
+unsigned int wasPressedFor() const;
+void resetPressedState();
+uint8_t resetClickCount();
+
+bool isPressed() const;
+bool isPressedRaw() const;
+
+bool wasPressed() const;
+clickType read(bool keepState = false);
+clickType wait(bool keepState = false);
+void waitForClick(bool keepState = false);
+void waitForDouble(bool keepState = false);
+void waitForTriple(bool keepState = false);
+void waitForLong(bool keepState = false);
+
+uint8_t getNumberOfClicks() const;
+clickType getType() const;
+const char* clickToString(clickType type) const;
+
+int getID() const;
+void setID(int newID);
+
+bool operator==(const Button2 &rhs) const;
+
+void loop();
+```
+
+## Installation
+
+Open the Arduino IDE choose "Sketch > Include Library" and search for "Button2".
+Or download the ZIP archive (<https://github.com/lennarthennigs/Button2/zipball/master>), and choose "Sketch > Include Library > Add .ZIP Library..." and select the downloaded file.
+
+## License
+
+MIT License
+
+Copyright (c) 2017-2026 Lennart Hennigs
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
