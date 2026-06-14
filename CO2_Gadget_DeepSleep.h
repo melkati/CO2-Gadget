@@ -854,17 +854,29 @@ void handleLowPowerModeOnWake() {
     if (handleLowPowerSensors()) {
         // Apply a calibration / ambient pressure command that was queued before
         // sleep, now that the sensor is awake and has produced a fresh reading.
-        // Restore the volatile RAM flags from RTC and reuse processPendingCommands()
-        // so range validation and the actual sensor calls live in one place.
-        // NOTE: for SCD40/SCD41 the FRC offset is stored in volatile registers and
-        // is wiped by the next scd4x.begin()/reinit() — so this is best-effort for
-        // the current wake cycle only; ASC (autoSelfCalibration) is the durable
-        // path for SCD4x once the canairio_sensorlib fork exposes it.
+        // Restore the RAM flags from RTC and reuse processPendingCommands() so
+        // range validation and the actual sensor calls live in one place.
         // See: https://github.com/melkati/CO2-Gadget/issues/250
         if (deepSleepData.calibrateOnNextWake) {
-            pendingCalibration = true;
-            calibrationValue = deepSleepData.pendingCalibrationValue;
-            deepSleepData.calibrateOnNextWake = false;
+            bool isScd4x = (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40)) ||
+                           (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41));
+            if (isScd4x) {
+                // SCD4x forced recalibration (FRC) requires >3 min of prior
+                // measurement (Sensirion app note "SCD4x Low Power Operation"),
+                // which a single wake-shot cannot provide — the command would
+                // return 0xffff and the library leaves the sensor in periodic
+                // mode, fighting the single-shot-idle deep-sleep flow. The value
+                // is already persisted; calibrate the SCD4x in interactive mode
+                // (sensor runs periodic long enough) or enable Auto Self-Cal.
+                Serial.println("-->[DEEP][WARN] Skipping on-wake FRC for SCD4x (needs >3 min warm-up). Calibrate interactively or enable ASC.");
+                deepSleepData.calibrateOnNextWake = false;
+            } else {
+                // SCD30/MH-Z19/CM1106/S8 store calibration in their own
+                // non-volatile memory and accept recalibration immediately.
+                pendingCalibration = true;
+                calibrationValue = deepSleepData.pendingCalibrationValue;
+                deepSleepData.calibrateOnNextWake = false;
+            }
         }
         if (deepSleepData.setAmbientPressureOnNextWake) {
             pendingAmbientPressure = true;

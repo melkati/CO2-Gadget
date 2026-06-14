@@ -836,8 +836,12 @@ String getCO2GadgetFeaturesAsJson() {
 
 // Calibration characteristics of the active CO2 sensor, so the web UI can show
 // real per-sensor state instead of a static "pending" note.
-//  - retainedAcrossReboot: does the sensor keep its calibration through a power cycle?
-//    (SCD4x stores the FRC offset in volatile registers -> false; others -> true)
+//  - retainedAcrossReboot: does the sensor keep its calibration through power loss?
+//    All supported sensors store calibration in their own non-volatile memory, so
+//    this is true across the board. (SCD4x is also never power-cycled or reinit'd
+//    in deep sleep here — toDeepSleep() keeps it in single-shot idle and
+//    SensirionI2CScd4x::begin() sends no command — so its FRC correction also
+//    survives every wake; FRC/ASC history is stored in the SCD4x EEPROM.)
 //  - autoSelfCalSupported: does the sensor support auto self-calibration (ASC/ABC)?
 // See: https://github.com/melkati/CO2-Gadget/issues/250
 struct CalibrationTraits {
@@ -848,13 +852,10 @@ struct CalibrationTraits {
 CalibrationTraits getCalibrationTraits() {
     CalibrationTraits t = {false, false};
     switch (deepSleepData.co2Sensor) {
-        case CO2Sensor_SCD30:        // FRAM (non-volatile); native ASC
-            t.retainedAcrossReboot = true;  t.autoSelfCalSupported = true;  break;
+        case CO2Sensor_SCD30:        // non-volatile calibration; native ASC
         case CO2Sensor_SCD40:
-        case CO2Sensor_SCD41:        // volatile FRC offset; ASC viable in single-shot idle
-            t.retainedAcrossReboot = false; t.autoSelfCalSupported = true;  break;
+        case CO2Sensor_SCD41:        // EEPROM FRC/ASC history; ASC viable in single-shot idle
         case CO2Sensor_MHZ19:        // EEPROM; ABC supported (currently hard-disabled)
-            t.retainedAcrossReboot = true;  t.autoSelfCalSupported = true;  break;
         case CO2Sensor_CM1106:
         case CO2Sensor_CM1106SL_NS:  // internal memory; ABC on (7-day)
         case CO2Sensor_SENSEAIRS8:   // internal memory; ABC on (180-hour)
