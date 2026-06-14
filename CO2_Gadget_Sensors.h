@@ -196,7 +196,12 @@ void initSensors() {
     sensors.setDebugMode(debugSensors);              // [optional] debug mode
     sensors.setTempOffset(tempOffset);
     sensors.setCO2AltitudeOffset(altitudeMeters);
-    // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
+    // Auto self-calibration (ASC for SCD30/SCD4x, ABC for MH-Z19) is sensor-specific.
+    // The sleep interval is passed so the library can scale SCD4x ASC periods for the
+    // single-shot idle interval (default periods assume 5-min sampling): scale by
+    // 5 / (timeSleeping / 60). TODO: enable once the canairio_sensorlib fork exposes
+    // setAutoSelfCalibration(bool, uint16_t). See: https://github.com/melkati/CO2-Gadget/issues/250
+    // sensors.setAutoSelfCalibration(autoSelfCalibration, deepSleepData.timeSleeping);
     sensors.setSampleTime(measurementInterval);
 
     Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));

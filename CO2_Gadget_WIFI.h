@@ -834,8 +834,39 @@ String getCO2GadgetFeaturesAsJson() {
     return output;
 }
 
+// Calibration characteristics of the active CO2 sensor, so the web UI can show
+// real per-sensor state instead of a static "pending" note.
+//  - retainedAcrossReboot: does the sensor keep its calibration through a power cycle?
+//    (SCD4x stores the FRC offset in volatile registers -> false; others -> true)
+//  - autoSelfCalSupported: does the sensor support auto self-calibration (ASC/ABC)?
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+struct CalibrationTraits {
+    bool retainedAcrossReboot;
+    bool autoSelfCalSupported;
+};
+
+CalibrationTraits getCalibrationTraits() {
+    CalibrationTraits t = {false, false};
+    switch (deepSleepData.co2Sensor) {
+        case CO2Sensor_SCD30:        // FRAM (non-volatile); native ASC
+            t.retainedAcrossReboot = true;  t.autoSelfCalSupported = true;  break;
+        case CO2Sensor_SCD40:
+        case CO2Sensor_SCD41:        // volatile FRC offset; ASC viable in single-shot idle
+            t.retainedAcrossReboot = false; t.autoSelfCalSupported = true;  break;
+        case CO2Sensor_MHZ19:        // EEPROM; ABC supported (currently hard-disabled)
+            t.retainedAcrossReboot = true;  t.autoSelfCalSupported = true;  break;
+        case CO2Sensor_CM1106:
+        case CO2Sensor_CM1106SL_NS:  // internal memory; ABC on (7-day)
+        case CO2Sensor_SENSEAIRS8:   // internal memory; ABC on (180-hour)
+            t.retainedAcrossReboot = true;  t.autoSelfCalSupported = true;  break;
+        default:                     // DEMO / NONE
+            t.retainedAcrossReboot = false; t.autoSelfCalSupported = false; break;
+    }
+    return t;
+}
+
 String getCO2GadgetStatusAsJson() {
-    StaticJsonDocument<512> doc;
+    JsonDocument doc;  // elastic (ArduinoJson v7); avoids fixed-pool truncation as fields grow
     doc["mainDeviceSelected"] = mainDeviceSelected;
     doc["CO2"] = co2;
     doc["Temperature"] = String(temp, 2);
@@ -894,6 +925,12 @@ String getCO2GadgetStatusAsJson() {
     doc["sampleInterval"] = sampleInterval;
     doc["calibrationValue"] = calibrationValue;
     doc["pendingCalibration"] = pendingCalibration;
+    // Calibration state (sensor-aware). See: https://github.com/melkati/CO2-Gadget/issues/250
+    doc["customCalibrationValue"] = customCalibrationValue;
+    doc["autoSelfCalibration"] = autoSelfCalibration;
+    doc["calibrateOnNextWake"] = deepSleepData.calibrateOnNextWake;
+    doc["ambientPressureValue"] = ambientPressureValue;
+    doc["pendingAmbientPressure"] = pendingAmbientPressure;
     doc["freeHeap"] = ESP.getFreeHeap();
     doc["minFreeHeap"] = ESP.getMinFreeHeap();
     doc["uptime"] = millis();
@@ -909,6 +946,30 @@ String getCO2GadgetStatusAsJson() {
     doc["actMQTTOnWake"] = deepSleepData.sendMQTTOnWake;
     doc["actESPnowWake"] = deepSleepData.sendESPNowOnWake;
     doc["displayOnWake"] = deepSleepData.displayOnWake;
+
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+// Focused, sensor-aware calibration status for the web UI to poll, so it can
+// show real calibration state instead of a static "Calibration pending" note.
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+String getCalibrationStatusAsJson() {
+    JsonDocument doc;
+    CalibrationTraits traits = getCalibrationTraits();
+    doc["sensor"] = mainDeviceSelected;
+    doc["calibrationValue"] = calibrationValue;
+    doc["customCalibrationValue"] = customCalibrationValue;
+    doc["pendingCalibration"] = pendingCalibration;
+    doc["calibrateOnNextWake"] = deepSleepData.calibrateOnNextWake;
+    doc["autoSelfCalibration"] = autoSelfCalibration;
+    doc["ambientPressureValue"] = ambientPressureValue;
+    doc["pendingAmbientPressure"] = pendingAmbientPressure;
+    // Derived per-sensor facts (see getCalibrationTraits): lets the UI warn that,
+    // e.g., an SCD4x will not retain a forced recalibration across deep sleep.
+    doc["calibrationRetainedAcrossReboot"] = traits.retainedAcrossReboot;
+    doc["autoSelfCalibrationSupported"] = traits.autoSelfCalSupported;
 
     String output;
     serializeJson(doc, output);
@@ -1667,6 +1728,16 @@ void initWebServer() {
         if (request != nullptr) {
             String statusJson = getCO2GadgetStatusAsJson();
             request->send(200, "application/json", statusJson);
+        } else {
+            Serial.println("---> [WiFi] Error: request is null");
+        }
+    });
+
+    // Sensor-aware calibration status. See: https://github.com/melkati/CO2-Gadget/issues/250
+    server.on("/getCalibrationStatus", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (request != nullptr) {
+            String calibrationJson = getCalibrationStatusAsJson();
+            request->send(200, "application/json", calibrationJson);
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }

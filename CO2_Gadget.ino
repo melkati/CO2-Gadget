@@ -54,6 +54,7 @@ uint64_t getReliableUptimeSeconds();                // Accumulated uptime across
 String getReliableUptimeFormatted();                // Accumulated uptime formatted as <dd>d <hh>h <mm>m
 void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
 void toDeepSleep();                                 // Defined in CO2_Gadget_DeepSleep.h
+void processPendingCommands();                      // Defined below; called from CO2_Gadget_DeepSleep.h wake path
 void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 
@@ -235,6 +236,14 @@ typedef struct {
     uint64_t uptimeMillis;
     bool lastWifiRSSIValid;
     int16_t lastWifiRSSI;
+    // Pending calibration / ambient pressure carried across deep sleep so a
+    // command received during a brief wake window is applied on the next wake
+    // instead of being lost with volatile RAM.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    bool calibrateOnNextWake;
+    uint16_t pendingCalibrationValue;
+    bool setAmbientPressureOnNextWake;
+    uint16_t pendingAmbientPressureValue;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -482,6 +491,7 @@ void processPendingCommands() {
             Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
             pendingCalibration = false;
             sensors.setCO2RecalibrationFactor(calibrationValue);
+            saveCalibrationValue();  // Persist so the value survives reboot. See: https://github.com/melkati/CO2-Gadget/issues/250
         } else {
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
             pendingCalibration = false;

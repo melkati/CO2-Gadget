@@ -289,6 +289,21 @@ void toDeepSleep() {
         sensors.scd4x.startLowPowerPeriodicMeasurement();
     }
 
+    // Carry any still-pending calibration / ambient pressure command into RTC
+    // memory so it survives deep sleep and is applied on the next wake. Without
+    // this, a command set in RAM during the wake window (web/BLE/MQTT) is lost
+    // before processPendingCommands() ever runs, because that only executes in
+    // loop()/loopOLD(), never in the deep-sleep wake path.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (pendingCalibration) {
+        deepSleepData.calibrateOnNextWake = true;
+        deepSleepData.pendingCalibrationValue = calibrationValue;
+    }
+    if (pendingAmbientPressure) {
+        deepSleepData.setAmbientPressureOnNextWake = true;
+        deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
+    }
+
     Serial.println("");
     Serial.println("-->***********************************************************************************");
     Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
@@ -837,6 +852,26 @@ void handleLowPowerModeOnWake() {
     initBattery();
     batteryLoop();
     if (handleLowPowerSensors()) {
+        // Apply a calibration / ambient pressure command that was queued before
+        // sleep, now that the sensor is awake and has produced a fresh reading.
+        // Restore the volatile RAM flags from RTC and reuse processPendingCommands()
+        // so range validation and the actual sensor calls live in one place.
+        // NOTE: for SCD40/SCD41 the FRC offset is stored in volatile registers and
+        // is wiped by the next scd4x.begin()/reinit() — so this is best-effort for
+        // the current wake cycle only; ASC (autoSelfCalibration) is the durable
+        // path for SCD4x once the canairio_sensorlib fork exposes it.
+        // See: https://github.com/melkati/CO2-Gadget/issues/250
+        if (deepSleepData.calibrateOnNextWake) {
+            pendingCalibration = true;
+            calibrationValue = deepSleepData.pendingCalibrationValue;
+            deepSleepData.calibrateOnNextWake = false;
+        }
+        if (deepSleepData.setAmbientPressureOnNextWake) {
+            pendingAmbientPressure = true;
+            ambientPressureValue = deepSleepData.pendingAmbientPressureValue;
+            deepSleepData.setAmbientPressureOnNextWake = false;
+        }
+        processPendingCommands();
         displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
     }
     handleBLEOnWake();
