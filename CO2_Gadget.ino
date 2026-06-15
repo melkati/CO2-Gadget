@@ -593,13 +593,31 @@ void processPendingCommands() {
     }
 
     if (pendingAmbientPressure == true) {
+        pendingAmbientPressure = false;
         if (ambientPressureValue != 0) {
-            Serial.println("-->[MAIN] Setting AmbientPressure for CO2 sensor at " + String(ambientPressureValue) + " mbar\n");
-            pendingAmbientPressure = false;
-            // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
+            // Ambient pressure (mbar == hPa) enables continuous pressure compensation
+            // and overrides altitude-based compensation. Only the Sensirion CO2 sensors
+            // support it. See: https://github.com/melkati/CO2-Gadget/issues/250
+            Serial.println("-->[MAIN] Setting ambient pressure for CO2 sensor to " + String(ambientPressureValue) + " mbar");
+            bool isScd4x = (deepSleepData.co2Sensor == CO2Sensor_SCD40) ||
+                           (deepSleepData.co2Sensor == CO2Sensor_SCD41);
+            bool isScd30 = (deepSleepData.co2Sensor == CO2Sensor_SCD30);
+            if (isScd4x && sensors.isSensorRegistered(SENSORS::SSCD4X)) {
+                // SCD4x takes hPa (== mbar) and accepts it during periodic measurement.
+                uint16_t err = sensors.scd4x.setAmbientPressure(ambientPressureValue);
+                if (err) Serial.println("-->[MAIN][ERROR] SCD4x setAmbientPressure error: " + String(err));
+            } else if (isScd30 && sensors.isSensorRegistered(SENSORS::SSCD30)) {
+                // SCD30 sets pressure by (re)starting continuous measurement; valid 700-1400 mbar.
+                if ((ambientPressureValue >= 700) && (ambientPressureValue <= 1400)) {
+                    sensors.scd30.startContinuousMeasurement(ambientPressureValue);
+                } else {
+                    Serial.println("-->[MAIN] SCD30 ambient pressure out of range (700-1400 mbar); ignoring " + String(ambientPressureValue));
+                }
+            } else {
+                Serial.println("-->[MAIN] Ambient pressure compensation not supported for the active sensor; ignoring.");
+            }
         } else {
-            Serial.println("-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid value at " + String(ambientPressureValue) + " mbar\n");
-            pendingAmbientPressure = false;
+            Serial.println("-->[MAIN] Avoiding setting ambient pressure with invalid value (0 mbar)");
         }
     }
 }
