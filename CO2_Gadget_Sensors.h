@@ -321,13 +321,13 @@ void sensorsLoop() {
         if (millis() - sensorWarmupStart < 5000) return;
         sensorWarmupDone = true;
     }
-    if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
+    if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) && (!deepSleepData.calForceContinuous)) {
         if (millis() - lastDotPrintTime >= 100) {
             Serial.print("[-]");  // Print a - every loop to show that the device is alive
             lastDotPrintTime = millis();
         }
         sensorsLoopLowPower();
-    } else if (!buzzerBeeping) {  // Avoid affecting beep sound
+    } else if (!buzzerBeeping) {  // Avoid affecting beep sound (also continuous reads while a calibration paused deep sleep)
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
         //     lastDotPrintTime = millis();

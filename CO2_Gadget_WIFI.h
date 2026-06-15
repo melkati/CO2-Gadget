@@ -971,6 +971,7 @@ String getCalibrationStatusAsJson() {
     bool calibrating = (deepSleepData.calPhase != CAL_IDLE);
     uint16_t usableReadings = (deepSleepData.calReadingsSeen > 0) ? (deepSleepData.calReadingsSeen - 1) : 0;
     doc["calibrationInProgress"] = calibrating;
+    doc["calibrationPausedDeepSleep"] = deepSleepData.calForceContinuous;
     doc["calibrationTargetPpm"] = deepSleepData.calTargetPpm;
     doc["warmupReadings"] = usableReadings;
     doc["warmupReadingsRequired"] = w.minReadings;

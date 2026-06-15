@@ -972,6 +972,15 @@ void deepSleepLoop() {
     // if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) return;
     if (!deepSleepEnabled) return;
 
+    // A calibration on a sensor that needs continuous operation (CM1106) has paused
+    // deep sleep; keep the device awake until the warm-up + recalibration finishes.
+    // advanceCalibrationSequence() clears the flag on completion, so sleep resumes.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (deepSleepData.calForceContinuous) {
+        restartTimerToDeepSleep();
+        return;
+    }
+
 #ifdef DEEP_SLEEP_DEBUG
         // Serial.println("-->[DEEP] inMenu: " + String(inMenu));
 #endif

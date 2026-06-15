@@ -257,6 +257,7 @@ typedef struct {
     uint16_t calTargetPpm;       // reference ppm to calibrate to
     uint16_t calReadingsSeen;    // readings since the sequence began (the first is discarded)
     uint32_t calStartUptimeSec;  // reliable uptime when the sequence began (min-time gate)
+    bool calForceContinuous;     // pause deep sleep for sensors needing continuous operation (CM1106)
     bool setAmbientPressureOnNextWake;
     uint16_t pendingAmbientPressureValue;
 } deepSleepData_t;
@@ -524,6 +525,24 @@ void beginCalibrationSequence(uint16_t ppm) {
         Serial.println("-->[CAL] Ignoring calibration request: invalid value " + String(ppm) + " ppm");
         return;
     }
+    // CM1106 re-inits its driver and toggles CM1106_ENABLE_PIN on each deep-sleep
+    // wake, so it is not guaranteed to stay continuously powered/measuring while a
+    // warm-up spans sleeps — and its field calibration needs continuous operation.
+    // Instead of refusing, pause deep sleep for the duration of the calibration so
+    // the sensor runs continuously, then resume deep sleep when it completes (flag
+    // cleared in advanceCalibrationSequence()). SCD30/SCD4x stay powered across
+    // sleep (and SCD4x's one-shot-per-wake warm-up matches the datasheet), so they
+    // keep calibrating across wakes. See: https://github.com/melkati/CO2-Gadget/issues/250
+    bool isCm1106 = (deepSleepData.co2Sensor == CO2Sensor_CM1106) ||
+                    (deepSleepData.co2Sensor == CO2Sensor_CM1106SL_NS);
+    deepSleepData.calForceContinuous = (isCm1106 && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE));
+    if (deepSleepData.calForceContinuous) {
+        Serial.println("-->[CAL] CM1106 needs continuous operation: pausing deep sleep until calibration completes.");
+        // Ensure the sensor is in continuous measurement mode so sensors.loop() yields readings.
+        if (sensors.isSensorRegistered(SENSORS::SCM1106)) {
+            sensors.cm1106->set_working_status(CM1106_CONTINUOUS_MEASUREMENT);
+        }
+    }
     deepSleepData.calPhase = CAL_WARMUP;
     deepSleepData.calTargetPpm = ppm;
     deepSleepData.calReadingsSeen = 0;
@@ -556,6 +575,7 @@ void advanceCalibrationSequence() {
     sensors.setCO2RecalibrationFactor(calibrationValue);
     saveCalibrationValue();  // persist so the value survives reboot. See issue #250
     deepSleepData.calPhase = CAL_IDLE;
+    deepSleepData.calForceContinuous = false;  // resume deep sleep if it was paused for this calibration
     Serial.println("-->[CAL] Calibration command sent and value persisted.");
 }
 
@@ -598,10 +618,11 @@ void readingsLoop() {
         if (newReadingsAvailable) {
             lastReadingsCommunicationTime = esp_timer_get_time();
             newReadingsAvailable = false;
-            // Advance any calibration warm-up on each fresh reading. Gated to
-            // high-performance mode; in low power the deep-sleep wake handler
-            // advances it once per wake. See issue #250.
-            if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) advanceCalibrationSequence();
+            // Advance any calibration warm-up on each fresh reading. Fires in
+            // high-performance mode and while a calibration has paused deep sleep
+            // (CM1106 forced-continuous); in normal low power the deep-sleep wake
+            // handler advances it once per wake instead. See issue #250.
+            if ((deepSleepData.lowPowerMode == HIGH_PERFORMANCE) || deepSleepData.calForceContinuous) advanceCalibrationSequence();
             nav.idleChanged = true;  // Must redraw display as there are new readings
 #ifdef SUPPORT_CIRCULAR_BUFFER
             addCO2Value(co2);
