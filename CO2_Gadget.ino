@@ -253,7 +253,7 @@ typedef struct {
     // sleep so a calibration runs the datasheet-required warm-up (collect N readings
     // over a minimum time, discarding the first) even when that warm-up spans
     // several low-power wake cycles. See: https://github.com/melkati/CO2-Gadget/issues/250
-    uint8_t calPhase;            // CalPhase: CAL_IDLE / CAL_WARMUP
+    uint8_t calPhase;            // CalPhase: CAL_IDLE / CAL_WARMUP (set by beginCalibrationSequence)
     uint16_t calTargetPpm;       // reference ppm to calibrate to
     uint16_t calReadingsSeen;    // readings since the sequence began (the first is discarded)
     uint32_t calStartUptimeSec;  // reliable uptime when the sequence began (min-time gate)
@@ -521,8 +521,10 @@ CalWarmup getCalWarmup() {
 }
 
 void beginCalibrationSequence(uint16_t ppm) {
-    if (ppm > 2000) {
-        Serial.println("-->[CAL] Ignoring calibration request: invalid value " + String(ppm) + " ppm");
+    // Reject implausible targets: fresh air is ~400-430 ppm, so a value below 400 (or
+    // 0) is not a valid calibration reference. Matches the menu's 400-2000 ppm range.
+    if ((ppm < 400) || (ppm > 2000)) {
+        Serial.println("-->[CAL] Ignoring calibration request: invalid value " + String(ppm) + " ppm (valid 400-2000)");
         return;
     }
     // CM1106 re-inits its driver and toggles CM1106_ENABLE_PIN on each deep-sleep
@@ -585,8 +587,12 @@ void processPendingCommands() {
         pendingCalibration = false;
         // Don't calibrate immediately — start the datasheet warm-up sequence, which
         // collects/discards readings (across wakes in low power) before recalibrating.
-        if (calibrationValue <= 2000) {
-            if (deepSleepData.calPhase == CAL_IDLE) beginCalibrationSequence(calibrationValue);
+        if ((calibrationValue >= 400) && (calibrationValue <= 2000)) {
+            if (deepSleepData.calPhase == CAL_IDLE) {
+                beginCalibrationSequence(calibrationValue);
+            } else {
+                Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); ignoring new request for " + String(calibrationValue) + " PPM");
+            }
         } else {
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
         }

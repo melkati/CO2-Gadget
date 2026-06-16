@@ -386,13 +386,23 @@ void toDeepSleep() {
     // processPendingCommands()), kick it off now so the warm-up resumes on the next
     // wake; the sequence state itself lives in RTC and survives sleep.
     // See: https://github.com/melkati/CO2-Gadget/issues/250
-    if (pendingCalibration && (deepSleepData.calPhase == CAL_IDLE) && (calibrationValue <= 2000)) {
+    if (pendingCalibration && (deepSleepData.calPhase == CAL_IDLE) && (calibrationValue >= 400) && (calibrationValue <= 2000)) {
         beginCalibrationSequence(calibrationValue);
     }
     pendingCalibration = false;
     if (pendingAmbientPressure) {
         deepSleepData.setAmbientPressureOnNextWake = true;
         deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
+    }
+
+    // If the calibration just started needs continuous operation (CM1106 in low
+    // power), don't sleep now — that would defeat the pause. Abort so the sensor
+    // stays awake and measures continuously; deepSleepLoop() keeps the device awake
+    // while calForceContinuous is set, and deep sleep resumes once calibration
+    // completes. See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (deepSleepData.calForceContinuous) {
+        Serial.println("-->[DEEP] Aborting deep sleep: calibration needs continuous operation.");
+        return;
     }
 
     gpio_deep_sleep_hold_en();
