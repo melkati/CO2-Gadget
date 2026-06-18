@@ -493,6 +493,8 @@ bool cm1106HandleFromDeepSleep() {
     sensors.init(CM1106);
 #endif
 
+    applyMeasurementIntervalToSensors();
+
     while (digitalRead(CM1106_READY_PIN) == LOW) {
         Serial.print("+");
         delay(10);
@@ -676,7 +678,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         reInitI2C();
         sensors.setDebugMode(debugSensors);
         sensors.detectI2COnly(true);
-        sensors.setSampleTime(measurementInterval);
+        applyMeasurementIntervalToSensors();
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
         sensors.initCO2LowPowerMode(SENSORS::SSCD30, (LowPowerModes)LOW_POWER);
