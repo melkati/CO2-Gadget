@@ -178,6 +178,39 @@ void initSensorsLowPower() {
     }
 }
 
+/**
+ * @brief Apply the current measurementInterval to the active CO2 sensor.
+ *
+ * Centralised single source of truth for setting the sampling interval on
+ * the physical sensor. Call this after any runtime change to
+ * measurementInterval (web UI, serial menu, JSON import, etc.) and from
+ * every init path (normal boot, low-power wake).
+ *
+ * Per-sensor dispatch:
+ * - Generic (any sensor):          sensors.setSampleTime(measurementInterval)
+ * - CM1106:                         additionally set_measurement_period()
+ * - SCD30 (future, see #247):      additionally setMeasurementInterval()
+ */
+void applyMeasurementIntervalToSensors() {
+    sensors.setSampleTime(measurementInterval);
+    Serial.println("-->[SENS] Applied measurementInterval: " + String(measurementInterval) + "s to " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
+
+    // CM1106 and CM1106SL_NS (values 5 and 6) both need the additional
+    // hardware-level set_measurement_period() call.
+    if (selectedCO2Sensor == 5 || selectedCO2Sensor == 6) {
+#ifdef UART_RX_GPIO
+        if (sensors.cm1106 != nullptr) {
+            sensors.cm1106->set_measurement_period(measurementInterval, 1);
+            int16_t period;
+            uint8_t smooth;
+            sensors.cm1106->get_measurement_period(&period, &smooth);
+            Serial.println("-->[SENS] CM1106 measurement period set to: " + String(period) + "s smooth: " + String(smooth));
+        }
+#endif
+    }
+    // SCD30 will need setMeasurementInterval() here once implemented (#247)
+}
+
 void initSensors() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
     int16_t period;
@@ -197,7 +230,7 @@ void initSensors() {
     sensors.setTempOffset(tempOffset);
     sensors.setCO2AltitudeOffset(altitudeMeters);
     // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
-    sensors.setSampleTime(measurementInterval);
+    applyMeasurementIntervalToSensors();
 
     Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
     Serial.println("-->[SENS] Measurement Interval: " + String(sensors.getSampleTime()));
@@ -234,10 +267,10 @@ void initSensors() {
 #endif
             sensors.cm1106->set_working_status(CM1106_CONTINUOUS_MEASUREMENT);
             sensors.cm1106->get_measurement_period(&period, &smooth);
-            Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
-            sensors.cm1106->set_measurement_period(measurementInterval, 1);
+            Serial.println("-->[SENS] CM1106 period before: " + String(period) + " smooth: " + String(smooth));
+            applyMeasurementIntervalToSensors();
             sensors.cm1106->get_measurement_period(&period, &smooth);
-            Serial.println("-->[SENS] CM1106 period: " + String(period) + " smooth: " + String(smooth));
+            Serial.println("-->[SENS] CM1106 period after: " + String(period) + " smooth: " + String(smooth));
             // sensors.cm1106->set_working_status(CM1106_SINGLE_MEASUREMENT);
         } else if (selectedCO2Sensor == SENSEAIRS8) {
             Serial.println("-->[SENS] Trying to init CO2 sensor: SENSEAIRS8");
