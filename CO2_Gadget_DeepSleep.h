@@ -402,6 +402,35 @@ void toDeepSleep() {
     esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
 #endif
 
+    // Handle any still-pending command as the LAST step before sleep — AFTER
+    // prepareServicesForDeepSleep() has torn down WiFi/BLE/MQTT. Those handlers run
+    // in their own FreeRTOS tasks and can set pendingCalibration at any moment while
+    // the radios are up, so doing this earlier would race: a command arriving between
+    // here and esp_deep_sleep_start() would be lost with volatile RAM. With the radios
+    // down, the flag can no longer change. If a calibration was requested but its
+    // warm-up sequence hasn't started yet (the command landed too late for
+    // processPendingCommands()), kick it off now so the warm-up resumes on the next
+    // wake; the sequence state itself lives in RTC and survives sleep.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (pendingCalibration && (deepSleepData.calPhase == CAL_IDLE) && (calibrationValue >= 400) && (calibrationValue <= 2000)) {
+        beginCalibrationSequence(calibrationValue);
+    }
+    pendingCalibration = false;
+    if (pendingAmbientPressure) {
+        deepSleepData.setAmbientPressureOnNextWake = true;
+        deepSleepData.pendingAmbientPressureValue = ambientPressureValue;
+    }
+
+    // If the calibration just started needs continuous operation (CM1106 in low
+    // power), don't sleep now — that would defeat the pause. Abort so the sensor
+    // stays awake and measures continuously; deepSleepLoop() keeps the device awake
+    // while calForceContinuous is set, and deep sleep resumes once calibration
+    // completes. See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (deepSleepData.calForceContinuous) {
+        Serial.println("-->[DEEP] Aborting deep sleep: calibration needs continuous operation.");
+        return;
+    }
+
     gpio_deep_sleep_hold_en();
     // adc_oneshot_del_unit(adc_handle); // TO-DO: Check if this is needed measuring current consumption in deep sleep
     esp_deep_sleep_start();
@@ -498,6 +527,8 @@ bool cm1106HandleFromDeepSleep() {
 #else
     sensors.init(CM1106);
 #endif
+
+    applyMeasurementIntervalToSensors();
 
     while (digitalRead(CM1106_READY_PIN) == LOW) {
         Serial.print("+");
@@ -682,7 +713,7 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
         reInitI2C();
         sensors.setDebugMode(debugSensors);
         sensors.detectI2COnly(true);
-        sensors.setSampleTime(measurementInterval);
+        applyMeasurementIntervalToSensors();
         sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
         sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
         sensors.initCO2LowPowerMode(SENSORS::SSCD30, (LowPowerModes)LOW_POWER);
@@ -874,6 +905,18 @@ void handleLowPowerModeOnWake() {
     initBattery();
     batteryLoop();
     if (handleLowPowerSensors()) {
+        // This wake produced one fresh sensor reading — advance any in-progress
+        // calibration warm-up by one step (collect/discard across wakes; the
+        // sensor-specific recalibration fires once the warm-up is satisfied).
+        // The sequence state lives in RTC, so it resumes seamlessly across sleeps.
+        // See: https://github.com/melkati/CO2-Gadget/issues/250
+        advanceCalibrationSequence();
+        if (deepSleepData.setAmbientPressureOnNextWake) {
+            pendingAmbientPressure = true;
+            ambientPressureValue = deepSleepData.pendingAmbientPressureValue;
+            deepSleepData.setAmbientPressureOnNextWake = false;
+        }
+        processPendingCommands();
         displayFromDeepSleep(deepSleepData.cyclesLeftToRedrawDisplay == 0);
     }
     handleBLEOnWake();
@@ -977,6 +1020,15 @@ void deepSleepLoop() {
 
     // if (deepSleepData.lowPowerMode == HIGH_PERFORMANCE) return;
     if (!deepSleepEnabled) return;
+
+    // A calibration on a sensor that needs continuous operation (CM1106) has paused
+    // deep sleep; keep the device awake until the warm-up + recalibration finishes.
+    // advanceCalibrationSequence() clears the flag on completion, so sleep resumes.
+    // See: https://github.com/melkati/CO2-Gadget/issues/250
+    if (deepSleepData.calForceContinuous) {
+        restartTimerToDeepSleep();
+        return;
+    }
 
 #ifdef DEEP_SLEEP_DEBUG
         // Serial.println("-->[DEEP] inMenu: " + String(inMenu));

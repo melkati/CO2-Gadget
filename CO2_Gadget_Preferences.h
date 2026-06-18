@@ -171,6 +171,7 @@ void printActualSettings() {
     Serial.println("-->[PREF] firmBranch:\t #" + firmBranch + "#");
     Serial.println("-->[PREF] firmFlavour:\t #" + firmFlavour + "#");
     Serial.println("-->[PREF] customCalValue: #" + String(customCalibrationValue) + "#");
+    Serial.println("-->[PREF] calValue:\t #" + String(calibrationValue) + "#");
     Serial.println("-->[PREF] tempOffset:\t #" + String(tempOffset, 1) + "#");
     Serial.println("-->[PREF] altitudeMeters:\t #" + String(altitudeMeters) + "#");
     Serial.println("-->[PREF] autoSelfCalibration:\t #" + String(autoSelfCalibration ? "Enabled" : "Disabled") + "#");
@@ -298,6 +299,7 @@ void initPreferences() {
     firmBranch = preferences.getString("firmBranch", "");
     firmFlavour = preferences.getString("firmFlavour", "");
     customCalibrationValue = preferences.getUInt("customCalValue", 415);
+    calibrationValue = preferences.getUInt("calValue", 415);  // See: https://github.com/melkati/CO2-Gadget/issues/250
     tempOffset = float(preferences.getFloat("tempOffset", 0));
     altitudeMeters = preferences.getUInt("altitudeMeters", 0);
     autoSelfCalibration = preferences.getBool("autoSelfCal", false);
@@ -441,6 +443,18 @@ void saveWifiCredentials() {
     preferences.end();
 }
 
+// Persist only the active calibration value, so a calibration applied during a
+// deep-sleep wake cycle (which never calls the full putPreferences()) still
+// survives a reboot. Calibration is a rare user action, so flash wear is
+// negligible. See: https://github.com/melkati/CO2-Gadget/issues/250
+void saveCalibrationValue() {
+    preferences.begin("CO2-Gadget", false);
+    if (preferences.getUInt("calValue", 415) != calibrationValue) {
+        preferences.putUInt("calValue", calibrationValue);
+    }
+    preferences.end();
+}
+
 void putPreferences() {
     Serial.println("-->[PREF] Saving preferences to NVR");
     // MQTT on wake requires WiFi on wake — auto-enable WiFi if MQTT is set.
@@ -469,6 +483,7 @@ void putPreferences() {
     preferences.putString("firmBranch", firmBranch);
     preferences.putString("firmFlavour", firmFlavour);
     preferences.putUInt("customCalValue", customCalibrationValue);
+    preferences.putUInt("calValue", calibrationValue);  // See: https://github.com/melkati/CO2-Gadget/issues/250
     preferences.putFloat("tempOffset", tempOffset);
     preferences.putUInt("altitudeMeters", altitudeMeters);
     preferences.putBool("autoSelfCal", autoSelfCalibration);
@@ -593,6 +608,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["firmBranch"] = getCO2GadgetRevisionBranch();
     doc["firmFlavour"] = FLAVOUR;
     doc["customCalValue"] = customCalibrationValue;
+    doc["calValue"] = calibrationValue;  // See: https://github.com/melkati/CO2-Gadget/issues/250
     doc["tempOffset"] = String(tempOffset, 1);
     doc["altitudeMeters"] = altitudeMeters;
     doc["autoSelfCal"] = autoSelfCalibration;
@@ -666,7 +682,6 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["showPM25"] = displayShowPM25;
     doc["showStatusIcons"] = displayShowStatusIcons;
     doc["wakeOnCO2Alert"] = wakeDisplayOnCO2Alert;
-    doc["measInterval"] = measurementInterval;
     doc["sampInterval"] = sampleInterval;
 
     // Buzzer preferences
@@ -735,6 +750,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 
         if (JsonDocument.containsKey("customCalValue")) {
             customCalibrationValue = JsonDocument["customCalValue"];
+        }
+        if (JsonDocument.containsKey("calValue")) {  // See: https://github.com/melkati/CO2-Gadget/issues/250
+            calibrationValue = JsonDocument["calValue"];
         }
         if (JsonDocument.containsKey("tempOffset") && (tempOffset != float(JsonDocument["tempOffset"]))) {
             Serial.println("-->[PREF] Temp Offset changed from " + String(tempOffset) + " to " + String(JsonDocument["tempOffset"].as<String>()));
@@ -898,6 +916,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
         if (JsonDocument.containsKey("measurementInterval")) {
             measurementInterval = JsonDocument["measurementInterval"];
+            applyMeasurementIntervalToSensors();
         }
         if (JsonDocument.containsKey("sampleInterval")) {
             sampleInterval = JsonDocument["sampleInterval"];
