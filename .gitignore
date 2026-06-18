@@ -25,3 +25,8 @@ docs/fix-*-review.md
 PLAN.md
 # PPK2 measurement and automation scripts (local only)
 PPK2/
+# Power profiler measurement suite (local only)
+measurement/
+# PPK2 measurement data exports and serial monitor logs
+ppk2_v2_*.json
+serial_*.txt
