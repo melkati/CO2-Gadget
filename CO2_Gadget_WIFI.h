@@ -1495,7 +1495,8 @@ void initWebServer() {
                     // Serial.printf("-->[WEBS] Received /settings command MeasurementInterval with parameter %s\n", inputString);
                     Serial.println("-->[WEBS] Received /settings command MeasurementInterval with parameter " + inputString);
                     measurementInterval = inputString.toInt();
-                    request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + ", please re-calibrate your sensor.");
+                    applyMeasurementIntervalToSensors();
+                    request->send(200, "text/plain", "OK. Setting MeasurementInterval to " + inputString + "s, changes applied immediately.");
                 } else {
                     request->send(400, "text/plain", "Error. MeasurementInterval must have a number as parameter.");
                 }
