@@ -196,7 +196,6 @@ void initSensors() {
     sensors.setDebugMode(debugSensors);              // [optional] debug mode
     sensors.setTempOffset(tempOffset);
     sensors.setCO2AltitudeOffset(altitudeMeters);
-    // sensors.setAutoSelfCalibration(false); // TO-DO: Implement in CanAirIO Sensors Lib
     sensors.setSampleTime(measurementInterval);
 
     Serial.println("-->[SENS] Selected CO2 Sensor: " + sensors.getSensorName(static_cast<SENSORS>(selectedCO2Sensor)));
@@ -245,6 +244,15 @@ void initSensors() {
             sensors.init(SENSEAIRS8);
         }
     }
+
+    // Apply auto self-calibration now that the sensor is detected/registered (ASC for
+    // SCD30/SCD4x, ABC for MH-Z19). Done here, not before detection, so the library's
+    // isSensorRegistered() checks see the sensor. The sleep interval lets the library
+    // scale the SCD4x ASC periods for the single-shot idle interval (default periods
+    // assume 5-min sampling). initSensors() runs on cold boot / mode entry only —
+    // deep-sleep wakes go through fromDeepSleep() and the ASC setting persists in the
+    // sensor. See: https://github.com/melkati/CO2-Gadget/issues/250
+    sensors.setAutoSelfCalibration(autoSelfCalibration, deepSleepData.timeSleeping);
 
     printSensorsDetected();
     storeSensorSelectedInRTC();
@@ -316,13 +324,13 @@ void sensorsLoop() {
         if (millis() - sensorWarmupStart < 5000) return;
         sensorWarmupDone = true;
     }
-    if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE)) {
+    if ((!interactiveMode) && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) && (!deepSleepData.calForceContinuous)) {
         if (millis() - lastDotPrintTime >= 100) {
             Serial.print("[-]");  // Print a - every loop to show that the device is alive
             lastDotPrintTime = millis();
         }
         sensorsLoopLowPower();
-    } else if (!buzzerBeeping) {  // Avoid affecting beep sound
+    } else if (!buzzerBeeping) {  // Avoid affecting beep sound (also continuous reads while a calibration paused deep sleep)
         // if (millis() - lastDotPrintTime >= 100) {
         //     Serial.print("[+] ");        // Print a + every loop to show that the device is alive
         //     lastDotPrintTime = millis();

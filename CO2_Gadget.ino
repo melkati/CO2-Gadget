@@ -54,6 +54,9 @@ uint64_t getReliableUptimeSeconds();                // Accumulated uptime across
 String getReliableUptimeFormatted();                // Accumulated uptime formatted as <dd>d <hh>h <mm>m
 void restartTimerToDeepSleep();                     // Defined in CO2_Gadget_DeepSleep.h
 void toDeepSleep();                                 // Defined in CO2_Gadget_DeepSleep.h
+void processPendingCommands();                      // Defined below; called from CO2_Gadget_DeepSleep.h wake path
+void beginCalibrationSequence(uint16_t ppm);        // Defined below; starts the warm-up sequence
+void advanceCalibrationSequence();                  // Defined below; advances one warm-up reading (also called on wake)
 void setDisplayReverse(bool reverse);               // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h or CO2_Gadget_EINK.h
 void setDisplayBrightness(uint16_t newBrightness);  // Defined in CO2_Gadget_TFT.h or CO2_Gadget_OLED.h
 
@@ -206,6 +209,17 @@ typedef enum {
     CO2Sensor_DEMO = 127
 } CO2SENSORS_t;
 
+// Calibration warm-up sequence phase (stored in RTC, survives deep sleep).
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+enum CalPhase : uint8_t { CAL_IDLE = 0, CAL_WARMUP = 1 };
+
+// Per-sensor warm-up requirement before a field calibration may be applied.
+struct CalWarmup {
+    uint16_t minReadings;  // usable readings required (excludes the discarded first)
+    uint16_t minSeconds;   // minimum elapsed warm-up time
+};
+CalWarmup getCalWarmup();  // Defined after the sensor includes; used by the web status endpoints too
+
 // LOW POWER MODES
 // typedef enum LowPowerMode { HIGH_PERFORMANCE, BASIC_LOWPOWER, MEDIUM_LOWPOWER, MAXIMUM_LOWPOWER };
 
@@ -235,6 +249,17 @@ typedef struct {
     uint64_t uptimeMillis;
     bool lastWifiRSSIValid;
     int16_t lastWifiRSSI;
+    // Calibration warm-up sequence + pending ambient pressure, carried across deep
+    // sleep so a calibration runs the datasheet-required warm-up (collect N readings
+    // over a minimum time, discarding the first) even when that warm-up spans
+    // several low-power wake cycles. See: https://github.com/melkati/CO2-Gadget/issues/250
+    uint8_t calPhase;            // CalPhase: CAL_IDLE / CAL_WARMUP (set by beginCalibrationSequence)
+    uint16_t calTargetPpm;       // reference ppm to calibrate to
+    uint16_t calReadingsSeen;    // readings since the sequence began (the first is discarded)
+    uint32_t calStartUptimeSec;  // reliable uptime when the sequence began (min-time gate)
+    bool calForceContinuous;     // pause deep sleep for sensors needing continuous operation (CM1106)
+    bool setAmbientPressureOnNextWake;
+    uint16_t pendingAmbientPressureValue;
 } deepSleepData_t;
 
 RTC_DATA_ATTR deepSleepData_t deepSleepData;
@@ -475,27 +500,130 @@ void wakeUpDisplay() {
     return;
 }
 
+// ---- Datasheet-compliant calibration warm-up sequence ----------------------
+// Field calibration on these sensors is only valid after the sensor has been
+// measuring in a stable, homogeneous CO2 environment for a sensor-specific
+// warm-up, and the first reading after start-up must be discarded. In low-power
+// mode the warm-up spans several deep-sleep wakes, so progress lives in RTC
+// (deepSleepData) and advances one reading at a time.
+// See: https://github.com/melkati/CO2-Gadget/issues/250
+CalWarmup getCalWarmup() {
+    switch (deepSleepData.co2Sensor) {
+        case CO2Sensor_SCD40:
+        case CO2Sensor_SCD41:        return {5, 180};   // >3 min / 5 single shots (SCD4x Low Power Operation)
+        case CO2Sensor_SCD30:        return {4, 120};   // >2 min continuous (SCD30 interface description)
+        case CO2Sensor_MHZ19:        return {3, 1200};  // ~20 min at 400 ppm before zero-point calibration
+        case CO2Sensor_CM1106:
+        case CO2Sensor_CM1106SL_NS:  return {3, 120};   // warm-up before start_calibration()
+        case CO2Sensor_SENSEAIRS8:   return {3, 120};   // fresh-air exposure, then background manual_calibration()
+        default:                     return {1, 0};     // DEMO / NONE: immediate (for testing)
+    }
+}
+
+void beginCalibrationSequence(uint16_t ppm) {
+    // Reject implausible targets: fresh air is ~400-430 ppm, so a value below 400 (or
+    // 0) is not a valid calibration reference. Matches the menu's 400-2000 ppm range.
+    if ((ppm < 400) || (ppm > 2000)) {
+        Serial.println("-->[CAL] Ignoring calibration request: invalid value " + String(ppm) + " ppm (valid 400-2000)");
+        return;
+    }
+    // CM1106 re-inits its driver and toggles CM1106_ENABLE_PIN on each deep-sleep
+    // wake, so it is not guaranteed to stay continuously powered/measuring while a
+    // warm-up spans sleeps — and its field calibration needs continuous operation.
+    // Instead of refusing, pause deep sleep for the duration of the calibration so
+    // the sensor runs continuously, then resume deep sleep when it completes (flag
+    // cleared in advanceCalibrationSequence()). SCD30/SCD4x stay powered across
+    // sleep (and SCD4x's one-shot-per-wake warm-up matches the datasheet), so they
+    // keep calibrating across wakes. See: https://github.com/melkati/CO2-Gadget/issues/250
+    bool isCm1106 = (deepSleepData.co2Sensor == CO2Sensor_CM1106) ||
+                    (deepSleepData.co2Sensor == CO2Sensor_CM1106SL_NS);
+    deepSleepData.calForceContinuous = (isCm1106 && (deepSleepData.lowPowerMode != HIGH_PERFORMANCE));
+    if (deepSleepData.calForceContinuous) {
+        Serial.println("-->[CAL] CM1106 needs continuous operation: pausing deep sleep until calibration completes.");
+        // Ensure the sensor is in continuous measurement mode so sensors.loop() yields readings.
+        if (sensors.isSensorRegistered(SENSORS::SCM1106)) {
+            sensors.cm1106->set_working_status(CM1106_CONTINUOUS_MEASUREMENT);
+        }
+    }
+    deepSleepData.calPhase = CAL_WARMUP;
+    deepSleepData.calTargetPpm = ppm;
+    deepSleepData.calReadingsSeen = 0;
+    deepSleepData.calStartUptimeSec = (uint32_t)getReliableUptimeSeconds();
+    CalWarmup w = getCalWarmup();
+    Serial.println("-->[CAL] Starting calibration to " + String(ppm) + " ppm. Warm-up needs " +
+                   String(w.minReadings) + " readings over >=" + String(w.minSeconds) + " s (first reading discarded).");
+}
+
+// Advance the warm-up by one fresh sensor reading. Called once per reading:
+// from readingsLoop() in high-performance mode and from the deep-sleep wake
+// handler in low-power mode (one reading per wake).
+void advanceCalibrationSequence() {
+    if (deepSleepData.calPhase != CAL_WARMUP) return;
+    deepSleepData.calReadingsSeen++;
+    if (deepSleepData.calReadingsSeen == 1) {
+        Serial.println("-->[CAL] Warm-up: discarding first reading after start.");
+        return;
+    }
+    CalWarmup w = getCalWarmup();
+    uint16_t usable = deepSleepData.calReadingsSeen - 1;  // first reading is discarded
+    uint32_t elapsed = (uint32_t)getReliableUptimeSeconds() - deepSleepData.calStartUptimeSec;
+    Serial.println("-->[CAL] Warm-up: reading " + String(usable) + "/" + String(w.minReadings) +
+                   ", elapsed " + String(elapsed) + "/" + String(w.minSeconds) + " s (CO2 " + String(co2) + " ppm)");
+    if (usable < w.minReadings || elapsed < w.minSeconds) return;
+
+    // Warm-up satisfied: issue the sensor-specific recalibration now.
+    Serial.println("-->[CAL] Warm-up complete. Calibrating sensor to " + String(deepSleepData.calTargetPpm) + " ppm.");
+    calibrationValue = deepSleepData.calTargetPpm;
+    sensors.setCO2RecalibrationFactor(calibrationValue);
+    saveCalibrationValue();  // persist so the value survives reboot. See issue #250
+    deepSleepData.calPhase = CAL_IDLE;
+    deepSleepData.calForceContinuous = false;  // resume deep sleep if it was paused for this calibration
+    Serial.println("-->[CAL] Calibration command sent and value persisted.");
+}
+
 void processPendingCommands() {
     if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
-        if ((calibrationValue >= 0) && (calibrationValue <= 2000)) {
-            Serial.println("-->[MAIN] Calibrating CO2 sensor at " + String(calibrationValue) + " PPM");
-            pendingCalibration = false;
-            sensors.setCO2RecalibrationFactor(calibrationValue);
+        pendingCalibration = false;
+        // Don't calibrate immediately — start the datasheet warm-up sequence, which
+        // collects/discards readings (across wakes in low power) before recalibrating.
+        if ((calibrationValue >= 400) && (calibrationValue <= 2000)) {
+            if (deepSleepData.calPhase == CAL_IDLE) {
+                beginCalibrationSequence(calibrationValue);
+            } else {
+                Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); ignoring new request for " + String(calibrationValue) + " PPM");
+            }
         } else {
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
-            pendingCalibration = false;
         }
     }
 
     if (pendingAmbientPressure == true) {
+        pendingAmbientPressure = false;
         if (ambientPressureValue != 0) {
-            Serial.println("-->[MAIN] Setting AmbientPressure for CO2 sensor at " + String(ambientPressureValue) + " mbar\n");
-            pendingAmbientPressure = false;
-            // sensors.scd30.setAmbientPressure(ambientPressureValue); To-Do: Implement after migration to sensorlib 0.7.3
+            // Ambient pressure (mbar == hPa) enables continuous pressure compensation
+            // and overrides altitude-based compensation. Only the Sensirion CO2 sensors
+            // support it. See: https://github.com/melkati/CO2-Gadget/issues/250
+            Serial.println("-->[MAIN] Setting ambient pressure for CO2 sensor to " + String(ambientPressureValue) + " mbar");
+            bool isScd4x = (deepSleepData.co2Sensor == CO2Sensor_SCD40) ||
+                           (deepSleepData.co2Sensor == CO2Sensor_SCD41);
+            bool isScd30 = (deepSleepData.co2Sensor == CO2Sensor_SCD30);
+            if (isScd4x && sensors.isSensorRegistered(SENSORS::SSCD4X)) {
+                // SCD4x takes hPa (== mbar) and accepts it during periodic measurement.
+                uint16_t err = sensors.scd4x.setAmbientPressure(ambientPressureValue);
+                if (err) Serial.println("-->[MAIN][ERROR] SCD4x setAmbientPressure error: " + String(err));
+            } else if (isScd30 && sensors.isSensorRegistered(SENSORS::SSCD30)) {
+                // SCD30 sets pressure by (re)starting continuous measurement; valid 700-1400 mbar.
+                if ((ambientPressureValue >= 700) && (ambientPressureValue <= 1400)) {
+                    sensors.scd30.startContinuousMeasurement(ambientPressureValue);
+                } else {
+                    Serial.println("-->[MAIN] SCD30 ambient pressure out of range (700-1400 mbar); ignoring " + String(ambientPressureValue));
+                }
+            } else {
+                Serial.println("-->[MAIN] Ambient pressure compensation not supported for the active sensor; ignoring.");
+            }
         } else {
-            Serial.println("-->[MAIN] Avoiding setting AmbientPressure for CO2 sensor with invalid value at " + String(ambientPressureValue) + " mbar\n");
-            pendingAmbientPressure = false;
+            Serial.println("-->[MAIN] Avoiding setting ambient pressure with invalid value (0 mbar)");
         }
     }
 }
@@ -514,6 +642,11 @@ void readingsLoop() {
         if (newReadingsAvailable) {
             lastReadingsCommunicationTime = esp_timer_get_time();
             newReadingsAvailable = false;
+            // Advance any calibration warm-up on each fresh reading. Fires in
+            // high-performance mode and while a calibration has paused deep sleep
+            // (CM1106 forced-continuous); in normal low power the deep-sleep wake
+            // handler advances it once per wake instead. See issue #250.
+            if ((deepSleepData.lowPowerMode == HIGH_PERFORMANCE) || deepSleepData.calForceContinuous) advanceCalibrationSequence();
             nav.idleChanged = true;  // Must redraw display as there are new readings
 #ifdef SUPPORT_CIRCULAR_BUFFER
             addCO2Value(co2);
