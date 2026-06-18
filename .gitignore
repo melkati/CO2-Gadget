@@ -17,10 +17,11 @@ data/*.min.html
 data/*.min.js
 data/*.min.css
 webserver/data/
-# Local development logs and planning files — not for the repo
+# Local development logs, planning and review files — not for the repo
 docs/phase*-log.md
 docs/build-*.log
 docs/UI-Redesign.md
+docs/fix-*-review.md
 PLAN.md
 # PPK2 measurement and automation scripts (local only)
 PPK2/
