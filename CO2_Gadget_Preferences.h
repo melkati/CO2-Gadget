@@ -682,7 +682,6 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["showPM25"] = displayShowPM25;
     doc["showStatusIcons"] = displayShowStatusIcons;
     doc["wakeOnCO2Alert"] = wakeDisplayOnCO2Alert;
-    doc["measInterval"] = measurementInterval;
     doc["sampInterval"] = sampleInterval;
 
     // Buzzer preferences
@@ -917,6 +916,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         }
         if (JsonDocument.containsKey("measurementInterval")) {
             measurementInterval = JsonDocument["measurementInterval"];
+            applyMeasurementIntervalToSensors();
         }
         if (JsonDocument.containsKey("sampleInterval")) {
             sampleInterval = JsonDocument["sampleInterval"];
