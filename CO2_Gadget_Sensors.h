@@ -146,22 +146,8 @@ void storeSensorSelectedInRTC() {
     }
 }
 
-void initSCD30SensorLowPower() {
-    return;
-#ifndef Wire1
-    if (!sensors.scd30.begin()) return;
-#else
-    if (!sensors.scd30.begin() && !sensors.scd30.begin(SCD30_I2CADDR_DEFAULT, &Wire1, SCD30_CHIP_ID)) return;
-#endif
-}
-
 void initSensorsLowPower() {
     const int8_t None = -1, AUTO = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6, DEMO = 127;
-    if (deepSleepData.lowPowerMode == SENSORS::SSCD30) {
-        Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: SCD30");
-        initSCD30SensorLowPower();
-        return;
-    }
 
     if (selectedCO2Sensor == AUTO) {
         Serial.println("-->[SENS] Trying to init CO2 sensor in Low Power Mode: AutoSensor (I2C)");
@@ -292,10 +278,6 @@ void initSensors() {
     storeSensorSelectedInRTC();
 }
 
-void sensorSCD30LoopLowPower() {
-    Serial.println("-->[DEEP] " + String(__func__) + "()");
-}
-
 void sensorCM1106SL_NSLoopLowPower() {
     Serial.println("-->[DEEP] " + String(__func__) + "()");
 }
@@ -331,10 +313,7 @@ void sensorSCD4XLoopLowPower() {
 }
 
 void sensorsLoopLowPower() {
-    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
-        // Serial.println("sensorsLoopLowPower() SCD30");
-        sensorSCD30LoopLowPower();
-    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
+    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
         // Serial.println("sensorsLoopLowPower() CM1106SL_NS");
         sensorCM1106SL_NSLoopLowPower();
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {

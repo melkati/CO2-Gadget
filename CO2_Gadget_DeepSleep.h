@@ -274,9 +274,7 @@ void toDeepSleep() {
                 deepSleepData.displayReverseOnWake = displayReverse;
 #endif
 
-    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
-        // sensors.scd30.stopContinuousMeasurement();
-    } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
+    if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD41)) {
         // SCD41 supports powerDown() but it kills in-progress single-shot
         // measurements. Instead, leave the sensor in idle mode and start a
         // non-blocking single-shot measurement that will complete during the
@@ -669,65 +667,6 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     return (true);
 }
 
-bool scd30HandleFromDeepSleep(bool blockingMode = true) {
-    static bool initialized = false;
-    unsigned long previousMillis = 0, startTimeoutMillis = millis();
-
-    if (!initialized) {
-        Serial.println("-->[DEEP] " + String(__func__) + "() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode));
-        reInitI2C();
-        sensors.setDebugMode(debugSensors);
-        sensors.detectI2COnly(true);
-        applyMeasurementIntervalToSensors();
-        sensors.setOnDataCallBack(&onSensorDataOk);      // all data read callback
-        sensors.setOnErrorCallBack(&onSensorDataError);  // [optional] error callback
-        sensors.initCO2LowPowerMode(SENSORS::SSCD30, (LowPowerModes)LOW_POWER);
-        initialized = true;
-    }
-
-#ifdef DEEP_SLEEP_DEBUG
-    Serial.println("-->[DEEP][SCD30] SCD30 is not fully supported in Low Power Mode (yet)");
-#endif
-
-    if (!sensors.isDataReady()) {
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP][SCD30] Waiting for data from sensor");
-#endif
-        while (!sensors.isDataReady()) {
-            if (millis() - startTimeoutMillis >= (sensors.getSampleTime() + 1) * 1000) {  // If one second more than sample time then timeout
-                Serial.println("-->[DEEP][SCD30][ERROR] Timeout waiting for data from sensor");
-                return (false);
-            }
-            sensors.loop();
-            if ((!sensors.isDataReady()) && (!interactiveMode)) {
-                esp_sleep_enable_timer_wakeup(1 * 1000000);  // 1 second
-                                                             // Serial.println("-->[DEEP] Light sleep for 1 second");
-                                                             // Serial.flush();
-#ifdef TIMEDEBUG
-                timerLightSleep.resume();
-#endif
-                esp_light_sleep_start();
-#ifdef TIMEDEBUG
-                timerLightSleep.pause();
-#endif
-            }
-            unsigned long currentMillis = millis();
-            if (currentMillis - previousMillis >= 1000) {
-                previousMillis = currentMillis;
-#ifdef DEEP_SLEEP_DEBUG
-                Serial.print("+");
-#endif
-                delay(10);
-            }
-        }
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("");
-#endif
-    }
-
-    return (true);
-}
-
 bool handleLowPowerSensors() {
     bool readOK = false;
     bool blockingMode = true;
@@ -741,10 +680,8 @@ bool handleLowPowerSensors() {
         blockingMode = false;
     }
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
-#ifdef DEEP_SLEEP_DEBUG
-        if (!interactiveMode) Serial.println("-->[DEEP][SCD30] Waking up from deep sleep. Handling SCD30");
-#endif
-        readOK = scd30HandleFromDeepSleep(true);
+        Serial.println("-->[DEEP][ERROR] SCD30 Low Power Mode has been removed. Use HIGH_PERFORMANCE mode or switch to SCD41.");
+        readOK = false;
 
     } else if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_CM1106SL_NS)) {
 #ifdef DEEP_SLEEP_DEBUG
