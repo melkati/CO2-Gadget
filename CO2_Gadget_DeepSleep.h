@@ -381,7 +381,11 @@ void toDeepSleep() {
         // ESP32's deep sleep (~5s vs ~30s interval). On next wake, data is
         // already ready and can be read immediately.
         sensors.scd4x.stopPeriodicMeasurement();
-        sensors.scd4x.measureSingleShot(false);
+        // Start the next measurement without blocking so conversion completes
+        // during deep sleep. On the next wake, scd41HandleFromDeepSleep()
+        // consumes this prepared result immediately and skips its 5-second
+        // conversion light sleep. The reading is therefore one sleep cycle old.
+        sensors.scd4x.measureSingleShot(true);
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
@@ -594,11 +598,24 @@ void reInitI2C() {
     Wire.setTimeout(2000);
 }
 
+/**
+ * @brief Power, wait for, and read one CM1106SL-NS measurement.
+ *
+ * RDY is active-low. Figure 7 documents an approximately 730 ms power-on
+ * measurement cycle and permits communication once RDY goes LOW.
+ * CM1106SL-NS specification, pages 4-8:
+ * https://en.gassensor.com.cn/Product_files/Specifications/CM1106SL-NS%20Super%20Low%20Power%20CO2%20Sensor%20Module%20Specification.pdf
+ *
+ * @return True when a valid CO2 value was read before the timeout.
+ */
 bool cm1106HandleFromDeepSleep() {
+    const uint32_t readyTimeoutMs = 2000;
+    const uint32_t readyWaitStartMs = millis();
+
     pinMode(CM1106_ENABLE_PIN, OUTPUT);
     digitalWrite(CM1106_ENABLE_PIN, HIGH);
     pinMode(CM1106_READY_PIN, INPUT);
-    Serial.print("-->[DEEP] Waking up from deep sleep. Handling CM1106 ");
+    Serial.println("-->[DEEP] Waking up from deep sleep. Handling CM1106SL-NS");
 #if defined(UART_RX_GPIO) && defined(UART_TX_GPIO)
     sensors.init(CM1106, UART_RX_GPIO, UART_TX_GPIO);
 #else
@@ -607,19 +624,39 @@ bool cm1106HandleFromDeepSleep() {
 
     applyMeasurementIntervalToSensors();
 
-    while (digitalRead(CM1106_READY_PIN) == LOW) {
-        Serial.print("+");
+    // RDY LOW means the measurement is complete. Wait only while it is HIGH.
+    while (digitalRead(CM1106_READY_PIN) == HIGH) {
+        if (millis() - readyWaitStartMs >= readyTimeoutMs) {
+            Serial.println("-->[DEEP][ERROR] CM1106SL-NS RDY timeout after " + String(readyTimeoutMs) + " ms");
+            digitalWrite(CM1106_ENABLE_PIN, LOW);
+            return (false);
+        }
         delay(10);
     }
 
-    Serial.println("");
-
     co2 = sensors.cm1106->get_co2();
+    // Working mode A requires EN LOW after communication to power the sensor off.
+    digitalWrite(CM1106_ENABLE_PIN, LOW);
+    if (co2 <= 0) {
+        Serial.println("-->[DEEP][ERROR] CM1106SL-NS returned an invalid CO2 value");
+        return (false);
+    }
     deepSleepData.lastCO2Value = co2;
     Serial.println("-->[DEEP] CO2 value: " + String(co2) + " ppm");
     return (true);
 }
 
+/**
+ * @brief Consume a pending SCD41 result or create one during this wake.
+ *
+ * get_data_ready_status reports whether periodic or single-shot data is ready
+ * for read-out. If no unread result exists, measure_single_shot is started and
+ * the ESP32 light-sleeps during its 5000 ms conversion.
+ * SCD4x datasheet sections 3.9.2 and 3.11.1:
+ * https://sensirion.com/media/documents/48C4B7FB/67FE0194/CD_DS_SCD4x_Datasheet_D1.pdf
+ *
+ * @return True when a measurement was read successfully.
+ */
 bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     static bool i2cInitialized = false;
     uint16_t error = 0;
@@ -632,58 +669,47 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         sensors.scd4x.begin(Wire);
         i2cInitialized = true;
     }
-    // After powerDown() in toDeepSleep(), the SCD41 needs wakeUp() before any command.
-    // MUST be called on EVERY wake cycle, not just the first one — toDeepSleep()
-    // calls powerDown() before each deep sleep, leaving the sensor in sleep mode.
-    // wakeUp() is intentionally NACK'd by the sensor (it is in sleep) — that is expected.
-    // The 20 ms delay is required per SCD41 datasheet before the next I2C command.
-    sensors.scd4x.wakeUp();
-    delay(20);
-
+    bool dataReady = isDataReadySCD4x();
     Serial.print("-->[DEEP] ");
     Serial.print(__func__);
-    Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(isDataReadySCD4x()));
+    Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(dataReady));
 
-    if ((!blockingMode) && (!isDataReadySCD4x()) && (!interactiveMode)) {
-        // Start a single-shot measurement without blocking so data is ready
-        // on the next wake cycle. Without this, the sensor never starts
-        // measuring in non-blocking mode, causing perpetual CO2: 0 readings.
-        sensors.scd4x.measureSingleShot(false);
-        esp_sleep_enable_timer_wakeup(0.3 * 1000000);  // 0.3 seconds
+    if (!dataReady) {
+        // The forked driver uses true to send measure_single_shot without its
+        // internal blocking delay. The ESP32 then light-sleeps for conversion.
+        error = sensors.scd4x.measureSingleShot(true);
+        if (error != 0) {
+            Serial.println("-->[DEEP][ERROR] Waking up from deep sleep. measureSingleShot() error: " + String(error));
+            return (false);
+        }
+        esp_sleep_enable_timer_wakeup(5 * 1000000);
+        Serial.flush();
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
 #endif
-        esp_light_sleep_start();
+        if (esp_light_sleep_start() == ESP_OK) {
+            Serial.println("-->[DEEP] SCD41 conversion light sleep OK");
+        } else {
+            Serial.println("-->[DEEP][ERROR] SCD41 conversion light sleep failed");
+#ifdef TIMEDEBUG
+            timerLightSleep.pause();
+#endif
+            return (false);
+        }
 #ifdef TIMEDEBUG
         timerLightSleep.pause();
 #endif
-        return (false);
-    }
-
-    error = sensors.scd4x.measureSingleShot(true);
-    if (error != 0) {
-        Serial.println("-->[DEEP][ERROR] Waking up from deep sleep. measureSingleShot() error: " + String(error));
-    }
-    esp_sleep_enable_timer_wakeup(5 * 1000000);
-    Serial.flush();
-#ifdef TIMEDEBUG
-    timerLightSleep.resume();
-#endif
-    if (esp_light_sleep_start() == ESP_OK) {
-        Serial.println("-->[DEEP] Light sleep OK");
     } else {
-        Serial.println("-->[DEEP] Light sleep failed");
+        Serial.println("-->[DEEP] SCD41 pending measurement ready; skipping new measurement and 5-second light sleep");
     }
-#ifdef TIMEDEBUG
-    timerLightSleep.pause();
-#endif
 
     // Use repeated short light sleeps instead of busy-wait to minimize power consumption.
     // Each iteration sleeps 100 ms (~0.8 mA) vs. the old busy-wait (~14 mA).
     // Timeout after 50 iterations (5 additional seconds) as a safety measure.
     uint8_t pollAttempts = 0;
     const uint8_t maxPollAttempts = 50;
-    while (!isDataReadySCD4x() && pollAttempts < maxPollAttempts) {
+    dataReady = isDataReadySCD4x();
+    while (!dataReady && pollAttempts < maxPollAttempts) {
         esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms light sleep
 #ifdef TIMEDEBUG
         timerLightSleep.resume();
@@ -699,8 +725,9 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
         timerLightSleep.pause();
 #endif
         pollAttempts++;
+        dataReady = isDataReadySCD4x();
     }
-    if (!isDataReadySCD4x()) {
+    if (!dataReady) {
         Serial.println("-->[DEEP][WARN] SCD41 polling timeout after " + String(maxPollAttempts) + " attempts — aborting, will retry next wake");
         return (false);
     }
@@ -718,6 +745,17 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     return (true);
 }
 
+/**
+ * @brief Read SCD40 low-power periodic data when its internal cycle is ready.
+ *
+ * SCD40 produces measurements internally in low-power periodic mode. Timer
+ * wakes return immediately if no data is ready; blocking callers may wait for
+ * the current periodic cycle, but no single-shot command is issued.
+ * SCD4x datasheet sections 3.9.1 and 3.9.2:
+ * https://sensirion.com/media/documents/48C4B7FB/67FE0194/CD_DS_SCD4x_Datasheet_D1.pdf
+ *
+ * @return True when a periodic measurement was read successfully.
+ */
 bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     static bool initialized = false;
     unsigned long previousMillis = 0;
@@ -742,10 +780,14 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     }
 
     startTimeoutMillis = millis();
-    if (!isDataReadySCD4x()) {
-        if (!blockingMode) return (false);
+    bool dataReady = isDataReadySCD4x();
+    if (!dataReady) {
+        if (!blockingMode) {
+            Serial.println("-->[DEEP] SCD40 periodic data not ready; returning without waiting");
+            return (false);
+        }
         Serial.print("-->[DEEP] Waiting for data from sensor SCD40: ");
-        while (!isDataReadySCD4x()) {
+        while (!dataReady) {
             unsigned long currentMillis = millis();
             if (currentMillis - previousMillis >= 1000) {
                 previousMillis = currentMillis;
@@ -764,8 +806,11 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
 #ifdef TIMEDEBUG
             timerLightSleep.pause();
 #endif
+            dataReady = isDataReadySCD4x();
         }
         Serial.println("");
+    } else {
+        Serial.println("-->[DEEP] SCD40 periodic measurement ready; skipping readiness wait");
     }
     error = sensors.scd4x.readMeasurement(co2value, temperature, humidity);
     co2 = co2value;
@@ -781,6 +826,18 @@ bool scd40HandleFromDeepSleep(bool blockingMode = true) {
     return (true);
 }
 
+/**
+ * @brief Wait for the next SCD30 continuous-mode measurement when necessary.
+ *
+ * SCD30 runs continuously at the configured measurement interval. Data-ready
+ * changes back to zero after read-out, while unread data can be overwritten by
+ * a later continuous measurement. The existing bounded light-sleep wait is
+ * therefore preserved rather than triggering a new measurement.
+ * SCD30 Interface Description sections 1.4.1, 1.4.4 and 1.4.5:
+ * https://sensirion.com/media/documents/D7CEEF4A/6165372F/Sensirion_CO2_Sensors_SCD30_Interface_Description.pdf
+ *
+ * @return True when the sensor library reports measurement data ready.
+ */
 bool scd30HandleFromDeepSleep(bool blockingMode = true) {
     static bool initialized = false;
     unsigned long previousMillis = 0, startTimeoutMillis = millis();
@@ -801,7 +858,9 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
     Serial.println("-->[DEEP][SCD30] SCD30 is not fully supported in Low Power Mode (yet)");
 #endif
 
+    // Consume an already-ready continuous measurement without an extra wait.
     if (!sensors.isDataReady()) {
+        Serial.println("-->[DEEP] SCD30 continuous measurement not ready; entering bounded wait");
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("-->[DEEP][SCD30] Waiting for data from sensor");
 #endif
@@ -835,6 +894,8 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
 #ifdef DEEP_SLEEP_DEBUG
         Serial.println("");
 #endif
+    } else {
+        Serial.println("-->[DEEP] SCD30 continuous measurement ready; skipping readiness wait");
     }
 
     return (true);
