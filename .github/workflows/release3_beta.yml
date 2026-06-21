@@ -216,30 +216,29 @@ jobs:
           PORT: 21
           ARGS: --verbose
           
-      - name: Purge CDN cache (Cloudflare → LiteSpeed)
+      - name: Purge CDN cache (Cloudflare)
         if: steps.check_version.outputs.VERSION != ''
         run: |
-          MANIFEST_FILE="${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json"
-          MANIFEST_URL="https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/${MANIFEST_FILE}"
+          MANIFEST="https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json"
 
-          echo "Purging Cloudflare cache for: ${MANIFEST_URL}"
+          echo "Getting Cloudflare Zone ID..."
+          ZONE=$(curl -sf "https://api.cloudflare.com/client/v4/zones?name=emariete.com" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
+            -H "Content-Type: application/json")
+          ZONE_ID=$(echo "$ZONE" | python3 -c "import sys,json; print(json.load(sys.stdin)['result'][0]['id'])")
+          echo "Zone ID: ${ZONE_ID}"
 
-          # 1. Get Cloudflare Zone ID
-          ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=emariete.com" \
+          echo "Purging: ${MANIFEST}"
+          RESP=$(curl -sf -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)['result'][0]['id'])")
+            --data "{\"files\":[\"${MANIFEST}\"]}")
+          SUCCESS=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['success'])")
+          echo "Purge result: success=${SUCCESS}"
+          echo "$RESP"
 
-          echo "Cloudflare Zone ID: ${ZONE_ID}"
-
-          # 2. Purge this manifest from Cloudflare by URL
-          PURGE_RESP=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data "{\"files\":[\"${MANIFEST_URL}\",\"https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/\"]}")
-          
-          echo "Cloudflare purge response: ${PURGE_RESP}"
-
-          # 3. Fallback: purge LiteSpeed origin cache
-          curl -s "https://emariete.com/clean_cache_litespeed.php"
-          echo "All caches purged"
+      - name: Purge origin cache (LiteSpeed)
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          curl -sf "https://emariete.com/clean_cache_litespeed.php"
+          echo "LiteSpeed cache purged"
