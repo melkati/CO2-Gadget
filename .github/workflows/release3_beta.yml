@@ -218,16 +218,17 @@ jobs:
       - name: Organize files for GitHub Pages (manifests only)
         run: |
           mkdir -p ./gh-pages/beta
-          # Copy manifests to gh-pages directory
-          cp ./beta_firmware/*.manifest.json ./gh-pages/beta/
+          # Each artifact lands in its own subdirectory (beta-<env>/)
+          # Find all manifests recursively and copy them to gh-pages/beta/
+          find ./beta_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/beta/ \;
           echo "=== Manifests for GitHub Pages ==="
           ls -la ./gh-pages/beta/
 
       - name: Organize files for FTP (.bin only)
         run: |
           mkdir -p ./ftp_firmware/beta
-          # Copy .bin files to FTP directory
-          cp ./beta_firmware/*.bin ./ftp_firmware/beta/
+          # Copy .bin files to FTP directory (from any subdirectory)
+          find ./beta_firmware -name "*.bin" -exec cp {} ./ftp_firmware/beta/ \;
           echo "=== Firmware for FTP ==="
           ls -la ./ftp_firmware/beta/
 
