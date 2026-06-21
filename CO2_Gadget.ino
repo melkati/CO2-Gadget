@@ -881,6 +881,9 @@ void initHighPerformanceMode() {
     initBLE();
 #endif
     initSensors();
+#ifdef SUPPORT_BTHOME_BLE
+    sanitizeBTHomeSensorSelection(true, "Startup sensor detection");
+#endif
     initWifi();
     wifiChanged = false;
 #ifdef SUPPORT_ESPNOW

@@ -7,6 +7,13 @@ let supportBTHomeBLE = false;
 let bthomeSensorDescriptors = [];
 let bthomeBudgetMax = 24;
 
+function restoreBTHomeSensorSelection(descriptors, selection) {
+    return descriptors.map((descriptor) => ({
+        ...descriptor,
+        selected: !!descriptor.available && selection[descriptor.key] === true
+    }));
+}
+
 function loadWHOPreset() {
     const orangeEl = document.getElementById('co2OrangeRange');
     const redEl    = document.getElementById('co2RedRange');
@@ -127,7 +134,17 @@ function populateFormWithPreferences(preferences) {
         setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
         if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
         // [BTHOME-SENSEL] capture the per-sensor descriptor list and render the selection UI.
-        bthomeSensorDescriptors = Array.isArray(preferences.bthomeSensors) ? preferences.bthomeSensors : [];
+        if (Array.isArray(preferences.bthomeSensors)) {
+            bthomeSensorDescriptors = preferences.bthomeSensors;
+        } else if (preferences.bthomeSensors && typeof preferences.bthomeSensors === 'object') {
+            // Preference backups contain the writable {key: bool} shape rather than
+            // the read-only descriptor array returned by the device. Preserve the
+            // current descriptors and restore only selections that are available.
+            bthomeSensorDescriptors = restoreBTHomeSensorSelection(
+                bthomeSensorDescriptors,
+                preferences.bthomeSensors
+            );
+        }
         bthomeBudgetMax = (typeof preferences.bthomeBudgetMax === 'number') ? preferences.bthomeBudgetMax : 24;
         renderBTHomeSensors();
     }

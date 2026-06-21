@@ -372,6 +372,36 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
     }
 }
 
+// Remove selections for hardware that is not registered. When called after
+// startup sensor detection, persist only when the loaded NVS mask was stale.
+bool sanitizeBTHomeSensorSelection(bool persistIfChanged, const char *reason) {
+    uint32_t sanitized = bthomeSensors;
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if (!bthomeMeasurementAvailable(m.bit)) {
+            sanitized &= ~m.bit;
+        }
+    }
+    if (sanitized == bthomeSensors) {
+        return false;
+    }
+
+    uint32_t removed = bthomeSensors & ~sanitized;
+    bthomeSensors = sanitized;
+    Serial.printf("-->[BLE ] Cleared unavailable BTHome sensor bits: 0x%08lX (%s)\n",
+                  static_cast<unsigned long>(removed),
+                  reason ? reason : "availability changed");
+
+    if (persistIfChanged) {
+        preferences.begin("CO2-Gadget", false);
+        preferences.putUInt("bthomeSensors", bthomeSensors);
+        preferences.end();
+        Serial.println("-->[PREF] Persisted sanitized BTHome sensor selection to NVR.");
+    }
+    refreshBTHomeBLESettings(reason ? reason : "BTHome sensor availability changed", true);
+    return true;
+}
+
 bool bthomeMeasurementValid(uint32_t bit) {
     switch (bit) {
         case BTHOME_SEL_CO2:
