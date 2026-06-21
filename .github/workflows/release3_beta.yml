@@ -179,7 +179,6 @@ jobs:
         run: |            
           mkdir ./beta_firmware      
           cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}.beta.manifest.json
 
       - name: Generate .htaccess to disable caching
         if: steps.check_version.outputs.VERSION != ''
