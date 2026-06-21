@@ -23,7 +23,7 @@
 
 **CO2-Gadget** is an advanced, feature-rich firmware for ESP32-based CO₂ monitors and air quality meters. It supports a wide range of CO₂ sensors, particulate matter (PM) sensors, environmental sensors, displays (TFT, OLED, E-Ink), and communication protocols (WiFi, BLE, MQTT, ESP-NOW). Whether you're building a custom air quality monitor or flashing a commercial board, CO2-Gadget offers enterprise-grade features in a compact embedded package.
 
-> **Current version:** v0.16.005-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
+> **Current version:** v0.16.006-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/en/co2-meter-gadget/) for pre-built binaries and one-click browser installation — no compilation required.
 
