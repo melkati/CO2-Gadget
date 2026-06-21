@@ -216,6 +216,10 @@ jobs:
           PORT: 21
           ARGS: --verbose
           
-      - name: Clean eMariete.com Cache
+      - name: Purge emariete.com cache for beta files
         if: steps.check_version.outputs.VERSION != ''
-        run: curl https://emariete.com/clean_cache_litespeed.php
+        run: |
+          # PURGE request invalidates LiteSpeed cache for the beta directory
+          curl -s -X PURGE "https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/"
+          # Also flush the full-site cache and CDN
+          curl -s "https://emariete.com/clean_cache_litespeed.php"
