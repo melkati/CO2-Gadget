@@ -1,14 +1,19 @@
-name: Beta Release V3.0 # This file must be placed in the .github/workflows folder at the root of the repository in the master branch
+name: Beta Release V3.0
 
-# # # # # # # # # # #
-# To create new Beta version and upload to the web server, just commit with a message with the format "Beta v*.*.*" (Beta v1.0.1, Beta v1.1.12, Beta v2.1.123, etc)
-# # # # # # # # # # #
+# Create a beta: commit with message "Beta v<major>.<minor>.<patch>"
+# Manifests are deployed to GitHub Pages (melkati.github.io/CO2-Gadget/beta/)
+# Firmware .bin files are deployed via FTP to emariete.com
+#
+# Architecture:
+#   build_beta (matrix, parallel) → uploads artifacts
+#   deploy (single job, after all builds) → gh-pages (manifests) + FTP (.bin files)
+
 on:
   push:
     branches:
       - development
     paths-ignore:
-      - '.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
+      - '.github/workflows/release3_beta.yml'
   workflow_dispatch:
 
 jobs:
@@ -16,33 +21,26 @@ jobs:
     # Only run when commit message contains "Beta" and does not contain "low-power",
     # or when triggered manually via workflow_dispatch.
     if: contains(github.event.head_commit.message, 'Beta') && !contains(github.event.head_commit.message, 'low-power') || github.event_name == 'workflow_dispatch'
-    name: Create Beta Release
+    name: Build ${{ matrix.environment }}
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         environment:
-          # - esp32dev
-          # - esp32dev_OLED
-          # - TTGO_TDISPLAY
-          # - TTGO_TDISPLAY_SANDWICH
-          # - TDISPLAY_S3
-          # - esp32dev_ST7789_240x320
-          # - ttgo-t5-EINKBOARDGDEM0213B74
+          - esp32dev
+          - esp32dev_OLED
+          - TTGO_TDISPLAY
+          - TTGO_TDISPLAY_SANDWICH
+          - TDISPLAY_S3
+          - esp32dev_ST7789_240x320
+          - ttgo-t5-EINKBOARDGDEM0213B74
           - ttgo-t5-EINKBOARDDEPG0213BN
-          # - esp32dev
-          # - esp32dev_OLED
-          # - TTGO_TDISPLAY
-          # - TTGO_TDISPLAY_SANDWICH
-          # - TDISPLAY_S3
-          # - esp32dev_ST7789_240x320
-          # - ttgo-t5-EINKBOARDGDEM0213B74
-          # - ttgo-t5-EINKBOARDGDEW0213M21
-          # - ttgo-t7-EINKBOARDGDEM029T94
-          # - ttgo-t7-WEACT_GDEH0154D67
-          # - ttgo-t7-WEACT_DEPG0213BN
-          # - ttgo-t7-WEACT_GxEPD2_290_BS
+          - ttgo-t5-EINKBOARDGDEW0213M21
+          - ttgo-t7-EINKBOARDGDEM029T94
+          - ttgo-t7-WEACT_GDEH0154D67
+          - ttgo-t7-WEACT_DEPG0213BN
+          - ttgo-t7-WEACT_GxEPD2_290_BS
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
@@ -52,11 +50,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Show environments
-        run: |
-          echo
-
 
       - name: Check if version exists
         id: check_version
@@ -70,20 +63,6 @@ jobs:
             echo "No valid version found in commit message. Exiting..."
             exit 1
           fi
-          
-      - name: Determine chipFamily
-        id: determine_chip_family
-        run: |
-          case "${{ matrix.environment }}" in
-          "esp32dev_beta")
-            CHIP_FAMILY="ESP32";;
-          "TDISPLAY_S3")
-            CHIP_FAMILY="ESP32-S3";;
-          # Add more cases for other environments as needed
-          *)
-            CHIP_FAMILY="UNKNOWN";;
-          esac
-            echo "chipFamily=${CHIP_FAMILY}" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -109,129 +88,164 @@ jobs:
           platformio update
 
       - name: Get current date
+        if: steps.check_version.outputs.VERSION != ''
         id: date
         run: |
           echo "date=$(date +'%d-%m-%Y')" >> $GITHUB_OUTPUT
           echo "time=$(date +'%H:%M:%S')" >> $GITHUB_OUTPUT
 
-      - name: Create beta manifest file
+      - name: Build firmware
         if: steps.check_version.outputs.VERSION != ''
-        id: create_betamanifest
         run: |
-          # Note: if you change the partition table, make sure to update the offsets
-          #       See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html
-          # Name,     Type,   SubType, Offset,    Size,     Flags
-          # nvs,      data,   nvs,     0x9000,    0x5000,   # nvs partition at at offset 20480 with size 36864 bytes (36KB)
-          # otadata,  data,   ota,     0xe000,    0x2000,   # otadata partition at offset 57344 with size 8192 bytes (8KB)
-          # app0,     app,    ota_0,   0x10000,   0x1B0000, # app0 partition at offset 65536 with size 1769472 bytes (1.68MB)
-          # app1,     app,    ota_1,   0x1C0000,  0x1B0000, # app1 partition at offset 1835008 with size 1769472 bytes (1.68MB)
-          # spiffs,   data,   spiffs,  0x370000,  0x4B000,  # spiffs partition at offset 3604480 with size 307200 bytes (476KB)
-          
-          # Define offset values based on env.CHIP_FAMILY
-          # SPIFFS at 0x370000 (3604480) for ESP32 and 0xc90000 (13172736) for ESP32-S3
+          pio run -e ${{ matrix.environment }}
+
+      - name: Build filesystem
+        if: steps.check_version.outputs.VERSION != ''
+        run: |
+          pio run -e ${{ matrix.environment }} -t buildfs
+
+      - name: Create manifest with absolute .bin URLs
+        if: steps.check_version.outputs.VERSION != ''
+        id: create_manifest
+        env:
+          VERSION: ${{ steps.check_version.outputs.VERSION }}
+          COMPILED_DATE: ${{ steps.date.outputs.date }}
+          COMPILED_TIME: ${{ steps.date.outputs.time }}
+        run: |
+          # SPIFFS offset differs for ESP32-S3
           if [[ "${{ env.CHIP_FAMILY }}" == "ESP32-S3" ]]; then
             bootloader_offset=0
             partitions_offset=32768
             firmware_offset=65536
             spiffs_offset=13172736
           else
-            # Default values for ESP32 or other environments
             bootloader_offset=4096
             partitions_offset=32768
             firmware_offset=65536
             spiffs_offset=3604480
           fi
 
-          # Create beta manifest
-          echo "{" > ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"name\": \"${{ github.event.repository.name }}-${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"flavour\": \"${{ matrix.environment }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"version\": \"${{ steps.check_version.outputs.VERSION }}-beta\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"compilation_date\": \"${{ steps.date.outputs.date }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"compilation_time\": \"${{ steps.date.outputs.time }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"new_install_prompt_erase\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"new_install_improv_wait_time\": 20," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  \"builds\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "      {" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "        \"chipFamily\": \"${{ env.CHIP_FAMILY }}\"," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "        \"improv\": true," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "        \"parts\": [" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-bootloader.bin\", \"offset\": $bootloader_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-partitions.bin\", \"offset\": $partitions_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-firmware.bin\", \"offset\": $firmware_offset }," >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "          { \"path\": \"${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin\", \"offset\": $spiffs_offset }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "        ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "      }" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "  ]" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "}" >> ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "::set-output name=betamanifest::$(cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json)"
+          # Base URL for .bin files on emariete.com (absolute paths in manifest)
+          BIN_BASE_URL="https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta"
+          REPO_NAME="${{ github.event.repository.name }}"
+          ENV_NAME="${{ matrix.environment }}"
+          VER="${{ steps.check_version.outputs.VERSION }}"
 
-      - name: Read beta manifest files
-        if: steps.check_version.outputs.VERSION != ''
-        run:  |
-          echo "Beta Manifest:"
-          echo ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          echo "Beta Manifest file contents read with cat:"
-          cat ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-
-      - name: Copy beta manifest files
-        if: steps.check_version.outputs.VERSION != ''
-        run: |            
-          mkdir ./beta_firmware      
-          cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-
-      - name: Generate .htaccess to disable caching
-        if: steps.check_version.outputs.VERSION != ''
-        run: |
-          # Cloudflare respects Cache-Control headers from origin.
-          # This .htaccess prevents CDN and browser from caching manifests.
-          cat > ./beta_firmware/.htaccess << 'EOF'
-          <FilesMatch "\.(manifest\.json)$">
-              Header set Cache-Control "no-cache, no-store, must-revalidate"
-              Header set Pragma "no-cache"
-              Header set Expires "0"
-          </FilesMatch>
+          cat > ${REPO_NAME}-${ENV_NAME}.beta.manifest.json << EOF
+          {
+            "name": "${REPO_NAME}-${ENV_NAME}",
+            "flavour": "${ENV_NAME}",
+            "version": "${VER}-beta",
+            "compilation_date": "${COMPILED_DATE}",
+            "compilation_time": "${COMPILED_TIME}",
+            "new_install_prompt_erase": true,
+            "new_install_improv_wait_time": 20,
+            "builds": [
+                {
+                  "chipFamily": "${{ env.CHIP_FAMILY }}",
+                  "improv": true,
+                  "parts": [
+                    { "path": "${BIN_BASE_URL}/${REPO_NAME}-${ENV_NAME}-${VER}-bootloader.bin", "offset": ${bootloader_offset} },
+                    { "path": "${BIN_BASE_URL}/${REPO_NAME}-${ENV_NAME}-${VER}-partitions.bin", "offset": ${partitions_offset} },
+                    { "path": "${BIN_BASE_URL}/${REPO_NAME}-${ENV_NAME}-${VER}-firmware.bin", "offset": ${firmware_offset} },
+                    { "path": "${BIN_BASE_URL}/${REPO_NAME}-${ENV_NAME}-${VER}-spiffs.bin", "offset": ${spiffs_offset} }
+                  ]
+                }
+            ]
+          }
           EOF
-          echo "Generated .htaccess with cache-disabling headers"
 
-      - name: Build beta firmware file
+      - name: Upload artifact (all files for this environment)
         if: steps.check_version.outputs.VERSION != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta-${{ matrix.environment }}
+          path: |
+            .pio/build/${{ matrix.environment }}/bootloader.bin
+            .pio/build/${{ matrix.environment }}/partitions.bin
+            .pio/build/${{ matrix.environment }}/firmware.bin
+            .pio/build/${{ matrix.environment }}/spiffs.bin
+            ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
+          retention-days: 2
+
+  deploy:
+    name: Deploy Beta Release
+    needs: build_beta
+    runs-on: ubuntu-latest
+    # Only run if at least one build succeeded (not skipped, not failed)
+    if: needs.build_beta.result == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./beta_firmware
+          pattern: beta-*
+          merge-multiple: false
+
+      - name: List downloaded files
         run: |
-          pio run -e ${{ matrix.environment }}
+          echo "=== Downloaded files ==="
+          find ./beta_firmware -type f | sort
 
-      - name: Copy beta firmware files
-        if: steps.check_version.outputs.VERSION != ''
+      - name: Extract version from any artifact name
+        id: get_version
         run: |
-          cp .pio/build/${{ matrix.environment }}/bootloader.bin ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-bootloader.bin
-          cp .pio/build/${{ matrix.environment }}/partitions.bin  ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-partitions.bin
-          cp .pio/build/${{ matrix.environment }}/firmware.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-firmware.bin
+          # Find any manifest to extract version
+          MANIFEST=$(find ./beta_firmware -name "*.manifest.json" | head -1)
+          if [ -n "$MANIFEST" ]; then
+            VERSION=$(grep -oP '"version":\s*"\K[^"]+' "$MANIFEST" | sed 's/-beta//')
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "Found version: $VERSION"
+          fi
 
-      - name: Build beta spiffs file
-        if: steps.check_version.outputs.VERSION != ''
+      - name: Organize files for GitHub Pages (manifests only)
         run: |
-          pio run -e ${{ matrix.environment }} -t buildfs
+          mkdir -p ./gh-pages/beta
+          # Copy manifests to gh-pages directory
+          cp ./beta_firmware/*.manifest.json ./gh-pages/beta/
+          echo "=== Manifests for GitHub Pages ==="
+          ls -la ./gh-pages/beta/
 
-      - name: Copy beta spiffs files
-        if: steps.check_version.outputs.VERSION != ''
+      - name: Organize files for FTP (.bin only)
         run: |
-          ls -la ./beta_firmware
-          cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin
+          mkdir -p ./ftp_firmware/beta
+          # Copy .bin files to FTP directory
+          cp ./beta_firmware/*.bin ./ftp_firmware/beta/
+          echo "=== Firmware for FTP ==="
+          ls -la ./ftp_firmware/beta/
 
-      - name: 📂 Sync beta files - FTP-Deploy-Action
-        if: steps.check_version.outputs.VERSION != ''
+      # ------------------------------------------------------------------
+      # STEP 1: Deploy manifests to GitHub Pages
+      # ------------------------------------------------------------------
+      - name: Deploy manifests to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          destination_dir: beta
+          force_orphan: true
+          commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
+
+      # ------------------------------------------------------------------
+      # STEP 2: Deploy .bin files to emariete.com via FTP
+      # ------------------------------------------------------------------
+      - name: FTP upload firmware .bin files
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: ./beta_firmware/
+          LOCAL_DIR: ./ftp_firmware/beta/
           REMOTE_DIR: /${{ github.event.repository.name }}/beta/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
-          
+
       - name: Purge origin cache (LiteSpeed)
-        if: steps.check_version.outputs.VERSION != ''
         run: |
           curl -sf "https://emariete.com/clean_cache_litespeed.php" || true
-          echo "Origin cache purged"
+          echo "Origin cache purge attempted"
