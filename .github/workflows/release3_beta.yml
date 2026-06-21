@@ -33,19 +33,20 @@ jobs:
     strategy:
       matrix:
         environment:
-          - esp32dev
-          - esp32dev_OLED
-          - TTGO_TDISPLAY
-          - TTGO_TDISPLAY_SANDWICH
-          - TDISPLAY_S3
-          - esp32dev_ST7789_240x320
-          - ttgo-t5-EINKBOARDGDEM0213B74
+          # TEMPORARY: single environment for testing GitHub Pages deployment
           - ttgo-t5-EINKBOARDDEPG0213BN
-          - ttgo-t5-EINKBOARDGDEW0213M21
-          - ttgo-t7-EINKBOARDGDEM029T94
-          - ttgo-t7-WEACT_GDEH0154D67
-          - ttgo-t7-WEACT_DEPG0213BN
-          - ttgo-t7-WEACT_GxEPD2_290_BS
+          # - esp32dev
+          # - esp32dev_OLED
+          # - TTGO_TDISPLAY
+          # - TTGO_TDISPLAY_SANDWICH
+          # - TDISPLAY_S3
+          # - esp32dev_ST7789_240x320
+          # - ttgo-t5-EINKBOARDGDEM0213B74
+          # - ttgo-t5-EINKBOARDGDEW0213M21
+          # - ttgo-t7-EINKBOARDGDEM029T94
+          # - ttgo-t7-WEACT_GDEH0154D67
+          # - ttgo-t7-WEACT_DEPG0213BN
+          # - ttgo-t7-WEACT_GxEPD2_290_BS
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
@@ -217,22 +218,23 @@ jobs:
 
       - name: Organize files for GitHub Pages (manifests only)
         run: |
-          # Copy manifests directly to gh-pages root (no nested beta/beta/)
-          cp ./beta_firmware/*.manifest.json ./gh-pages/
+          # destination_dir=beta means files from ./gh-pages/beta/ go to gh-pages/beta/
+          mkdir -p ./gh-pages/beta
+          find ./beta_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/beta/ \;
           echo "=== Manifests for GitHub Pages ==="
-          ls -la ./gh-pages/
+          ls -la ./gh-pages/beta/
 
       - name: Organize files for FTP (.bin only)
         run: |
           mkdir -p ./ftp_firmware/beta
-          # Copy .bin files to FTP directory (from any subdirectory)
           find ./beta_firmware -name "*.bin" -exec cp {} ./ftp_firmware/beta/ \;
           echo "=== Firmware for FTP ==="
           ls -la ./ftp_firmware/beta/
 
       # ------------------------------------------------------------------
       # STEP 1: Deploy manifests to GitHub Pages
-      # Manifests will be at: melkati.github.io/CO2-Gadget/beta/<manifest>
+      # Files from ./gh-pages/beta/ → published to gh-pages/beta/
+      # URL: melkati.github.io/CO2-Gadget/beta/<manifest>
       # ------------------------------------------------------------------
       - name: Deploy manifests to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
