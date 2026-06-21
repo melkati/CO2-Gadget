@@ -203,52 +203,14 @@ jobs:
           ls -la ./beta_firmware
           cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin
 
-      - name: 📂 Sync beta files - FTP-Deploy-Action
-        if: steps.check_version.outputs.VERSION != ''
-        uses: SamKirkland/FTP-Deploy-Action@2.0.0
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: ./beta_firmware/
-          REMOTE_DIR: /${{ github.event.repository.name }}/beta/
-          METHOD: ftp
-          PORT: 21
-          ARGS: --verbose
-          
-      - name: Clean eMariete.com Cache
-        if: steps.check_version.outputs.VERSION != ''
-        run: curl https://emariete.com/clean_cache_litespeed.php
-
-  # ────────────────────────────────────────────────────────────────────────────
-  # Generate a single beta-index.json for the WordPress plugin
-  # "Get Use APIs - JSON Content Importer" on emariete.com.
-  # ────────────────────────────────────────────────────────────────────────────
-  create_beta_index:
-    needs: build_beta
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Extract version from commit message
-        id: version
-        run: |
-          msg=$(git log --format=%B -n 1 $GITHUB_SHA)
-          if [[ $msg =~ Beta\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            echo "version=${BASH_REMATCH[1]}-beta" >> $GITHUB_OUTPUT
-          else
-            echo "version=unknown" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
       - name: Generate beta-index.json
+        if: steps.check_version.outputs.VERSION != ''
         run: |
           BASE="${{ github.event.repository.name }}"
           URL="https://emariete.com/wp-content/uploads/firmware/${BASE}/beta"
-          VER="${{ steps.version.outputs.version }}"
-          DATE="$(date +'%d-%m-%Y')"
-          TIME="$(date +'%H:%M:%S')"
+          VER="${{ steps.check_version.outputs.VERSION }}-beta"
+          DATE="${{ steps.date.outputs.date }}"
+          TIME="${{ steps.date.outputs.time }}"
 
           python3 -c "
           import json
@@ -280,20 +242,21 @@ jobs:
           print('✅ beta-index.json generated')
           "
 
-          mkdir -p ./beta_index
-          cp beta-index.json ./beta_index/beta-index.json
+          cp beta-index.json ./beta_firmware/beta-index.json
 
-      - name: Upload beta-index.json via FTP
+      - name: 📂 Sync beta files - FTP-Deploy-Action
+        if: steps.check_version.outputs.VERSION != ''
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: ./beta_index/
+          LOCAL_DIR: ./beta_firmware/
           REMOTE_DIR: /${{ github.event.repository.name }}/beta/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
-
+          
       - name: Clean eMariete.com Cache
+        if: steps.check_version.outputs.VERSION != ''
         run: curl https://emariete.com/clean_cache_litespeed.php
