@@ -423,15 +423,111 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
   refreshBTHomeBLESettings("BTHome bind key updated", true);
   return quit;
 }
+
+// [BTHOME-SENSEL] ----- BTHome "Publish Sensors" selection submenu -----
+// ArduinoMenu TOGGLEs bind to plain bools, so mirror the bthomeSensors bitmask into bools.
+bool bthomeSelBattery = false, bthomeSelVoltage = false, bthomeSelTemp = false, bthomeSelHum = false;
+bool bthomeSelPress = false, bthomeSelCO2 = false, bthomeSelPM25 = false, bthomeSelPM10 = false;
+
+void syncBTHomeSensorMirrors() {
+  bthomeSelBattery = (bthomeSensors & BTHOME_SEL_BATTERY) != 0;
+  bthomeSelVoltage = (bthomeSensors & BTHOME_SEL_VOLTAGE) != 0;
+  bthomeSelTemp    = (bthomeSensors & BTHOME_SEL_TEMP) != 0;
+  bthomeSelHum     = (bthomeSensors & BTHOME_SEL_HUM) != 0;
+  bthomeSelPress   = (bthomeSensors & BTHOME_SEL_PRESS) != 0;
+  bthomeSelCO2     = (bthomeSensors & BTHOME_SEL_CO2) != 0;
+  bthomeSelPM25    = (bthomeSensors & BTHOME_SEL_PM25) != 0;
+  bthomeSelPM10    = (bthomeSensors & BTHOME_SEL_PM10) != 0;
+}
+
+result doSetBTHomeSensors(eventMask e, navNode &nav, prompt &item) {
+  uint32_t mask = 0;
+  if (bthomeSelBattery) mask |= BTHOME_SEL_BATTERY;
+  if (bthomeSelVoltage) mask |= BTHOME_SEL_VOLTAGE;
+  if (bthomeSelTemp)    mask |= BTHOME_SEL_TEMP;
+  if (bthomeSelHum)     mask |= BTHOME_SEL_HUM;
+  if (bthomeSelPress)   mask |= BTHOME_SEL_PRESS;
+  if (bthomeSelCO2)     mask |= BTHOME_SEL_CO2;
+  if (bthomeSelPM25)    mask |= BTHOME_SEL_PM25;
+  if (bthomeSelPM10)    mask |= BTHOME_SEL_PM10;
+  bthomeSensors = mask;
+  preferences.begin("CO2-Gadget", false);
+  preferences.putUInt("bthomeSensors", bthomeSensors);
+  preferences.end();
+  refreshBTHomeBLESettings("BTHome sensor selection changed", true);
+  printBTHomePayloadProjection();
+  return proceed;
+}
+
+TOGGLE(bthomeSelCO2, bthomeSelCO2Menu, "CO2: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelTemp, bthomeSelTempMenu, "Temperature: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelHum, bthomeSelHumMenu, "Humidity: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelBattery, bthomeSelBatteryMenu, "Battery: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM25, bthomeSelPM25Menu, "PM2.5: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPress, bthomeSelPressMenu, "Pressure: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM10, bthomeSelPM10Menu, "PM10: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelVoltage, bthomeSelVoltageMenu, "Battery Voltage: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+
+result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
+  if (e & enterEvent) {
+    syncBTHomeSensorMirrors();
+    Serial.println("-->[MENU] BTHome-native measurements (object ID shown; only detected sensors are advertised):");
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+      const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+      char objId[6];
+      snprintf(objId, sizeof(objId), "0x%02X", m.objectId);
+      Serial.println("-->[MENU]   " + String(m.label) + " [" + String(objId) + "]: " +
+                     String((bthomeSensors & m.bit) ? "ON" : "off") + " (" +
+                     String(bthomeMeasurementAvailable(m.bit) ? "available" : "not detected") + ")");
+    }
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+      Serial.println("-->[MENU]   Note: PM1.0/PM4.0 are read but have no BTHome object ID, so they cannot be published.");
+    }
+    printBTHomePayloadProjection();
+  }
+  return proceed;
+}
+
+MENU(bthomeSensorsMenu, "Publish Sensors", bthomeSensorsMenuCb, enterEvent, wrapStyle
+  ,SUBMENU(bthomeSelCO2Menu)
+  ,SUBMENU(bthomeSelTempMenu)
+  ,SUBMENU(bthomeSelHumMenu)
+  ,SUBMENU(bthomeSelBatteryMenu)
+  ,SUBMENU(bthomeSelPM25Menu)
+  ,SUBMENU(bthomeSelPressMenu)
+  ,SUBMENU(bthomeSelPM10Menu)
+  ,SUBMENU(bthomeSelVoltageMenu)
+  ,EXIT("<Back"));
+
+MENU(bthomeConfigMenu, "BTHome", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeBTHomeMenu)
+  ,SUBMENU(bthomeEncryptionMenu)
+  ,OP("BTHome key", doSerialBTHomeBindKey, enterEvent)
+  ,SUBMENU(bthomeSensorsMenu)
+  ,EXIT("<Back"));
 #endif
 
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(enableBLEMenu)
   ,SUBMENU(activeBLEMenu)
 #ifdef SUPPORT_BTHOME_BLE
-  ,SUBMENU(activeBTHomeMenu)
-  ,SUBMENU(bthomeEncryptionMenu)
-  ,OP("BTHome key", doSerialBTHomeBindKey, enterEvent)
+  ,SUBMENU(bthomeConfigMenu)
 #endif
   ,EXIT("<Back"));
 #endif

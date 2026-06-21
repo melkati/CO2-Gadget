@@ -1716,3 +1716,12 @@ canvas { max-width: 100%; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ================================================================
+   [BTHOME-SENSEL] BTHome sensor selection
+   ================================================================ */
+#bthomeSensorsGroup { flex-direction: column; align-items: flex-start; gap: 8px; }
+.bthome-sensors-list { display: flex; flex-wrap: wrap; gap: 8px 16px; width: 100%; }
+.bthome-sensor-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-1); cursor: pointer; }
+.bthome-sensor-item input { margin: 0; }
+.bthome-budget-hint { font-size: 0.8125rem; color: var(--text-3); width: 100%; }

@@ -17,6 +17,10 @@ String firmBranch = "";
 String firmFlavour = "";
 
 #ifdef SUPPORT_BTHOME_BLE
+// [BTHOME-SENSEL] Forward declarations — defined in CO2_Gadget_BLE.h (included after this file).
+void appendBTHomeSensorsJson(JsonDocument &doc);
+uint32_t bthomeApplySelectionJson(JsonObjectConst sel, uint32_t current);
+
 bool isBTHomeHexChar(char c) {
     return ((c >= '0') && (c <= '9')) ||
            ((c >= 'a') && (c <= 'f')) ||
@@ -401,6 +405,7 @@ void initPreferences() {
     bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
     bthomeBindKey = preferences.getString("bthomeBindKey", "");
     bthomeCounter = preferences.getUInt("bthomeCounter", 0);
+    bthomeSensors = preferences.getUInt("bthomeSensors", BTHOME_DEFAULT_SENSOR_MASK);  // [BTHOME-SENSEL]
     ensureBTHomeBindKey();
 #endif
     activeWIFI = preferences.getBool("activeWIFI", true);
@@ -606,6 +611,7 @@ void putPreferences() {
     preferences.putBool("bthomeEncrypt", bthomeEncryption);
     preferences.putString("bthomeBindKey", bthomeBindKey);
     preferences.putUInt("bthomeCounter", getBTHomeCounterNVSValue());
+    preferences.putUInt("bthomeSensors", bthomeSensors);  // [BTHOME-SENSEL]
 #endif
     preferences.putBool("activeWIFI", activeWIFI);
     preferences.putBool("activeMQTT", activeMQTT);
@@ -741,6 +747,7 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     if (includePasswords) {
         doc["bthomeBindKey"] = bthomeBindKey;
     }
+    appendBTHomeSensorsJson(doc);  // [BTHOME-SENSEL] descriptor list + budget for the UI
 #else
     doc["supportBTHomeBLE"] = false;
     doc["activeBTHome"] = false;
@@ -877,6 +884,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     bool previousActiveBTHome = activeBTHome;
     bool previousBTHomeEncryption = bthomeEncryption;
     String previousBTHomeBindKey = bthomeBindKey;
+    uint32_t previousBTHomeSensors = bthomeSensors;  // [BTHOME-SENSEL]
 #endif
 
     // Save preferences to non-volatile memory (Preferences)
@@ -957,6 +965,9 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
                     return false;
                 }
             }
+        }
+        if (JsonDocument["bthomeSensors"].is<JsonObjectConst>()) {  // [BTHOME-SENSEL]
+            bthomeSensors = bthomeApplySelectionJson(JsonDocument["bthomeSensors"].as<JsonObjectConst>(), bthomeSensors);
         }
 #endif
         if (!JsonDocument.containsKey("enableBLE") && (activeBLE || activeBTHome)) {
@@ -1243,7 +1254,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
 
     putPreferences();
 #ifdef SUPPORT_BTHOME_BLE
-    if ((previousActiveBTHome != activeBTHome) || (previousBTHomeEncryption != bthomeEncryption) || (previousBTHomeBindKey != bthomeBindKey)) {
+    if ((previousActiveBTHome != activeBTHome) || (previousBTHomeEncryption != bthomeEncryption) || (previousBTHomeBindKey != bthomeBindKey) || (previousBTHomeSensors != bthomeSensors)) {
         refreshBTHomeBLESettings("BTHome settings changed from Web UI", true);
     }
 #endif

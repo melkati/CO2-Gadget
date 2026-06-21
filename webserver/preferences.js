@@ -3,6 +3,9 @@
  * Warning: 800 ppm, Danger: 1000 ppm
  */
 let supportBTHomeBLE = false;
+// [BTHOME-SENSEL] descriptor list + budget provided by the device for the sensor-selection UI.
+let bthomeSensorDescriptors = [];
+let bthomeBudgetMax = 24;
 
 function loadWHOPreset() {
     const orangeEl = document.getElementById('co2OrangeRange');
@@ -123,6 +126,10 @@ function populateFormWithPreferences(preferences) {
         setFormCheckbox("activeBTHome", preferences.activeBTHome);
         setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
         if (relaxedSecurity) setFormValue("bthomeBindKey", preferences.bthomeBindKey);
+        // [BTHOME-SENSEL] capture the per-sensor descriptor list and render the selection UI.
+        bthomeSensorDescriptors = Array.isArray(preferences.bthomeSensors) ? preferences.bthomeSensors : [];
+        bthomeBudgetMax = (typeof preferences.bthomeBudgetMax === 'number') ? preferences.bthomeBudgetMax : 24;
+        renderBTHomeSensors();
     }
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
@@ -221,6 +228,84 @@ function updateBTHomeControlsState() {
     if (bthomeCheckbox) bthomeCheckbox.disabled = !bthomeSupported;
     if (encryptionCheckbox) encryptionCheckbox.disabled = !bthomeActive;
     if (bindKeyInput) bindKeyInput.disabled = !bthomeActive || !relaxedSecurity;
+
+    // [BTHOME-SENSEL] show the sensor-selection list only while BTHome is active.
+    const sensorsGroup = document.getElementById("bthomeSensorsGroup");
+    if (sensorsGroup) sensorsGroup.classList.toggle("hidden", !bthomeActive);
+    updateBTHomeBudgetHint();
+}
+
+// [BTHOME-SENSEL] ----- BTHome sensor-selection UI -----
+// Mirrors the firmware budget logic: 24-byte service data minus framing overhead
+// (3 plain: device-info + packet-id; 9 encrypted: device-info + counter + MIC).
+function bthomeComputeFit(encrypted) {
+    const budget = Math.max(0, bthomeBudgetMax - (encrypted ? 9 : 3));
+    const checked = {};
+    document.querySelectorAll('#bthomeSensorsList input[type=checkbox]').forEach((cb) => {
+        checked[cb.dataset.key] = cb.checked;
+    });
+    const items = bthomeSensorDescriptors
+        .filter((d) => d.available)
+        .slice()
+        .sort((a, b) => a.prio - b.prio);
+    let used = 0, fitted = 0, selected = 0;
+    const dropped = [];
+    items.forEach((d) => {
+        if (!checked[d.key]) return;
+        selected++;
+        if (used + d.bytes <= budget) {
+            used += d.bytes;
+            fitted++;
+        } else {
+            dropped.push(d.label);
+        }
+    });
+    return { used, budget, fitted, selected, dropped };
+}
+
+function updateBTHomeBudgetHint() {
+    const hint = document.getElementById('bthomeBudgetHint');
+    if (!hint) return;
+    const enc = document.getElementById('bthomeEncryption');
+    const encrypted = !!(enc && enc.checked);
+    const fit = bthomeComputeFit(encrypted);
+    let msg = 'Payload: ' + fit.used + '/' + fit.budget + ' bytes · ' + fit.fitted + ' of ' + fit.selected +
+              ' selected fit (' + (encrypted ? 'encrypted' : 'plain') + ').';
+    if (fit.dropped.length) msg += ' Will not fit: ' + fit.dropped.join(', ') + '.';
+    hint.textContent = msg;
+}
+
+function renderBTHomeSensors() {
+    const list = document.getElementById('bthomeSensorsList');
+    if (!list) return;
+    list.innerHTML = '';
+    const available = bthomeSensorDescriptors.filter((d) => d.available);
+    if (available.length === 0) {
+        list.textContent = 'No compatible sensors detected.';
+    } else {
+        available.forEach((d) => {
+            const wrapper = document.createElement('label');
+            wrapper.className = 'bthome-sensor-item';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = 'bthomeSel_' + d.key;
+            cb.dataset.key = d.key;
+            cb.checked = !!d.selected;
+            cb.addEventListener('change', updateBTHomeBudgetHint);
+            wrapper.appendChild(cb);
+            wrapper.appendChild(document.createTextNode(' ' + d.label + ' (' + d.bytes + ' B)'));
+            list.appendChild(wrapper);
+        });
+    }
+    updateBTHomeBudgetHint();
+}
+
+function collectBTHomeSensorSelection() {
+    const sel = {};
+    document.querySelectorAll('#bthomeSensorsList input[type=checkbox]').forEach((cb) => {
+        sel[cb.dataset.key] = cb.checked;
+    });
+    return sel;
 }
 
 function setFormGroupVisibility(elementId, isVisible) {
@@ -304,6 +389,7 @@ function collectPreferencesData() {
             setValue("bthomeEncryption", 'checked');
             setValue("bthomeBindKey");
             preferencesData.bthomeBindKey = validateBTHomeBindKey(preferencesData.bthomeBindKey);
+            preferencesData.bthomeSensors = collectBTHomeSensorSelection();  // [BTHOME-SENSEL]
         }
         if (features.SUPPORT_BLE || isBTHomeSupported()) {
             preferencesData.enableBLE = !!(preferencesData.activeBLE || preferencesData.activeBTHome);
@@ -883,6 +969,9 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('useStaticIP', 'staticIPSettings');
         const bthomeCheckbox = document.getElementById("activeBTHome");
         if (bthomeCheckbox) bthomeCheckbox.addEventListener("change", updateBTHomeControlsState);
+        // [BTHOME-SENSEL] encryption changes the payload budget; refresh the projection hint.
+        const bthomeEncCheckbox = document.getElementById("bthomeEncryption");
+        if (bthomeEncCheckbox) bthomeEncCheckbox.addEventListener("change", updateBTHomeBudgetHint);
         handleWiFiMQTTDependency();
         getFeaturesAsJson()
             .then(() => {

@@ -25,6 +25,7 @@ uint16_t pm1 = 0;   // PM1.0 (µg/m³) — from particulate sensors e.g. SPS30
 uint16_t pm25 = 0;  // PM2.5 (µg/m³)
 uint16_t pm4 = 0;   // PM4.0 (µg/m³) — SPS30 specific
 uint16_t pm10 = 0;  // PM10  (µg/m³)
+float pressureHpa = 0;  // [BTHOME-SENSEL] barometric pressure (hPa) when a PRESS-capable sensor is present
 String mainDeviceSelected = "";
 
 ThresholdManager thresholdsManager;
@@ -75,6 +76,10 @@ void onSensorDataOk() {
         pm4  = sensors.getPM4();
         pm10 = sensors.getPM10();
         if (!inMenu) Serial.printf("-->[SENS] PM1: %d PM2.5: %d PM4: %d PM10: %d µg/m³\n", pm1, pm25, pm4, pm10);
+    }
+    // [BTHOME-SENSEL] Barometric pressure from BME280-class sensors.
+    if (sensors.isUnitRegistered(UNIT::PRESS)) {
+        pressureHpa = sensors.getPressure();
     }
     newReadingsAvailable = true;
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());

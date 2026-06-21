@@ -102,6 +102,19 @@ String bthomeBindKey = "";
 // must be replaced before this counter wraps.
 uint32_t bthomeCounter = 0;
 bool bthomeCounterNeedsSeed = false;
+// [BTHOME-SENSEL] Selectable BTHome measurements: bitmask of which values to publish.
+enum : uint32_t {
+    BTHOME_SEL_BATTERY = 1u << 0,
+    BTHOME_SEL_VOLTAGE = 1u << 1,
+    BTHOME_SEL_TEMP    = 1u << 2,
+    BTHOME_SEL_HUM     = 1u << 3,
+    BTHOME_SEL_PRESS   = 1u << 4,
+    BTHOME_SEL_CO2     = 1u << 5,
+    BTHOME_SEL_PM25    = 1u << 6,
+    BTHOME_SEL_PM10    = 1u << 7,
+};
+#define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_PRESS | BTHOME_SEL_CO2 | BTHOME_SEL_PM25 | BTHOME_SEL_PM10))
+uint32_t bthomeSensors = BTHOME_DEFAULT_SENSOR_MASK;
 #else
 constexpr bool activeBTHome = false;
 constexpr bool bthomeEncryption = false;

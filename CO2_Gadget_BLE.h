@@ -126,6 +126,18 @@ uint16_t encodeBTHomeBatteryVoltage(float value) {
     return static_cast<uint16_t>(millivolts);
 }
 
+// [BTHOME-SENSEL] BTHome Pressure object 0x04: uint24, factor 0.01, unit hPa.
+uint32_t encodeBTHomePressure(float hpa) {
+    if (hpa <= 0.0f) {
+        return 0;
+    }
+    double raw = static_cast<double>(hpa) * 100.0;
+    if (raw > 16777215.0) {
+        return 16777215;  // uint24 max
+    }
+    return static_cast<uint32_t>(llround(raw));
+}
+
 uint8_t getBTHomeBatteryLevel() {
     if (batteryLevel == 0) {
         return 100;
@@ -147,6 +159,13 @@ void appendBTHomeUInt16(std::string &payload, uint16_t value) {
 
 void appendBTHomeInt16(std::string &payload, int16_t value) {
     appendBTHomeUInt16(payload, static_cast<uint16_t>(value));
+}
+
+// [BTHOME-SENSEL] little-endian uint24 (used by Pressure 0x04).
+void appendBTHomeUInt24(std::string &payload, uint32_t value) {
+    payload.push_back(static_cast<char>(value & 0xFF));
+    payload.push_back(static_cast<char>((value >> 8) & 0xFF));
+    payload.push_back(static_cast<char>((value >> 16) & 0xFF));
 }
 
 bool decodeHexNibble(char c, uint8_t &value) {
@@ -294,9 +313,237 @@ bool encryptBTHomePayload(const std::string &plainPayload, std::string &encrypte
     return true;
 }
 
+// [BTHOME-SENSEL] ---- Availability-aware, user-selectable BTHome measurements ----
+// The advertised set is the intersection of (user selection `bthomeSensors`) AND
+// (sensor availability) AND (fits the BLE service-data budget). `priority` decides
+// what is kept when the selection does not all fit (lower = kept first).
+struct BTHomeMeasurementDef {
+    uint32_t bit;
+    const char *key;
+    const char *label;
+    uint8_t objectId;
+    uint8_t totalBytes;  // object-id byte + data bytes
+    uint8_t priority;    // 1 = highest
+};
+
+// Stored in ascending object-id order (also the order emitted into the payload).
+static const BTHomeMeasurementDef BTHOME_MEASUREMENTS[] = {
+    {BTHOME_SEL_BATTERY, "battery",     "Battery",         0x01, 2, 4},
+    {BTHOME_SEL_TEMP,    "temperature", "Temperature",     0x02, 3, 2},
+    {BTHOME_SEL_HUM,     "humidity",    "Humidity",        0x03, 3, 3},
+    {BTHOME_SEL_PRESS,   "pressure",    "Pressure",        0x04, 4, 6},
+    {BTHOME_SEL_VOLTAGE, "voltage",     "Battery Voltage", 0x0C, 3, 8},
+    {BTHOME_SEL_PM25,    "pm25",        "PM2.5",           0x0D, 3, 5},
+    {BTHOME_SEL_PM10,    "pm10",        "PM10",            0x0E, 3, 7},
+    {BTHOME_SEL_CO2,     "co2",         "CO2",             0x12, 3, 1},
+};
+static const size_t BTHOME_MEASUREMENT_COUNT = sizeof(BTHOME_MEASUREMENTS) / sizeof(BTHOME_MEASUREMENTS[0]);
+
+// Usable BTHome service-data bytes: 31-byte legacy advert - 3 (flags AD) - 4 (service-data
+// AD header) = 24. Conservative for a BTHome-only primary advert; scan-response mode has ~27.
+static constexpr uint8_t BTHOME_MAX_SERVICE_DATA = 24;
+
+bool bthomeMeasurementAvailable(uint32_t bit) {
+    switch (bit) {
+        case BTHOME_SEL_CO2:
+            return sensors.isUnitRegistered(UNIT::CO2);
+        case BTHOME_SEL_TEMP:
+            return sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) || sensors.isUnitRegistered(UNIT::CO2);
+        case BTHOME_SEL_HUM:
+            return sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) || sensors.isUnitRegistered(UNIT::CO2);
+        case BTHOME_SEL_PRESS:
+            return sensors.isUnitRegistered(UNIT::PRESS);
+        case BTHOME_SEL_PM25:
+        case BTHOME_SEL_PM10:
+            return sensors.isUnitRegistered(UNIT::PM25);
+        case BTHOME_SEL_BATTERY:
+            return true;  // battery level is always encodable
+        case BTHOME_SEL_VOLTAGE:
+            return hasBattery;
+        default:
+            return false;
+    }
+}
+
+bool bthomeMeasurementValid(uint32_t bit) {
+    switch (bit) {
+        case BTHOME_SEL_CO2:
+            return (co2 >= 400) && (co2 <= 5000);
+        case BTHOME_SEL_TEMP:
+            return (temp >= -40) && (temp <= 85);
+        case BTHOME_SEL_HUM:
+            return (hum >= 0) && (hum <= 100);
+        case BTHOME_SEL_PRESS:
+            return (pressureHpa >= 300.0f) && (pressureHpa <= 1100.0f);
+        case BTHOME_SEL_PM25:
+        case BTHOME_SEL_PM10:
+            return true;
+        default:
+            return false;  // battery / voltage are not stand-alone sensor readings
+    }
+}
+
+void appendBTHomeMeasurement(std::string &payload, uint32_t bit) {
+    switch (bit) {
+        case BTHOME_SEL_BATTERY:
+            appendBTHomeUInt8(payload, 0x01);
+            appendBTHomeUInt8(payload, getBTHomeBatteryLevel());
+            break;
+        case BTHOME_SEL_TEMP:
+            appendBTHomeUInt8(payload, 0x02);
+            appendBTHomeInt16(payload, encodeBTHomeTemperature(temp));
+            break;
+        case BTHOME_SEL_HUM:
+            appendBTHomeUInt8(payload, 0x03);
+            appendBTHomeUInt16(payload, encodeBTHomeHumidity(hum));
+            break;
+        case BTHOME_SEL_PRESS:
+            appendBTHomeUInt8(payload, 0x04);
+            appendBTHomeUInt24(payload, encodeBTHomePressure(pressureHpa));
+            break;
+        case BTHOME_SEL_VOLTAGE:
+            appendBTHomeUInt8(payload, 0x0C);
+            appendBTHomeUInt16(payload, encodeBTHomeBatteryVoltage(batteryVoltage));
+            break;
+        case BTHOME_SEL_PM25:
+            appendBTHomeUInt8(payload, 0x0D);
+            appendBTHomeUInt16(payload, pm25);
+            break;
+        case BTHOME_SEL_PM10:
+            appendBTHomeUInt8(payload, 0x0E);
+            appendBTHomeUInt16(payload, pm10);
+            break;
+        case BTHOME_SEL_CO2:
+            appendBTHomeUInt8(payload, 0x12);
+            appendBTHomeUInt16(payload, static_cast<uint16_t>(co2));
+            break;
+        default:
+            break;
+    }
+}
+
+// Bytes available for the measurement objects (excludes device-info, packet-id, counter, MIC).
+uint8_t bthomeMeasurementsBudget(bool encrypted, bool includePacketId) {
+    uint8_t overhead = encrypted ? (1 + 4 + BTHOME_ENCRYPTION_MIC_SIZE) : (1 + (includePacketId ? 2 : 0));
+    return (BTHOME_MAX_SERVICE_DATA > overhead) ? (BTHOME_MAX_SERVICE_DATA - overhead) : 0;
+}
+
+// Pick, by priority and budget, which selected+available measurements are advertised.
+uint32_t bthomeFitMask(bool encrypted, bool includePacketId, uint8_t *outUsedBytes = nullptr) {
+    uint8_t budget = bthomeMeasurementsBudget(encrypted, includePacketId);
+    uint8_t used = 0;
+    uint32_t included = 0;
+    for (uint8_t prio = 1; prio <= BTHOME_MEASUREMENT_COUNT; ++prio) {
+        for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+            const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+            if (m.priority != prio) {
+                continue;
+            }
+            if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) && (used + m.totalBytes <= budget)) {
+                used += m.totalBytes;
+                included |= m.bit;
+            }
+            break;
+        }
+    }
+    if (outUsedBytes) {
+        *outUsedBytes = used;
+    }
+    return included;
+}
+
+// Replaces the CO2-mandatory isValidBLEMeasurement() gate for BTHome: true when at least one
+// selected, available, non-battery measurement is in range (so environment-only units advertise).
+bool isValidBTHomeMeasurement() {
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if ((m.bit == BTHOME_SEL_BATTERY) || (m.bit == BTHOME_SEL_VOLTAGE)) {
+            continue;
+        }
+        if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) && bthomeMeasurementValid(m.bit)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+struct BTHomePayloadFit {
+    uint8_t usedBytes;
+    uint8_t budgetBytes;
+    uint8_t fittedCount;
+    uint8_t availableSelectedCount;
+    uint8_t totalSelectedCount;
+};
+
+BTHomePayloadFit computeBTHomePayloadFit(bool encrypted) {
+    BTHomePayloadFit fit = {};
+    bool includePacketId = !encrypted;
+    fit.budgetBytes = bthomeMeasurementsBudget(encrypted, includePacketId);
+    uint32_t included = bthomeFitMask(encrypted, includePacketId, &fit.usedBytes);
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if (!(bthomeSensors & m.bit)) {
+            continue;
+        }
+        fit.totalSelectedCount++;
+        if (bthomeMeasurementAvailable(m.bit)) {
+            fit.availableSelectedCount++;
+        }
+        if (included & m.bit) {
+            fit.fittedCount++;
+        }
+    }
+    return fit;
+}
+
+void printBTHomePayloadProjection() {
+    BTHomePayloadFit fit = computeBTHomePayloadFit(bthomeEncryption);
+    String msg = "-->[BLE ] BTHome payload (" + String(bthomeEncryption ? "encrypted" : "plain") + "): " +
+                 String(fit.usedBytes) + "/" + String(fit.budgetBytes) + " bytes, " +
+                 String(fit.fittedCount) + " of " + String(fit.availableSelectedCount) + " available selected sensors fit";
+    if (fit.totalSelectedCount > fit.availableSelectedCount) {
+        msg += " (" + String(fit.totalSelectedCount - fit.availableSelectedCount) + " selected, not detected)";
+    }
+    Serial.println(msg);
+}
+
+void appendBTHomeSensorsJson(JsonDocument &doc) {
+    JsonArray arr = doc["bthomeSensors"].to<JsonArray>();
+    uint32_t includedPlain = bthomeFitMask(false, true);
+    uint32_t includedEnc = bthomeFitMask(true, false);
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        JsonObject o = arr.add<JsonObject>();
+        o["key"] = m.key;
+        o["label"] = m.label;
+        o["obj"] = m.objectId;
+        o["bytes"] = m.totalBytes;
+        o["prio"] = m.priority;
+        o["available"] = bthomeMeasurementAvailable(m.bit);
+        o["selected"] = (bthomeSensors & m.bit) != 0;
+        o["willSendPlain"] = (includedPlain & m.bit) != 0;
+        o["willSendEnc"] = (includedEnc & m.bit) != 0;
+    }
+    doc["bthomeBudgetMax"] = BTHOME_MAX_SERVICE_DATA;
+}
+
+uint32_t bthomeApplySelectionJson(JsonObjectConst sel, uint32_t current) {
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if (sel[m.key].is<bool>()) {
+            if (sel[m.key].as<bool>()) {
+                current |= m.bit;
+            } else {
+                current &= ~m.bit;
+            }
+        }
+    }
+    return current;
+}
+
 std::string buildBTHomeMeasurements(bool incrementPacketId, bool includePacketId = true) {
     std::string payload;
-    if (!activeBTHome || !isValidBLEMeasurement()) {
+    if (!activeBTHome || !isValidBTHomeMeasurement()) {
         return payload;
     }
 
@@ -304,40 +551,20 @@ std::string buildBTHomeMeasurements(bool incrementPacketId, bool includePacketId
         ++bthomePacketId;
     }
 
-    // Particulate matter (PM2.5/PM10) export. Only PM2.5 (0x0D) and PM10 (0x0E) have standard
-    // BTHome v2 object IDs; PM1.0/PM4.0 do not and are intentionally omitted. The 31-byte BLE
-    // legacy advert leaves only ~1 free byte when encrypted, so when a PM sensor is present we
-    // drop Battery Voltage (0x0C) to make room for PM2.5; PM10 only fits when unencrypted.
-    bool hasPM = sensors.isUnitRegistered(UNIT::PM25);
-    bool includeVolt = !(bthomeEncryption && hasPM);
-    bool includePM25 = hasPM;
-    bool includePM10 = hasPM && !bthomeEncryption;
+    uint32_t included = bthomeFitMask(bthomeEncryption, includePacketId);
 
-    payload.reserve((includePacketId ? 16 : 14) + 6);
+    payload.reserve(BTHOME_MAX_SERVICE_DATA);
     if (includePacketId) {
         appendBTHomeUInt8(payload, 0x00);
         appendBTHomeUInt8(payload, bthomePacketId);
     }
-    appendBTHomeUInt8(payload, 0x01);
-    appendBTHomeUInt8(payload, getBTHomeBatteryLevel());
-    appendBTHomeUInt8(payload, 0x02);
-    appendBTHomeInt16(payload, encodeBTHomeTemperature(temp));
-    appendBTHomeUInt8(payload, 0x03);
-    appendBTHomeUInt16(payload, encodeBTHomeHumidity(hum));
-    if (includeVolt) {
-        appendBTHomeUInt8(payload, 0x0C);
-        appendBTHomeUInt16(payload, encodeBTHomeBatteryVoltage(batteryVoltage));
+    // Emit in ascending object-id order (table order) as BTHome receivers expect.
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if (included & m.bit) {
+            appendBTHomeMeasurement(payload, m.bit);
+        }
     }
-    if (includePM25) {
-        appendBTHomeUInt8(payload, 0x0D);
-        appendBTHomeUInt16(payload, pm25);
-    }
-    if (includePM10) {
-        appendBTHomeUInt8(payload, 0x0E);
-        appendBTHomeUInt16(payload, pm10);
-    }
-    appendBTHomeUInt8(payload, 0x12);
-    appendBTHomeUInt16(payload, static_cast<uint16_t>(co2));
 
     return payload;
 }
@@ -374,9 +601,9 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
         return false;
     }
 
-    if (!isValidBLEMeasurement()) {
+    if (!isValidBTHomeMeasurement()) {
         invalidateBTHomeServiceDataCache();
-        Serial.println("-->[BLE ] BTHome payload skipped: invalid measurement. CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+        Serial.println("-->[BLE ] BTHome payload skipped: no valid selected measurement. CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         return false;
     }
 
@@ -612,18 +839,24 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
     bool published = false;
     if (ignoreMeasurementInterval || (millis() - lastMeasurementTimeMs >= measurementIntervalMs)) {
         bool outputEnabled = activeBLE || activeBTHome;
-        bool validMeasurement = isValidBLEMeasurement();
-        bool thresholdsPassed = outputEnabled && validMeasurement && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum));
+        bool validForSensirion = isValidBLEMeasurement();
+#ifdef SUPPORT_BTHOME_BLE
+        bool validForBTHome = isValidBTHomeMeasurement();  // [BTHOME-SENSEL] env-only devices can be valid here without CO2
+#else
+        bool validForBTHome = false;
+#endif
+        bool anyValid = validForSensirion || validForBTHome;
+        bool thresholdsPassed = outputEnabled && anyValid && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum));
 
-        if (outputEnabled && validMeasurement && thresholdsPassed) {
-            if (sensirionBLEInitialized) {
+        if (outputEnabled && thresholdsPassed) {
+            if (sensirionBLEInitialized && validForSensirion) {
                 if (writeSensirionCurrentSample()) {
                     provider.commitSample();
                     published = true;
                 }
             }
 #ifdef SUPPORT_BTHOME_BLE
-            if (activeBTHome) {
+            if (activeBTHome && validForBTHome) {
                 bool bthomeAdvertised = updateBTHomeAdvertisementData(true);
                 published = bthomeAdvertised || published;
                 if (ignoreMeasurementInterval) {
@@ -633,7 +866,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 #endif
             lastMeasurementTimeMs = millis();
         } else if (ignoreMeasurementInterval) {
-            Serial.println("-->[BLE ] BLE wake publish skipped. activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome) + ", validMeasurement: " + String(validMeasurement) + ", thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
+            Serial.println("-->[BLE ] BLE wake publish skipped. activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome) + ", validForSensirion: " + String(validForSensirion) + ", validForBTHome: " + String(validForBTHome) + ", thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         }
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
