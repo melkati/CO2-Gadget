@@ -177,10 +177,8 @@ jobs:
       - name: Copy beta manifest files
         if: steps.check_version.outputs.VERSION != ''
         run: |            
-          mkdir ./beta_firmware
-          mkdir ./beta_firmware/v${{ steps.check_version.outputs.VERSION }}      
+          mkdir ./beta_firmware      
           cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
-          cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/v${{ steps.check_version.outputs.VERSION }}/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
 
       - name: Build beta firmware file
         if: steps.check_version.outputs.VERSION != ''
@@ -218,10 +216,30 @@ jobs:
           PORT: 21
           ARGS: --verbose
           
-      - name: Purge emariete.com cache for beta files
+      - name: Purge CDN cache (Cloudflare → LiteSpeed)
         if: steps.check_version.outputs.VERSION != ''
         run: |
-          # PURGE request invalidates LiteSpeed cache for the beta directory
-          curl -s -X PURGE "https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/"
-          # Also flush the full-site cache and CDN
+          MANIFEST_FILE="${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json"
+          MANIFEST_URL="https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/${MANIFEST_FILE}"
+
+          echo "Purging Cloudflare cache for: ${MANIFEST_URL}"
+
+          # 1. Get Cloudflare Zone ID
+          ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=emariete.com" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['result'][0]['id'])")
+
+          echo "Cloudflare Zone ID: ${ZONE_ID}"
+
+          # 2. Purge this manifest from Cloudflare by URL
+          PURGE_RESP=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data "{\"files\":[\"${MANIFEST_URL}\",\"https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/\"]}")
+          
+          echo "Cloudflare purge response: ${PURGE_RESP}"
+
+          # 3. Fallback: purge LiteSpeed origin cache
           curl -s "https://emariete.com/clean_cache_litespeed.php"
+          echo "All caches purged"
