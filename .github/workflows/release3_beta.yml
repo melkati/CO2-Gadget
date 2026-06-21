@@ -177,8 +177,10 @@ jobs:
       - name: Copy beta manifest files
         if: steps.check_version.outputs.VERSION != ''
         run: |            
-          mkdir ./beta_firmware      
+          mkdir ./beta_firmware
+          mkdir ./beta_firmware/v${{ steps.check_version.outputs.VERSION }}      
           cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
+          cp ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json ./beta_firmware/v${{ steps.check_version.outputs.VERSION }}/${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
 
       - name: Build beta firmware file
         if: steps.check_version.outputs.VERSION != ''
