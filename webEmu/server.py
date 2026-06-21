@@ -240,6 +240,7 @@ def _bthome_fit(encrypted: bool) -> set:
 
 
 def _bthome_descriptors_json() -> list:
+    _clear_unavailable_bthome_selections()
     included_plain = _bthome_fit(False)
     included_encrypted = _bthome_fit(True)
     result = []
@@ -259,11 +260,20 @@ def _bthome_descriptors_json() -> list:
 def _apply_bthome_selection(selection) -> None:
     """Apply the same partial {key: bool} update accepted by the firmware."""
     if not isinstance(selection, dict):
+        _clear_unavailable_bthome_selections()
         return
     known_keys = {descriptor["key"] for descriptor in BTHOME_DESCRIPTORS}
     for key, selected in selection.items():
         if key in known_keys and isinstance(selected, bool):
-            bthome_selected[key] = selected
+            bthome_selected[key] = selected and _bthome_available(key)
+    _clear_unavailable_bthome_selections()
+
+
+def _clear_unavailable_bthome_selections() -> None:
+    for descriptor in BTHOME_DESCRIPTORS:
+        key = descriptor["key"]
+        if not _bthome_available(key):
+            bthome_selected[key] = False
 
 
 def _default_threshold() -> dict:
@@ -992,6 +1002,7 @@ def emu_set_sensor_availability():
     for key, value in data.items():
         if key in sensor_enabled and isinstance(value, bool):
             sensor_enabled[key] = value
+    _clear_unavailable_bthome_selections()
     return jsonify(sensor_enabled)
 
 
