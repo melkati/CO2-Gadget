@@ -217,12 +217,10 @@ jobs:
 
       - name: Organize files for GitHub Pages (manifests only)
         run: |
-          mkdir -p ./gh-pages/beta
-          # Each artifact lands in its own subdirectory (beta-<env>/)
-          # Find all manifests recursively and copy them to gh-pages/beta/
-          find ./beta_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/beta/ \;
+          # Copy manifests directly to gh-pages root (no nested beta/beta/)
+          cp ./beta_firmware/*.manifest.json ./gh-pages/
           echo "=== Manifests for GitHub Pages ==="
-          ls -la ./gh-pages/beta/
+          ls -la ./gh-pages/
 
       - name: Organize files for FTP (.bin only)
         run: |
@@ -234,6 +232,7 @@ jobs:
 
       # ------------------------------------------------------------------
       # STEP 1: Deploy manifests to GitHub Pages
+      # Manifests will be at: melkati.github.io/CO2-Gadget/beta/<manifest>
       # ------------------------------------------------------------------
       - name: Deploy manifests to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
