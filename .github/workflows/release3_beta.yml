@@ -15,6 +15,11 @@ on:
     paths-ignore:
       - '.github/workflows/release3_beta.yml'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 0.16.012)'
+        required: false
+        default: '0.0.0'
 
 jobs:
   build_beta:
@@ -54,14 +59,22 @@ jobs:
       - name: Check if version exists
         id: check_version
         run: |
-          commit_message=$(git log --format=%B -n 1 $GITHUB_SHA)
-          version_regex="Beta v([0-9]+\.[0-9]+\.[0-9]+)"
-          if [[ $commit_message =~ $version_regex ]]; then
-            echo "Version found: ${BASH_REMATCH[1]}"
-            echo "VERSION=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual trigger: version must be provided as input (defaults to "0.0.0")
+            VERSION="${{ github.event.inputs.version || '0.0.0' }}"
+            echo "Manual trigger — using version: $VERSION"
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           else
-            echo "No valid version found in commit message. Exiting..."
-            exit 1
+            # Push trigger: extract version from commit message
+            commit_message=$(git log --format=%B -n 1 $GITHUB_SHA)
+            version_regex="Beta v([0-9]+\.[0-9]+\.[0-9]+)"
+            if [[ $commit_message =~ $version_regex ]]; then
+              echo "Version found: ${BASH_REMATCH[1]}"
+              echo "VERSION=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            else
+              echo "No valid version found in commit message. Exiting..."
+              exit 1
+            fi
           fi
 
       - name: Set up Python
