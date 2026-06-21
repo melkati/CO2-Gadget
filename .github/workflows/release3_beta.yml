@@ -201,3 +201,113 @@ jobs:
       - name: Clean eMariete.com Cache
         if: steps.check_version.outputs.VERSION != ''
         run: curl https://emariete.com/clean_cache_litespeed.php
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Generate a single beta-index.json that the WordPress plugin
+  # "Get Use APIs - JSON Content Importer" reads to populate the
+  # beta install table on emariete.com dynamically.
+  # ────────────────────────────────────────────────────────────────────────────
+  create_beta_index:
+    if: always() && github.event_name == 'push'
+    name: Create Beta Index
+    needs: build_beta
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract version from commit message
+        id: version
+        run: |
+          commit_message=$(git log --format=%B -n 1 $GITHUB_SHA)
+          version_regex="Beta v([0-9]+\.[0-9]+\.[0-9]+)"
+          if [[ $commit_message =~ $version_regex ]]; then
+            echo "version=${BASH_REMATCH[1]}-beta" >> $GITHUB_OUTPUT
+          else
+            echo "version=unknown" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%d-%m-%Y')" >> $GITHUB_OUTPUT
+          echo "time=$(date +'%H:%M:%S')" >> $GITHUB_OUTPUT
+
+      - name: Generate beta-index.json
+        run: |
+          BASE_URL="https://emariete.com/wp-content/uploads/firmware/${{ github.event.repository.name }}/beta"
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE="${{ steps.date.outputs.date }}"
+          TIME="${{ steps.date.outputs.time }}"
+
+          cat > beta-index.json << 'JSON'
+          {
+            "version": "JSON
+          echo -n "      \"$VERSION\"," >> beta-index.json
+          cat >> beta-index.json << 'JSON'
+            "compilation_date": "JSON
+          echo -n "      \"$DATE\"," >> beta-index.json
+          cat >> beta-index.json << 'JSON'
+            "compilation_time": "JSON
+          echo -n "      \"$TIME\"," >> beta-index.json
+          cat >> beta-index.json << 'JSON'
+            "new_install_prompt_erase": true,
+            "new_install_improv_wait_time": 20,
+            "builds": [
+          JSON
+
+          # All known board flavors
+          FLAVORS=(
+            "TTGO_TDISPLAY"
+            "TTGO_TDISPLAY_SANDWICH"
+            "TDISPLAY_S3"
+            "esp32dev"
+            "esp32dev_OLED"
+            "esp32dev_ST7789_240x320"
+            "ttgo-t5-EINKBOARDGDEM0213B74"
+            "ttgo-t5-EINKBOARDDEPG0213BN"
+            "ttgo-t5-EINKBOARDGDEW0213M21"
+            "ttgo-t7-EINKBOARDGDEM029T94"
+            "ttgo-t7-WEACT_GDEH0154D67"
+            "ttgo-t7-WEACT_DEPG0213BN"
+            "ttgo-t7-WEACT_GxEPD2_290_BS"
+          )
+
+          separator=""
+          for flavor in "${FLAVORS[@]}"; do
+            MANIFEST_URL="$BASE_URL/${{ github.event.repository.name }}-${flavor}.beta.manifest.json"
+            printf '%s' "$separator" >> beta-index.json
+            cat >> beta-index.json << END
+              {
+                "flavour": "${flavor}",
+                "manifest": "${MANIFEST_URL}",
+                "chipFamily": "$( [[ "$flavor" == "TDISPLAY_S3" ]] && echo 'ESP32-S3' || echo 'ESP32' )"
+              }
+          END
+            separator=","
+          done
+
+          echo "          ]" >> beta-index.json
+          echo "}" >> beta-index.json
+
+          # Validate JSON
+          python3 -m json.tool beta-index.json > /dev/null && echo "✅ Valid JSON" || echo "❌ Invalid JSON"
+
+          mkdir -p ./beta_index
+          cp beta-index.json ./beta_index/beta-index.json
+
+      - name: Upload beta-index.json via FTP
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./beta_index/
+          remote-dir: /${{ github.event.repository.name }}/beta/
+          method: ftp
+          port: 21
+          args: --verbose
+
+      - name: Clean eMariete.com Cache
+        run: curl https://emariete.com/clean_cache_litespeed.php
