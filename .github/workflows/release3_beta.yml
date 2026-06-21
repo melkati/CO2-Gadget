@@ -218,11 +218,11 @@ jobs:
 
       - name: Organize files for GitHub Pages (manifests only)
         run: |
-          # destination_dir=beta means files from ./gh-pages/beta/ go to gh-pages/beta/
+          # Put manifests inside ./gh-pages/beta/ so they end up at /beta/<manifest>
           mkdir -p ./gh-pages/beta
           find ./beta_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/beta/ \;
           echo "=== Manifests for GitHub Pages ==="
-          ls -la ./gh-pages/beta/
+          ls -laR ./gh-pages/beta/
 
       - name: Organize files for FTP (.bin only)
         run: |
@@ -233,14 +233,15 @@ jobs:
 
       # ------------------------------------------------------------------
       # STEP 1: Deploy manifests to GitHub Pages
-      # Files from ./gh-pages/beta/ → published to gh-pages/beta/
+      # publish_dir=./gh-pages publishes its CONTENTS to gh-pages root
+      # So ./gh-pages/beta/<files> → gh-pages/beta/<files>
       # URL: melkati.github.io/CO2-Gadget/beta/<manifest>
       # ------------------------------------------------------------------
       - name: Deploy manifests to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages/beta
+          publish_dir: ./gh-pages
           force_orphan: true
           commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
 
