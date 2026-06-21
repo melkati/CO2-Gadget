@@ -257,7 +257,7 @@ function bthomeComputeFit(encrypted) {
             used += d.bytes;
             fitted++;
         } else {
-            dropped.push(d.label);
+            dropped.push(d);
         }
     });
     return { used, budget, fitted, selected, dropped };
@@ -271,33 +271,102 @@ function updateBTHomeBudgetHint() {
     const fit = bthomeComputeFit(encrypted);
     let msg = 'Payload: ' + fit.used + '/' + fit.budget + ' bytes · ' + fit.fitted + ' of ' + fit.selected +
               ' selected fit (' + (encrypted ? 'encrypted' : 'plain') + ').';
-    if (fit.dropped.length) msg += ' Will not fit: ' + fit.dropped.join(', ') + '.';
+    if (fit.dropped.length) msg += ' Will not fit: ' + fit.dropped.map((d) => d.label).join(', ') + '.';
     hint.textContent = msg;
+}
+
+function enforceBTHomeBudget() {
+    const enc = document.getElementById('bthomeEncryption');
+    const encrypted = !!(enc && enc.checked);
+    document.querySelectorAll('#bthomeSensorsList .bthome-sensor-item.dropped').forEach((item) => {
+        item.classList.remove('dropped');
+    });
+
+    const fit = bthomeComputeFit(encrypted);
+    fit.dropped.forEach((d) => {
+        const cb = document.getElementById('bthomeSel_' + d.key);
+        if (cb) {
+            cb.checked = false;
+            const item = cb.closest('.bthome-sensor-item');
+            if (item) item.classList.add('dropped');
+        }
+    });
+
+    const finalFit = bthomeComputeFit(encrypted);
+    const hint = document.getElementById('bthomeBudgetHint');
+    if (!hint) return;
+    let msg = 'Payload: ' + finalFit.used + '/' + finalFit.budget + ' bytes · ' +
+              finalFit.fitted + ' of ' + finalFit.selected + ' selected fit (' +
+              (encrypted ? 'encrypted' : 'plain') + ').';
+    if (fit.dropped.length) {
+        msg += ' Removed to fit (' + (encrypted ? 'encrypted' : 'plain') + '): ' +
+               fit.dropped.map((d) => d.label).join(', ') + '.';
+    }
+    hint.textContent = msg;
+}
+
+function appendBTHomeTooltip(parent, text) {
+    const icon = document.createElement('span');
+    icon.className = 'tooltip-icon';
+    icon.innerHTML = '<svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>';
+    const tooltip = document.createElement('span');
+    tooltip.className = 'tooltip-text';
+    tooltip.textContent = text;
+    parent.appendChild(icon);
+    parent.appendChild(tooltip);
 }
 
 function renderBTHomeSensors() {
     const list = document.getElementById('bthomeSensorsList');
     if (!list) return;
     list.innerHTML = '';
-    const available = bthomeSensorDescriptors.filter((d) => d.available);
-    if (available.length === 0) {
-        list.textContent = 'No compatible sensors detected.';
+    const groups = [
+        { key: 'core', label: 'Core', tip: 'Primary native BTHome measurements. These have the highest payload priority.' },
+        { key: 'optional', label: 'Optional', tip: 'Additional native BTHome measurements. Undetected sensors remain selectable but do not use payload space until detected.' },
+        { key: 'nonnative', label: 'No BTHome object', tip: 'PM1.0 and PM4.0 use non-standard IDs 0xEE/0xEF, are emitted last, and are not parsed by Home Assistant.' }
+    ];
+    if (bthomeSensorDescriptors.length === 0) {
+        list.textContent = 'No BTHome sensor descriptors reported.';
     } else {
-        available.forEach((d) => {
+        groups.forEach((group) => {
+            const descriptors = bthomeSensorDescriptors
+                .filter((d) => d.group === group.key)
+                .sort((a, b) => a.prio - b.prio);
+            if (descriptors.length === 0) return;
+
+            const section = document.createElement('section');
+            section.className = 'bthome-sensor-group';
+            const heading = document.createElement('div');
+            heading.className = 'bthome-sensor-group-heading';
+            heading.appendChild(document.createTextNode(group.label));
+            appendBTHomeTooltip(heading, group.tip);
+            section.appendChild(heading);
+            const items = document.createElement('div');
+            items.className = 'bthome-sensor-group-items';
+
+            descriptors.forEach((d) => {
             const wrapper = document.createElement('label');
             wrapper.className = 'bthome-sensor-item';
+            if (!d.available) wrapper.classList.add('unavailable');
+            if (d.native === false || d.group === 'nonnative') wrapper.classList.add('nonnative');
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.id = 'bthomeSel_' + d.key;
             cb.dataset.key = d.key;
             cb.checked = !!d.selected;
-            cb.addEventListener('change', updateBTHomeBudgetHint);
+            cb.addEventListener('change', enforceBTHomeBudget);
             wrapper.appendChild(cb);
-            wrapper.appendChild(document.createTextNode(' ' + d.label + ' (' + d.bytes + ' B)'));
-            list.appendChild(wrapper);
+            let suffix = ' (' + d.bytes + ' B)';
+            if (!d.available) suffix += ' (not detected)';
+            if (d.native === false || d.group === 'nonnative') suffix += ' (no BTHome object — not parsed by HA)';
+            wrapper.appendChild(document.createTextNode(' ' + d.label + suffix));
+            items.appendChild(wrapper);
+            });
+            section.appendChild(items);
+            list.appendChild(section);
         });
     }
-    updateBTHomeBudgetHint();
+    enforceBTHomeBudget();
 }
 
 function collectBTHomeSensorSelection() {
@@ -969,9 +1038,9 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('useStaticIP', 'staticIPSettings');
         const bthomeCheckbox = document.getElementById("activeBTHome");
         if (bthomeCheckbox) bthomeCheckbox.addEventListener("change", updateBTHomeControlsState);
-        // [BTHOME-SENSEL] encryption changes the payload budget; refresh the projection hint.
+        // [BTHOME-SENSEL] encryption changes the payload budget; remove lowest-priority overflow.
         const bthomeEncCheckbox = document.getElementById("bthomeEncryption");
-        if (bthomeEncCheckbox) bthomeEncCheckbox.addEventListener("change", updateBTHomeBudgetHint);
+        if (bthomeEncCheckbox) bthomeEncCheckbox.addEventListener("change", enforceBTHomeBudget);
         handleWiFiMQTTDependency();
         getFeaturesAsJson()
             .then(() => {

@@ -428,6 +428,7 @@ result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
 // ArduinoMenu TOGGLEs bind to plain bools, so mirror the bthomeSensors bitmask into bools.
 bool bthomeSelBattery = false, bthomeSelVoltage = false, bthomeSelTemp = false, bthomeSelHum = false;
 bool bthomeSelPress = false, bthomeSelCO2 = false, bthomeSelPM25 = false, bthomeSelPM10 = false;
+bool bthomeSelPM1 = false, bthomeSelPM4 = false;  // non-native (no BTHome object)
 
 void syncBTHomeSensorMirrors() {
   bthomeSelBattery = (bthomeSensors & BTHOME_SEL_BATTERY) != 0;
@@ -438,6 +439,8 @@ void syncBTHomeSensorMirrors() {
   bthomeSelCO2     = (bthomeSensors & BTHOME_SEL_CO2) != 0;
   bthomeSelPM25    = (bthomeSensors & BTHOME_SEL_PM25) != 0;
   bthomeSelPM10    = (bthomeSensors & BTHOME_SEL_PM10) != 0;
+  bthomeSelPM1     = (bthomeSensors & BTHOME_SEL_PM1) != 0;
+  bthomeSelPM4     = (bthomeSensors & BTHOME_SEL_PM4) != 0;
 }
 
 result doSetBTHomeSensors(eventMask e, navNode &nav, prompt &item) {
@@ -450,6 +453,8 @@ result doSetBTHomeSensors(eventMask e, navNode &nav, prompt &item) {
   if (bthomeSelCO2)     mask |= BTHOME_SEL_CO2;
   if (bthomeSelPM25)    mask |= BTHOME_SEL_PM25;
   if (bthomeSelPM10)    mask |= BTHOME_SEL_PM10;
+  if (bthomeSelPM1)     mask |= BTHOME_SEL_PM1;
+  if (bthomeSelPM4)     mask |= BTHOME_SEL_PM4;
   bthomeSensors = mask;
   preferences.begin("CO2-Gadget", false);
   preferences.putUInt("bthomeSensors", bthomeSensors);
@@ -483,36 +488,53 @@ TOGGLE(bthomeSelPM10, bthomeSelPM10Menu, "PM10: ", doNothing, noEvent, wrapStyle
 TOGGLE(bthomeSelVoltage, bthomeSelVoltageMenu, "Battery Voltage: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
   ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM1, bthomeSelPM1Menu, "PM1.0: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM4, bthomeSelPM4Menu, "PM4.0: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
 
 result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
   if (e & enterEvent) {
     syncBTHomeSensorMirrors();
-    Serial.println("-->[MENU] BTHome-native measurements (object ID shown; only detected sensors are advertised):");
+    Serial.println("-->[MENU] BTHome measurements (all selectable; only detected sensors are advertised):");
+    const char *lastGroup = "";
     for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
       const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+      if (strcmp(lastGroup, m.group) != 0) {
+        lastGroup = m.group;
+        const char *groupLabel = strcmp(m.group, "core") == 0 ? "Core" :
+                                 strcmp(m.group, "optional") == 0 ? "Optional" :
+                                 "No BTHome object";
+        Serial.println("-->[MENU] -- " + String(groupLabel) + " --");
+      }
       char objId[6];
       snprintf(objId, sizeof(objId), "0x%02X", m.objectId);
       Serial.println("-->[MENU]   " + String(m.label) + " [" + String(objId) + "]: " +
                      String((bthomeSensors & m.bit) ? "ON" : "off") + " (" +
                      String(bthomeMeasurementAvailable(m.bit) ? "available" : "not detected") + ")");
     }
-    if (sensors.isUnitRegistered(UNIT::PM25)) {
-      Serial.println("-->[MENU]   Note: PM1.0/PM4.0 are read but have no BTHome object ID, so they cannot be published.");
-    }
+    Serial.println("-->[MENU]   Note: PM1.0/PM4.0 use non-standard IDs 0xEE/0xEF and are not parsed by Home Assistant.");
     printBTHomePayloadProjection();
   }
   return proceed;
 }
 
 MENU(bthomeSensorsMenu, "Publish Sensors", bthomeSensorsMenuCb, enterEvent, wrapStyle
+  ,OP("-- Core --", doNothing, noEvent)
   ,SUBMENU(bthomeSelCO2Menu)
   ,SUBMENU(bthomeSelTempMenu)
   ,SUBMENU(bthomeSelHumMenu)
   ,SUBMENU(bthomeSelBatteryMenu)
+  ,OP("-- Optional --", doNothing, noEvent)
   ,SUBMENU(bthomeSelPM25Menu)
   ,SUBMENU(bthomeSelPressMenu)
   ,SUBMENU(bthomeSelPM10Menu)
   ,SUBMENU(bthomeSelVoltageMenu)
+  ,OP("-- No BTHome object --", doNothing, noEvent)
+  ,SUBMENU(bthomeSelPM1Menu)
+  ,SUBMENU(bthomeSelPM4Menu)
   ,EXIT("<Back"));
 
 MENU(bthomeConfigMenu, "BTHome", doNothing, noEvent, wrapStyle

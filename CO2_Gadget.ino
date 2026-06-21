@@ -112,6 +112,8 @@ enum : uint32_t {
     BTHOME_SEL_CO2     = 1u << 5,
     BTHOME_SEL_PM25    = 1u << 6,
     BTHOME_SEL_PM10    = 1u << 7,
+    BTHOME_SEL_PM1     = 1u << 8,  // no standard BTHome object (non-native)
+    BTHOME_SEL_PM4     = 1u << 9,  // no standard BTHome object (non-native)
 };
 #define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_PRESS | BTHOME_SEL_CO2 | BTHOME_SEL_PM25 | BTHOME_SEL_PM10))
 uint32_t bthomeSensors = BTHOME_DEFAULT_SENSOR_MASK;

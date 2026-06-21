@@ -324,18 +324,23 @@ struct BTHomeMeasurementDef {
     uint8_t objectId;
     uint8_t totalBytes;  // object-id byte + data bytes
     uint8_t priority;    // 1 = highest
+    const char *group;   // "core" | "optional" | "nonnative" (no standard BTHome object)
 };
 
-// Stored in ascending object-id order (also the order emitted into the payload).
+// Stored in ascending object-id order (also the order emitted into the payload). PM1.0/PM4.0 have no
+// BTHome object; they use non-standard IDs (0xEE/0xEF) emitted LAST so a receiver parses every standard
+// object before it stops at the unknown tail (Home Assistant won't show them).
 static const BTHomeMeasurementDef BTHOME_MEASUREMENTS[] = {
-    {BTHOME_SEL_BATTERY, "battery",     "Battery",         0x01, 2, 4},
-    {BTHOME_SEL_TEMP,    "temperature", "Temperature",     0x02, 3, 2},
-    {BTHOME_SEL_HUM,     "humidity",    "Humidity",        0x03, 3, 3},
-    {BTHOME_SEL_PRESS,   "pressure",    "Pressure",        0x04, 4, 6},
-    {BTHOME_SEL_VOLTAGE, "voltage",     "Battery Voltage", 0x0C, 3, 8},
-    {BTHOME_SEL_PM25,    "pm25",        "PM2.5",           0x0D, 3, 5},
-    {BTHOME_SEL_PM10,    "pm10",        "PM10",            0x0E, 3, 7},
-    {BTHOME_SEL_CO2,     "co2",         "CO2",             0x12, 3, 1},
+    {BTHOME_SEL_BATTERY, "battery",     "Battery",         0x01, 2, 4,  "core"},
+    {BTHOME_SEL_TEMP,    "temperature", "Temperature",     0x02, 3, 2,  "core"},
+    {BTHOME_SEL_HUM,     "humidity",    "Humidity",        0x03, 3, 3,  "core"},
+    {BTHOME_SEL_PRESS,   "pressure",    "Pressure",        0x04, 4, 6,  "optional"},
+    {BTHOME_SEL_VOLTAGE, "voltage",     "Battery Voltage", 0x0C, 3, 8,  "optional"},
+    {BTHOME_SEL_PM25,    "pm25",        "PM2.5",           0x0D, 3, 5,  "optional"},
+    {BTHOME_SEL_PM10,    "pm10",        "PM10",            0x0E, 3, 7,  "optional"},
+    {BTHOME_SEL_CO2,     "co2",         "CO2",             0x12, 3, 1,  "core"},
+    {BTHOME_SEL_PM1,     "pm1",         "PM1.0",           0xEE, 3, 9,  "nonnative"},
+    {BTHOME_SEL_PM4,     "pm4",         "PM4.0",           0xEF, 3, 10, "nonnative"},
 };
 static const size_t BTHOME_MEASUREMENT_COUNT = sizeof(BTHOME_MEASUREMENTS) / sizeof(BTHOME_MEASUREMENTS[0]);
 
@@ -355,6 +360,8 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
             return sensors.isUnitRegistered(UNIT::PRESS);
         case BTHOME_SEL_PM25:
         case BTHOME_SEL_PM10:
+        case BTHOME_SEL_PM1:
+        case BTHOME_SEL_PM4:
             return sensors.isUnitRegistered(UNIT::PM25);
         case BTHOME_SEL_BATTERY:
             return true;  // battery level is always encodable
@@ -377,6 +384,8 @@ bool bthomeMeasurementValid(uint32_t bit) {
             return (pressureHpa >= 300.0f) && (pressureHpa <= 1100.0f);
         case BTHOME_SEL_PM25:
         case BTHOME_SEL_PM10:
+        case BTHOME_SEL_PM1:
+        case BTHOME_SEL_PM4:
             return true;
         default:
             return false;  // battery / voltage are not stand-alone sensor readings
@@ -416,6 +425,14 @@ void appendBTHomeMeasurement(std::string &payload, uint32_t bit) {
         case BTHOME_SEL_CO2:
             appendBTHomeUInt8(payload, 0x12);
             appendBTHomeUInt16(payload, static_cast<uint16_t>(co2));
+            break;
+        case BTHOME_SEL_PM1:  // non-standard object id (no BTHome PM1.0); emitted last
+            appendBTHomeUInt8(payload, 0xEE);
+            appendBTHomeUInt16(payload, pm1);
+            break;
+        case BTHOME_SEL_PM4:  // non-standard object id (no BTHome PM4.0); emitted last
+            appendBTHomeUInt8(payload, 0xEF);
+            appendBTHomeUInt16(payload, pm4);
             break;
         default:
             break;
@@ -519,6 +536,8 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
         o["obj"] = m.objectId;
         o["bytes"] = m.totalBytes;
         o["prio"] = m.priority;
+        o["group"] = m.group;
+        o["native"] = strcmp(m.group, "nonnative") != 0;
         o["available"] = bthomeMeasurementAvailable(m.bit);
         o["selected"] = (bthomeSensors & m.bit) != 0;
         o["willSendPlain"] = (includedPlain & m.bit) != 0;
