@@ -322,7 +322,7 @@ function renderBTHomeSensors() {
     list.innerHTML = '';
     const groups = [
         { key: 'core', label: 'Core', tip: 'Primary native BTHome measurements. These have the highest payload priority.' },
-        { key: 'optional', label: 'Optional', tip: 'Additional native BTHome measurements. Undetected sensors remain selectable but do not use payload space until detected.' },
+        { key: 'optional', label: 'Optional', tip: 'Additional native BTHome measurements. Undetected sensors are cleared and cannot be selected.' },
         { key: 'nonnative', label: 'No BTHome object', tip: 'PM1.0 and PM4.0 use non-standard IDs 0xEE/0xEF, are emitted last, and are not parsed by Home Assistant.' }
     ];
     if (bthomeSensorDescriptors.length === 0) {
@@ -353,7 +353,9 @@ function renderBTHomeSensors() {
             cb.type = 'checkbox';
             cb.id = 'bthomeSel_' + d.key;
             cb.dataset.key = d.key;
-            cb.checked = !!d.selected;
+            cb.dataset.available = d.available ? 'true' : 'false';
+            cb.checked = !!d.available && !!d.selected;
+            cb.disabled = !d.available;
             cb.addEventListener('change', enforceBTHomeBudget);
             wrapper.appendChild(cb);
             let suffix = ' (' + d.bytes + ' B)';
@@ -372,7 +374,7 @@ function renderBTHomeSensors() {
 function collectBTHomeSensorSelection() {
     const sel = {};
     document.querySelectorAll('#bthomeSensorsList input[type=checkbox]').forEach((cb) => {
-        sel[cb.dataset.key] = cb.checked;
+        sel[cb.dataset.key] = cb.dataset.available === 'true' && cb.checked;
     });
     return sel;
 }

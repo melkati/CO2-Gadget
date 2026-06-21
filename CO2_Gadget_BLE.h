@@ -538,8 +538,9 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
         o["prio"] = m.priority;
         o["group"] = m.group;
         o["native"] = strcmp(m.group, "nonnative") != 0;
-        o["available"] = bthomeMeasurementAvailable(m.bit);
-        o["selected"] = (bthomeSensors & m.bit) != 0;
+        bool available = bthomeMeasurementAvailable(m.bit);
+        o["available"] = available;
+        o["selected"] = available && ((bthomeSensors & m.bit) != 0);
         o["willSendPlain"] = (includedPlain & m.bit) != 0;
         o["willSendEnc"] = (includedEnc & m.bit) != 0;
     }
@@ -549,6 +550,10 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
 uint32_t bthomeApplySelectionJson(JsonObjectConst sel, uint32_t current) {
     for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
         const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+        if (!bthomeMeasurementAvailable(m.bit)) {
+            current &= ~m.bit;
+            continue;
+        }
         if (sel[m.key].is<bool>()) {
             if (sel[m.key].as<bool>()) {
                 current |= m.bit;

@@ -1727,7 +1727,8 @@ canvas { max-width: 100%; }
 .bthome-sensor-group-items { display: flex; flex-wrap: wrap; gap: 8px 16px; width: 100%; }
 .bthome-sensor-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-1); cursor: pointer; }
 .bthome-sensor-item input { margin: 0; }
-.bthome-sensor-item.unavailable { color: var(--text-3); }
+.bthome-sensor-item.unavailable { color: var(--text-3); cursor: not-allowed; opacity: 0.65; }
+.bthome-sensor-item.unavailable input { cursor: not-allowed; }
 .bthome-sensor-item.nonnative { color: var(--text-3); font-style: italic; }
 .bthome-sensor-item.dropped { color: var(--caution); text-decoration: line-through; }
 .bthome-budget-hint { font-size: 0.8125rem; color: var(--text-3); width: 100%; }
