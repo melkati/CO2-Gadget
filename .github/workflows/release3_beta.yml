@@ -203,47 +203,6 @@ jobs:
           ls -la ./beta_firmware
           cp .pio/build/${{ matrix.environment }}/spiffs.bin    ./beta_firmware/${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin
 
-      - name: Generate beta-index.json
-        if: steps.check_version.outputs.VERSION != ''
-        run: |
-          BASE="${{ github.event.repository.name }}"
-          URL="https://emariete.com/wp-content/uploads/firmware/${BASE}/beta"
-          VER="${{ steps.check_version.outputs.VERSION }}-beta"
-          DATE="${{ steps.date.outputs.date }}"
-          TIME="${{ steps.date.outputs.time }}"
-
-          python3 -c "
-          import json
-          flavors = [
-            'TTGO_TDISPLAY', 'TTGO_TDISPLAY_SANDWICH', 'TDISPLAY_S3',
-            'esp32dev', 'esp32dev_OLED', 'esp32dev_ST7789_240x320',
-            'ttgo-t5-EINKBOARDGDEM0213B74', 'ttgo-t5-EINKBOARDDEPG0213BN',
-            'ttgo-t5-EINKBOARDGDEW0213M21', 'ttgo-t7-EINKBOARDGDEM029T94',
-            'ttgo-t7-WEACT_GDEH0154D67', 'ttgo-t7-WEACT_DEPG0213BN',
-            'ttgo-t7-WEACT_GxEPD2_290_BS',
-          ]
-          idx = {
-            'version': '$VER',
-            'compilation_date': '$DATE',
-            'compilation_time': '$TIME',
-            'new_install_prompt_erase': True,
-            'new_install_improv_wait_time': 20,
-            'builds': [
-              {
-                'flavour': f,
-                'manifest': f'$URL/${BASE}-{f}.beta.manifest.json',
-                'chipFamily': 'ESP32-S3' if f == 'TDISPLAY_S3' else 'ESP32',
-              }
-              for f in flavors
-            ],
-          }
-          with open('beta-index.json', 'w') as f:
-              json.dump(idx, f, indent=2)
-          print('✅ beta-index.json generated')
-          "
-
-          cp beta-index.json ./beta_firmware/beta-index.json
-
       - name: 📂 Sync beta files - FTP-Deploy-Action
         if: steps.check_version.outputs.VERSION != ''
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
