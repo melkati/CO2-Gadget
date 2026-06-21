@@ -1,303 +1,467 @@
 [![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
 [![Release](https://img.shields.io/github/v/release/melkati/CO2-Gadget?label=release)](https://github.com/melkati/CO2-Gadget/releases)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
-![Twitter Follow](https://img.shields.io/twitter/follow/e_mariete?style=social)
 [![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+
+<p align="center">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/8a81094c-5814-4246-955f-c48ef3087033" alt="CO2 Gadget">
+</p>
 
 <table align="center">
-	<tr>
-		<td>
-			Don't forget to star ⭐ this repository NOW!
-		</td>
-	</tr>
+  <tr>
+    <td align="center">
+      <b>🌟 If you find this project useful, please star it on GitHub! 🌟</b>
+    </td>
+  </tr>
 </table>
-
-<table align="center">
-	<tr>
-		<td>
-			<a href="https://github.com/melkati/CO2-Gadget/issues/198">🌟 Calling All Tech Enthusiasts! Join the CO2 Gadget Testing Adventure 🌟</a>
-		</td>
-	</tr>
-</table>
-
-
-# CO2-Gadget
-
-**CO2-Gadget** is an advanced firmware for CO2 Monitors/Meters based on ESP32. It's designed for flexibility, supporting a variety of popular sensors, displays, and communication protocols. With features like real-time visualization, data logging, and over-the-air updates, CO2-Gadget is perfect for both developers and end-users looking to monitor air quality effectively.
-
-> **Current version:** v0.15.000-dev (branch: `modernization/v2`) — major update with low-power mode, Apple-inspired web UI, charts, calibration page, BLE recovery, and 18 closed issues. See [CHANGELOG.md](CHANGELOG.md) for the full list.
-
-It's really flexible, you can use this firmware with **any supported CO2 Monitor/Meter** based on ESP32 (99% of them).
-
-With cell phone App for real time visualization and charting of air quality data, datalogger, a variety of communication options (BLE, WIFI, MQTT, ESP-NOW) and many supported popular sensors.
-
-This repository is mainly addressed at developers. If you are an end user willing to install and use the CO2 Gadget firmware, you will find complete instructions at [my blog](https://emariete.com/en/co2-meter-gadget/) including instructions in how to install the firmware very easily, with just afew clicks in your browser (without having edit files, compile or install anything on your computer).
-
-If you don't have a CO2 Monitor you will also find some complete tutorials to build your own.
-
-<p align="center">
-  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/8a81094c-5814-4246-955f-c48ef3087033">
-</p>
-
-# Features
-
-- Many popular CO2 sensors supported: Sensirion SCD30, Sensirion SCD4x (SCD40 and SCD41), Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106 & CM1106SL-NS (ultra low power)
-- Support for popular color and monochrome displays
-- Fully functional without display (display not needed)
-- Supports the Air Quality App Sensirion MyAmbiance for iOS and Android with real time visualization, charting and access to historical data
-- Real time visualization on display, serial port and web page
-- **NEW: Apple-inspired web UI** with dark/light mode, responsive design, and card-based layout
-- **NEW: Interactive charts page** — historical CO2/temperature/humidity data with date filter and CSV/JSON export
-- **NEW: Calibration web page** — forced recalibration (FRC) with live CO2 readings
-- **NEW: Low power / deep sleep mode** — two power modes: `HIGH_PERFORMANCE` (continuous operation, no deep sleep) and `LOW_POWER` (deep sleep enabled for battery operation), with configurable sleep cycles, wake-up tracking and boot counters
-- **NEW: Threshold-gated publishing** — MQTT, BLE and ESP-NOW messages only sent when values change by a configured amount (saves bandwidth and power)
-- **NEW: Particulate sensor support** (SPS30, SN-GCJA5) — PM1.0, PM2.5, PM4.0, PM10 published via MQTT with Home Assistant discovery
-- **NEW: Wake display on CO2 alert** — display automatically wakes when CO2 rises above warning threshold
-- Management and configuration via on screen menu, internal web page and console (USB/serial port)
-- Local data logger with upload to phone by BLE
-- CO2 Sensor calibration via on screen menu, internal web page, console (USB/serial port), Bluetooth or MQTT
-- WIFI connection
-- Easy configuration of WIFI from your phone via Bluetooth or from the web page (Captive Portal)
-- Sending of data via MQTT (measurement, battery, alarms, etc)
-- Receiving remote commands via MQTT
-- MQTT Discovery protocol for Home Assistant (and others supporting it as HomeSeer with mcsMQTT)
-- Easy installing via web browser
-- Easy WiFi setup via web browser on install and anytime (supports Improv-WiFi)
-- Easy WiFi setup via bluetooth with the MyAmbiance App in iOS and Android
-- ESP-NOW communications protocol from Espressif for long range and low power consumption ([more info here](https://emariete.com/en/gateway-esp-now-mqtt/))
-- Over the air updates OTA
-- Support for buzzer alarms on CO2 level
-- Support for Neopixel (WS2812B) addressable LEDs (RGB, GBR and RGBW)
-- Support for RGB LEDs
-- GPIO outputs for alarms and activation of air circulation on CO2 concentration threshold with hysteresis. Check GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
-
-# Supported hardware and build
-
-This project support a large selection of ESP32 boards, displays and sensors.
-
-As an example you can find a very detailed tutorial with step-by-step video on how to build a very compact CO2 Gadget with a TTGO T-Display board and a high quality Sensirion SCD30 dual channel NDIR CO2 sensor (and battery support) [here](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/).
-
-<p align="center">
-	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/6d577770-b83c-4f3e-9c87-a00ac28ae72c">
-</p>
-
-For latest information on other hardware use (boards, sensors, displays, etc), please check options and GPIO to use at [my blog CO2 Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
-
-## TFT Displays
-
-CO2 Gadget has support for a lot of different TFT displays. There are precompiled versions for TFT 240x135 and 320x170 pixels displays (included in ready made all in one boards as TTGO T-Display, T-Display S3 and others).
-
-<p align="center">
-	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/073d5f17-1e77-4692-833b-2cf2b838d72a">
-</p>
-
-## E-INK Displays
-
-You can use many different E-INK displays. There are precompiled versions for most popular E-INK displays and all in one boards with E-INK displays as TTGO T5. Check support for your e-ink display at [CO2 Gadget installation page](https://emariete.com/en/co2-meter-gadget/#Instalacion_de_CO2_Gadget_Advanced)
-
-<p align="center">
-	<img src="https://github.com/melkati/CO2-Gadget/assets/11509521/643c08ae-6a17-427b-be10-0d11e8b75ca6">
-</p>
-
-## OLED Displays
-
-CO2 Gadget supports many different OLED displays. There are precompiled versions for OLED I2C 1.3" 128x64 pixels display.
-![CO2 Gadget OLED MH-Z1311A](https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg)
-
-## ESP32 Boards
-
-Supporting any other ESP32 board is very easy. You just have to setup the pines accordingly.
-
-These are the GPIOs used by each predefined board:
-
-| Flavor                      | Display           | RX/TX | I2C SDA/SCL | UP/DWN  | GPIO Orange | GPIO Red | GPIO Battery | GPIO Neopixel | GPIO Buzzer |
-|:----------------------------|:-----------------:|:-----:|:-----------:|:-------:|:-----------:|:--------:|:-------------:|:-------------:|:-----------:|
-| TTGO_TDISPLAY               | TFT 240×135       | 13/12 | 21/22       | 35/0    | 32          | 33       | 34            | 26            | 2           |
-| TTGO_TDISPLAY_SANDWICH      | TFT 240×135       | 13/12 | 22/21       | 35/0    | 32          | 33       | 34            | 26            | 2           |
-| TDISPLAY_S3                 | TFT 320x170       | 18/17 | 43/44       | 14/0    | 03          | 01       | 04            | 16            | 2           |
-| esp32dev_OLED               | SSH1106 128×64    | 17/16 | 21/22       | 15/0    | 32          | 33       | 34            | 26            | 2           |
-| esp32dev                    | No display        | 17/16 | 21/22       | 15/0    | 32          | 33       | 34            | 26            | 2           |
-| esp32dev-ST7789_240x320     | ST7789_240x320    | 17/16 | 21/22       | 19/0    | 32          | 33       | 34            | 26            | 2           |
-| ttgo-t5-EINKBOARDDEPG0213BN | E-Ink 2.13"       | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
-| ttgo-t5-EINKBOARDGDEW0213M21| E-Ink 2.13"       | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
-| ttgo-t7-EINKBOARDGDEM029T94 | E-Ink 2.9"        | 15/14 | 21/22       | -1/-1   | 32          | 33       | 35            | 26            | 2           |
-
-- Flavour: Name of the firmware variant.
-- Display: Display supported by each flavour.
-- RX / TX: Pins (GPIO) used for sensors connected by serial port.
-- I2C: Pins (GPIO) corresponding to the I2C bus for connection of I2C sensors and displays.
-- UP / DWN: Pins (GPIO) to which to connect the "Up" and "Down" buttons. They are optional as CO2 Gadget is fully functional with no buttons attached.
-- GPIO Orange: Pin (GPIO) corresponding to the output when the orange level is reached (for relays, alarms, and RGB LED).
-- GPIO Red: Pin (GPIO) corresponding to the output when the red level is reached (for relays, alarms, and RGB LED).
-- GPIO Battery: Pin for battery voltage measurement.
-- Neopixel GPIO: Pin to which you must connect the data line of the Neopixel (WS2812B) LEDs.
-- Buzzer: Pin to connect a passive buzzer for CO2 level sound alarms (built in transistor recommended).
-
-# Supported sensors
-
-This project uses the CanAirIO sensorlib library to support as many sensors as possible out of the box. Thanks to @hpsaturn and CanAirIO team.
-
-CanAirIO sensorlib right now supports:
-
-### PM sensors
-
-| Sensor model  | UART  | I2C  | Detection mode | Status |  
-|:----------------------- |:-----:|:-----:|:-------:|:----------:|
-| Honeywell HPMA115S0 | Yes | --- | Auto | DEPRECATED |
-| Panasonic SN-GCJA5L | Yes | Yes | Auto | STABLE |
-| Plantower models    | Yes | --- | Auto | STABLE |
-| Nova SDS011         | Yes | --- | Auto | STABLE |
-| IKEA Vindriktning   | Yes | --- | Select | STABLE
-| Sensirion SPS30     | Yes | Yes | Select / Auto | STABLE |
-
-NOTE: Panasonic via UART in ESP8266 maybe needs select in detection
-
-### CO2 sensors
-
-| Sensor model  | UART  | i2c  | Detection mode | Status |  
-|:----------------------- |:-----:|:-----:|:-------:|:----------:|
-| Sensirion SCD30    | --- | Yes | Auto | STABLE |
-| Sensirion SCD4x    | --- | Yes | Auto | TESTING |
-| MHZ19      | Yes | --- | Select | STABLE |
-| CM1106    | Yes | --- | Select | STABLE |
-| SenseAir S8 | Yes | --- | Select | STABLE |
-
-### Environmental sensors
-
-| Sensor model  | Protocol  | Detection mode | Status |  
-|:----------------------- |:-----:|:-------:|:----------:|
-| AM2320      | i2c |  Auto | STABLE |
-| SHT31       | i2c |  Auto | STABLE |
-| AHT10       | i2c |  Auto | STABLE |
-| BME280      | i2c |  Auto | STABLE |
-| BMP280      | i2c |  Auto | STABLE |
-| BME680      | i2c |  Auto | STABLE |
-| DfRobot SEN0469 NH3 | i2c |  Auto   | TESTING |
-| DFRobot SEN0466 CO  | i2c |  Auto   | TESTING |
-| Geiger CAJOE        | i2c |  Select | TESTING |
-| DHTxx       | TwoWire |  Auto | DEPRECATED |
-
-NOTE: DHT22 is supported but is not recommended
-
-Full details on CanAirIO sensorlib [here](https://github.com/kike-canaries/canairio_sensorlib/)
-
-# Installing
-
-Installing the CO2 Gadget advanced firmware on the board with the ESP32is super easy. You don't have to download or install anything on your PC.
-
-Just click the button corresponding to the version you want to install, select the port where your board is connected and click "Connect". It's as simple as that, the uploading into the ESP32 will be done in a few seconds without any further complication with only a few clicks...
-
-Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) to install from the comfort of your internet browser.
-
-
-# Building from Repository
-
-## Using PlatformIO (Recommended)
-
-If you're looking to compile and install CO2 Gadget from its repository, PlatformIO is the preferred method. However, if you only aim to install CO2 Gadget onto your board, you can do so directly from [here](https://emariete.com/en/meter-co2-gadget/) without compiling the firmware.
-
-### Installation Steps
-
-You have two options for utilizing PlatformIO: either through its Command Line Interface (CLI) or via Visual Studio Code (VSCode) with PlatformIO's Graphical User Interface (GUI). Detailed installation instructions can be found [here](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
-
-### Preparing PlatformIO
-
-Before proceeding, make sure to configure your preferences by editing the `platformio.ini` file, which is well-documented for easy customization. If required, adjust the upload and monitoring port configurations to match your setup.
-
-```ini
-upload_speed = 921600
-monitor_speed = 115200
-upload_port = COM13
-monitor_port = COM13
-```
-
-Save the changes made to the `platformio.ini` file.
-
-#### Compiling and Installation Process
-
-For ease of use, PlatformIO is recommended over the Arduino IDE. After installing PlatformIO and its command line tools on your system (compatible with Windows, MacOS, and Linux), connect your compatible board via USB and execute the following command:
-
-```bash
-pio run -e TTGO_TDISPLAY --target upload
-```
-
-Ensure to replace "TTGO_TDISPLAY" with the desired flavor of CO2 Gadget to be compiled and uploaded. You can find these flavors defined in the `platformio.ini` file or define your own.
-
-If using the PlatformIO GUI, follow these steps to compile and upload CO2-Gadget onto your board: press the "Alien head" icon, navigate to Project tasks, select your desired flavor, and choose Upload and Monitor.
-
-## Using Arduino
-
-**Note:**
-At present, Arduino IDE is not supported. Should you wish to compile using the Arduino IDE, you will need to address includes, dependencies, and defines independently.
-
-It's recommended to utilize VS Code with PlatformIO instead. Numerous tutorials are available online, simplifying the process considerably.
-# Getting Involved
-
-Everyone is welcome to contribute to CO2 Gadget, regardless of their skill level or background. Whether you're tech-savvy, passionate about community development, or simply want to make a difference, there’s a role for you.
-
-Contribute: See our Issues section to find current tasks or share your project ideas. Join us in creating the world's more advanced firmware for CO2 Monitoring.
-
-If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
-
-[![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/melkati/CO2-Gadget.svg?style=social&label=Fork)](https://github.com/melkati/CO2-Gadget/network)
-
-When creating a pull request, we recommend that you do the following:
-
-- Clone the repository
-- Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
-- Run to any clang formatter if it is a code, for example using the `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
-- Document the PR description and code is a must
-- Target your pull request to be merged with the `development` branch
-
-There are also private groups for committed and dedicated Alpha and Beta Testers. Read more about it [here](https://github.com/melkati/CO2-Gadget/issues/198) 🌟 We need testers! 🌟
-
-# Supporting the project
-
-Do you want to support the CO2-Gadget project? Thank you! While financial contributions are not requested, material donations are highly appreciated to aid further development. You can also help by spreading the word about CO2-Gadget and sharing your experiences with others.
-
-<a href=https://s.click.aliexpress.com/e/_DmqesWN target="_blank"><img src=//ae01.alicdn.com/kf/Sd1a317e7b72f425b92032c780d79d89a2.jpg_140x140.jpg /></a>
-<a href=https://s.click.aliexpress.com/e/_DmJQ1VX target="_blank"><img src=//ae01.alicdn.com/kf/H308d07827d0e44d9a9609f47092b8885V.jpg_140x140.jpg /></a>
-
-# TO DO
-
-- [x] [Implement low power functionality](https://github.com/melkati/CO2-Gadget/issues/188)
-- [ ] [Implement full support for PM 2.5](https://github.com/melkati/CO2-Gadget/issues/170)
-
-# Useful information
-
-- [Everything about the Sensirion SCD30 NDIR dual-channel CO2 sensor](https://emariete.com/en/sensor-co2-ndir-sensirion-scd30-dual-channel/)
-- [Everything about the Sensirion SCD40 and the SCD41 RPAS CO2 sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41/)
-- [Everything about the Winsen MH-Z19 NDIR CO2 sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
-- [Everything about the Winsen Low Consumption CO2 Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
-- [MH-Z19B vs Senseair S8 NDIR sensors](https://emariete.com/en/comparative-co2-sensors-mh-z19b-vs-senseair-s8/)
-- [Tutorial to build a CO2 Monitor with a TTGO T-Display board](https://emariete.com/en/co2-meter-co2-display-tft-colour-ttgo-t-display-sensirion-scd30/)
-
-# Credits
-
-Thanks to all collaborators, contributors and to the [eMariete](https://emariete.com) community for testing and reports.
-
-# Special thanks to:
-
-
-All the [contributors that helped improving CO2 Gadget](https://github.com/melkati/CO2-Gadget/graphs/contributors). You are awesome!
-
-<a href="https://github.com/melkati/CO2-Gadget/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" />
-</a>
-
-
-# ⭐ Please star this project
-
-If you like this project, please give it a star on GitHub!
-
-[![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget?style=social)](https://github.com/melkati/CO2-Gadget/stargazers)
-
-If you read this far, would you please star this repository?
-It will help other people find it. Thanks!
 
 ---
+
+# CO2-Gadget — Advanced Firmware for ESP32 CO₂ Monitors
+
+**CO2-Gadget** is an advanced, feature-rich firmware for ESP32-based CO₂ monitors and air quality meters. It supports a wide range of CO₂ sensors, particulate matter (PM) sensors, environmental sensors, displays (TFT, OLED, E-Ink), and communication protocols (WiFi, BLE, MQTT, ESP-NOW). Whether you're building a custom air quality monitor or flashing a commercial board, CO2-Gadget offers enterprise-grade features in a compact embedded package.
+
+> **Current version:** v0.20.000-development — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
+
+This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/en/co2-meter-gadget/) for pre-built binaries and one-click browser installation — no compilation required.
+
+<p align="center">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/6d577770-b83c-4f3e-9c87-a00ac28ae72c" width="600" alt="CO2 Gadget on TTGO T-Display">
+</p>
+
+---
+
+## ✨ Features
+
+### 🅲 CO₂ & Air Quality Monitoring
+- **7+ CO₂ sensor families** — Sensirion SCD30/SCD40/SCD41, Senseair S8 LP, Winsen MH-Z19 (A/B/C/D/E), Cubic CM1106 & CM1106SL-NS (ultra-low power)
+- **Particulate matter (PM)** — auto-detected via CanAirIO sensorlib (SPS30, SN-GCJA5, Plantower, SDS011, IKEA Vindriktning, etc.); PM1.0, PM2.5, PM4.0, PM10 published via MQTT with Home Assistant Discovery
+- **Environmental sensors** — BME280, BMP280, BME680, SHT31, AHT10, AM2320, and more
+- **Sensor auto-detection** via CanAirIO sensorlib — plug and play
+
+### 🖥️ Display Support
+- **TFT color displays** — ST7789 (135×240, 240×240, 320×170), ST7735
+- **OLED displays** — SSH1106, SSD1306 (128×64 I2C)
+- **E-Ink displays** — DEPG0213BN (2.13″), GDEM0213B74 (2.13″), GDEW0213M21 (2.13″), GDEM029T94 (2.9″), GDEH0154D67 (1.54″), GDEM029C90 (2.9″)
+- **Fully functional without display** — all features accessible via web UI, serial, BLE, or MQTT
+
+### 🌐 Web User Interface — Apple-Inspired Design
+Premium web UI hosted directly on the ESP32 with:
+- **Dark/light mode** with system preference auto-detection and manual toggle (persisted via `localStorage`)
+- **Responsive design** — hamburger nav on mobile, fluid layout on desktop
+- **Card-based layout** with subtle shadows, rounded corners, and Apple-style typography
+- **Interactive charts page** — historical CO₂/temperature/humidity data with date filtering and CSV/JSON export (powered by Chart.js)
+- **Dedicated calibration page** — live CO₂ readings with Forced Re-Calibration (FRC) form
+- **Low Power configuration page** — 4-tab interface for Display, Bluetooth, MQTT, and ESP-NOW thresholds
+- **Status page** with colored feature badges, RSSI, uptime, and real-time sensor values
+- **SVG tooltip icons** — consistent rendering across all browsers
+- **TFT screenshot capture** — web endpoint `GET /screenshot` for remote display debugging
+
+### 🔋 Low Power & Deep Sleep
+Two power modes, switchable at runtime without reboot:
+- **HIGH_PERFORMANCE** — continuous operation, no deep sleep, all radios active
+- **LOW_POWER** — deep sleep with configurable wake cycles, per-cycle WiFi/BLE/MQTT enable
+  - Configurable wait time before first deep sleep entry
+  - WiFi connect every N cycles (save power between MQTT publishes)
+  - Display redraw every N cycles
+  - Wake-up reason tracking (timer, GPIO, touchpad)
+  - Boot and wake counters preserved in RTC memory
+  - Automatic display off on battery with configurable timeout
+  - Wake display on CO₂ alert when crossing the warning threshold
+- **TDISPLAY_S3 deep sleep** validated with ESP32-S3 deep sleep support
+- **TTGO T-Display power sequencing** optimized for minimal deep sleep current
+- **RTC memory corruption workaround** — wake flags reloaded from NVS on every wake cycle
+
+### 📡 Communication Protocols
+
+| Protocol | Function |
+|---|---|
+| **WiFi** | Web server (REST API), MQTT, OTA updates, Captive Portal |
+| **BLE** | Sensirion MyAmbiance App (iOS/Android) — real-time data, history download, WiFi configuration, SCD4x calibration |
+| **MQTT** | Publish measurements, battery, alarms; receive remote commands; Home Assistant Discovery (auto-config) |
+| **ESP-NOW** | Long-range, low-power Espressif protocol for mesh/gateway setups |
+| **HTTP/REST** | Full web API for configuration, sensor data, system status |
+| **Improv Serial** | One-step WiFi configuration from serial terminal |
+| **Captive Portal** | WiFi setup via browser on first boot |
+
+### 🔧 Configuration & Management
+- **On-screen menu** — full device configuration via push buttons (TFT/OLED/E-Ink)
+- **Web-based management** — all settings configurable from any browser
+- **Serial console** — text-based menu over USB
+- **BLE configuration** — WiFi credentials and calibration from MyAmbiance App
+- **MQTT remote commands** — calibration and pressure settings over the air
+- **ThresholdManager library** — NVS-persisted thresholds (absolute + percentage) for CO₂, temperature, humidity; gates MQTT/BLE/ESP-NOW publishing to save bandwidth and power
+
+### 📊 Calibration
+- **Datasheet-compliant warm-up sequence** — per-sensor warm-up (readings + time) before applying field calibration
+- **Forced Re-Calibration (FRC)** — via web page, serial menu, on-screen menu, BLE, or MQTT (400–2000 ppm range)
+- **Ambient pressure compensation** — SCD30 and SCD4x with mbar/hPa support
+- **Calibration warm-up across deep sleep** — progress preserved in RTC across sleep cycles
+- **CM1106 continuous mode** — pauses deep sleep automatically during calibration (needs continuous operation)
+
+### 🎵 Outputs
+- **Unified output system** — `CO2_Gadget_Outputs.h` (single include for Buzzer, NeoPixel, GPIO relays)
+- **GPIO relays** — configurable orange/red threshold outputs with hysteresis
+- **RGB LEDs** — color-coded air quality indication
+- **NeoPixel (WS2812B)** — addressable RGB/RGBW LED strips (configurable count)
+- **Buzzer** — configurable tone (300–2000 Hz) and duration (50–300 ms) for CO₂ level alerts
+- **Hysteresis** — prevents output chatter (configurable PPM thresholds)
+
+### 🔄 OTA Updates
+- Over-the-air firmware updates via [ElegantOTA](https://github.com/ayushsharma82/ElegantOTA) (async mode)
+- Web-based upload from the Preferences page (Maintenance card)
+
+### 📈 Data Logging
+- **Circular buffer** — in-memory data history for web charts (configurable capacity up to 1440 samples)
+- **BLE history** — downloadable via MyAmbiance App to smartphone (configurable interval)
+- **CSV/JSON export** — from the web Charts page
+- **Configurable intervals** — measurement, sampling, history, and MQTT publish intervals independently configurable
+- **Accumulated uptime** — retained across deep sleep cycles (not reset on wake)
+
+---
+
+## 🧰 Supported Hardware
+
+### ESP32 Boards
+
+The project supports multiple ESP32 boards with pre-configured GPIO mappings. Adding support for a new board is straightforward — just define the pins in `platformio.ini`.
+
+| Flavor | Chip | Display | Notes |
+|---|---|---|---|
+| **TTGO_TDISPLAY** | ESP32 | TFT 240×135 (ST7789) | Compact all-in-one with buttons, battery support |
+| **TTGO_TDISPLAY_SANDWICH** | ESP32 | TFT 240×135 (ST7789) | Sandwich board variant (I2C swapped) |
+| **TDISPLAY_S3** | ESP32-S3 | TFT 320×170 (ST7789) | USB CDC, PSRAM, DW8904 backlight IC |
+| **esp32dev** | ESP32 | None | Generic dev board, headless operation |
+| **esp32dev_OLED** | ESP32 | OLED 128×64 (SSH1106) | Generic board with I2C OLED |
+| **esp32dev-ST7789_240x320** | ESP32 | TFT 240×320 (ST7789) | Larger TFT on dev board |
+| **ttgo-t5-EINKBOARDGDEM0213B74** | ESP32 | E-Ink 2.13″ (GDEM0213B74) | LilyGO T5 variant |
+| **ttgo-t5-EINKBOARDDEPG0213BN** | ESP32 | E-Ink 2.13″ (DEPG0213BN) | LilyGO T5 with DEPG0213BN |
+| **ttgo-t5-EINKBOARDGDEW0213M21** | ESP32 | E-Ink 2.13″ (GDEW0213M21) | LilyGO T5 with GDEW0213M21 |
+| **ttgo-t7-EINKBOARDGDEM029T94** | ESP32 | E-Ink 2.9″ (GDEM029T94) | LilyGO T7 with GDEM029T94 |
+| **ttgo-t7-WEACT_GDEH0154D67** | ESP32 | E-Ink 1.54″ (GDEH0154D67) | WeAct Studio 200×200 |
+| **ttgo-t7-WEACT_DEPG0213BN** | ESP32 | E-Ink 2.13″ (DEPG0213BN) | WeAct Studio 250×122 |
+| **ttgo-t7-WEACT_GxEPD2_290_BS** | ESP32 | E-Ink 2.9″ (GDEM029C90) | WeAct Studio 296×128 |
+
+### GPIO Pin Mapping
+
+| Flavor | RX/TX | I2C SDA/SCL | UP/DWN | GPIO Orange | GPIO Red | Battery | Neopixel | Buzzer |
+|---|---|---|---|---|---|---|---|---|
+| TTGO_TDISPLAY | 13/12 | 21/22 | 35/0 | 32 | 33 | 34 | 26 | 2 |
+| TTGO_TDISPLAY_SANDWICH | 13/12 | 22/21 | 35/0 | 32 | 33 | 34 | 26 | 2 |
+| TDISPLAY_S3 | 18/17 | 43/44 | 14/0 | 3 | 1 | 4 | 16 | 2 |
+| esp32dev_OLED | 17/16 | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2 |
+| esp32dev | 17/16 | 21/22 | 15/0 | 32 | 33 | 34 | 26 | 2 |
+| esp32dev-ST7789_240x320 | 17/16 | 21/22 | 19/0 | 32 | 33 | 34 | 26 | 2 |
+| ttgo-t5-* (E-Ink) | 15/14 | 21/22 | -1/-1 | 32 | 33 | 35 | 26 | 2 |
+| ttgo-t7-* (E-Ink) | 15/14 | 21/22 | -1/-1 | 32 | 33 | 35 | 26 | 2 |
+| ttgo-t7-WEACT_* (E-Ink) | 15/14 | 21/22 | -1/-1 | 32 | 33 | 35 | 26 | 2 |
+
+- **RX/TX**: Pins for UART sensors (MH-Z19, CM1106, Senseair S8, etc.)
+- **I2C SDA/SCL**: I²C bus for sensors and displays
+- **UP/DWN**: Button pins (optional, firmware is fully functional without buttons)
+- **GPIO Orange/Red**: Output pins for relays, alarms, and RGB LEDs at threshold levels
+- **Battery**: ADC pin for battery voltage measurement
+- **Neopixel**: Data pin for WS2812B addressable LEDs
+- **Buzzer**: Pin for passive piezo buzzer (built-in transistor recommended)
+
+### Display Types
+
+<p align="center">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/073d5f17-1e77-4692-833b-2cf2b838d72a" width="400" alt="TFT Display">
+  <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/643c08ae-6a17-427b-be10-0d11e8b75ca6" width="400" alt="E-Ink Display">
+</p>
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/11509521/154486542-703653f0-ba0c-4bca-9616-ee5c35d4d19c.jpg" width="400" alt="OLED Display">
+</p>
+
+### Supported Sensors
+
+Sensor support is provided by [CanAirIO sensorlib](https://github.com/kike-canaries/canairio_sensorlib/) — sensors are auto-detected on boot (plug and play). Thanks to @hpsaturn and the CanAirIO team!
+
+#### CO₂ Sensors
+
+| Sensor | Interface | Detection | Status |
+|---|---|---|---|
+| Sensirion SCD30 | I²C | Auto | ✅ STABLE |
+| Sensirion SCD40 / SCD41 | I²C | Auto | ✅ STABLE |
+| Winsen MH-Z19 (A/B/C/D/E) | UART | Select | ✅ STABLE |
+| Cubic CM1106 / CM1106SL-NS | UART | Select | ✅ STABLE (incl. ultra-low power mode) |
+| Senseair S8 LP | UART | Select | ✅ STABLE |
+
+#### Particulate Matter (PM) Sensors
+
+Auto-detected via CanAirIO; PM1.0, PM2.5, PM4.0, PM10 variables published via MQTT with Home Assistant Discovery.
+
+| Sensor | Interface | Detection | Status |
+|---|---|---|---|
+| Sensirion SPS30 | UART / I²C | Select / Auto | ✅ STABLE |
+| Panasonic SN-GCJA5 | UART / I²C | Auto | ✅ STABLE |
+| Plantower models (PMS x003) | UART | Auto | ✅ STABLE |
+| Nova SDS011 | UART | Auto | ✅ STABLE |
+| IKEA Vindriktning | UART | Select | ✅ STABLE |
+
+#### Environmental Sensors
+
+| Sensor | Interface | Detection | Status |
+|---|---|---|---|
+| BME280, BMP280 | I²C | Auto | ✅ STABLE |
+| BME680 (IAQ) | I²C | Auto | ✅ STABLE |
+| SHT31 | I²C | Auto | ✅ STABLE |
+| AHT10 | I²C | Auto | ✅ STABLE |
+| AM2320 | I²C | Auto | ✅ STABLE |
+| DFRobot SEN0469 (NH₃) | I²C | Auto | 🧪 TESTING |
+| DFRobot SEN0466 (CO) | I²C | Auto | 🧪 TESTING |
+| Geiger CAJOE | I²C | Select | 🧪 TESTING |
+| DHTxx | TwoWire | Auto | ⚠️ DEPRECATED |
+
+> **Note:** DHT22 is supported but not recommended due to accuracy limitations.
+
+---
+
+## 🚀 Installing
+
+### One-Click Browser Installation (End Users)
+
+Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) — no software installation required. Just connect your board via USB, click the installer button, and follow the prompts. The firmware is uploaded in seconds directly from your browser.
+
+### Building from Source (Developers)
+
+#### Prerequisites
+
+- [PlatformIO](https://platformio.org/) (CLI or VSCode extension) — **recommended**
+- Git
+
+#### Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/melkati/CO2-Gadget.git
+   cd CO2-Gadget
+   ```
+
+2. **Configure your board and ports** in `platformio.ini`:
+   ```ini
+   [common_env_data]
+   upload_port = COM13        # Your board's USB port
+   monitor_port = COM13       # Your board's USB port
+   ```
+
+3. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
+   ```bash
+   pio run -e TTGO_TDISPLAY --target upload
+   ```
+
+4. **Monitor serial output:**
+   ```bash
+   pio run -e TTGO_TDISPLAY --target monitor
+   ```
+   Or use PlatformIO's *Upload and Monitor* task from the VS Code GUI.
+
+> **Note:** Arduino IDE is not officially supported. Use PlatformIO for building from source.
+
+---
+
+## 🌐 Web Interface
+
+Once connected to WiFi, open the device's IP address in any browser. The interface adapts to dark/light mode automatically.
+
+| Page | URL | Description |
+|---|---|---|
+| **Home** | `/` | Real-time CO₂, temperature, humidity dashboard |
+| **Charts** | `/charts.html` | Historical data with interactive graphs, date filter, CSV/JSON export |
+| **Calibration** | `/calibration.html` | Live CO₂ readings and FRC calibration form |
+| **Low Power** | `/low_power.html` | Configure deep sleep thresholds (Display, BLE, MQTT, ESP-NOW) |
+| **Preferences** | `/preferences.html` | Full device settings (gear icon in navbar) |
+| **Status** | `/status.html` | System status, versions, uptime, network info |
+| **OTA Update** | `/update` | Firmware upload (via Preferences → Maintenance card) |
+| **Screenshot** | `/screenshot` | TFT display screenshot (PNG) — useful for remote debugging |
+
+---
+
+## 📱 Mobile App (BLE)
+
+CO2-Gadget works with the **Sensirion MyAmbiance** app for iOS and Android:
+- Real-time CO₂, temperature, and humidity visualization
+- Historical data charts and download to phone
+- WiFi configuration via BLE
+- Sensor calibration commands
+
+---
+
+## 🏗️ Project Structure
+
+```
+CO2-Gadget/
+├── CO2_Gadget.ino              # Main firmware entry point & setup()
+├── CO2_Gadget_Sensors.h        # Sensor initialization, reading callbacks, PM variables
+├── CO2_Gadget_Battery.h        # Battery voltage reading and level calculation
+├── CO2_Gadget_Outputs.h        # Unified outputs (Buzzer + NeoPixel + GPIO relays)
+├── CO2_Gadget_Buzzer.h         # Piezo buzzer driver
+├── CO2_Gadget_Neopixel.h       # WS2812B addressable LED driver
+├── CO2_Gadget_Preferences.h    # NVS preferences persistence (save/load/JSON import-export)
+├── CO2_Gadget_Thresholds.h     # ThresholdManager for gated publishing
+├── CO2_Gadget_DeepSleep.h      # Low power / deep sleep management
+├── CO2_Gadget_Menu.h           # On-screen menu system (ArduinoMenu library)
+├── CO2_Gadget_Buttons.h        # Push button handling (Button2 library)
+├── CO2_Gadget_WIFI.h           # WiFi + Web server + REST API + Captive Portal
+├── CO2_Gadget_Improv.h         # Improv WiFi serial configuration
+├── CO2_Gadget_BLE.h            # BLE (Sensirion MyAmbiance App)
+├── CO2_Gadget_MQTT.h           # MQTT client + Home Assistant Discovery
+├── CO2_Gadget_ESP-NOW.h        # ESP-NOW communication
+├── CO2_Gadget_TFT.h            # TFT display driver (TFT_eSPI)
+├── CO2_Gadget_OLED.h           # OLED display driver (U8g2)
+├── CO2_Gadget_EINK.h           # E-Ink display driver (GxEPD2)
+├── CO2_Gadget_CircularBufferManager.h  # Rolling data buffer for web charts
+├── platformio.ini              # Build configuration, flavors, features, pins
+├── CO2_Gadget_Partitions.csv   # Custom flash partition table (for BLE + SPIFFS)
+├── libs/
+│   └── CO2_Gadget_Thresholds/  # Threshold manager library with NVS persistence
+├── webserver/                  # Web UI source files (HTML, JS, CSS) + minification scripts
+├── data/                       # Compiled SPIFFS data (minified + gzipped web assets)
+└── docs/                       # Architecture and development documentation
+```
+
+---
+
+## ⚙️ Build Configuration
+
+### Enabling/Disabling Features
+
+Edit `platformio.ini` under the `[features]` section. Comment or uncomment any line:
+
+```ini
+[features]
+build_flags =
+    -DSUPPORT_BLE              ; BLE / MyAmbiance App
+    -DSUPPORT_BUZZER           ; Piezo buzzer
+    ; -DSUPPORT_ESPNOW         ; ESP-NOW (comment to disable)
+    -DSUPPORT_MDNS             ; mDNS hostname resolution
+    -DSUPPORT_MQTT             ; MQTT client
+    -DSUPPORT_MQTT_DISCOVERY   ; Home Assistant auto-discovery
+    -DSUPPORT_OTA              ; Over-the-air updates
+    -DSUPPORT_LOW_POWER        ; Deep sleep / low power mode
+    -DSUPPORT_CIRCULAR_BUFFER  ; In-memory data buffer for web charts
+```
+
+### Build Flavors
+
+Build a specific board flavor:
+```bash
+pio run -e TTGO_TDISPLAY --target upload
+pio run -e TDISPLAY_S3 --target upload
+pio run -e esp32dev --target upload
+pio run -e ttgo-t5-EINKBOARDDEPG0213BN --target upload
+```
+
+All available environments are listed in `platformio.ini` under `[platformio]` → `default_envs`.
+
+### Debug Options
+
+Enable debug output by uncommenting flags in the `[debug]` section:
+```ini
+[debug]
+build_flags =
+    -DDEBUG_EINK               ; E-Ink display debug
+    ; -DDEBUG_NEOPIXEL         ; NeoPixel debug
+    ; -DDEBUG_PREFERENCES      ; Print preferences on load/save
+    ; -DDEBUG_WIFI_EVENTS      ; WiFi event debug
+    ; -DDEBUG_BLE              ; BLE debug
+    ; -DDEBUG_THRESHOLDS       ; Threshold evaluation debug
+    -DWIFI_PRIVACY             ; Hide passwords in serial output
+    -D CORE_DEBUG_LEVEL=0      ; 0=None, 1=Error, 2=Warning, 3=Info, 4=Debug, 5=Verbose
+```
+
+---
+
+## 🔧 Development & Contributing
+
+Everyone is welcome to contribute to CO2-Gadget, regardless of skill level or background.
+
+### Getting Started
+
+1. **Fork the repository**
+2. **Create a feature branch:** `git checkout -b feat/my-feature` or `git checkout -b fix/my-fix`
+3. **Make your changes** — follow the existing code style (Google style, clang-format friendly)
+4. **Test your changes** — ensure builds succeed for at least one flavor
+5. **Document your code and PR**
+6. **Open a Pull Request** targeting the `development` branch
+
+### Guidelines
+
+- Run clang-format (Google style) before committing
+- Keep PRs focused on a single feature or fix
+- Update [CHANGELOG.md](CHANGELOG.md) with your changes
+- For major changes, open an issue first to discuss
+
+### Testing
+
+We have active Alpha and Beta testing programs. Join the discussion in [issue #198](https://github.com/melkati/CO2-Gadget/issues/198) or reach out on [Telegram](https://t.me/emariete_chat).
+
+---
+
+## 📚 Useful Resources
+
+- [Everything about the Sensirion SCD30 NDIR dual-channel CO₂ sensor](https://emariete.com/en/sensor-co2-ndir-sensirion-scd30-dual-channel/)
+- [Everything about the Sensirion SCD40 and SCD41 RPAS CO₂ sensors](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41/)
+- [Everything about the Winsen MH-Z19 NDIR CO₂ sensors](https://emariete.com/en/sensor-co2-mh-z19b/)
+- [Everything about the Winsen Low Consumption CO₂ Sensor MH-Z1311A](https://emariete.com/en/sensor-co2-low-consumption-mh-z1311a-winsen/)
+- [MH-Z19B vs Senseair S8 NDIR comparison](https://emariete.com/en/comparative-co2-sensors-mh-z19b-vs-senseair-s8/)
+- [Tutorial: Build a CO₂ Monitor with TTGO T-Display + SCD30](https://emariete.com/en/co2-meter-co2-display-tft-colour-ttgo-t-display-sensirion-scd30/)
+- [Tutorial: Compact CO₂ Gadget with battery support](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/)
+- [ESP-NOW to MQTT Gateway](https://emariete.com/en/gateway-esp-now-mqtt/)
+- [CO₂ Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
+- [CanAirIO sensorlib](https://github.com/kike-canaries/canairio_sensorlib/)
+
+---
+
+## 📜 License
+
+Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors · Contact: [https://emariete.com](https://emariete.com)
+
+This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Credits
+
+Thanks to all collaborators, contributors, and the [eMariete](https://emariete.com) community for testing, feedback, and support.
+
+Special thanks to:
+- [CanAirIO team](https://github.com/kike-canaries/canairio_sensorlib/) — sensor abstraction library
+- All [contributors who helped improve CO2 Gadget](https://github.com/melkati/CO2-Gadget/graphs/contributors) — you are awesome!
+
+<a href="https://github.com/melkati/CO2-Gadget/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=melkati/CO2-Gadget" alt="Contributors"/>
+</a>
+
+---
+
+## ⭐ Support the Project
+
+If you find CO2-Gadget useful:
+
+- ⭐ **Star this repository** on GitHub — it helps others discover the project
+- 📢 **Share your experience** with the community on [Telegram](https://t.me/emariete_chat)
+- 🐛 **Report bugs or suggest features** via [GitHub Issues](https://github.com/melkati/CO2-Gadget/issues)
+- 🤝 **Contribute** code, documentation, or testing
+
+Material donations (hardware for testing) are also appreciated to support further development.
+
+<a href="https://s.click.aliexpress.com/e/_DmqesWN" target="_blank"><img src="https://ae01.alicdn.com/kf/Sd1a317e7b72f425b92032c780d79d89a2.jpg_140x140.jpg" alt="CO2 Sensor"/></a>
+<a href="https://s.click.aliexpress.com/e/_DmJQ1VX" target="_blank"><img src="https://ae01.alicdn.com/kf/H308d07827d0e44d9a9609f47092b8885V.jpg_140x140.jpg" alt="ESP32 Board"/></a>
+
+---
+
+<p align="center">
+  <i>If you read this far, please star this repository! ⭐</i>
+</p>
+<p align="center">
+  <a href="https://github.com/melkati/CO2-Gadget/stargazers">
+    <img src="https://img.shields.io/github/stars/melkati/CO2-Gadget?style=social" alt="Stars"/>
+  </a>
+</p>
 ## License
 
 

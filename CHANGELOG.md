@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.15.004-dev (branch: fix/249-measurement-interval)
+## [Unreleased] — v0.20.000-development (branch: development)
 
 > **Note:** Versioning reset as of 10 May 2026. The previous v0.14.x line is superseded by v0.15.x on this branch.
 

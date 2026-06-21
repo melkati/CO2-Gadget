@@ -9,13 +9,13 @@ on:
       - development
     paths-ignore:
       - '.github/workflows/release3_beta.yml'  # Ignore changes in the workflow file itself
-    # Only run when commit message contains "Beta" and does not contain "low-power"
-    # Use 'contains' with 'github.event.head_commit.message'
-    if: contains(github.event.head_commit.message, 'Beta') && !contains(github.event.head_commit.message, 'low-power') || github.event_name == 'workflow_dispatch'
   workflow_dispatch:
 
 jobs:
   build_beta:
+    # Only run when commit message contains "Beta" and does not contain "low-power",
+    # or when triggered manually via workflow_dispatch.
+    if: contains(github.event.head_commit.message, 'Beta') && !contains(github.event.head_commit.message, 'low-power') || github.event_name == 'workflow_dispatch'
     name: Create Beta Release
 
     runs-on: ubuntu-latest
