@@ -260,6 +260,9 @@ uint32_t calculateBLEWakeSettingsChecksum() {
     for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeBindKeyOnWake); ++i) {
         mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.bthomeBindKeyOnWake[i]));
     }
+    for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeSensorsOnWake); ++i) {
+        mixByte(static_cast<uint8_t>((bleWakeSettingsRTC.bthomeSensorsOnWake >> (i * 8)) & 0xFF));
+    }
     for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeCounterOnWake); ++i) {
         mixByte(static_cast<uint8_t>((bleWakeSettingsRTC.bthomeCounterOnWake >> (i * 8)) & 0xFF));
     }
@@ -275,11 +278,13 @@ void saveBLEWakeSettingsToRTC() {
 #ifdef SUPPORT_BTHOME_BLE
     bleWakeSettingsRTC.activeBTHomeOnWake = activeBTHome;
     bleWakeSettingsRTC.bthomeEncryptionOnWake = bthomeEncryption;
+    bleWakeSettingsRTC.bthomeSensorsOnWake = bthomeSensors;
     bleWakeSettingsRTC.bthomeCounterOnWake = bthomeCounter;
     bthomeBindKey.toCharArray(bleWakeSettingsRTC.bthomeBindKeyOnWake, sizeof(bleWakeSettingsRTC.bthomeBindKeyOnWake));
 #else
     bleWakeSettingsRTC.activeBTHomeOnWake = false;
     bleWakeSettingsRTC.bthomeEncryptionOnWake = false;
+    bleWakeSettingsRTC.bthomeSensorsOnWake = 0;
     bleWakeSettingsRTC.bthomeCounterOnWake = 0;
     bleWakeSettingsRTC.bthomeBindKeyOnWake[0] = '\0';
 #endif
@@ -301,6 +306,7 @@ void restoreBLEWakeSettingsFromRTC() {
         activeBTHome = preferences.getBool("activeBTHome", false);
         bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
         bthomeBindKey = preferences.getString("bthomeBindKey", "");
+        bthomeSensors = preferences.getUInt("bthomeSensors", BTHOME_DEFAULT_SENSOR_MASK);
         bthomeCounter = preferences.getUInt("bthomeCounter", 0);
         bthomeCounterNeedsSeed = true;
         ensureBTHomeBindKey();
@@ -315,6 +321,7 @@ void restoreBLEWakeSettingsFromRTC() {
 #ifdef SUPPORT_BTHOME_BLE
     activeBTHome = bleWakeSettingsRTC.activeBTHomeOnWake;
     bthomeEncryption = bleWakeSettingsRTC.bthomeEncryptionOnWake;
+    bthomeSensors = bleWakeSettingsRTC.bthomeSensorsOnWake;
     bthomeCounter = bleWakeSettingsRTC.bthomeCounterOnWake;
     bthomeBindKey = String(bleWakeSettingsRTC.bthomeBindKeyOnWake);
 #endif

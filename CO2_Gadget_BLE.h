@@ -83,7 +83,7 @@ typedef struct {
 RTC_DATA_ATTR bleThresholdState_t bleThresholdStateRTC;
 #endif
 
-bool evaluateBLEPublishThresholds(uint16_t currentCO2, float currentTemp, float currentHum) {
+bool evaluateBLEPublishThresholds(uint16_t currentCO2, float currentTemp, float currentHum, bool evaluateCO2, bool evaluateTemp, bool evaluateHum) {
 #ifdef SUPPORT_LOW_POWER
     if (isBLETimerWakeFromDeepSleep()) {
         if (bleThresholdStateRTC.valid) {
@@ -91,7 +91,7 @@ bool evaluateBLEPublishThresholds(uint16_t currentCO2, float currentTemp, float 
         }
 
         uint64_t nowMs = (deepSleepData.uptimeMillis + millis());
-        bool shouldPublish = thresholdsManager.evaluateThresholdsAt(BLE_SEND, currentCO2, currentTemp, currentHum, nowMs);
+        bool shouldPublish = thresholdsManager.evaluateThresholdsAt(BLE_SEND, currentCO2, currentTemp, currentHum, nowMs, evaluateCO2, evaluateTemp, evaluateHum);
         ThresholdConfig config = thresholdsManager.getThresholds(BLE_SEND);
         if (shouldPublish || !bleThresholdStateRTC.valid) {
             bleThresholdStateRTC.valid = true;
@@ -103,7 +103,7 @@ bool evaluateBLEPublishThresholds(uint16_t currentCO2, float currentTemp, float 
         return shouldPublish;
     }
 #endif
-    return thresholdsManager.evaluateThresholds(BLE_SEND, currentCO2, currentTemp, currentHum);
+    return thresholdsManager.evaluateThresholdsAt(BLE_SEND, currentCO2, currentTemp, currentHum, millis(), evaluateCO2, evaluateTemp, evaluateHum);
 }
 
 #ifdef SUPPORT_BTHOME_BLE
@@ -865,7 +865,17 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
         bool validForBTHome = false;
 #endif
         bool anyValid = validForSensirion || validForBTHome;
-        bool thresholdsPassed = outputEnabled && anyValid && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum));
+        bool evaluateCO2 = validForSensirion;
+        bool evaluateTemp = validForSensirion;
+        bool evaluateHum = validForSensirion;
+#ifdef SUPPORT_BTHOME_BLE
+        if (activeBTHome) {
+            evaluateCO2 = evaluateCO2 || ((bthomeSensors & BTHOME_SEL_CO2) && bthomeMeasurementAvailable(BTHOME_SEL_CO2) && bthomeMeasurementValid(BTHOME_SEL_CO2));
+            evaluateTemp = evaluateTemp || ((bthomeSensors & BTHOME_SEL_TEMP) && bthomeMeasurementAvailable(BTHOME_SEL_TEMP) && bthomeMeasurementValid(BTHOME_SEL_TEMP));
+            evaluateHum = evaluateHum || ((bthomeSensors & BTHOME_SEL_HUM) && bthomeMeasurementAvailable(BTHOME_SEL_HUM) && bthomeMeasurementValid(BTHOME_SEL_HUM));
+        }
+#endif
+        bool thresholdsPassed = outputEnabled && anyValid && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum, evaluateCO2, evaluateTemp, evaluateHum));
 
         if (outputEnabled && thresholdsPassed) {
             if (sensirionBLEInitialized && validForSensirion) {
@@ -901,11 +911,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
         if (sensirionBLEInitialized) {
             provider.setBatteryLevel(batteryLevel);
         }
-#ifdef SUPPORT_BTHOME_BLE
-        if (activeBTHome) {
-            updateBTHomeAdvertisementData(true);
-        }
-#endif
+        // BTHome carries battery data with the next threshold/keepalive-driven payload.
 #ifdef DEBUG_BLE
         Serial.println("-->[BLE ] Sent Battery Level: " + String(batteryLevel) + "%");
         publishMQTTLogData("-->[BLE ] Sent Battery Level: " + String(batteryLevel) + "%");
@@ -919,7 +925,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 }
 
 void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
-#ifdef SUPPORT_BLE
+#if defined(SUPPORT_BLE) && defined(SUPPORT_BTHOME_BLE)
     String logReason = reason ? String(reason) : String("BTHome settings changed");
     Serial.println("-->[BLE ] " + logReason + "; refreshing BLE advertising.");
 

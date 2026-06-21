@@ -126,7 +126,7 @@ constexpr uint32_t bthomeCounter = 0;
 bool isDownloadingBLE = false;
 
 #ifdef SUPPORT_LOW_POWER
-constexpr uint32_t BLE_WAKE_SETTINGS_MAGIC = 0xB1E20206;
+constexpr uint32_t BLE_WAKE_SETTINGS_MAGIC = 0xB1E20207;
 
 typedef struct {
     uint32_t magic = 0;
@@ -135,6 +135,7 @@ typedef struct {
     bool activeBTHomeOnWake = false;
     bool bthomeEncryptionOnWake = false;
     char bthomeBindKeyOnWake[33] = "";
+    uint32_t bthomeSensorsOnWake = 0;
     uint32_t bthomeCounterOnWake = 0;
     uint32_t checksum = 0;
 } bleWakeSettings_t;
