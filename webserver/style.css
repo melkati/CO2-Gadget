@@ -1723,7 +1723,13 @@ canvas { max-width: 100%; }
 #bthomeSensorsGroup { flex-direction: column; align-items: flex-start; gap: 8px; }
 .bthome-sensors-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 .bthome-sensor-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.bthome-sensor-group-heading { position: relative; display: flex; align-items: center; gap: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--text-2); }
+.bthome-sensor-group-heading { position: relative; display: flex; align-items: center; align-self: flex-start; gap: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--text-2); }
+.bthome-sensor-group-heading .tooltip-text {
+  top: calc(100% + 6px);
+  left: 0;
+  pointer-events: none;
+}
+.bthome-sensor-group-heading:hover .tooltip-text { visibility: visible; }
 .bthome-sensor-group-items { display: flex; flex-wrap: wrap; gap: 8px 16px; width: 100%; }
 .bthome-sensor-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-1); cursor: pointer; }
 .bthome-sensor-item input { margin: 0; }
@@ -1732,7 +1738,7 @@ canvas { max-width: 100%; }
 .bthome-sensor-item.nonnative { color: var(--text-3); font-style: italic; }
 .bthome-sensor-item.dropped { color: var(--caution); }
 .bthome-sensor-runtime-status { font-size: 0.8125rem; font-weight: 600; }
-.bthome-budget-hint { font-size: 0.8125rem; color: var(--text-3); width: 100%; }
+.bthome-budget-hint { font-size: 0.8125rem; color: var(--text-1); font-weight: 600; width: 100%; }
 .bthome-key-controls { display: flex; flex: 1 1 360px; flex-direction: column; gap: 8px; min-width: 0; }
 .bthome-key-controls input { width: 100%; }
 .bthome-key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
