@@ -253,15 +253,25 @@ function updateBTHomeControlsState() {
     const revealButton = document.getElementById("bthomeKeyReveal");
     const copyButton = document.getElementById("bthomeKeyCopy");
     const regenerateButton = document.getElementById("bthomeKeyRegenerate");
+    const bindKeyGroup = document.getElementById("bthomeBindKeyGroup");
     const bthomeSupported = isBTHomeSupported();
     const bthomeActive = bthomeSupported && !!(bthomeCheckbox && bthomeCheckbox.checked);
+    const encryptionActive = bthomeActive && !!(encryptionCheckbox && encryptionCheckbox.checked);
 
     if (bthomeCheckbox) bthomeCheckbox.disabled = !bthomeSupported;
     if (encryptionCheckbox) encryptionCheckbox.disabled = !bthomeActive;
-    if (bindKeyInput) bindKeyInput.disabled = !bthomeActive;
-    if (revealButton) revealButton.disabled = !bthomeActive;
-    if (regenerateButton) regenerateButton.disabled = !bthomeActive;
-    if (copyButton) copyButton.disabled = !bthomeActive || !bindKeyInput || !bindKeyInput.value;
+    if (bindKeyGroup) bindKeyGroup.classList.toggle("hidden", !encryptionActive);
+    if (bindKeyInput) bindKeyInput.disabled = !encryptionActive;
+    if (revealButton) revealButton.disabled = !encryptionActive;
+    if (regenerateButton) regenerateButton.disabled = !encryptionActive;
+    if (copyButton) copyButton.disabled = !encryptionActive || !bindKeyInput || !bindKeyInput.value;
+
+    if (!encryptionActive && bindKeyInput) {
+        bindKeyInput.value = "";
+        bindKeyInput.type = "password";
+        bindKeyInput.placeholder = "Stored key hidden";
+        setBTHomeKeyStatus("Enable BTHome encryption to reveal or replace the bind key.");
+    }
 
     // [BTHOME-SENSEL] show the sensor-selection list only while BTHome is active.
     const sensorsGroup = document.getElementById("bthomeSensorsGroup");
@@ -324,6 +334,11 @@ function enforceBTHomeBudget() {
     const encrypted = !!(enc && enc.checked);
     document.querySelectorAll('#bthomeSensorsList .bthome-sensor-item.dropped').forEach((item) => {
         item.classList.remove('dropped');
+        const status = item.querySelector('.bthome-sensor-runtime-status');
+        if (status && status.dataset.budgetStatus === 'true') {
+            status.textContent = '';
+            status.dataset.budgetStatus = 'false';
+        }
     });
 
     const fit = bthomeComputeFit(encrypted);
@@ -331,7 +346,14 @@ function enforceBTHomeBudget() {
         const cb = document.getElementById('bthomeSel_' + d.key);
         if (cb) {
             const item = cb.closest('.bthome-sensor-item');
-            if (item) item.classList.add('dropped');
+            if (item) {
+                item.classList.add('dropped');
+                const status = item.querySelector('.bthome-sensor-runtime-status');
+                if (status) {
+                    status.textContent = ' (selected; skipped because payload is full)';
+                    status.dataset.budgetStatus = 'true';
+                }
+            }
         }
     });
 
@@ -411,6 +433,10 @@ function renderBTHomeSensors() {
             else if (d.valid === false) suffix += ' (no valid reading; not currently sent)';
             if (d.native === false || d.group === 'nonnative') suffix += ' (no BTHome object — not parsed by HA)';
             wrapper.appendChild(document.createTextNode(' ' + d.label + suffix));
+            const runtimeStatus = document.createElement('span');
+            runtimeStatus.className = 'bthome-sensor-runtime-status';
+            runtimeStatus.dataset.budgetStatus = 'false';
+            wrapper.appendChild(runtimeStatus);
             items.appendChild(wrapper);
             });
             section.appendChild(items);
@@ -1167,7 +1193,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bthomeRegenerateButton) bthomeRegenerateButton.addEventListener("click", regenerateBTHomeBindKey);
         // [BTHOME-SENSEL] encryption changes the payload budget projection.
         const bthomeEncCheckbox = document.getElementById("bthomeEncryption");
-        if (bthomeEncCheckbox) bthomeEncCheckbox.addEventListener("change", enforceBTHomeBudget);
+        if (bthomeEncCheckbox) {
+            bthomeEncCheckbox.addEventListener("change", () => {
+                updateBTHomeControlsState();
+                enforceBTHomeBudget();
+            });
+        }
         handleWiFiMQTTDependency();
         getFeaturesAsJson()
             .then(() => {

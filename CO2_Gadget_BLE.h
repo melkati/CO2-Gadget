@@ -561,6 +561,9 @@ void printBTHomePayloadProjection() {
     if (fit.totalSelectedCount > fit.availableSelectedCount) {
         msg += " (" + String(fit.totalSelectedCount - fit.availableSelectedCount) + " selected, unavailable or without a valid reading)";
     }
+    if (fit.availableSelectedCount > fit.fittedCount) {
+        msg += " (" + String(fit.availableSelectedCount - fit.fittedCount) + " selected valid measurements skipped because the payload is full)";
+    }
     Serial.println(msg);
 }
 
