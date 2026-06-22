@@ -82,13 +82,19 @@ void onSensorDataOk() {
         pressureHpa = sensors.getPressure();
     }
 #ifdef SUPPORT_BTHOME_BLE
+    // Recompute the runtime freshness mask each read cycle so a sensor that stops
+    // reporting drops out instead of advertising its last value forever (battery
+    // and voltage are special-cased as always-fresh in bthomeMeasurementFresh()).
+    bthomeFreshMeasurements = 0;
     if (sensors.isUnitRegistered(UNIT::CO2)) {
         bthomeFreshMeasurements |= BTHOME_SEL_CO2;
     }
-    if (sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) || sensors.isUnitRegistered(UNIT::CO2)) {
+    // Mirror bthomeMeasurementAvailable(): only TEMP/CO2TEMP (not bare CO2) means a
+    // real temperature reading, so CO2-only sensors don't mark temp/hum fresh.
+    if (sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP)) {
         bthomeFreshMeasurements |= BTHOME_SEL_TEMP;
     }
-    if (sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) || sensors.isUnitRegistered(UNIT::CO2)) {
+    if (sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM)) {
         bthomeFreshMeasurements |= BTHOME_SEL_HUM;
     }
     if (sensors.isUnitRegistered(UNIT::PRESS)) {

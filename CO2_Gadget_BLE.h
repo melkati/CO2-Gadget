@@ -375,11 +375,17 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
         case BTHOME_SEL_CO2:
             return sensors.isUnitRegistered(UNIT::CO2) || retainedCO2;
         case BTHOME_SEL_TEMP:
+            // Only sensors that actually report temperature register TEMP/CO2TEMP
+            // (SCD30/SCD4x, MH-Z19). CO2-only sensors (CM1106/S8) register just
+            // UNIT::CO2, so we must NOT infer temperature from it or we would
+            // advertise a bogus 0 C. retainedCO2TempHum covers the SCD deep-sleep wake.
             return sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) ||
-                   sensors.isUnitRegistered(UNIT::CO2) || retainedCO2TempHum;
+                   retainedCO2TempHum;
         case BTHOME_SEL_HUM:
+            // Likewise, only SCD-class sensors register HUM/CO2HUM; CO2-only and
+            // MH-Z19 do not, so UNIT::CO2 alone must not imply humidity.
             return sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) ||
-                   sensors.isUnitRegistered(UNIT::CO2) || retainedCO2TempHum;
+                   retainedCO2TempHum;
         case BTHOME_SEL_PRESS:
             return sensors.isUnitRegistered(UNIT::PRESS);
         case BTHOME_SEL_PM25:

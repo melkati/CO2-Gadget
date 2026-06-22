@@ -550,6 +550,12 @@ MENU(bthomeSensorsMenu, "Publish Sensors", bthomeSensorsMenuCb, enterEvent, wrap
   ,SUBMENU(bthomeNonnativeSensorsMenu)
   ,EXIT("<Back"));
 
+// Keep every BTHome sensor toggle selectable. Availability is intentionally NOT
+// used to gate selectability: a desired sensor that is temporarily undetected
+// stays selected and resumes automatically (see bthomeMeasurementAvailable()),
+// so the menu must let the user pick it even while it is not currently present.
+// Availability/validity is surfaced as status text in bthomeSensorsMenuCb()
+// instead. The `bit` column documents which sensor each menu slot maps to.
 void updateBTHomeSensorMenuAvailability() {
   const struct {
     menuNode *menu;
@@ -568,6 +574,7 @@ void updateBTHomeSensorMenuAvailability() {
     {&bthomeNonnativeSensorsMenu, 1, BTHOME_SEL_PM4},
   };
   for (const auto &entry : entries) {
+    (void)entry.bit;  // documented mapping; selectability is not availability-gated
     entry.menu->operator[](entry.menuIndex).enable();
   }
   bthomeSensorsMenu[0].enable();
