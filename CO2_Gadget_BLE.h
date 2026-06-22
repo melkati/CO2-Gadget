@@ -349,13 +349,37 @@ static const size_t BTHOME_MEASUREMENT_COUNT = sizeof(BTHOME_MEASUREMENTS) / siz
 static constexpr uint8_t BTHOME_MAX_SERVICE_DATA = 24;
 
 bool bthomeMeasurementAvailable(uint32_t bit) {
+    bool retainedCO2 = false;
+    bool retainedCO2TempHum = false;
+#ifdef SUPPORT_LOW_POWER
+    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
+        switch (deepSleepData.co2Sensor) {
+            case CO2Sensor_SCD30:
+            case CO2Sensor_SCD40:
+            case CO2Sensor_SCD41:
+                retainedCO2 = true;
+                retainedCO2TempHum = true;
+                break;
+            case CO2Sensor_CM1106SL_NS:
+            case CO2Sensor_CM1106:
+            case CO2Sensor_MHZ19:
+            case CO2Sensor_SENSEAIRS8:
+                retainedCO2 = true;
+                break;
+            default:
+                break;
+        }
+    }
+#endif
     switch (bit) {
         case BTHOME_SEL_CO2:
-            return sensors.isUnitRegistered(UNIT::CO2);
+            return sensors.isUnitRegistered(UNIT::CO2) || retainedCO2;
         case BTHOME_SEL_TEMP:
-            return sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) || sensors.isUnitRegistered(UNIT::CO2);
+            return sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) ||
+                   sensors.isUnitRegistered(UNIT::CO2) || retainedCO2TempHum;
         case BTHOME_SEL_HUM:
-            return sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) || sensors.isUnitRegistered(UNIT::CO2);
+            return sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) ||
+                   sensors.isUnitRegistered(UNIT::CO2) || retainedCO2TempHum;
         case BTHOME_SEL_PRESS:
             return sensors.isUnitRegistered(UNIT::PRESS);
         case BTHOME_SEL_PM25:
@@ -372,37 +396,17 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
     }
 }
 
-// Remove selections for hardware that is not registered. When called after
-// startup sensor detection, persist only when the loaded NVS mask was stale.
-bool sanitizeBTHomeSensorSelection(bool persistIfChanged, const char *reason) {
-    uint32_t sanitized = bthomeSensors;
-    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
-        const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
-        if (!bthomeMeasurementAvailable(m.bit)) {
-            sanitized &= ~m.bit;
-        }
+bool bthomeMeasurementFresh(uint32_t bit) {
+    if ((bit == BTHOME_SEL_BATTERY) || (bit == BTHOME_SEL_VOLTAGE)) {
+        return true;
     }
-    if (sanitized == bthomeSensors) {
-        return false;
-    }
-
-    uint32_t removed = bthomeSensors & ~sanitized;
-    bthomeSensors = sanitized;
-    Serial.printf("-->[BLE ] Cleared unavailable BTHome sensor bits: 0x%08lX (%s)\n",
-                  static_cast<unsigned long>(removed),
-                  reason ? reason : "availability changed");
-
-    if (persistIfChanged) {
-        preferences.begin("CO2-Gadget", false);
-        preferences.putUInt("bthomeSensors", bthomeSensors);
-        preferences.end();
-        Serial.println("-->[PREF] Persisted sanitized BTHome sensor selection to NVR.");
-    }
-    refreshBTHomeBLESettings(reason ? reason : "BTHome sensor availability changed", true);
-    return true;
+    return (bthomeFreshMeasurements & bit) != 0;
 }
 
 bool bthomeMeasurementValid(uint32_t bit) {
+    if (!bthomeMeasurementFresh(bit)) {
+        return false;
+    }
     switch (bit) {
         case BTHOME_SEL_CO2:
             return (co2 >= 400) && (co2 <= 5000);
@@ -417,8 +421,12 @@ bool bthomeMeasurementValid(uint32_t bit) {
         case BTHOME_SEL_PM1:
         case BTHOME_SEL_PM4:
             return true;
+        case BTHOME_SEL_BATTERY:
+            return batteryLevel <= 100;
+        case BTHOME_SEL_VOLTAGE:
+            return hasBattery && (batteryVoltage >= 1.0f) && (batteryVoltage <= 6.0f);
         default:
-            return false;  // battery / voltage are not stand-alone sensor readings
+            return false;
     }
 }
 
@@ -475,7 +483,7 @@ uint8_t bthomeMeasurementsBudget(bool encrypted, bool includePacketId) {
     return (BTHOME_MAX_SERVICE_DATA > overhead) ? (BTHOME_MAX_SERVICE_DATA - overhead) : 0;
 }
 
-// Pick, by priority and budget, which selected+available measurements are advertised.
+// Pick, by priority and budget, which selected measurements are currently eligible.
 uint32_t bthomeFitMask(bool encrypted, bool includePacketId, uint8_t *outUsedBytes = nullptr) {
     uint8_t budget = bthomeMeasurementsBudget(encrypted, includePacketId);
     uint8_t used = 0;
@@ -486,7 +494,8 @@ uint32_t bthomeFitMask(bool encrypted, bool includePacketId, uint8_t *outUsedByt
             if (m.priority != prio) {
                 continue;
             }
-            if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) && (used + m.totalBytes <= budget)) {
+            if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) &&
+                bthomeMeasurementValid(m.bit) && (used + m.totalBytes <= budget)) {
                 used += m.totalBytes;
                 included |= m.bit;
             }
@@ -507,7 +516,8 @@ bool isValidBTHomeMeasurement() {
         if ((m.bit == BTHOME_SEL_BATTERY) || (m.bit == BTHOME_SEL_VOLTAGE)) {
             continue;
         }
-        if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) && bthomeMeasurementValid(m.bit)) {
+        if ((bthomeSensors & m.bit) && bthomeMeasurementAvailable(m.bit) &&
+            bthomeMeasurementValid(m.bit)) {
             return true;
         }
     }
@@ -533,7 +543,7 @@ BTHomePayloadFit computeBTHomePayloadFit(bool encrypted) {
             continue;
         }
         fit.totalSelectedCount++;
-        if (bthomeMeasurementAvailable(m.bit)) {
+        if (bthomeMeasurementAvailable(m.bit) && bthomeMeasurementValid(m.bit)) {
             fit.availableSelectedCount++;
         }
         if (included & m.bit) {
@@ -547,9 +557,9 @@ void printBTHomePayloadProjection() {
     BTHomePayloadFit fit = computeBTHomePayloadFit(bthomeEncryption);
     String msg = "-->[BLE ] BTHome payload (" + String(bthomeEncryption ? "encrypted" : "plain") + "): " +
                  String(fit.usedBytes) + "/" + String(fit.budgetBytes) + " bytes, " +
-                 String(fit.fittedCount) + " of " + String(fit.availableSelectedCount) + " available selected sensors fit";
+                 String(fit.fittedCount) + " of " + String(fit.availableSelectedCount) + " valid selected sensors fit";
     if (fit.totalSelectedCount > fit.availableSelectedCount) {
-        msg += " (" + String(fit.totalSelectedCount - fit.availableSelectedCount) + " selected, not detected)";
+        msg += " (" + String(fit.totalSelectedCount - fit.availableSelectedCount) + " selected, unavailable or without a valid reading)";
     }
     Serial.println(msg);
 }
@@ -569,8 +579,10 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
         o["group"] = m.group;
         o["native"] = strcmp(m.group, "nonnative") != 0;
         bool available = bthomeMeasurementAvailable(m.bit);
+        bool valid = available && bthomeMeasurementValid(m.bit);
         o["available"] = available;
-        o["selected"] = available && ((bthomeSensors & m.bit) != 0);
+        o["valid"] = valid;
+        o["selected"] = (bthomeSensors & m.bit) != 0;
         o["willSendPlain"] = (includedPlain & m.bit) != 0;
         o["willSendEnc"] = (includedEnc & m.bit) != 0;
     }
@@ -580,10 +592,6 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
 uint32_t bthomeApplySelectionJson(JsonObjectConst sel, uint32_t current) {
     for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
         const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
-        if (!bthomeMeasurementAvailable(m.bit)) {
-            current &= ~m.bit;
-            continue;
-        }
         if (sel[m.key].is<bool>()) {
             if (sel[m.key].as<bool>()) {
                 current |= m.bit;
@@ -649,6 +657,8 @@ void invalidateBTHomeServiceDataCache() {
     bthomeCachedServiceDataValid = false;
 }
 
+bool clearBTHomeAdvertisementData();
+
 bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdvertisement = false, bool rebuildPayload = true) {
     if (!activeBTHome) {
         invalidateBTHomeServiceDataCache();
@@ -656,7 +666,7 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
     }
 
     if (!isValidBTHomeMeasurement()) {
-        invalidateBTHomeServiceDataCache();
+        clearBTHomeAdvertisementData();
         Serial.println("-->[BLE ] BTHome payload skipped: no valid selected measurement. CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %");
         return false;
     }
@@ -667,6 +677,7 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
     }
 
     if (!bthomeCachedServiceDataValid) {
+        clearBTHomeAdvertisementData();
         Serial.println("-->[BLE ] BTHome payload skipped: service data is empty.");
         return false;
     }
@@ -675,7 +686,7 @@ bool updateBTHomeAdvertisementData(bool incrementPacketId, bool forcePrimaryAdve
     advertisementData.setServiceData(NimBLEUUID(static_cast<uint16_t>(BTHOME_UUID)), bthomeCachedServiceData);
 
     NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
-    if (sensirionBLEInitialized && !forcePrimaryAdvertisement) {
+    if (activeBLE && sensirionBLEInitialized && !forcePrimaryAdvertisement) {
         advertising->enableScanResponse(true);
         bool updated = advertising->setScanResponseData(advertisementData);
         updated = advertising->refreshAdvertisingData() && updated;
@@ -791,7 +802,7 @@ void initBLE() {
         return;
     }
 
-    if (bleInitialized) {
+    if (bleInitialized && (!activeBLE || sensirionBLEInitialized)) {
         if (sensirionBLEInitialized) {
             Serial.print("-->[BLE ] Sensirion Gadget BLE Lib already initialized with deviceId = ");
             Serial.println(provider.getDeviceIdString());
@@ -893,9 +904,17 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
     bool published = false;
     if (ignoreMeasurementInterval || (millis() - lastMeasurementTimeMs >= measurementIntervalMs)) {
         bool outputEnabled = activeBLE || activeBTHome;
-        bool validForSensirion = isValidBLEMeasurement();
+        bool validForSensirion = activeBLE && sensirionBLEInitialized && isValidBLEMeasurement();
 #ifdef SUPPORT_BTHOME_BLE
-        bool validForBTHome = isValidBTHomeMeasurement();  // [BTHOME-SENSEL] env-only devices can be valid here without CO2
+        uint32_t bthomeEligibleMask = activeBTHome ? bthomeFitMask(bthomeEncryption, !bthomeEncryption) : 0;
+        bool validForBTHome = false;
+        for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+            uint32_t bit = BTHOME_MEASUREMENTS[i].bit;
+            if ((bit != BTHOME_SEL_BATTERY) && (bit != BTHOME_SEL_VOLTAGE) && (bthomeEligibleMask & bit)) {
+                validForBTHome = true;
+                break;
+            }
+        }
 #else
         bool validForBTHome = false;
 #endif
@@ -905,15 +924,15 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
         bool evaluateHum = validForSensirion;
 #ifdef SUPPORT_BTHOME_BLE
         if (activeBTHome) {
-            evaluateCO2 = evaluateCO2 || ((bthomeSensors & BTHOME_SEL_CO2) && bthomeMeasurementAvailable(BTHOME_SEL_CO2) && bthomeMeasurementValid(BTHOME_SEL_CO2));
-            evaluateTemp = evaluateTemp || ((bthomeSensors & BTHOME_SEL_TEMP) && bthomeMeasurementAvailable(BTHOME_SEL_TEMP) && bthomeMeasurementValid(BTHOME_SEL_TEMP));
-            evaluateHum = evaluateHum || ((bthomeSensors & BTHOME_SEL_HUM) && bthomeMeasurementAvailable(BTHOME_SEL_HUM) && bthomeMeasurementValid(BTHOME_SEL_HUM));
+            evaluateCO2 = evaluateCO2 || ((bthomeEligibleMask & BTHOME_SEL_CO2) != 0);
+            evaluateTemp = evaluateTemp || ((bthomeEligibleMask & BTHOME_SEL_TEMP) != 0);
+            evaluateHum = evaluateHum || ((bthomeEligibleMask & BTHOME_SEL_HUM) != 0);
         }
 #endif
         bool thresholdsPassed = outputEnabled && anyValid && (bypassThresholds || evaluateBLEPublishThresholds(co2, temp, hum, evaluateCO2, evaluateTemp, evaluateHum));
 
         if (outputEnabled && thresholdsPassed) {
-            if (sensirionBLEInitialized && validForSensirion) {
+            if (activeBLE && sensirionBLEInitialized && validForSensirion) {
                 if (writeSensirionCurrentSample()) {
                     provider.commitSample();
                     published = true;
@@ -924,7 +943,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
                 bool bthomeAdvertised = updateBTHomeAdvertisementData(true);
                 published = bthomeAdvertised || published;
                 if (ignoreMeasurementInterval) {
-                    Serial.println("-->[BLE ] BTHome wake payload " + String(bthomeAdvertised ? "installed" : "skipped") + ". thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Scan response: " + String(sensirionBLEInitialized ? "yes" : "no"));
+                    Serial.println("-->[BLE ] BTHome wake payload " + String(bthomeAdvertised ? "installed" : "skipped") + ". thresholdsPassed: " + String(thresholdsPassed) + ", CO2: " + String(co2) + " ppm, Temp: " + String(temp) + " C, Hum: " + String(hum) + " %, Scan response: " + String((activeBLE && sensirionBLEInitialized) ? "yes" : "no"));
                 }
             }
 #endif
@@ -943,7 +962,7 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
         if (batteryLevel == 0) {
             batteryLevel = 100;
         }
-        if (sensirionBLEInitialized) {
+        if (activeBLE && sensirionBLEInitialized) {
             provider.setBatteryLevel(batteryLevel);
         }
         // BTHome carries battery data with the next threshold/keepalive-driven payload.
@@ -959,23 +978,22 @@ bool publishBLE(bool ignoreMeasurementInterval = false, bool bypassThresholds = 
 #endif
 }
 
-void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
-#if defined(SUPPORT_BLE) && defined(SUPPORT_BTHOME_BLE)
-    String logReason = reason ? String(reason) : String("BTHome settings changed");
+void refreshBLEOutputs(const char* reason, bool forcePublish) {
+#ifdef SUPPORT_BLE
+    String logReason = reason ? String(reason) : String("BLE settings changed");
     Serial.println("-->[BLE ] " + logReason + "; refreshing BLE advertising.");
 
     if (!enableBLE || (!activeBLE && !activeBTHome)) {
-        if (bleInitialized) {
-            clearBTHomeAdvertisementData();
-        }
-        Serial.println("-->[BLE ] BLE output is disabled after BTHome settings refresh.");
+        disableBLE();
+        Serial.println("-->[BLE ] BLE output is disabled after settings refresh.");
         return;
     }
 
-    if (!bleInitialized) {
+    if (!bleInitialized || (activeBLE && !sensirionBLEInitialized)) {
         initBLE();
     }
 
+#ifdef SUPPORT_BTHOME_BLE
     if (!activeBTHome) {
         bool cleared = clearBTHomeAdvertisementData();
         if (activeBLE && sensirionBLEInitialized) {
@@ -985,12 +1003,33 @@ void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
         return;
     }
 
+    if (!activeBLE) {
+        bool advertised = updateBTHomeAdvertisementData(forcePublish, true, true);
+        Serial.println("-->[BLE ] BTHome primary advertisement " + String(advertised ? "updated." : "skipped."));
+        return;
+    }
+
+    if (sensirionBLEInitialized) {
+        restoreSensirionAdvertisementData();
+    }
     if (forcePublish) {
         bool published = publishBLE(true, true);
         Serial.println("-->[BLE ] BLE refresh publish " + String(published ? "completed." : "skipped."));
-    } else if (activeBTHome) {
+    } else {
         updateBTHomeAdvertisementData(false);
     }
+#else
+    if (forcePublish) {
+        bool published = publishBLE(true, true);
+        Serial.println("-->[BLE ] BLE refresh publish " + String(published ? "completed." : "skipped."));
+    }
+#endif
+#endif
+}
+
+void refreshBTHomeBLESettings(const char* reason, bool forcePublish) {
+#if defined(SUPPORT_BLE) && defined(SUPPORT_BTHOME_BLE)
+    refreshBLEOutputs(reason, forcePublish);
 #endif
 }
 

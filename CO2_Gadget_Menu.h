@@ -315,11 +315,7 @@ result doSetEnableBLE(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("enableBLE", enableBLE);
   preferences.end();
-  if (enableBLE) {
-    initBLE();
-  } else {
-    disableBLE();
-  }
+  refreshBLEOutputs(enableBLE ? "BLE enabled" : "BLE disabled", true);
   return proceed;
 }
 
@@ -331,11 +327,7 @@ result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
   preferences.begin("CO2-Gadget", false);
   preferences.putBool("activeBLE", activeBLE);
   preferences.end();
-  if (enableBLE && activeBLE) {
-    initBLE();
-  } else if (!activeBLE && !activeBTHome) {
-    disableBLE();
-  }
+  refreshBLEOutputs(activeBLE ? "MyAmbience output enabled" : "MyAmbience output disabled", true);
   return proceed;
 }
 
@@ -433,30 +425,30 @@ bool bthomeSelPM1 = false, bthomeSelPM4 = false;  // non-native (no BTHome objec
 void updateBTHomeSensorMenuAvailability();
 
 void syncBTHomeSensorMirrors() {
-  bthomeSelBattery = bthomeMeasurementAvailable(BTHOME_SEL_BATTERY) && ((bthomeSensors & BTHOME_SEL_BATTERY) != 0);
-  bthomeSelVoltage = bthomeMeasurementAvailable(BTHOME_SEL_VOLTAGE) && ((bthomeSensors & BTHOME_SEL_VOLTAGE) != 0);
-  bthomeSelTemp    = bthomeMeasurementAvailable(BTHOME_SEL_TEMP) && ((bthomeSensors & BTHOME_SEL_TEMP) != 0);
-  bthomeSelHum     = bthomeMeasurementAvailable(BTHOME_SEL_HUM) && ((bthomeSensors & BTHOME_SEL_HUM) != 0);
-  bthomeSelPress   = bthomeMeasurementAvailable(BTHOME_SEL_PRESS) && ((bthomeSensors & BTHOME_SEL_PRESS) != 0);
-  bthomeSelCO2     = bthomeMeasurementAvailable(BTHOME_SEL_CO2) && ((bthomeSensors & BTHOME_SEL_CO2) != 0);
-  bthomeSelPM25    = bthomeMeasurementAvailable(BTHOME_SEL_PM25) && ((bthomeSensors & BTHOME_SEL_PM25) != 0);
-  bthomeSelPM10    = bthomeMeasurementAvailable(BTHOME_SEL_PM10) && ((bthomeSensors & BTHOME_SEL_PM10) != 0);
-  bthomeSelPM1     = bthomeMeasurementAvailable(BTHOME_SEL_PM1) && ((bthomeSensors & BTHOME_SEL_PM1) != 0);
-  bthomeSelPM4     = bthomeMeasurementAvailable(BTHOME_SEL_PM4) && ((bthomeSensors & BTHOME_SEL_PM4) != 0);
+  bthomeSelBattery = (bthomeSensors & BTHOME_SEL_BATTERY) != 0;
+  bthomeSelVoltage = (bthomeSensors & BTHOME_SEL_VOLTAGE) != 0;
+  bthomeSelTemp    = (bthomeSensors & BTHOME_SEL_TEMP) != 0;
+  bthomeSelHum     = (bthomeSensors & BTHOME_SEL_HUM) != 0;
+  bthomeSelPress   = (bthomeSensors & BTHOME_SEL_PRESS) != 0;
+  bthomeSelCO2     = (bthomeSensors & BTHOME_SEL_CO2) != 0;
+  bthomeSelPM25    = (bthomeSensors & BTHOME_SEL_PM25) != 0;
+  bthomeSelPM10    = (bthomeSensors & BTHOME_SEL_PM10) != 0;
+  bthomeSelPM1     = (bthomeSensors & BTHOME_SEL_PM1) != 0;
+  bthomeSelPM4     = (bthomeSensors & BTHOME_SEL_PM4) != 0;
 }
 
 result doSetBTHomeSensors(eventMask e, navNode &nav, prompt &item) {
   uint32_t mask = 0;
-  if (bthomeSelBattery && bthomeMeasurementAvailable(BTHOME_SEL_BATTERY)) mask |= BTHOME_SEL_BATTERY;
-  if (bthomeSelVoltage && bthomeMeasurementAvailable(BTHOME_SEL_VOLTAGE)) mask |= BTHOME_SEL_VOLTAGE;
-  if (bthomeSelTemp && bthomeMeasurementAvailable(BTHOME_SEL_TEMP))       mask |= BTHOME_SEL_TEMP;
-  if (bthomeSelHum && bthomeMeasurementAvailable(BTHOME_SEL_HUM))         mask |= BTHOME_SEL_HUM;
-  if (bthomeSelPress && bthomeMeasurementAvailable(BTHOME_SEL_PRESS))     mask |= BTHOME_SEL_PRESS;
-  if (bthomeSelCO2 && bthomeMeasurementAvailable(BTHOME_SEL_CO2))         mask |= BTHOME_SEL_CO2;
-  if (bthomeSelPM25 && bthomeMeasurementAvailable(BTHOME_SEL_PM25))       mask |= BTHOME_SEL_PM25;
-  if (bthomeSelPM10 && bthomeMeasurementAvailable(BTHOME_SEL_PM10))       mask |= BTHOME_SEL_PM10;
-  if (bthomeSelPM1 && bthomeMeasurementAvailable(BTHOME_SEL_PM1))         mask |= BTHOME_SEL_PM1;
-  if (bthomeSelPM4 && bthomeMeasurementAvailable(BTHOME_SEL_PM4))         mask |= BTHOME_SEL_PM4;
+  if (bthomeSelBattery) mask |= BTHOME_SEL_BATTERY;
+  if (bthomeSelVoltage) mask |= BTHOME_SEL_VOLTAGE;
+  if (bthomeSelTemp)    mask |= BTHOME_SEL_TEMP;
+  if (bthomeSelHum)     mask |= BTHOME_SEL_HUM;
+  if (bthomeSelPress)   mask |= BTHOME_SEL_PRESS;
+  if (bthomeSelCO2)     mask |= BTHOME_SEL_CO2;
+  if (bthomeSelPM25)    mask |= BTHOME_SEL_PM25;
+  if (bthomeSelPM10)    mask |= BTHOME_SEL_PM10;
+  if (bthomeSelPM1)     mask |= BTHOME_SEL_PM1;
+  if (bthomeSelPM4)     mask |= BTHOME_SEL_PM4;
   bthomeSensors = mask;
   preferences.begin("CO2-Gadget", false);
   preferences.putUInt("bthomeSensors", bthomeSensors);
@@ -499,10 +491,10 @@ TOGGLE(bthomeSelPM4, bthomeSelPM4Menu, "PM4.0: ", doNothing, noEvent, wrapStyle
 
 result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
   if (e & enterEvent) {
-    sanitizeBTHomeSensorSelection(true, "Serial BTHome menu availability check");
     syncBTHomeSensorMirrors();
     updateBTHomeSensorMenuAvailability();
-    Serial.println("-->[MENU] BTHome measurements (only detected sensors are selectable):");
+    uint32_t included = bthomeFitMask(bthomeEncryption, !bthomeEncryption);
+    Serial.println("-->[MENU] BTHome measurements:");
     const char *lastGroup = "";
     for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
       const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
@@ -515,9 +507,17 @@ result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
       }
       char objId[6];
       snprintf(objId, sizeof(objId), "0x%02X", m.objectId);
+      bool selected = (bthomeSensors & m.bit) != 0;
+      String status = "available";
+      if (!bthomeMeasurementAvailable(m.bit)) {
+        status = selected ? "Not detected; selection retained" : "not detected";
+      } else if (selected && !bthomeMeasurementValid(m.bit)) {
+        status = "No valid reading; not currently sent";
+      } else if (selected && !(included & m.bit)) {
+        status = "Selected but omitted by payload budget";
+      }
       Serial.println("-->[MENU]   " + String(m.label) + " [" + String(objId) + "]: " +
-                     String((bthomeSensors & m.bit) ? "ON" : "off") + " (" +
-                     String(bthomeMeasurementAvailable(m.bit) ? "available" : "not detected, disabled") + ")");
+                     String(selected ? "ON" : "off") + " (" + status + ")");
     }
     Serial.println("-->[MENU]   Note: PM1.0/PM4.0 use non-standard IDs 0xEE/0xEF and are not parsed by Home Assistant.");
     printBTHomePayloadProjection();
@@ -568,27 +568,11 @@ void updateBTHomeSensorMenuAvailability() {
     {&bthomeNonnativeSensorsMenu, 1, BTHOME_SEL_PM4},
   };
   for (const auto &entry : entries) {
-    if (bthomeMeasurementAvailable(entry.bit)) {
-      entry.menu->operator[](entry.menuIndex).enable();
-    } else {
-      entry.menu->operator[](entry.menuIndex).disable();
-    }
+    entry.menu->operator[](entry.menuIndex).enable();
   }
-  bthomeSensorsMenu[0].enable();  // Core always includes battery.
-  if (bthomeMeasurementAvailable(BTHOME_SEL_PM25) ||
-      bthomeMeasurementAvailable(BTHOME_SEL_PRESS) ||
-      bthomeMeasurementAvailable(BTHOME_SEL_PM10) ||
-      bthomeMeasurementAvailable(BTHOME_SEL_VOLTAGE)) {
-    bthomeSensorsMenu[1].enable();
-  } else {
-    bthomeSensorsMenu[1].disable();
-  }
-  if (bthomeMeasurementAvailable(BTHOME_SEL_PM1) ||
-      bthomeMeasurementAvailable(BTHOME_SEL_PM4)) {
-    bthomeSensorsMenu[2].enable();
-  } else {
-    bthomeSensorsMenu[2].disable();
-  }
+  bthomeSensorsMenu[0].enable();
+  bthomeSensorsMenu[1].enable();
+  bthomeSensorsMenu[2].enable();
 }
 
 MENU(bthomeConfigMenu, "BTHome", doNothing, noEvent, wrapStyle

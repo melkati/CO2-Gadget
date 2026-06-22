@@ -222,16 +222,31 @@ def _bthome_available(key: str) -> bool:
     }.get(key, key)
     return bool(sensor_enabled.get(sensor_key, False))
 
+def _bthome_valid(key: str) -> bool:
+    if not _bthome_available(key):
+        return False
+    if key == "co2":
+        return 400 <= sensors["co2"] <= 5000
+    if key == "temperature":
+        return -40 <= sensors["temperature"] <= 85
+    if key == "humidity":
+        return 0 <= sensors["humidity"] <= 100
+    if key == "pressure":
+        return 300 <= sensors["pressure"] <= 1100
+    if key == "voltage":
+        return 1 <= sensors["batteryVoltage"] <= 6
+    return True
+
 
 def _bthome_fit(encrypted: bool) -> set:
-    """Return selected+available keys that fit, matching firmware priority."""
+    """Return selected, available, valid keys that fit firmware priority."""
     overhead = 9 if encrypted else 3
     budget = max(0, BTHOME_BUDGET_MAX - overhead)
     used = 0
     included = set()
     for descriptor in sorted(BTHOME_DESCRIPTORS, key=lambda item: item["prio"]):
         key = descriptor["key"]
-        if not bthome_selected.get(key, False) or not _bthome_available(key):
+        if not bthome_selected.get(key, False) or not _bthome_valid(key):
             continue
         if used + descriptor["bytes"] <= budget:
             used += descriptor["bytes"]
@@ -240,7 +255,6 @@ def _bthome_fit(encrypted: bool) -> set:
 
 
 def _bthome_descriptors_json() -> list:
-    _clear_unavailable_bthome_selections()
     included_plain = _bthome_fit(False)
     included_encrypted = _bthome_fit(True)
     result = []
@@ -249,6 +263,7 @@ def _bthome_descriptors_json() -> list:
         key = descriptor["key"]
         descriptor.update({
             "available": _bthome_available(key),
+            "valid": _bthome_valid(key),
             "selected": bool(bthome_selected.get(key, False)),
             "willSendPlain": key in included_plain,
             "willSendEnc": key in included_encrypted,
@@ -260,20 +275,11 @@ def _bthome_descriptors_json() -> list:
 def _apply_bthome_selection(selection) -> None:
     """Apply the same partial {key: bool} update accepted by the firmware."""
     if not isinstance(selection, dict):
-        _clear_unavailable_bthome_selections()
         return
     known_keys = {descriptor["key"] for descriptor in BTHOME_DESCRIPTORS}
     for key, selected in selection.items():
         if key in known_keys and isinstance(selected, bool):
-            bthome_selected[key] = selected and _bthome_available(key)
-    _clear_unavailable_bthome_selections()
-
-
-def _clear_unavailable_bthome_selections() -> None:
-    for descriptor in BTHOME_DESCRIPTORS:
-        key = descriptor["key"]
-        if not _bthome_available(key):
-            bthome_selected[key] = False
+            bthome_selected[key] = selected
 
 
 def _default_threshold() -> dict:
@@ -768,11 +774,20 @@ def api_features():
 @app.route("/getActualSettingsAsJson")
 def api_settings():
     out = dict(prefs)
+    out.pop("bthomeBindKey", None)
     out["supportBTHomeBLE"] = features.get("BTHomeBLE", False)
     if features.get("BTHomeBLE", False):
         out["bthomeSensors"] = _bthome_descriptors_json()
         out["bthomeBudgetMax"] = BTHOME_BUDGET_MAX
     return jsonify(out)
+
+@app.route("/getBTHomeBindKey", methods=["POST"])
+def api_bthome_bind_key():
+    response = jsonify({"bthomeBindKey": prefs["bthomeBindKey"]})
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 @app.route("/savePreferences", methods=["POST"])
@@ -1002,7 +1017,6 @@ def emu_set_sensor_availability():
     for key, value in data.items():
         if key in sensor_enabled and isinstance(value, bool):
             sensor_enabled[key] = value
-    _clear_unavailable_bthome_selections()
     return jsonify(sensor_enabled)
 
 

@@ -910,6 +910,9 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
 
 bool handleLowPowerSensors() {
     bool readOK = false;
+#ifdef SUPPORT_BTHOME_BLE
+    bthomeFreshMeasurements = 0;
+#endif
     bool blockingMode = true;
     // Non-blocking mode for timer wakes so the wake cycle ends quickly
     // (~0.3s) when sensor data isn't ready, instead of burning ~14 mA for ~5s.
@@ -947,6 +950,22 @@ bool handleLowPowerSensors() {
 #endif
         sensors.init();
     }
+#ifdef SUPPORT_BTHOME_BLE
+    if (readOK) {
+        switch (deepSleepData.co2Sensor) {
+            case CO2Sensor_SCD30:
+            case CO2Sensor_SCD40:
+            case CO2Sensor_SCD41:
+                bthomeFreshMeasurements |= BTHOME_SEL_CO2 | BTHOME_SEL_TEMP | BTHOME_SEL_HUM;
+                break;
+            case CO2Sensor_CM1106SL_NS:
+                bthomeFreshMeasurements |= BTHOME_SEL_CO2;
+                break;
+            default:
+                break;
+        }
+    }
+#endif
     return (readOK);
 }
 

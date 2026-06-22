@@ -1680,6 +1680,25 @@ void initWebServer() {
         }
     });
 
+#ifdef SUPPORT_BTHOME_BLE
+    server.on("/getBTHomeBindKey", HTTP_POST, [](AsyncWebServerRequest *request) {
+        preferences.begin("CO2-Gadget", false);
+        ensureBTHomeBindKey();
+        preferences.end();
+
+        JsonDocument doc;
+        doc["bthomeBindKey"] = bthomeBindKey;
+        String body;
+        serializeJson(doc, body);
+
+        AsyncWebServerResponse *response = request->beginResponse(200, "application/json", body);
+        response->addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+        response->addHeader("Pragma", "no-cache");
+        response->addHeader("Expires", "0");
+        request->send(response);
+    });
+#endif
+
     server.on("/getWifiNetworksAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             String wifiNetworksJson = getWifiNetworksAsJson();

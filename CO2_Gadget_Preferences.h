@@ -744,9 +744,6 @@ String getActualSettingsAsJson(bool includePasswords = false) {
     doc["activeBTHome"] = activeBTHome;
     doc["bthomeEncryption"] = bthomeEncryption;
     doc["bthomeCounter"] = bthomeCounter;
-    if (includePasswords) {
-        doc["bthomeBindKey"] = bthomeBindKey;
-    }
     appendBTHomeSensorsJson(doc);  // [BTHOME-SENSEL] descriptor list + budget for the UI
 #else
     doc["supportBTHomeBLE"] = false;
@@ -880,6 +877,10 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     Serial.println(debugMessage);
 #endif
 
+#ifdef SUPPORT_BLE
+    bool previousEnableBLE = enableBLE;
+    bool previousActiveBLE = activeBLE;
+#endif
 #ifdef SUPPORT_BTHOME_BLE
     bool previousActiveBTHome = activeBTHome;
     bool previousBTHomeEncryption = bthomeEncryption;
@@ -1253,9 +1254,16 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
     }
 
     putPreferences();
+#ifdef SUPPORT_BLE
+    bool bleSettingsChanged = (previousEnableBLE != enableBLE) || (previousActiveBLE != activeBLE);
 #ifdef SUPPORT_BTHOME_BLE
-    if ((previousActiveBTHome != activeBTHome) || (previousBTHomeEncryption != bthomeEncryption) || (previousBTHomeBindKey != bthomeBindKey) || (previousBTHomeSensors != bthomeSensors)) {
-        refreshBTHomeBLESettings("BTHome settings changed from Web UI", true);
+    bleSettingsChanged = bleSettingsChanged || (previousActiveBTHome != activeBTHome) ||
+                         (previousBTHomeEncryption != bthomeEncryption) ||
+                         (previousBTHomeBindKey != bthomeBindKey) ||
+                         (previousBTHomeSensors != bthomeSensors);
+#endif
+    if (bleSettingsChanged) {
+        refreshBLEOutputs("BLE settings changed from Web UI", true);
     }
 #endif
     return true;

@@ -49,6 +49,7 @@ void publishMQTTLogData(String logData);            // Defined in CO2_Gadget_MQT
 void putPreferences();                              // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
 void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
+void refreshBLEOutputs(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
 void refreshBTHomeBLESettings(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
 #ifdef SUPPORT_BTHOME_BLE
 uint32_t getBTHomeCounterNVSValue();                // Defined in CO2_Gadget_BLE.h
@@ -117,6 +118,9 @@ enum : uint32_t {
 };
 #define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_PRESS | BTHOME_SEL_CO2 | BTHOME_SEL_PM25 | BTHOME_SEL_PM10))
 uint32_t bthomeSensors = BTHOME_DEFAULT_SENSOR_MASK;
+// Runtime-only mask of measurements populated during this boot/wake. The
+// durable bthomeSensors mask remains the user's desired selection.
+uint32_t bthomeFreshMeasurements = 0;
 #else
 constexpr bool activeBTHome = false;
 constexpr bool bthomeEncryption = false;
@@ -881,9 +885,6 @@ void initHighPerformanceMode() {
     initBLE();
 #endif
     initSensors();
-#ifdef SUPPORT_BTHOME_BLE
-    sanitizeBTHomeSensorSelection(true, "Startup sensor detection");
-#endif
     initWifi();
     wifiChanged = false;
 #ifdef SUPPORT_ESPNOW

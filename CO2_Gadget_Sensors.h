@@ -81,6 +81,23 @@ void onSensorDataOk() {
     if (sensors.isUnitRegistered(UNIT::PRESS)) {
         pressureHpa = sensors.getPressure();
     }
+#ifdef SUPPORT_BTHOME_BLE
+    if (sensors.isUnitRegistered(UNIT::CO2)) {
+        bthomeFreshMeasurements |= BTHOME_SEL_CO2;
+    }
+    if (sensors.isUnitRegistered(UNIT::TEMP) || sensors.isUnitRegistered(UNIT::CO2TEMP) || sensors.isUnitRegistered(UNIT::CO2)) {
+        bthomeFreshMeasurements |= BTHOME_SEL_TEMP;
+    }
+    if (sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) || sensors.isUnitRegistered(UNIT::CO2)) {
+        bthomeFreshMeasurements |= BTHOME_SEL_HUM;
+    }
+    if (sensors.isUnitRegistered(UNIT::PRESS)) {
+        bthomeFreshMeasurements |= BTHOME_SEL_PRESS;
+    }
+    if (sensors.isUnitRegistered(UNIT::PM25)) {
+        bthomeFreshMeasurements |= BTHOME_SEL_PM1 | BTHOME_SEL_PM25 | BTHOME_SEL_PM4 | BTHOME_SEL_PM10;
+    }
+#endif
     newReadingsAvailable = true;
     // Serial.printf("-->[SENS] Free heap: %d\n", ESP.getFreeHeap());
 }
