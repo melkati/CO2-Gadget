@@ -215,12 +215,51 @@ prefs: dict = {
 }
 
 
+# Emulate the device operating mode so the low-power-aware availability/annotation
+# can be exercised without hardware. Mirrors the firmware:
+#   - low-power enabled  -> PM is never advertised on a deep-sleep wake
+#   - pressure on wake    -> only when built with SUPPORT_LOW_POWER_PRESSURE
+emu_low_power: bool = False        # emulator-panel override toggle
+emu_low_power_pressure: bool = False  # mirrors the SUPPORT_LOW_POWER_PRESSURE build flag
+
+_PM_KEYS = {"pm1", "pm25", "pm4", "pm10"}
+
+
+def _emu_low_power_enabled() -> bool:
+    """Low-power active when the panel toggle is on OR the saved lowPowerMode
+    preference is non-zero (mirrors firmware deepSleepData.lowPowerMode != HIGH_PERFORMANCE)."""
+    if emu_low_power:
+        return True
+    try:
+        return int(prefs.get("lowPowerMode", 0) or 0) != 0
+    except (TypeError, ValueError):
+        return str(prefs.get("lowPowerMode", "0")).strip() not in ("0", "", "None")
+
+
 def _bthome_available(key: str) -> bool:
     sensor_key = {
         "battery": "batteryVoltage",
         "voltage": "batteryVoltage",
     }.get(key, key)
-    return bool(sensor_enabled.get(sensor_key, False))
+    present = bool(sensor_enabled.get(sensor_key, False))
+    if _emu_low_power_enabled():
+        if key in _PM_KEYS:
+            return False
+        if key == "pressure" and not emu_low_power_pressure:
+            return False
+    return present
+
+
+def _bthome_unavailable_reason(key: str) -> str:
+    """"" when available; "lowpower" when present but blocked by low-power mode;
+    otherwise "notdetected"."""
+    if _bthome_available(key):
+        return ""
+    sensor_key = {"battery": "batteryVoltage", "voltage": "batteryVoltage"}.get(key, key)
+    present = bool(sensor_enabled.get(sensor_key, False))
+    if _emu_low_power_enabled() and present and (key in _PM_KEYS or (key == "pressure" and not emu_low_power_pressure)):
+        return "lowpower"
+    return "notdetected"
 
 def _bthome_valid(key: str) -> bool:
     if not _bthome_available(key):
@@ -264,6 +303,7 @@ def _bthome_descriptors_json() -> list:
         descriptor.update({
             "available": _bthome_available(key),
             "valid": _bthome_valid(key),
+            "unavailableReason": _bthome_unavailable_reason(key),
             "selected": bool(bthome_selected.get(key, False)),
             "willSendPlain": key in included_plain,
             "willSendEnc": key in included_encrypted,
@@ -409,6 +449,12 @@ _EMU_INJECT = r"""
   <div class="__emu_sec">
     <div class="__emu_sec_title">Compiled Features</div>
     <div id="__emu_feat_list"></div>
+  </div>
+
+  <div class="__emu_sec">
+    <div class="__emu_sec_title">Device Mode</div>
+    <label class="__emu_sensor_name"><input type="checkbox" id="__emu_lowpower">Low-power (deep sleep) mode</label>
+    <label class="__emu_sensor_name"><input type="checkbox" id="__emu_lowpower_press">SUPPORT_LOW_POWER_PRESSURE (read pressure on wake)</label>
   </div>
 
   <div class="__emu_sec">
@@ -714,20 +760,49 @@ _EMU_INJECT = r"""
       .then(r => r.json())
       .then(() => {
         setStatus(key + ' → ' + (this.checked ? 'detected' : 'not detected'), 'ok');
-        if (typeof renderBTHomeSensors === 'function' &&
-            typeof bthomeSensorDescriptors !== 'undefined') {
-          return _origFetch('/getActualSettingsAsJson')
-            .then(r => r.json())
-            .then(settings => {
-              bthomeSensorDescriptors = Array.isArray(settings.bthomeSensors)
-                ? settings.bthomeSensors : [];
-              renderBTHomeSensors();
-            });
-        }
+        return refreshBTHomeSensorList();  // preserves current selections
       })
       .catch(e => setStatus('Availability error: ' + e.message, 'err'));
     });
   });
+
+  // ── Low-power mode toggle (mirrors firmware deepSleepData.lowPowerMode) ──────
+  // Re-fetch descriptors to refresh available/valid/willSend, but PRESERVE the
+  // user's current (possibly unsaved) checkbox selections — otherwise toggling
+  // low-power or a sensor's availability would reset selections to the saved
+  // defaults (e.g. re-checking PM2.5/PM10).
+  function refreshBTHomeSensorList() {
+    if (typeof renderBTHomeSensors !== 'function' || typeof bthomeSensorDescriptors === 'undefined') {
+      return Promise.resolve();
+    }
+    const current = (typeof collectBTHomeSensorSelection === 'function') ? collectBTHomeSensorSelection() : {};
+    return _origFetch('/getActualSettingsAsJson')
+      .then(r => r.json())
+      .then(settings => {
+        const descs = Array.isArray(settings.bthomeSensors) ? settings.bthomeSensors : [];
+        bthomeSensorDescriptors = descs.map((d) =>
+          (d && d.key in current) ? Object.assign({}, d, { selected: current[d.key] }) : d);
+        renderBTHomeSensors();
+      });
+  }
+
+  function postLowPower() {
+    const lp  = document.getElementById('__emu_lowpower').checked;
+    const lpp = document.getElementById('__emu_lowpower_press').checked;
+    _origFetch('/emu/low-power', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lowPower: lp, lowPowerPressure: lpp }),
+    })
+    .then(r => r.json())
+    .then(() => {
+      setStatus('Low-power ' + (lp ? 'on' : 'off') + (lpp ? ' + pressure-on-wake' : ''), 'ok');
+      return refreshBTHomeSensorList();
+    })
+    .catch(e => setStatus('Low-power error: ' + e.message, 'err'));
+  }
+  document.getElementById('__emu_lowpower').addEventListener('change', postLowPower);
+  document.getElementById('__emu_lowpower_press').addEventListener('change', postLowPower);
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
   _origFetch('/emu/state')
@@ -735,6 +810,8 @@ _EMU_INJECT = r"""
     .then(d => {
       buildFeatureList(d.features);
       syncSlidersFromState(d.sensors, d.sensorEnabled);
+      document.getElementById('__emu_lowpower').checked = !!d.lowPower;
+      document.getElementById('__emu_lowpower_press').checked = !!d.lowPowerPressure;
       setStatus('Ready', 'ok');
     })
     .catch(e => setStatus('Load error: ' + e.message, 'err'));
@@ -990,7 +1067,22 @@ def emu_state():
         "features": features,
         "sensors": sensors,
         "sensorEnabled": sensor_enabled,
+        "lowPower": emu_low_power,
+        "lowPowerPressure": emu_low_power_pressure,
     })
+
+
+@app.route("/emu/low-power", methods=["POST"])
+def emu_set_low_power():
+    """Toggle emulated low-power mode (and the SUPPORT_LOW_POWER_PRESSURE flag) so
+    the low-power-aware BTHome availability/annotation is testable without hardware."""
+    global emu_low_power, emu_low_power_pressure
+    data = request.get_json(force=True, silent=True) or {}
+    if isinstance(data.get("lowPower"), bool):
+        emu_low_power = data["lowPower"]
+    if isinstance(data.get("lowPowerPressure"), bool):
+        emu_low_power_pressure = data["lowPowerPressure"]
+    return jsonify({"lowPower": emu_low_power, "lowPowerPressure": emu_low_power_pressure})
 
 
 @app.route("/emu/features", methods=["POST"])
