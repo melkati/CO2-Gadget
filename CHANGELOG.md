@@ -6,13 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.011-beta (branch: development)
+## [Unreleased] — v0.16.012-beta (branch: development)
 
 > **Note:** Versioning reset as of 10 May 2026. The previous v0.14.x line is superseded by v0.15.x on this branch.
 
 ### Fixed
 
 #### Deep sleep & power
+- **#283** — SCD41 low-power sensor readiness: replaced blocking `measureSingleShot(false)` with non-blocking `measureSingleShot(true)` before deep sleep to eliminate hidden 5-second delay; consume prepared measurement immediately on next wake, skipping redundant 5-second light sleep when data is already ready; fall back to fresh measurement when no prepared result exists
+- **#283** — CM1106SL-NS RDY polarity fix: corrected active-low RDY wait logic (was waiting while LOW, now waits while HIGH); added 2-second timeout; power-down sensor after communication (EN LOW); validate CO2 > 0 before accepting reading
+- **#283** — SCD40/SCD30 readiness optimization: skip readiness wait when data is already available, avoiding unnecessary light-sleep cycles
 - **#249** — `measurementInterval` propagation: centralized `applyMeasurementIntervalToSensors()` as single source of truth; web handler now applies changes immediately; RTC persistence (`RTC_DATA_ATTR`) survives deep sleep; CM1106 low-power path receives measurement period; JSON export deduplicated (`measInterval` vs `measurementInterval`)
 - **#276** — `sendMQTTOnWake` silently fails when `activeWifiOnWake` is disabled: auto-enable WiFi in `doSavePreferences()` before persisting to NVS
 - **SCD41 warmup delay**: added 5-second warmup delay before first `sensors.loop()` call to ensure valid readings on cold boot

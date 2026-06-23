@@ -116,7 +116,11 @@ enum : uint32_t {
     BTHOME_SEL_PM1     = 1u << 8,  // no standard BTHome object (non-native)
     BTHOME_SEL_PM4     = 1u << 9,  // no standard BTHome object (non-native)
 };
-#define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_PRESS | BTHOME_SEL_CO2 | BTHOME_SEL_PM25 | BTHOME_SEL_PM10))
+// Default selection = the "core" measurements only (CO2, temperature, humidity,
+// battery). Optional sensors (pressure, PM2.5/PM10, battery voltage) are opt-in:
+// pre-selecting them would show as "selected but not detected" on the many devices
+// that lack that hardware. Only applies on first boot; a saved selection wins.
+#define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_CO2))
 uint32_t bthomeSensors = BTHOME_DEFAULT_SENSOR_MASK;
 // Runtime-only mask of measurements populated during this boot/wake. The
 // durable bthomeSensors mask remains the user's desired selection.

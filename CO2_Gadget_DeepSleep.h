@@ -392,7 +392,10 @@ void toDeepSleep() {
         // during deep sleep. On the next wake, scd41HandleFromDeepSleep()
         // consumes this prepared result immediately and skips its 5-second
         // conversion light sleep. The reading is therefore one sleep cycle old.
-        sensors.scd4x.measureSingleShot(true);
+        uint16_t error = sensors.scd4x.measureSingleShot(true);
+        if (error != 0) {
+            Serial.println("-->[DEEP][ERROR] Failed to start SCD41 single-shot before deep sleep: " + String(error));
+        }
     } else if ((deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD40))) {
         sensors.scd4x.stopPeriodicMeasurement();
         sensors.scd4x.startLowPowerPeriodicMeasurement();
@@ -617,7 +620,6 @@ void reInitI2C() {
  */
 bool cm1106HandleFromDeepSleep() {
     const uint32_t readyTimeoutMs = 2000;
-    const uint32_t readyWaitStartMs = millis();
 
     pinMode(CM1106_ENABLE_PIN, OUTPUT);
     digitalWrite(CM1106_ENABLE_PIN, HIGH);
@@ -632,6 +634,9 @@ bool cm1106HandleFromDeepSleep() {
     applyMeasurementIntervalToSensors();
 
     // RDY LOW means the measurement is complete. Wait only while it is HIGH.
+    // Start timeout accounting here so sensor/driver initialization time does
+    // not consume the hardware-ready wait budget.
+    const uint32_t readyWaitStartMs = millis();
     while (digitalRead(CM1106_READY_PIN) == HIGH) {
         if (millis() - readyWaitStartMs >= readyTimeoutMs) {
             Serial.println("-->[DEEP][ERROR] CM1106SL-NS RDY timeout after " + String(readyTimeoutMs) + " ms");
@@ -657,8 +662,9 @@ bool cm1106HandleFromDeepSleep() {
  * @brief Consume a pending SCD41 result or create one during this wake.
  *
  * get_data_ready_status reports whether periodic or single-shot data is ready
- * for read-out. If no unread result exists, measure_single_shot is started and
- * the ESP32 light-sleeps during its 5000 ms conversion.
+ * for read-out. Blocking callers start measure_single_shot and light-sleep
+ * during its 5000 ms conversion when no unread result exists. Non-blocking
+ * timer wakes return quickly and let toDeepSleep() prepare the next result.
  * SCD4x datasheet sections 3.9.2 and 3.11.1:
  * https://sensirion.com/media/documents/48C4B7FB/67FE0194/CD_DS_SCD4x_Datasheet_D1.pdf
  *
@@ -682,6 +688,11 @@ bool scd41HandleFromDeepSleep(bool blockingMode = true) {
     Serial.println("() Interactive mode: " + String(interactiveMode) + " Blocking mode: " + String(blockingMode) + " Data ready: " + String(dataReady));
 
     if (!dataReady) {
+        if (!blockingMode && !interactiveMode) {
+            Serial.println("-->[DEEP] SCD41 data not ready on timer wake; returning without conversion wait");
+            return (false);
+        }
+
         // The forked driver uses true to send measure_single_shot without its
         // internal blocking delay. The ESP32 then light-sleeps for conversion.
         error = sensors.scd4x.measureSingleShot(true);

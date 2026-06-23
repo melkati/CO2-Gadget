@@ -120,14 +120,15 @@ BTHOME_DESCRIPTORS = (
     {"key": "pm4",         "label": "PM4.0",           "obj": 0xEF, "bytes": 3, "prio": 10, "group": "nonnative", "native": False},
 )
 
+# Mirrors BTHOME_DEFAULT_SENSOR_MASK: core measurements only (optional sensors opt-in).
 BTHOME_DEFAULT_SELECTED = {
     "battery": True,
     "temperature": True,
     "humidity": True,
-    "pressure": True,
+    "pressure": False,
     "voltage": False,
-    "pm25": True,
-    "pm10": True,
+    "pm25": False,
+    "pm10": False,
     "co2": True,
     "pm1": False,
     "pm4": False,

@@ -2204,7 +2204,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(rebootMenu)
   ,EXIT("<Exit"));
 
-#define MAX_DEPTH 4
+#define MAX_DEPTH 7
 
 // define serial input device
 serialIn serial(Serial);
