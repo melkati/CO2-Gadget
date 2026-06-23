@@ -304,6 +304,7 @@ typedef struct {
     float lastTemperatureValue;
     float lastHumidityValue;
     bool activeBLEOnWake = true;
+    bool hasPressureOnWake;  // A pressure sensor (BME280) was present at sleep; gates the SUPPORT_LOW_POWER_PRESSURE wake read
     bool activeWifiOnWake;
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;

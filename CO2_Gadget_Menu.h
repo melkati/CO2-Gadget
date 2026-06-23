@@ -510,7 +510,13 @@ result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
       bool selected = (bthomeSensors & m.bit) != 0;
       String status = "available";
       if (!bthomeMeasurementAvailable(m.bit)) {
-        status = selected ? "Not detected; selection retained" : "not detected";
+        // Mirror the Web UI: distinguish low-power-blocked (present, not sampled on
+        // wake) from genuinely-absent hardware.
+        if (strcmp(bthomeUnavailableReason(m.bit), "lowpower") == 0) {
+          status = "Not advertised in low-power mode; selection retained";
+        } else {
+          status = selected ? "Not detected; selection retained" : "not detected";
+        }
       } else if (selected && !bthomeMeasurementValid(m.bit)) {
         status = "No valid reading; not currently sent";
       } else if (selected && !(included & m.bit)) {
@@ -550,12 +556,12 @@ MENU(bthomeSensorsMenu, "Publish Sensors", bthomeSensorsMenuCb, enterEvent, wrap
   ,SUBMENU(bthomeNonnativeSensorsMenu)
   ,EXIT("<Back"));
 
-// Keep every BTHome sensor toggle selectable. Availability is intentionally NOT
-// used to gate selectability: a desired sensor that is temporarily undetected
-// stays selected and resumes automatically (see bthomeMeasurementAvailable()),
-// so the menu must let the user pick it even while it is not currently present.
-// Availability/validity is surfaced as status text in bthomeSensorsMenuCb()
-// instead. The `bit` column documents which sensor each menu slot maps to.
+// Gate each BTHome sensor toggle to match the Web UI: a toggle is selectable when
+// the measurement is available, low-power-blocked (present, just not sampled on a
+// deep-sleep wake), or already selected (so a retained selection can still be
+// dropped). A not-detected, unselected sensor is disabled — you can't select
+// absent hardware. Re-evaluated on each menu enter, so a sensor that appears later
+// re-enables. Distinct status text is printed in bthomeSensorsMenuCb().
 void updateBTHomeSensorMenuAvailability() {
   const struct {
     menuNode *menu;
@@ -574,8 +580,14 @@ void updateBTHomeSensorMenuAvailability() {
     {&bthomeNonnativeSensorsMenu, 1, BTHOME_SEL_PM4},
   };
   for (const auto &entry : entries) {
-    (void)entry.bit;  // documented mapping; selectability is not availability-gated
-    entry.menu->operator[](entry.menuIndex).enable();
+    bool selected = (bthomeSensors & entry.bit) != 0;
+    bool lowPower = strcmp(bthomeUnavailableReason(entry.bit), "lowpower") == 0;
+    bool allowToggle = bthomeMeasurementAvailable(entry.bit) || lowPower || selected;
+    if (allowToggle) {
+      entry.menu->operator[](entry.menuIndex).enable();
+    } else {
+      entry.menu->operator[](entry.menuIndex).disable();
+    }
   }
   bthomeSensorsMenu[0].enable();
   bthomeSensorsMenu[1].enable();

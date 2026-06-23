@@ -387,11 +387,32 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
             return sensors.isUnitRegistered(UNIT::HUM) || sensors.isUnitRegistered(UNIT::CO2HUM) ||
                    retainedCO2TempHum;
         case BTHOME_SEL_PRESS:
+#ifdef SUPPORT_LOW_POWER
+            // On a deep-sleep wake the full sensor stack is not re-initialised.
+            // Pressure is only obtainable on wake when the firmware is built to
+            // re-read the BME280 (SUPPORT_LOW_POWER_PRESSURE); otherwise it is
+            // unavailable while low-power mode is enabled.
+            if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
+#ifdef SUPPORT_LOW_POWER_PRESSURE
+                return deepSleepData.hasPressureOnWake || sensors.isUnitRegistered(UNIT::PRESS);
+#else
+                return false;
+#endif
+            }
+#endif
             return sensors.isUnitRegistered(UNIT::PRESS);
         case BTHOME_SEL_PM25:
         case BTHOME_SEL_PM10:
         case BTHOME_SEL_PM1:
         case BTHOME_SEL_PM4:
+#ifdef SUPPORT_LOW_POWER
+            // Particulate sensors need a multi-second fan warm-up that does not
+            // fit the ~0.3 s deep-sleep wake budget, so they are never sampled on
+            // wake. Report unavailable whenever low-power mode is enabled.
+            if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
+                return false;
+            }
+#endif
             return sensors.isUnitRegistered(UNIT::PM25);
         case BTHOME_SEL_BATTERY:
             return true;  // battery level is always encodable
@@ -400,6 +421,39 @@ bool bthomeMeasurementAvailable(uint32_t bit) {
         default:
             return false;
     }
+}
+
+// Reason a measurement is currently unavailable, for the UI/serial annotation.
+// Returns "" when available, "lowpower" when the hardware is present but the
+// active low-power mode blocks sampling it on a deep-sleep wake, otherwise
+// "notdetected". Lets the UI say "not advertised in low-power mode" instead of
+// the misleading "not detected" for a sensor the device actually has.
+const char *bthomeUnavailableReason(uint32_t bit) {
+    if (bthomeMeasurementAvailable(bit)) {
+        return "";
+    }
+#ifdef SUPPORT_LOW_POWER
+    if (deepSleepData.lowPowerMode != HIGH_PERFORMANCE) {
+        bool present = false;
+        switch (bit) {
+            case BTHOME_SEL_PM25:
+            case BTHOME_SEL_PM10:
+            case BTHOME_SEL_PM1:
+            case BTHOME_SEL_PM4:
+                present = sensors.isUnitRegistered(UNIT::PM25);
+                break;
+            case BTHOME_SEL_PRESS:
+                present = sensors.isUnitRegistered(UNIT::PRESS) || deepSleepData.hasPressureOnWake;
+                break;
+            default:
+                break;
+        }
+        if (present) {
+            return "lowpower";
+        }
+    }
+#endif
+    return "notdetected";
 }
 
 bool bthomeMeasurementFresh(uint32_t bit) {
@@ -591,6 +645,7 @@ void appendBTHomeSensorsJson(JsonDocument &doc) {
         bool valid = available && bthomeMeasurementValid(m.bit);
         o["available"] = available;
         o["valid"] = valid;
+        o["unavailableReason"] = bthomeUnavailableReason(m.bit);  // "" | "lowpower" | "notdetected"
         o["selected"] = (bthomeSensors & m.bit) != 0;
         o["willSendPlain"] = (includedPlain & m.bit) != 0;
         o["willSendEnc"] = (includedEnc & m.bit) != 0;

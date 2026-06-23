@@ -965,6 +965,25 @@ bool handleLowPowerSensors() {
                 break;
         }
     }
+#if defined(SUPPORT_LOW_POWER_PRESSURE)
+    // Pressure is cheap to obtain on wake (a single forced I2C read), unlike PM
+    // which needs a multi-second fan warm-up. Re-init the BME280 and take one
+    // forced sample so the sensor returns to sleep between wakes, then mark
+    // pressure fresh. I2C is already up from the CO2 sensor read above.
+    if (readOK && deepSleepData.hasPressureOnWake) {
+        if (sensors.bme280.begin() || sensors.bme280.begin(BME280_ADDRESS_ALTERNATE)) {
+            sensors.bme280.setSampling(Adafruit_BME280::MODE_FORCED,
+                                       Adafruit_BME280::SAMPLING_X1,    // temperature
+                                       Adafruit_BME280::SAMPLING_X1,    // pressure
+                                       Adafruit_BME280::SAMPLING_NONE,  // humidity
+                                       Adafruit_BME280::FILTER_OFF);
+            if (sensors.bme280.takeForcedMeasurement()) {
+                pressureHpa = sensors.bme280.readPressure() / 100.0f;  // Pa -> hPa
+                bthomeFreshMeasurements |= BTHOME_SEL_PRESS;
+            }
+        }
+    }
+#endif
 #endif
     return (readOK);
 }

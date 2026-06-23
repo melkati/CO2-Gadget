@@ -303,13 +303,17 @@ function bthomeComputeFit(encrypted) {
             dropped.push(d);
         }
     });
+    const unavailableAll = allSelected.filter((d) => !d.available);
     return {
         used,
         budget,
         fitted,
         selected: allSelected.length,
         eligible: items.length,
-        unavailable: allSelected.filter((d) => !d.available),
+        // Split unavailable so the hint isn't ambiguous: "not detected" (no sensor)
+        // vs "not advertised in low-power mode" (present, but blocked on wake).
+        unavailable: unavailableAll.filter((d) => d.unavailableReason !== 'lowpower'),
+        lowpower: unavailableAll.filter((d) => d.unavailableReason === 'lowpower'),
         invalid: allSelected.filter((d) => d.available && d.valid === false),
         dropped
     };
@@ -324,6 +328,7 @@ function updateBTHomeBudgetHint() {
     let msg = 'Payload: ' + fit.used + '/' + fit.budget + ' bytes; ' + fit.fitted + ' of ' + fit.eligible +
               ' currently eligible values fit (' + (encrypted ? 'encrypted' : 'plain') + ').';
     if (fit.unavailable.length) msg += ' Not detected; selection retained: ' + fit.unavailable.map((d) => d.label).join(', ') + '.';
+    if (fit.lowpower.length) msg += ' Not advertised in low-power mode; selection retained: ' + fit.lowpower.map((d) => d.label).join(', ') + '.';
     if (fit.invalid.length) msg += ' No valid reading: ' + fit.invalid.map((d) => d.label).join(', ') + '.';
     if (fit.dropped.length) msg += ' Selected but omitted by payload budget: ' + fit.dropped.map((d) => d.label).join(', ') + '.';
     hint.textContent = msg;
@@ -365,6 +370,9 @@ function enforceBTHomeBudget() {
     if (fit.unavailable.length) {
         msg += ' Not detected; selection retained: ' + fit.unavailable.map((d) => d.label).join(', ') + '.';
     }
+    if (fit.lowpower.length) {
+        msg += ' Not advertised in low-power mode; selection retained: ' + fit.lowpower.map((d) => d.label).join(', ') + '.';
+    }
     if (fit.invalid.length) {
         msg += ' No valid reading; not currently sent: ' + fit.invalid.map((d) => d.label).join(', ') + '.';
     }
@@ -390,6 +398,8 @@ function renderBTHomeSensors() {
     const list = document.getElementById('bthomeSensorsList');
     if (!list) return;
     list.innerHTML = '';
+    let lowPowerNote = false;    // show the "*" footnote only when something is low-power-blocked
+    let notDetectedNote = false; // show the "†" footnote only when a sensor is absent
     const groups = [
         { key: 'core', label: 'Core', tip: 'Primary native BTHome measurements. These have the highest payload priority.' },
         { key: 'optional', label: 'Optional', tip: 'Additional native BTHome measurements. Temporarily unavailable selections are retained and resume automatically.' },
@@ -401,8 +411,12 @@ function renderBTHomeSensors() {
         groups.forEach((group) => {
             const descriptors = bthomeSensorDescriptors
                 .filter((d) => d.group === group.key)
+                // Hide a not-detected sensor unless it is low-power-blocked or was
+                // previously selected: an absent, unselected sensor has nothing to
+                // show or do, so it just clutters the list.
+                .filter((d) => d.available || d.unavailableReason === 'lowpower' || d.selected)
                 .sort((a, b) => a.prio - b.prio);
-            if (descriptors.length === 0) return;
+            if (descriptors.length === 0) return;  // skip groups left empty after hiding
 
             const section = document.createElement('section');
             section.className = 'bthome-sensor-group';
@@ -429,7 +443,27 @@ function renderBTHomeSensors() {
             cb.addEventListener('change', enforceBTHomeBudget);
             wrapper.appendChild(cb);
             let suffix = ' (' + d.bytes + ' B)';
-            if (!d.available) suffix += ' (not detected; selection retained)';
+            if (!d.available) {
+                if (d.unavailableReason === 'lowpower') {
+                    // Compact marker + footnote (full text is too wide, esp. on mobile).
+                    wrapper.classList.add('lowpower');
+                    suffix += ' *';
+                    lowPowerNote = true;
+                } else {
+                    // Not detected (hardware missing): only reaches here when the
+                    // sensor was previously selected (unselected ones are filtered
+                    // out above). Distinct red style + "†" to separate it from the
+                    // amber low-power case. Dropping is one-way: once unchecked it
+                    // locks, so an absent sensor can't be re-added until detected.
+                    wrapper.classList.add('notdetected');
+                    cb.disabled = !d.selected;
+                    if (!cb.disabled) {
+                        cb.addEventListener('change', function () { if (!this.checked) this.disabled = true; });
+                    }
+                    suffix += ' †';
+                    notDetectedNote = true;
+                }
+            }
             else if (d.valid === false) suffix += ' (no valid reading; not currently sent)';
             if (d.native === false || d.group === 'nonnative') suffix += ' (no BTHome object — not parsed by HA)';
             wrapper.appendChild(document.createTextNode(' ' + d.label + suffix));
@@ -442,6 +476,18 @@ function renderBTHomeSensors() {
             section.appendChild(items);
             list.appendChild(section);
         });
+    }
+    if (notDetectedNote) {
+        const note = document.createElement('div');
+        note.className = 'bthome-sensor-footnote notdetected';
+        note.textContent = '† Not detected (sensor missing) — shown because it was selected; uncheck to drop it. Re-adding needs the sensor present.';
+        list.appendChild(note);
+    }
+    if (lowPowerNote) {
+        const note = document.createElement('div');
+        note.className = 'bthome-sensor-footnote lowpower';
+        note.textContent = '* Not advertised in low-power mode; selection retained and resumes in high-performance mode.';
+        list.appendChild(note);
     }
     enforceBTHomeBudget();
 }

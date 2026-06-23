@@ -79,7 +79,13 @@ void onSensorDataOk() {
     }
     // [BTHOME-SENSEL] Barometric pressure from BME280-class sensors.
     if (sensors.isUnitRegistered(UNIT::PRESS)) {
-        pressureHpa = sensors.getPressure();
+        // The CanAirIO lib is inconsistent: BME280 returns Pa (~101325) while
+        // BMP280/BME680 already return hPa (~1013). BTHome (and the 300-1100
+        // validity range) expect hPa, so normalize: values that look like Pa
+        // are divided by 100. Without this, BME280 pressure always fails the
+        // validity gate and is never advertised.
+        float p = sensors.getPressure();
+        pressureHpa = (p > 10000.0f) ? (p / 100.0f) : p;
     }
 #ifdef SUPPORT_BTHOME_BLE
     // Recompute the runtime freshness mask each read cycle so a sensor that stops
@@ -100,6 +106,11 @@ void onSensorDataOk() {
     if (sensors.isUnitRegistered(UNIT::PRESS)) {
         bthomeFreshMeasurements |= BTHOME_SEL_PRESS;
     }
+#ifdef SUPPORT_LOW_POWER
+    // Remember whether a pressure sensor is present so the deep-sleep wake path
+    // (SUPPORT_LOW_POWER_PRESSURE) knows it can re-read the BME280 on wake.
+    deepSleepData.hasPressureOnWake = sensors.isUnitRegistered(UNIT::PRESS);
+#endif
     if (sensors.isUnitRegistered(UNIT::PM25)) {
         bthomeFreshMeasurements |= BTHOME_SEL_PM1 | BTHOME_SEL_PM25 | BTHOME_SEL_PM4 | BTHOME_SEL_PM10;
     }
