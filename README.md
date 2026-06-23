@@ -23,7 +23,7 @@
 
 **CO2-Gadget** is an advanced, feature-rich firmware for ESP32-based CO₂ monitors and air quality meters. It supports a wide range of CO₂ sensors, particulate matter (PM) sensors, environmental sensors, displays (TFT, OLED, E-Ink), and communication protocols (WiFi, BLE, MQTT, ESP-NOW). Whether you're building a custom air quality monitor or flashing a commercial board, CO2-Gadget offers enterprise-grade features in a compact embedded package.
 
-> **Current version:** v0.16.011-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
+> **Current version:** v0.16.013-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/en/co2-meter-gadget/) for pre-built binaries and one-click browser installation — no compilation required.
 
@@ -397,7 +397,7 @@ Everyone is welcome to contribute to CO2-Gadget, regardless of skill level or ba
 
 ### Testing
 
-We have active Alpha and Beta testing programs. Join the discussion in [issue #198](https://github.com/melkati/CO2-Gadget/issues/198) or reach out on [Telegram](https://t.me/emariete_chat).
+We have active Alpha and Beta testing programs. Reach out on [Telegram](https://t.me/emariete_chat).
 
 ---
 
@@ -474,7 +474,7 @@ Material donations (hardware for testing) are also appreciated to support furthe
     ▐                                          |___/               ▌
     ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
     
-    Copyright (C) 2021-2024 Mariete & CO2 Gadget Contributors
+    Copyright (C) 2021-2026 Mariete & CO2 Gadget Contributors
     Contact: https://emariete.com
 
     This file is part of the CO2 Gadget firmware.
