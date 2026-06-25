@@ -18,10 +18,8 @@ data/*.min.js
 data/*.min.css
 webserver/data/
 # Local development logs, planning and review files — not for the repo
-docs/phase*-log.md
+docs/sprints/
 docs/build-*.log
-docs/UI-Redesign.md
-docs/fix-*-review.md
 PLAN.md
 # PPK2 measurement and automation scripts (local only)
 PPK2/
@@ -30,3 +28,6 @@ measurement/
 # PPK2 measurement data exports and serial monitor logs
 ppk2_v2_*.json
 serial_*.txt
+# Local blog content (not for public repo)
+docs/archive/
+docs/blog-drafts/

@@ -1,4 +1,4 @@
-[![PlatformIO](https://github.com/melkati/CO2-Gadget/workflows/PlatformIO/badge.svg)](https://github.com/melkati/CO2-Gadget/actions/)
+[![PlatformIO](https://github.com/melkati/CO2-Gadget/actions/workflows/platformio.yml/badge.svg?branch=development)](https://github.com/melkati/CO2-Gadget/actions/workflows/platformio.yml?query=branch%3Adevelopment)
 [![Release](https://img.shields.io/github/v/release/melkati/CO2-Gadget?label=release)](https://github.com/melkati/CO2-Gadget/releases)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Femariete_chat)](https://t.me/emariete_chat)
 [![GitHub stars](https://img.shields.io/github/stars/melkati/CO2-Gadget.svg?style=social&label=Star)](https://github.com/melkati/CO2-Gadget/stargazers)
@@ -25,7 +25,9 @@
 
 > **Current version:** v0.16.013-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
-This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/en/co2-meter-gadget/) for pre-built binaries and one-click browser installation — no compilation required.
+This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/medidor-co2-gadget/) for pre-built binaries, one-click browser installation, and detailed guides — no compilation required.
+
+> 📚 **Guides available**: [WiFi](https://emariete.com/co2-gadget-guia-wifi/), [MQTT & Home Assistant](https://emariete.com/co2-gadget-guia-mqtt/), [BLE/MyAmbiance](https://emariete.com/co2-gadget-guia-ble/), [ESP-NOW](https://emariete.com/co2-gadget-guia-espnow/), [Low Power](https://emariete.com/co2-gadget-guia-low-power/), [Calibration](https://emariete.com/co2-gadget-guia-calibracion/), [Outputs](https://emariete.com/co2-gadget-guia-salidas/), [Web UI](https://emariete.com/co2-gadget-guia-web/), [Sensors](https://emariete.com/co2-gadget-guia-sensores/), [Installation](https://emariete.com/co2-gadget-instalacion/) (Spanish, English coming soon).
 
 <p align="center">
   <img src="https://github.com/melkati/CO2-Gadget/assets/11509521/6d577770-b83c-4f3e-9c87-a00ac28ae72c" width="600" alt="CO2 Gadget on TTGO T-Display">
@@ -411,7 +413,8 @@ We have active Alpha and Beta testing programs. Reach out on [Telegram](https://
 - [Tutorial: Build a CO₂ Monitor with TTGO T-Display + SCD30](https://emariete.com/en/co2-meter-co2-display-tft-colour-ttgo-t-display-sensirion-scd30/)
 - [Tutorial: Compact CO₂ Gadget with battery support](https://emariete.com/en/meter-co2-display-tft-color-ttgo-t-display-sensirion-scd30-2/)
 - [ESP-NOW to MQTT Gateway](https://emariete.com/en/gateway-esp-now-mqtt/)
-- [CO₂ Gadget firmware page](https://emariete.com/en/co2-meter-gadget/)
+- [CO2 Gadget firmware page (Spanish)](https://emariete.com/medidor-co2-gadget/) — installation, guides, FAQ
+- [CO2 Gadget guides index](https://emariete.com/category/co2-gadget/) — all tutorials and documentation
 - [CanAirIO sensorlib](https://github.com/kike-canaries/canairio_sensorlib/)
 
 ---
