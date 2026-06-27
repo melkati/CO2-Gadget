@@ -893,17 +893,21 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_ESPNOW
+    bool espNowStatusActive = activeESPNOW;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        espNowStatusActive = deepSleepData.sendESPNowOnWake;
+    }
+#endif
+    if (!espNowStatusActive) return;
+
     if (troubledESPNOW) {
         tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
         tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
     tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    if (!activeESPNOW) {
-        tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, TFT_DARKGREY);
-    } else {
-        tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
-    }
+    tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
 #endif
 }
 

@@ -584,20 +584,20 @@ void showTemperature(float temp, int32_t posX, int32_t posY, bool forceRedraw) {
 void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     //    display.fillRect(posX, posY, 16+6, 16+6, GxEPD_WHITE);
     //    display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
+    if (!displayShowStatusIcons) return;
     bool bleStatusActive = enableBLE && activeBLE;
 #ifdef SUPPORT_LOW_POWER
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
         bleStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBLE;
     }
 #endif
-    if (bleStatusActive) {
-        display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
-    } else {
-        return;
-    }
+    if (!bleStatusActive) return;
+
+    display.drawBitmap(posX, posY, iconBluetoothBW, 16, 16, GxEPD_BLACK);
 }
 
 void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_BTHOME_BLE
     bool bthomeStatusActive = enableBLE && activeBTHome;
 #ifdef SUPPORT_LOW_POWER
@@ -605,15 +605,14 @@ void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         bthomeStatusActive = deepSleepData.activeBLEOnWake && enableBLE && activeBTHome;
     }
 #endif
-    if (bthomeStatusActive) {
-        display.drawBitmap(posX, posY, iconBTHome, 16, 16, GxEPD_BLACK);
-    } else {
-        return;
-    }
+    if (!bthomeStatusActive) return;
+
+    display.drawBitmap(posX, posY, iconBTHome, 16, 16, GxEPD_BLACK);
 #endif
 }
 
 void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
     bool wifiStatusActive = activeWIFI;
 #ifdef SUPPORT_LOW_POWER
     if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
@@ -654,6 +653,7 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 }
 
 void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_MQTT
     bool mqttStatusActive = activeMQTT;
 #ifdef SUPPORT_LOW_POWER
@@ -661,35 +661,32 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
         mqttStatusActive = deepSleepData.sendMQTTOnWake;
     }
 #endif
-    if (mqttStatusActive) {
-        if (troubledMQTT) {
-            display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
-        } else {
-            display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
-        }
+    if (!mqttStatusActive) return;
+
+    if (troubledMQTT) {
+        display.drawBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
+    } else {
+        display.drawInvertedBitmap(posX, posY, iconMQTT, 16, 16, GxEPD_BLACK);
     }
 #endif
 }
 
 void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+    if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_ESPNOW
-    display.fillRect(posX, posY, 16, 16, GxEPD_WHITE);
-    if (activeESPNOW) {
-        if (troubledESPNOW) {
-            // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-            display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-            return;
-        } else {
-            display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-        }
-        // // display.drawRoundRect(posX, posY, 16 + 6, 16 + 6, 2, GxEPD_BLACK);
-        // if (!activeESPNOW) {
-        //     // when is disabled I think is better show nothing but for debug purposes show it in inverse mode
-        //     display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-        // } else {
-        //     display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
-        // }
+    bool espNowStatusActive = activeESPNOW;
+#ifdef SUPPORT_LOW_POWER
+    if ((esp_reset_reason() == ESP_RST_DEEPSLEEP) && (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) && !interactiveMode) {
+        espNowStatusActive = deepSleepData.sendESPNowOnWake;
     }
+#endif
+    if (!espNowStatusActive) return;
+
+    if (troubledESPNOW) {
+        display.drawBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
+        return;
+    }
+    display.drawInvertedBitmap(posX, posY, iconEspNow, 16, 16, GxEPD_BLACK);
 #endif
 }
 
