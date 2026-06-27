@@ -111,7 +111,7 @@ service-data AD headers. Framing overhead removed from that budget:
 
 ## 4. Measurement catalogue
 
-Defined once in `BTHOME_MEASUREMENTS[]` (`CO2_Gadget_BLE.h`) and mirrored in the
+Defined once in `BTHOME_MEASUREMENTS[]` (`CO2_Gadget_BTHome.h`) and mirrored in the
 web UI / emulator. Stored in **ascending object-id order**, which is also the
 emit order BTHome receivers expect.
 
@@ -149,7 +149,7 @@ Three independent gates decide whether a selected measurement is actually
 broadcast:
 
 ### Availability — *can this hardware ever produce it?*
-`bthomeMeasurementAvailable(bit)` (`CO2_Gadget_BLE.h`):
+`bthomeMeasurementAvailable(bit)` (`CO2_Gadget_BTHome.h`):
 
 - **CO2** — `UNIT::CO2` registered, or retained from a CO2 sensor on deep-sleep wake.
 - **Temperature** — `UNIT::TEMP` or `UNIT::CO2TEMP` registered (SCD30/SCD4x,
@@ -532,7 +532,8 @@ All BTHome work, traced chronologically (non-merge commits,
 | File | BTHome responsibility |
 |---|---|
 | `CO2_Gadget.ino` | Global state, selection bitmask/enum, RTC wake struct field. |
-| `CO2_Gadget_BLE.h` | Payload build, encoding, fit/budget, encryption, advert install, `publishBLE`, `refreshBLEOutputs`. |
+| `CO2_Gadget_BLE.h` | Shared BLE orchestration: `initBLE`/`publishBLE`/`refreshBLEOutputs`/`BLELoop`, `bleThresholdState_t` gating; includes `CO2_Gadget_BTHome.h`. |
+| `CO2_Gadget_BTHome.h` | BTHome internals: measurement table, encoding, fit/budget, encryption, payload build, advert install. |
 | `CO2_Gadget_Sensors.h` | Read sensors, `pressureHpa`, freshness mask. |
 | `CO2_Gadget_Preferences.h` | NVS load/save, bind-key ensure/normalize, settings JSON, save-from-JSON. |
 | `CO2_Gadget_DeepSleep.h` | RTC wake-settings retention, low-power sensor read + freshness. |

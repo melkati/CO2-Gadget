@@ -52,7 +52,7 @@ void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE
 void refreshBLEOutputs(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
 void refreshBTHomeBLESettings(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
 #ifdef SUPPORT_BTHOME_BLE
-uint32_t getBTHomeCounterNVSValue();                // Defined in CO2_Gadget_BLE.h
+uint32_t getBTHomeCounterNVSValue();                // Defined in CO2_Gadget_BTHome.h
 #endif
 String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
 uint64_t getReliableUptimeSeconds();                // Accumulated uptime across deep sleep cycles
