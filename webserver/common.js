@@ -92,6 +92,7 @@ var previousData = {
  * Global object to store the CO2 Gadget features supported by the device (selected at compile time).
  * @type {Object}
  * @property {boolean} SUPPORT_BLE - Whether BLE is supported.
+ * @property {boolean} SUPPORT_BTHOME_BLE - Whether BTHome BLE is supported.
  * @property {boolean} SUPPORT_BUZZER - Whether a buzzer is supported.
  * @property {boolean} SUPPORT_ESPNOW - Whether ESP-NOW is supported.
  * @property {boolean} SUPPORT_MDNS - Whether mDNS is supported.
@@ -103,6 +104,7 @@ var previousData = {
  */
 var features = {
     SUPPORT_BLE: false,
+    SUPPORT_BTHOME_BLE: false,
     SUPPORT_BUZZER: false,
     SUPPORT_ESPNOW: false,
     SUPPORT_MDNS: false,
@@ -305,6 +307,7 @@ function readMinFreeHeap() {
  */
 function handleFeaturesData(data) {
     features.SUPPORT_BLE = data.BLE !== undefined ? data.BLE : false;
+    features.SUPPORT_BTHOME_BLE = data.BTHomeBLE !== undefined ? data.BTHomeBLE : false;
     features.SUPPORT_BUZZER = data.Buzzer !== undefined ? data.Buzzer : false;
     features.SUPPORT_ESPNOW = data.EspNow !== undefined ? data.EspNow : false;
     features.SUPPORT_MDNS = data.mDNS !== undefined ? data.mDNS : false;

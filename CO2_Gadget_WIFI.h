@@ -459,6 +459,7 @@ void printWiFiStatus() {  // Print wifi status on serial monitor
     Serial.println(MACAddress);
 
     // Print the received signal strength:
+    updateCachedWiFiRSSI();
     Serial.print("-->[WiFi] Signal strength (RSSI):");
     Serial.print(getWiFiRSSIForStatus());
     Serial.println(" dBm");
@@ -662,8 +663,14 @@ void initMDNS() {
 }
 
 void disableWiFi() {
-    WiFi.disconnect(true);  // Disconnect from the network
-    WiFi.mode(WIFI_OFF);    // Switch WiFi off
+    WiFi.disconnect(false);  // Disconnect first; esp_wifi_stop() stops the radio below.
+    delay(50);
+    esp_err_t stopResult = esp_wifi_stop();  // Stop the radio before deep sleep without forcing a full Arduino WiFi deinit.
+    if ((stopResult != ESP_OK) && (stopResult != ESP_ERR_WIFI_NOT_INIT) && (stopResult != ESP_ERR_WIFI_NOT_STARTED)) {
+        Serial.println("-->[WiFi] Error stopping WiFi: " + String(stopResult) + ". Falling back to WIFI_OFF.");
+        WiFi.mode(WIFI_OFF);
+    }
+    delay(20);
     Serial.println("-->[WiFi] WiFi disabled!");
 }
 
@@ -767,6 +774,11 @@ String getCO2GadgetFeaturesAsJson() {
     doc["BLE"] = true;
 #else
     doc["BLE"] = false;
+#endif
+#ifdef SUPPORT_BTHOME_BLE
+    doc["BTHomeBLE"] = true;
+#else
+    doc["BTHomeBLE"] = false;
 #endif
 #ifdef SUPPORT_BUZZER
     doc["Buzzer"] = true;
@@ -1668,6 +1680,25 @@ void initWebServer() {
         }
     });
 
+#ifdef SUPPORT_BTHOME_BLE
+    server.on("/getBTHomeBindKey", HTTP_POST, [](AsyncWebServerRequest *request) {
+        preferences.begin("CO2-Gadget", false);
+        ensureBTHomeBindKey();
+        preferences.end();
+
+        JsonDocument doc;
+        doc["bthomeBindKey"] = bthomeBindKey;
+        String body;
+        serializeJson(doc, body);
+
+        AsyncWebServerResponse *response = request->beginResponse(200, "application/json", body);
+        response->addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+        response->addHeader("Pragma", "no-cache");
+        response->addHeader("Expires", "0");
+        request->send(response);
+    });
+#endif
+
     server.on("/getWifiNetworksAsJson", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
             String wifiNetworksJson = getWifiNetworksAsJson();
@@ -1987,23 +2018,20 @@ bool connectToWiFi() {
     unsigned long checkTimer = 0;  // Timer-variables MUST be of type unsigned long
     troubledWIFI = false;
     WiFiConnectionRetries = 0;
+    const uint8_t maxWiFiConnectionRetriesDuringConnect = 30;
 
     WiFi.begin(wifiSSID.c_str(), wifiPass.c_str());
 
-    // Wait for connection until maxWiFiConnectionRetries or WiFi is connected
-    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetries) {
+    // Wait for connection until maxWiFiConnectionRetriesDuringConnect or WiFi is connected
+    while (WiFi.status() != WL_CONNECTED && WiFiConnectionRetries < maxWiFiConnectionRetriesDuringConnect) {
         if (TimePeriodIsOver(checkTimer, 500)) {  // Once every 500 miliseconds
             Serial.print(".");
             WiFiConnectionRetries++;
-            if (WiFiConnectionRetries > maxWiFiConnectionRetries) {
-                Serial.println();
-                Serial.print("not connected ");
-            }
         }
         yield();
     }
 
-    if ((WiFiConnectionRetries > maxWiFiConnectionRetries) && (WiFi.status() != WL_CONNECTED)) {
+    if ((WiFiConnectionRetries >= maxWiFiConnectionRetriesDuringConnect) && (WiFi.status() != WL_CONNECTED)) {
         disableWiFi();
         troubledWIFI = true;
         timeTroubledWIFI = millis();

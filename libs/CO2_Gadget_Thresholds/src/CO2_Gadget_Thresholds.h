@@ -30,6 +30,7 @@ struct ThresholdConfig {
     bool co2CombineWithAnd;
     bool tempCombineWithAnd;
     bool humCombineWithAnd;
+    uint64_t lastPublishTimeMs;
 };
 
 void printThresholdsFromNVR();
@@ -44,8 +45,10 @@ class ThresholdManager {
     ThresholdConfig getThresholds(OutputType outputType);
     void printThresholdsDifferences(OutputType outputType);
     void updatePreviousValues(OutputType outputType, uint16_t co2, float temp, float hum);
-    bool checkAndMaybeUpdateThresholds(OutputType outputType, uint16_t co2, float temp, float hum);
+    bool checkAndMaybeUpdateThresholds(OutputType outputType, uint16_t co2, float temp, float hum, bool evaluateCO2 = true, bool evaluateTemp = true, bool evaluateHum = true);
     bool evaluateThresholds(OutputType outputType, uint16_t co2, float temp, float hum);
+    bool evaluateThresholdsAt(OutputType outputType, uint16_t co2, float temp, float hum, uint64_t nowMs, bool evaluateCO2 = true, bool evaluateTemp = true, bool evaluateHum = true);
+    void setRuntimeState(OutputType outputType, uint16_t previousCO2Value, float previousTemperatureValue, float previousHumidityValue, uint64_t lastPublishTimeMs);
     String getThresholdsAsJson(OutputType outputType);
     String getAllThresholdsAsJson();
     void saveThresholdsToNVR();

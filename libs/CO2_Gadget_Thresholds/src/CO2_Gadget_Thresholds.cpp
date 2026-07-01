@@ -25,6 +25,7 @@ void ThresholdManager::setThresholds(OutputType outputType, bool enabled, bool u
     thresholds[outputType].co2CombineWithAnd = co2CombineWithAnd;
     thresholds[outputType].tempCombineWithAnd = tempCombineWithAnd;
     thresholds[outputType].humCombineWithAnd = humCombineWithAnd;
+    thresholds[outputType].lastPublishTimeMs = 0;
 #ifdef DEBUG_THRESHOLDS
     Serial.println("-->[THRE] Thresholds set for output type: " + String(outputType));
     Serial.println("-->[THRE] Setting enabled: " + String(enabled));
@@ -74,7 +75,7 @@ void ThresholdManager::updatePreviousValues(OutputType outputType, uint16_t co2,
  *
  * @return True if the thresholds are exceeded, false otherwise.
  */
-bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint16_t co2, float temp, float hum) {
+bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint16_t co2, float temp, float hum, bool evaluateCO2, bool evaluateTemp, bool evaluateHum) {
     ThresholdConfig& config = thresholds[outputType];
 
     if (!config.enabled) {
@@ -83,9 +84,9 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
     }
 
     // Check absolute thresholds
-    bool co2ExceedsAbsolute = abs(co2 - config.previousCO2Value) >= config.co2ThresholdAbsolute;
-    bool tempExceedsAbsolute = abs(temp - config.previousTemperatureValue) >= config.tempThresholdAbsolute;
-    bool humExceedsAbsolute = abs(hum - config.previousHumidityValue) >= config.humThresholdAbsolute;
+    bool co2ExceedsAbsolute = evaluateCO2 && (abs(co2 - config.previousCO2Value) >= config.co2ThresholdAbsolute);
+    bool tempExceedsAbsolute = evaluateTemp && (abs(temp - config.previousTemperatureValue) >= config.tempThresholdAbsolute);
+    bool humExceedsAbsolute = evaluateHum && (abs(hum - config.previousHumidityValue) >= config.humThresholdAbsolute);
 #ifdef DEBUG_THRESHOLDS
     if (co2ExceedsAbsolute) {
         Serial.println("-->[THRE] CO2 exceeds absolute threshold. Old value: " + String(config.previousCO2Value) + ", New value: " + String(co2) + ", Difference: " + String(abs(co2 - config.previousCO2Value)));
@@ -93,9 +94,9 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
 #endif
 
     // Check percentage thresholds (avoid division by zero)
-    bool co2ExceedsPercentage = (config.previousCO2Value == 0) ? true : ((config.co2ThresholdPercentage != 0) && (abs(co2 - config.previousCO2Value) >= (config.previousCO2Value * config.co2ThresholdPercentage / 100)));
-    bool tempExceedsPercentage = (config.previousTemperatureValue == 0) ? true : ((config.tempThresholdPercentage != 0) && (abs(temp - config.previousTemperatureValue) >= (config.previousTemperatureValue * config.tempThresholdPercentage / 100)));
-    bool humExceedsPercentage = (config.previousHumidityValue == 0) ? true : ((config.humThresholdPercentage != 0) && (abs(hum - config.previousHumidityValue) >= (config.previousHumidityValue * config.humThresholdPercentage / 100)));
+    bool co2ExceedsPercentage = evaluateCO2 && ((config.previousCO2Value == 0) ? true : ((config.co2ThresholdPercentage != 0) && (abs(co2 - config.previousCO2Value) >= (config.previousCO2Value * config.co2ThresholdPercentage / 100))));
+    bool tempExceedsPercentage = evaluateTemp && ((config.previousTemperatureValue == 0) ? true : ((config.tempThresholdPercentage != 0) && (abs(temp - config.previousTemperatureValue) >= (config.previousTemperatureValue * config.tempThresholdPercentage / 100))));
+    bool humExceedsPercentage = evaluateHum && ((config.previousHumidityValue == 0) ? true : ((config.humThresholdPercentage != 0) && (abs(hum - config.previousHumidityValue) >= (config.previousHumidityValue * config.humThresholdPercentage / 100))));
 #ifdef DEBUG_THRESHOLDS
     if (co2ExceedsPercentage) {
         Serial.println("-->[THRE] CO2 exceeds percentage threshold. Old value: " + String(config.previousCO2Value) + ", New value: " + String(co2) + ", Difference (%): " + String(config.previousCO2Value != 0 ? (abs(co2 - config.previousCO2Value) * 100 / config.previousCO2Value) : 0));
@@ -118,8 +119,9 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
 
         // Check if any threshold is exceeded
         if (co2ThresholdsExceeded || tempThresholdsExceeded || humThresholdsExceeded) {
-            // Update previous values
-            updatePreviousValues(outputType, co2, temp, hum);
+            if (evaluateCO2) config.previousCO2Value = co2;
+            if (evaluateTemp) config.previousTemperatureValue = temp;
+            if (evaluateHum) config.previousHumidityValue = hum;
             return true;  // Thresholds exceeded
         }
 
@@ -137,10 +139,42 @@ bool ThresholdManager::checkAndMaybeUpdateThresholds(OutputType outputType, uint
  * @return True if the sensor readings pass the thresholds, false otherwise.
  */
 bool ThresholdManager::evaluateThresholds(OutputType outputType, uint16_t co2, float temp, float hum) {
+    return evaluateThresholdsAt(outputType, co2, temp, hum, millis());
+}
+
+bool ThresholdManager::evaluateThresholdsAt(OutputType outputType, uint16_t co2, float temp, float hum, uint64_t nowMs, bool evaluateCO2, bool evaluateTemp, bool evaluateHum) {
     // If threshold is not enabled for outputType, return true
     if (!thresholds[outputType].enabled) return true;
+
+    ThresholdConfig& config = thresholds[outputType];
+    bool timeoutDue = false;
+    if (config.keepAlive > 0) {
+        uint64_t keepAliveMs = static_cast<uint64_t>(config.keepAlive) * 1000ULL;
+        timeoutDue = (config.lastPublishTimeMs == 0) || ((nowMs - config.lastPublishTimeMs) >= keepAliveMs);
+    }
+
     // Evaluate if the sensor readings pass the thresholds
-    return checkAndMaybeUpdateThresholds(outputType, co2, temp, hum);
+    bool thresholdPassed = checkAndMaybeUpdateThresholds(outputType, co2, temp, hum, evaluateCO2, evaluateTemp, evaluateHum);
+    bool shouldPublish = timeoutDue || thresholdPassed;
+
+    if (shouldPublish) {
+        if (timeoutDue && !thresholdPassed) {
+            if (evaluateCO2) config.previousCO2Value = co2;
+            if (evaluateTemp) config.previousTemperatureValue = temp;
+            if (evaluateHum) config.previousHumidityValue = hum;
+        }
+        config.lastPublishTimeMs = nowMs;
+    }
+
+    return shouldPublish;
+}
+
+void ThresholdManager::setRuntimeState(OutputType outputType, uint16_t previousCO2Value, float previousTemperatureValue, float previousHumidityValue, uint64_t lastPublishTimeMs) {
+    ThresholdConfig& config = thresholds[outputType];
+    config.previousCO2Value = previousCO2Value;
+    config.previousTemperatureValue = previousTemperatureValue;
+    config.previousHumidityValue = previousHumidityValue;
+    config.lastPublishTimeMs = lastPublishTimeMs;
 }
 
 /**
@@ -288,6 +322,7 @@ void ThresholdManager::setThresholdsFromJSON(String response) {
         thresholds[i].co2CombineWithAnd = doc["thresholds"][i]["thrCo2CombAnd"];
         thresholds[i].tempCombineWithAnd = doc["thresholds"][i]["thrTempCombAnd"];
         thresholds[i].humCombineWithAnd = doc["thresholds"][i]["thrHumCombAnd"];
+        thresholds[i].lastPublishTimeMs = 0;
     }
     saveThresholdsToNVR();
 }
@@ -319,6 +354,7 @@ void ThresholdManager::loadThresholdsFromNVR() {
         thresholds[i].co2CombineWithAnd = thresholdsPrefs.getBool((key + "_Co2CombAnd").c_str(), false);
         thresholds[i].tempCombineWithAnd = thresholdsPrefs.getBool((key + "_TempCombAnd").c_str(), false);
         thresholds[i].humCombineWithAnd = thresholdsPrefs.getBool((key + "_HumCombAnd").c_str(), false);
+        thresholds[i].lastPublishTimeMs = 0;
     }
     thresholdsPrefs.end();  // Finish using NVRAM
 }

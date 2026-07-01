@@ -272,6 +272,7 @@ function fillFeaturesFromServer() {
         }
     }
     setFeature('featureBLEItem',           'featureBLE',           features.SUPPORT_BLE);
+    setFeature('featureBTHomeBLEItem',     'featureBTHomeBLE',     features.SUPPORT_BTHOME_BLE);
     setFeature('featureBuzzerItem',        'featureBuzzer',        features.SUPPORT_BUZZER);
     setFeature('featureESPNowItem',        'featureESPNow',        features.SUPPORT_ESPNOW);
     setFeature('featureMDNSItem',          'featureMDNS',          features.SUPPORT_MDNS);

@@ -1716,3 +1716,40 @@ canvas { max-width: 100%; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ================================================================
+   [BTHOME-SENSEL] BTHome sensor selection
+   ================================================================ */
+#bthomeSensorsGroup { flex-direction: column; align-items: flex-start; gap: 8px; }
+.bthome-sensors-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.bthome-sensor-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.bthome-sensor-group-heading { position: relative; display: flex; align-items: center; align-self: flex-start; gap: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--text-2); }
+.bthome-sensor-group-heading .tooltip-text {
+  top: calc(100% + 6px);
+  left: 0;
+  pointer-events: none;
+}
+.bthome-sensor-group-heading:hover .tooltip-text { visibility: visible; }
+.bthome-sensor-group-items { display: flex; flex-wrap: wrap; gap: 8px 16px; width: 100%; }
+.bthome-sensor-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-1); cursor: pointer; }
+.bthome-sensor-item input { margin: 0; }
+.bthome-sensor-item.unavailable,
+.bthome-sensor-item.invalid { color: var(--caution); }
+.bthome-sensor-item.nonnative { color: var(--text-3); font-style: italic; }
+.bthome-sensor-item.dropped { color: var(--caution); }
+/* Two distinct unavailable styles (placed after .unavailable so they win for
+   items carrying both classes):
+   - low-power-blocked: amber/caution (present, just not sampled on wake)
+   - not detected: red/bad (hardware missing; only shown if still selected)        */
+.bthome-sensor-item.lowpower   { color: var(--caution); }
+.bthome-sensor-item.notdetected { color: var(--bad); }
+.bthome-sensor-footnote { width: 100%; font-size: 0.75rem; margin-top: 2px; }
+.bthome-sensor-footnote.lowpower   { color: var(--caution); }
+.bthome-sensor-footnote.notdetected { color: var(--bad); }
+.bthome-sensor-runtime-status { font-size: 0.8125rem; font-weight: 600; }
+.bthome-budget-hint { font-size: 0.8125rem; color: var(--text-1); font-weight: 600; width: 100%; }
+.bthome-key-controls { display: flex; flex: 1 1 360px; flex-direction: column; gap: 8px; min-width: 0; }
+.bthome-key-controls input { width: 100%; }
+.bthome-key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.bthome-key-actions button { margin: 0; padding: 7px 12px; }
+.bthome-key-status { color: var(--text-3); font-size: 0.8125rem; }

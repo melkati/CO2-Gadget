@@ -2,6 +2,18 @@
  * Loads WHO/ASHRAE recommended CO2 quality thresholds into the form fields.
  * Warning: 800 ppm, Danger: 1000 ppm
  */
+let supportBTHomeBLE = false;
+// [BTHOME-SENSEL] descriptor list + budget provided by the device for the sensor-selection UI.
+let bthomeSensorDescriptors = [];
+let bthomeBudgetMax = 24;
+
+function restoreBTHomeSensorSelection(descriptors, selection) {
+    return descriptors.map((descriptor) => ({
+        ...descriptor,
+        selected: selection[descriptor.key] === true
+    }));
+}
+
 function loadWHOPreset() {
     const orangeEl = document.getElementById('co2OrangeRange');
     const redEl    = document.getElementById('co2RedRange');
@@ -64,6 +76,8 @@ function displayVersion() {
  * @param {Object} preferences - The preferences data to populate the form with.
  */
 function populateFormWithPreferences(preferences) {
+    supportBTHomeBLE = preferences.supportBTHomeBLE === true;
+
     // Update relaxedSecurity if present in data
     if (preferences.relaxedSecurity !== undefined) {
         if (preferencesDebug) console.log(`Setting relaxedSecurity field to:`, preferences.relaxedSecurity);
@@ -115,6 +129,35 @@ function populateFormWithPreferences(preferences) {
     setFormValue("neopixBright", preferences.neopixBright);
     setFormValue("selNeopxType", preferences.selNeopxType);
     setFormCheckbox("activeBLE", preferences.activeBLE);
+    if (isBTHomeSupported()) {
+        setFormCheckbox("activeBTHome", preferences.activeBTHome);
+        setFormCheckbox("bthomeEncryption", preferences.bthomeEncryption);
+        const bindKeyInput = document.getElementById("bthomeBindKey");
+        if (bindKeyInput) {
+            if (typeof preferences.bthomeBindKey === 'string' && preferences.bthomeBindKey.trim()) {
+                showBTHomeBindKey(preferences.bthomeBindKey, 'Bind key loaded from backup. Save to persist it.');
+            } else {
+                bindKeyInput.value = "";
+                bindKeyInput.type = "password";
+                bindKeyInput.placeholder = "Stored key hidden";
+                setBTHomeKeyStatus('The stored key is not loaded into this page.');
+            }
+        }
+        // [BTHOME-SENSEL] capture the per-sensor descriptor list and render the selection UI.
+        if (Array.isArray(preferences.bthomeSensors)) {
+            bthomeSensorDescriptors = preferences.bthomeSensors;
+        } else if (preferences.bthomeSensors && typeof preferences.bthomeSensors === 'object') {
+            // Preference backups contain the writable {key: bool} shape rather than
+            // the read-only descriptor array returned by the device. Preserve the
+            // current descriptors and restore only selections that are available.
+            bthomeSensorDescriptors = restoreBTHomeSensorSelection(
+                bthomeSensorDescriptors,
+                preferences.bthomeSensors
+            );
+        }
+        bthomeBudgetMax = (typeof preferences.bthomeBudgetMax === 'number') ? preferences.bthomeBudgetMax : 24;
+        renderBTHomeSensors();
+    }
     setFormCheckbox("activeMQTT", preferences.activeMQTT);
     setFormCheckbox("activeESPNOW", preferences.activeESPNOW);
     setFormValue("mqttClientId", preferences.mqttClientId);
@@ -176,7 +219,7 @@ function populateFormWithPreferences(preferences) {
  * Fetches preferences data from the server and populates the form.
  */
 function loadPreferencesFromServer() {
-    fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
+    return fetch('/getActualSettingsAsJson' + (relaxedSecurity ? '?relaxedSecurity=true' : ''))
         .then(response => response.json())
         .then(preferences => {
             if (preferencesDebug) console.log('Get preferences from server response:', preferences);
@@ -189,6 +232,368 @@ function loadPreferencesFromServer() {
  * Collects preferences data from the form.
  * @returns {Object} - The collected preferences data.
  */
+function setBTHomeSupportVisibility(isSupported) {
+    ["activeBTHome", "bthomeEncryption", "bthomeBindKey"].forEach((id) => {
+        const element = document.getElementById(id);
+        const formGroup = element ? element.closest(".form-group") : null;
+        if (formGroup) formGroup.classList.toggle("hidden", !isSupported);
+    });
+    updateBTHomeControlsState();
+}
+
+function isBTHomeSupported() {
+    return (!featuresLoaded || features.SUPPORT_BLE) &&
+           (features.SUPPORT_BTHOME_BLE || supportBTHomeBLE);
+}
+
+function updateBTHomeControlsState() {
+    const bthomeCheckbox = document.getElementById("activeBTHome");
+    const encryptionCheckbox = document.getElementById("bthomeEncryption");
+    const bindKeyInput = document.getElementById("bthomeBindKey");
+    const revealButton = document.getElementById("bthomeKeyReveal");
+    const copyButton = document.getElementById("bthomeKeyCopy");
+    const regenerateButton = document.getElementById("bthomeKeyRegenerate");
+    const bindKeyGroup = document.getElementById("bthomeBindKeyGroup");
+    const bthomeSupported = isBTHomeSupported();
+    const bthomeActive = bthomeSupported && !!(bthomeCheckbox && bthomeCheckbox.checked);
+    const encryptionActive = bthomeActive && !!(encryptionCheckbox && encryptionCheckbox.checked);
+
+    if (bthomeCheckbox) bthomeCheckbox.disabled = !bthomeSupported;
+    if (encryptionCheckbox) encryptionCheckbox.disabled = !bthomeActive;
+    if (bindKeyGroup) bindKeyGroup.classList.toggle("hidden", !encryptionActive);
+    if (bindKeyInput) bindKeyInput.disabled = !encryptionActive;
+    if (revealButton) revealButton.disabled = !encryptionActive;
+    if (regenerateButton) regenerateButton.disabled = !encryptionActive;
+    if (copyButton) copyButton.disabled = !encryptionActive || !bindKeyInput || !bindKeyInput.value;
+
+    if (!encryptionActive && bindKeyInput) {
+        bindKeyInput.value = "";
+        bindKeyInput.type = "password";
+        bindKeyInput.placeholder = "Stored key hidden";
+        setBTHomeKeyStatus("Enable BTHome encryption to reveal or replace the bind key.");
+    }
+
+    // [BTHOME-SENSEL] show the sensor-selection list only while BTHome is active.
+    const sensorsGroup = document.getElementById("bthomeSensorsGroup");
+    if (sensorsGroup) sensorsGroup.classList.toggle("hidden", !bthomeActive);
+    updateBTHomeBudgetHint();
+}
+
+// [BTHOME-SENSEL] ----- BTHome sensor-selection UI -----
+// Mirrors the firmware budget logic: 24-byte service data minus framing overhead
+// (3 plain: device-info + packet-id; 9 encrypted: device-info + counter + MIC).
+function bthomeComputeFit(encrypted) {
+    const budget = Math.max(0, bthomeBudgetMax - (encrypted ? 9 : 3));
+    const checked = {};
+    document.querySelectorAll('#bthomeSensorsList input[type=checkbox]').forEach((cb) => {
+        checked[cb.dataset.key] = cb.checked;
+    });
+    const allSelected = bthomeSensorDescriptors.filter((d) => checked[d.key]);
+    const items = allSelected
+        .filter((d) => d.available && d.valid !== false)
+        .slice()
+        .sort((a, b) => a.prio - b.prio);
+    let used = 0, fitted = 0;
+    const dropped = [];
+    items.forEach((d) => {
+        if (used + d.bytes <= budget) {
+            used += d.bytes;
+            fitted++;
+        } else {
+            dropped.push(d);
+        }
+    });
+    const unavailableAll = allSelected.filter((d) => !d.available);
+    return {
+        used,
+        budget,
+        fitted,
+        selected: allSelected.length,
+        eligible: items.length,
+        // Split unavailable so the hint isn't ambiguous: "not detected" (no sensor)
+        // vs "not advertised in low-power mode" (present, but blocked on wake).
+        unavailable: unavailableAll.filter((d) => d.unavailableReason !== 'lowpower'),
+        lowpower: unavailableAll.filter((d) => d.unavailableReason === 'lowpower'),
+        invalid: allSelected.filter((d) => d.available && d.valid === false),
+        dropped
+    };
+}
+
+function updateBTHomeBudgetHint() {
+    const hint = document.getElementById('bthomeBudgetHint');
+    if (!hint) return;
+    const enc = document.getElementById('bthomeEncryption');
+    const encrypted = !!(enc && enc.checked);
+    const fit = bthomeComputeFit(encrypted);
+    let msg = 'Payload: ' + fit.used + '/' + fit.budget + ' bytes; ' + fit.fitted + ' of ' + fit.eligible +
+              ' currently eligible values fit (' + (encrypted ? 'encrypted' : 'plain') + ').';
+    if (fit.unavailable.length) msg += ' Not detected; selection retained: ' + fit.unavailable.map((d) => d.label).join(', ') + '.';
+    if (fit.lowpower.length) msg += ' Not advertised in low-power mode; selection retained: ' + fit.lowpower.map((d) => d.label).join(', ') + '.';
+    if (fit.invalid.length) msg += ' No valid reading: ' + fit.invalid.map((d) => d.label).join(', ') + '.';
+    if (fit.dropped.length) msg += ' Selected but omitted by payload budget: ' + fit.dropped.map((d) => d.label).join(', ') + '.';
+    hint.textContent = msg;
+}
+
+function enforceBTHomeBudget() {
+    const enc = document.getElementById('bthomeEncryption');
+    const encrypted = !!(enc && enc.checked);
+    document.querySelectorAll('#bthomeSensorsList .bthome-sensor-item.dropped').forEach((item) => {
+        item.classList.remove('dropped');
+        const status = item.querySelector('.bthome-sensor-runtime-status');
+        if (status && status.dataset.budgetStatus === 'true') {
+            status.textContent = '';
+            status.dataset.budgetStatus = 'false';
+        }
+    });
+
+    const fit = bthomeComputeFit(encrypted);
+    fit.dropped.forEach((d) => {
+        const cb = document.getElementById('bthomeSel_' + d.key);
+        if (cb) {
+            const item = cb.closest('.bthome-sensor-item');
+            if (item) {
+                item.classList.add('dropped');
+                const status = item.querySelector('.bthome-sensor-runtime-status');
+                if (status) {
+                    status.textContent = ' (selected; skipped because payload is full)';
+                    status.dataset.budgetStatus = 'true';
+                }
+            }
+        }
+    });
+
+    const hint = document.getElementById('bthomeBudgetHint');
+    if (!hint) return;
+    let msg = 'Payload: ' + fit.used + '/' + fit.budget + ' bytes; ' +
+              fit.fitted + ' of ' + fit.eligible + ' currently eligible values fit (' +
+              (encrypted ? 'encrypted' : 'plain') + ').';
+    if (fit.unavailable.length) {
+        msg += ' Not detected; selection retained: ' + fit.unavailable.map((d) => d.label).join(', ') + '.';
+    }
+    if (fit.lowpower.length) {
+        msg += ' Not advertised in low-power mode; selection retained: ' + fit.lowpower.map((d) => d.label).join(', ') + '.';
+    }
+    if (fit.invalid.length) {
+        msg += ' No valid reading; not currently sent: ' + fit.invalid.map((d) => d.label).join(', ') + '.';
+    }
+    if (fit.dropped.length) {
+        msg += ' Selected but omitted by payload budget: ' +
+               fit.dropped.map((d) => d.label).join(', ') + '.';
+    }
+    hint.textContent = msg;
+}
+
+function appendBTHomeTooltip(parent, text) {
+    const icon = document.createElement('span');
+    icon.className = 'tooltip-icon';
+    icon.innerHTML = '<svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>';
+    const tooltip = document.createElement('span');
+    tooltip.className = 'tooltip-text';
+    tooltip.textContent = text;
+    parent.appendChild(icon);
+    parent.appendChild(tooltip);
+}
+
+function renderBTHomeSensors() {
+    const list = document.getElementById('bthomeSensorsList');
+    if (!list) return;
+    list.innerHTML = '';
+    let lowPowerNote = false;    // show the "*" footnote only when something is low-power-blocked
+    let notDetectedNote = false; // show the "†" footnote only when a sensor is absent
+    const groups = [
+        { key: 'core', label: 'Core', tip: 'Primary native BTHome measurements. These have the highest payload priority.' },
+        { key: 'optional', label: 'Optional', tip: 'Additional native BTHome measurements. Temporarily unavailable selections are retained and resume automatically.' },
+        { key: 'nonnative', label: 'No BTHome object', tip: 'PM1.0 and PM4.0 use non-standard IDs 0xEE/0xEF, are emitted last, and are not parsed by Home Assistant.' }
+    ];
+    if (bthomeSensorDescriptors.length === 0) {
+        list.textContent = 'No BTHome sensor descriptors reported.';
+    } else {
+        groups.forEach((group) => {
+            const descriptors = bthomeSensorDescriptors
+                .filter((d) => d.group === group.key)
+                // Hide a not-detected sensor unless it is low-power-blocked or was
+                // previously selected: an absent, unselected sensor has nothing to
+                // show or do, so it just clutters the list.
+                .filter((d) => d.available || d.unavailableReason === 'lowpower' || d.selected)
+                .sort((a, b) => a.prio - b.prio);
+            if (descriptors.length === 0) return;  // skip groups left empty after hiding
+
+            const section = document.createElement('section');
+            section.className = 'bthome-sensor-group';
+            const heading = document.createElement('div');
+            heading.className = 'bthome-sensor-group-heading';
+            heading.appendChild(document.createTextNode(group.label));
+            appendBTHomeTooltip(heading, group.tip);
+            section.appendChild(heading);
+            const items = document.createElement('div');
+            items.className = 'bthome-sensor-group-items';
+
+            descriptors.forEach((d) => {
+            const wrapper = document.createElement('label');
+            wrapper.className = 'bthome-sensor-item';
+            if (!d.available) wrapper.classList.add('unavailable');
+            if (d.available && d.valid === false) wrapper.classList.add('invalid');
+            if (d.native === false || d.group === 'nonnative') wrapper.classList.add('nonnative');
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = 'bthomeSel_' + d.key;
+            cb.dataset.key = d.key;
+            cb.dataset.available = d.available ? 'true' : 'false';
+            cb.checked = !!d.selected;
+            cb.addEventListener('change', enforceBTHomeBudget);
+            wrapper.appendChild(cb);
+            let suffix = ' (' + d.bytes + ' B)';
+            if (!d.available) {
+                if (d.unavailableReason === 'lowpower') {
+                    // Compact marker + footnote (full text is too wide, esp. on mobile).
+                    wrapper.classList.add('lowpower');
+                    suffix += ' *';
+                    lowPowerNote = true;
+                } else {
+                    // Not detected (hardware missing): only reaches here when the
+                    // sensor was previously selected (unselected ones are filtered
+                    // out above). Distinct red style + "†" to separate it from the
+                    // amber low-power case. Dropping is one-way: once unchecked it
+                    // locks, so an absent sensor can't be re-added until detected.
+                    wrapper.classList.add('notdetected');
+                    cb.disabled = !d.selected;
+                    if (!cb.disabled) {
+                        cb.addEventListener('change', function () { if (!this.checked) this.disabled = true; });
+                    }
+                    suffix += ' †';
+                    notDetectedNote = true;
+                }
+            }
+            else if (d.valid === false) suffix += ' (no valid reading; not currently sent)';
+            if (d.native === false || d.group === 'nonnative') suffix += ' (no BTHome object — not parsed by HA)';
+            wrapper.appendChild(document.createTextNode(' ' + d.label + suffix));
+            const runtimeStatus = document.createElement('span');
+            runtimeStatus.className = 'bthome-sensor-runtime-status';
+            runtimeStatus.dataset.budgetStatus = 'false';
+            wrapper.appendChild(runtimeStatus);
+            items.appendChild(wrapper);
+            });
+            section.appendChild(items);
+            list.appendChild(section);
+        });
+    }
+    if (notDetectedNote) {
+        const note = document.createElement('div');
+        note.className = 'bthome-sensor-footnote notdetected';
+        note.textContent = '† Not detected (sensor missing) — shown because it was selected; uncheck to drop it. Re-adding needs the sensor present.';
+        list.appendChild(note);
+    }
+    if (lowPowerNote) {
+        const note = document.createElement('div');
+        note.className = 'bthome-sensor-footnote lowpower';
+        note.textContent = '* Not advertised in low-power mode; selection retained and resumes in high-performance mode.';
+        list.appendChild(note);
+    }
+    enforceBTHomeBudget();
+}
+
+function collectBTHomeSensorSelection() {
+    const sel = {};
+    document.querySelectorAll('#bthomeSensorsList input[type=checkbox]').forEach((cb) => {
+        sel[cb.dataset.key] = cb.checked;
+    });
+    return sel;
+}
+
+function setFormGroupVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    const formGroup = element ? element.closest(".form-group") : null;
+    if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
+    if (element && !isVisible && element.type === 'checkbox') {
+        element.checked = false;
+        element.disabled = true;
+    } else if (element) {
+        element.disabled = false;
+    }
+}
+
+function setSectionVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    if (element) element.classList.toggle("hidden", !isVisible);
+}
+
+function applyFeatureVisibility() {
+    if (!featuresLoaded) return;
+
+    const activeMQTT = document.getElementById("activeMQTT");
+    const activeESPNOW = document.getElementById("activeESPNOW");
+
+    setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
+    setBTHomeSupportVisibility(isBTHomeSupported());
+    setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
+    setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
+    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT);
+    setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
+    setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
+    setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
+}
+
+function normalizeBTHomeBindKey(value) {
+    return String(value || '').trim().replace(/[\s:-]/g, '').toLowerCase();
+}
+
+function validateBTHomeBindKey(value) {
+    if (!value) return '';
+    const normalizedValue = normalizeBTHomeBindKey(value);
+    if (!/^[0-9a-f]{32}$/.test(normalizedValue)) {
+        throw new Error('BTHome bind key must be exactly 32 hexadecimal characters.');
+    }
+
+    return normalizedValue;
+}
+
+function setBTHomeKeyStatus(message) {
+    const status = document.getElementById('bthomeKeyStatus');
+    if (status) status.textContent = message;
+}
+
+function showBTHomeBindKey(key, message) {
+    const input = document.getElementById('bthomeBindKey');
+    if (!input) return;
+    input.value = validateBTHomeBindKey(key);
+    input.type = 'text';
+    input.placeholder = '';
+    setBTHomeKeyStatus(message);
+    updateBTHomeControlsState();
+}
+
+async function revealBTHomeBindKey() {
+    if (!window.confirm('Reveal the BTHome bind key on this screen? Only continue on a trusted local network.')) return;
+    const response = await fetch('/getBTHomeBindKey', {
+        method: 'POST',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-store' }
+    });
+    if (!response.ok) throw new Error('Could not retrieve the BTHome bind key.');
+    const data = await response.json();
+    showBTHomeBindKey(data.bthomeBindKey, 'Current key revealed. Saving is not required unless you edit it.');
+}
+
+async function copyBTHomeBindKey() {
+    const input = document.getElementById('bthomeBindKey');
+    if (!input || !input.value) return;
+    await navigator.clipboard.writeText(validateBTHomeBindKey(input.value));
+    setBTHomeKeyStatus('Bind key copied to the clipboard.');
+}
+
+function regenerateBTHomeBindKey() {
+    if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+        alert('Secure Web Crypto is unavailable. The bind key was not regenerated.');
+        return;
+    }
+    if (!window.confirm('Generate a new BTHome bind key? It is not stored until Save succeeds, and Home Assistant must be updated afterward.')) return;
+
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    const key = Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+    showBTHomeBindKey(key, 'New key staged. Save preferences, then update the key in Home Assistant.');
+}
+
 function collectPreferencesData() {
     try {
         const preferencesData = {};
@@ -215,6 +620,18 @@ function collectPreferencesData() {
         setValue("neopixBright");
         setValue("selNeopxType");
         if (!featuresLoaded || features.SUPPORT_BLE) setValue("activeBLE", 'checked');
+        if (isBTHomeSupported()) {
+            setValue("activeBTHome", 'checked');
+            setValue("bthomeEncryption", 'checked');
+            const bindKeyInput = document.getElementById("bthomeBindKey");
+            if (bindKeyInput && bindKeyInput.value.trim()) {
+                preferencesData.bthomeBindKey = validateBTHomeBindKey(bindKeyInput.value);
+            }
+            preferencesData.bthomeSensors = collectBTHomeSensorSelection();  // [BTHOME-SENSEL]
+        }
+        if (features.SUPPORT_BLE || isBTHomeSupported()) {
+            preferencesData.enableBLE = !!(preferencesData.activeBLE || preferencesData.activeBTHome);
+        }
         setValue("activeWIFI", 'checked');
         if (!featuresLoaded || features.SUPPORT_MQTT) setValue("activeMQTT", 'checked');
         if (!featuresLoaded || features.SUPPORT_ESPNOW) setValue("activeESPNOW", 'checked');
@@ -254,7 +671,7 @@ function collectPreferencesData() {
         setValue("showCO2", 'checked');
         if (!featuresLoaded || features.SUPPORT_MQTT) {
             setValue("mqttClientId");
-            if (!featuresLoaded || features.SUPPORT_MQTT_DISCOVERY) setValue("mqttShowInCon", 'checked');
+            if (!featuresLoaded || features.SUPPORT_MQTT) setValue("mqttShowInCon", 'checked');
             setValue("mqttBroker");
             setValue("mqttUser");
         }
@@ -278,7 +695,7 @@ function collectPreferencesData() {
         return preferencesData;
     } catch (error) {
         console.error("Error collecting preferences data:", error);
-        alert("An error occurred while collecting preferences data. Please check the console for details.");
+        alert(error.message || "An error occurred while collecting preferences data. Please check the console for details.");
         throw error; // Re-throw the error after logging it
     }
 }
@@ -301,8 +718,8 @@ function showSavingPopup() {
  * Saves preferences to the server.
  */
 function savePreferences() {
-    showSavingPopup();
     const preferencesData = collectPreferencesData();
+    showSavingPopup();
     if (preferencesDebug) console.log("Sending preferences to server:", preferencesData);
 
     fetch('/savePreferences', {
@@ -315,6 +732,9 @@ function savePreferences() {
         .then(response => {
             if (response.ok) {
                 console.log("Preferences updated successfully!");
+                if (preferencesData.bthomeBindKey) {
+                    setBTHomeKeyStatus('Bind key saved. Update Home Assistant if this key changed.');
+                }
             } else {
                 alert("Error updating preferences. Please try again.");
             }
@@ -400,26 +820,6 @@ function toggleVisibility(checkboxId, elementId, callback) {
     checkbox.addEventListener('change', toggleElement);
 }
 
-function setSectionVisibility(elementId, isVisible) {
-    const element = document.getElementById(elementId);
-    if (element) element.classList.toggle("hidden", !isVisible);
-}
-
-function applyFeatureVisibility() {
-    if (!featuresLoaded) return;
-
-    const activeMQTT = document.getElementById("activeMQTT");
-    const activeESPNOW = document.getElementById("activeESPNOW");
-
-    setFormGroupVisibility("activeBLE", features.SUPPORT_BLE);
-    setFormGroupVisibility("activeMQTT", features.SUPPORT_MQTT);
-    setFormGroupVisibility("activeESPNOW", features.SUPPORT_ESPNOW);
-    setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT && features.SUPPORT_MQTT_DISCOVERY);
-    setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
-    setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
-    setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
-}
-
 /**
  * Ensures that MQTT is disabled when WiFi is disabled, and enabled when WiFi is enabled.
  */
@@ -493,7 +893,7 @@ function updateVRef() {
  */
 function handlePasswordFields() {
     const inputField = document.getElementById("wifiSSID");
-    const passwordFields = document.querySelectorAll('input[type=password]');
+    const passwordFields = document.querySelectorAll('input[type=password]:not([data-bthome-key])');
 
     passwordFields.forEach(field => {
         if (relaxedSecurity) {
@@ -808,9 +1208,49 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleVisibility('activeMQTT', 'mqttConfig');
         toggleVisibility('activeESPNOW', 'espNowConfig');
         toggleVisibility('useStaticIP', 'staticIPSettings');
+        const bthomeCheckbox = document.getElementById("activeBTHome");
+        if (bthomeCheckbox) bthomeCheckbox.addEventListener("change", updateBTHomeControlsState);
+        const bthomeKeyInput = document.getElementById("bthomeBindKey");
+        if (bthomeKeyInput) {
+            bthomeKeyInput.addEventListener("input", () => {
+                setBTHomeKeyStatus(bthomeKeyInput.value ? 'Key edited locally. Save to persist it.' : 'The stored key is not loaded into this page.');
+                updateBTHomeControlsState();
+            });
+        }
+        const bthomeRevealButton = document.getElementById("bthomeKeyReveal");
+        if (bthomeRevealButton) {
+            bthomeRevealButton.addEventListener("click", () => {
+                revealBTHomeBindKey().catch((error) => {
+                    console.error(error);
+                    alert(error.message);
+                });
+            });
+        }
+        const bthomeCopyButton = document.getElementById("bthomeKeyCopy");
+        if (bthomeCopyButton) {
+            bthomeCopyButton.addEventListener("click", () => {
+                copyBTHomeBindKey().catch((error) => {
+                    console.error(error);
+                    alert('Could not copy the BTHome bind key.');
+                });
+            });
+        }
+        const bthomeRegenerateButton = document.getElementById("bthomeKeyRegenerate");
+        if (bthomeRegenerateButton) bthomeRegenerateButton.addEventListener("click", regenerateBTHomeBindKey);
+        // [BTHOME-SENSEL] encryption changes the payload budget projection.
+        const bthomeEncCheckbox = document.getElementById("bthomeEncryption");
+        if (bthomeEncCheckbox) {
+            bthomeEncCheckbox.addEventListener("change", () => {
+                updateBTHomeControlsState();
+                enforceBTHomeBudget();
+            });
+        }
         handleWiFiMQTTDependency();
-        getFeaturesAsJson().then(applyFeatureVisibility);
-        attemptLoad();
+        getFeaturesAsJson()
+            .then(() => {
+                applyFeatureVisibility();
+                attemptLoad();
+            });
         handleCalibrationWizard();
 
         // Update the battery voltage every 5 seconds (voltage changes slowly)
