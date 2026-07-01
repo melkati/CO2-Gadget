@@ -249,7 +249,12 @@ Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) — no so
    upload_port = COM13        # Your board's USB port
    monitor_port = COM13       # Your board's USB port
    ```
-   This file is `.gitignore`'d — each developer keeps their own ports without affecting the repo. All environments in `platformio.ini` reference these variables, so you only need to set your ports once.
+   This file is `.gitignore`'d — each developer keeps their own ports without affecting the repo. All environments in `platformio.ini` reference the `common_env_data` variables. If you have multiple boards on different ports, add per-environment overrides:
+   ```ini
+   [env:ttgo-t5-EINKBOARDDEPG0213BN]
+   upload_port = COM6
+   monitor_port = COM6
+   ```
 
 3. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
    ```bash
