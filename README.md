@@ -243,12 +243,13 @@ Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) — no so
    cd CO2-Gadget
    ```
 
-2. **Configure your board and ports** in `platformio.ini`:
+2. **Configure your board ports** (optional): create `platformio_extra_configs.ini` in the project root with your local COM ports:
    ```ini
    [common_env_data]
    upload_port = COM13        # Your board's USB port
    monitor_port = COM13       # Your board's USB port
    ```
+   This file is `.gitignore`'d — each developer keeps their own ports without affecting the repo. All environments in `platformio.ini` reference these variables, so you only need to set your ports once.
 
 3. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
    ```bash
