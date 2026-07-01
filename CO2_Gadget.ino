@@ -584,16 +584,20 @@ void advanceCalibrationSequence() {
 void processPendingCommands() {
     if (isDownloadingBLE) return;
     if (pendingCalibration == true) {
-        pendingCalibration = false;
         // Don't calibrate immediately — start the datasheet warm-up sequence, which
         // collects/discards readings (across wakes in low power) before recalibrating.
         if ((calibrationValue >= 400) && (calibrationValue <= 2000)) {
             if (deepSleepData.calPhase == CAL_IDLE) {
+                pendingCalibration = false;  // Only clear when calibration actually starts
                 beginCalibrationSequence(calibrationValue);
             } else {
-                Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); ignoring new request for " + String(calibrationValue) + " PPM");
+                // Keep pendingCalibration=true so the request retries on next loop;
+                // the warm-up may complete before the next call to processPendingCommands().
+                // See: https://github.com/melkati/CO2-Gadget/issues/286
+                Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); deferring new request for " + String(calibrationValue) + " PPM");
             }
         } else {
+            pendingCalibration = false;
             Serial.println("-->[MAIN] Avoiding calibrating CO2 sensor with invalid value at " + String(calibrationValue) + " PPM");
         }
     }
