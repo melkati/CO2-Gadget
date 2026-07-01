@@ -594,7 +594,11 @@ void processPendingCommands() {
                 // Keep pendingCalibration=true so the request retries on next loop;
                 // the warm-up may complete before the next call to processPendingCommands().
                 // See: https://github.com/melkati/CO2-Gadget/issues/286
-                Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); deferring new request for " + String(calibrationValue) + " PPM");
+                static uint16_t lastDeferredPpm = 0;
+                if (calibrationValue != lastDeferredPpm) {
+                    lastDeferredPpm = calibrationValue;
+                    Serial.println("-->[MAIN] Calibration already in progress (warming up to " + String(deepSleepData.calTargetPpm) + " ppm); deferring new request for " + String(calibrationValue) + " PPM");
+                }
             }
         } else {
             pendingCalibration = false;

@@ -1,9 +1,15 @@
 // Calibration page logic for CO2 Gadget
 
 (function () {
+    var calPollInFlight = false;
+
     // Poll /getCalibrationStatus to show real warm-up progress
     function pollCalibrationStatus() {
-        fetch('/getCalibrationStatus')
+        if (calPollInFlight) return;  // guard against overlapping polls
+        calPollInFlight = true;
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 5000);
+        fetch('/getCalibrationStatus', { signal: controller.signal })
             .then(function (r) { return r.json(); })
             .then(function (s) {
                 var noteEl = document.getElementById('pendingCalibrationNote');
@@ -21,7 +27,8 @@
                     noteEl.style.display = 'none';
                 }
             })
-            .catch(function () { /* endpoint may not respond during deep sleep */ });
+            .catch(function () { /* endpoint may not respond during deep sleep */ })
+            .finally(function () { clearTimeout(timeoutId); calPollInFlight = false; });
     }
 
     // Live readings — use dedicated sensor endpoints (same as index page)
