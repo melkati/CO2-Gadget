@@ -924,6 +924,9 @@ String getCO2GadgetStatusAsJson() {
 #ifdef SUPPORT_BLE
     doc["activeBLE"] = activeBLE;
 #endif
+#ifdef SUPPORT_BTHOME_BLE
+    doc["activeBTHome"] = activeBTHome;
+#endif
 #ifdef SUPPORT_OTA
     doc["activeOTA"] = activeOTA;
 #endif

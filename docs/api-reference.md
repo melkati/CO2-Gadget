@@ -24,7 +24,7 @@
 
 | Endpoint | Returns |
 |---|---|
-| `/status` | JSON: `co2`, `temp`, `hum`, `battery`, `rssi`, `uptime`, `freeHeap`, `minFreeHeap`, `lastResetReason`, `wifiStatus`, `mqttStatus`, `bleStatus`, `espNowStatus` |
+| `/status` | JSON: `co2`, `temp`, `hum`, `battery`, `rssi`, `uptime`, `freeHeap`, `minFreeHeap`, `lastResetReason`, `wifiStatus`, `mqttStatus`, `bleStatus`, `bthomeStatus`, `espNowStatus` |
 | `/getVersion` | JSON: `version` (firmware), `build` (timestamp) |
 | `/getFeaturesAsJson` | JSON: enabled features as boolean flags |
 | `/getFreeHeap` | Free heap memory in bytes |
@@ -47,6 +47,7 @@
   "wifiStatus": "connected",
   "mqttStatus": "connected",
   "bleStatus": "active",
+  "bthomeStatus": "active",
   "espNowStatus": "disabled"
 }
 ```

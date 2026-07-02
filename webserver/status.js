@@ -129,6 +129,7 @@ function loadStatusFromServer() {
                 activeWiFi: 'activeWiFi',
                 activeMQTT: 'activeMQTT',
                 activeBLE: 'activeBLE',
+                activeBTHome: 'activeBTHome',
                 activeOTA: 'activeOTA',
                 troubledWiFi: 'troubledWiFi',
                 troubledMQTT: 'troubledMQTT',
