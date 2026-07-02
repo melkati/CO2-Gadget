@@ -218,7 +218,6 @@ jobs:
           enable_jekyll: false
           force_orphan: true
           clean: true
-          clean_ignore: []
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
