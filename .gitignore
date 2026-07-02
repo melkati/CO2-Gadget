@@ -30,6 +30,8 @@ ppk2_v2_*.json
 serial_*.txt
 # Local Copilot instructions (not for GitHub — contains workflow config)
 .github/copilot-instructions.md
+# Local Copilot notes (Cloudflare WAF, session logs, etc. — not for GitHub)
+.copilot/
 # Local blog content (not for public repo)
 docs/archive/
 docs/blog-drafts/
