@@ -95,6 +95,16 @@ Sets a single preference and applies it immediately where possible.
 | `NeopixBright` | 0–255 | NeoPixel brightness |
 | `HistoryInterval` | 10–3600 | Circular buffer sampling interval (seconds) |
 
+### Get BTHome Bind Key (POST)
+```
+POST /getBTHomeBindKey
+```
+Returns the BTHome AES-CCM bind key (32 hex characters). Requires a confirmation prompt on the client; response includes `Cache-Control: no-store` headers.
+```json
+{"bindKey": "a1b2c3d4e5f67890..."}
+```
+**Security note:** The bind key is deliberately excluded from `/getActualSettingsAsJson` and is only accessible via this dedicated endpoint.
+
 ### Save Multiple Preferences (POST)
 ```
 POST /savePreferences
@@ -103,6 +113,8 @@ Content-Type: application/json
 {"MeasurementInterval": 30, "CO2OrangeRange": 800, "CO2RedRange": 1200}
 ```
 Returns `200 OK` on success.
+
+BTHome sensor selection is accepted as a partial JSON object `{"bthomeSensors": {"co2": true, "pm25": false}}` — only changed keys are applied.
 
 ### Save Thresholds (POST)
 ```

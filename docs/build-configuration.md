@@ -12,6 +12,8 @@ Define these in `platformio.ini` under `[features]` → `build_flags`. Comment o
 | Flag | Default | Purpose |
 |---|---|---|
 | `SUPPORT_BLE` | ON | BLE / Sensirion MyAmbiance App via NimBLE-Arduino |
+| `SUPPORT_BTHOME_BLE` | ON | BTHome v2 BLE advertisements for Home Assistant. Requires `SUPPORT_BLE`. |
+| `SUPPORT_LOW_POWER_PRESSURE` | **OFF** | Read BME280 pressure on deep-sleep wake (forced I²C per wake). Needs `SUPPORT_BTHOME_BLE` + `SUPPORT_LOW_POWER`. |
 | `SUPPORT_BUZZER` | ON | Passive piezo buzzer for CO₂ alerts |
 | `SUPPORT_ESPNOW` | **OFF** | ESP-NOW long-range radio protocol |
 | `SUPPORT_MDNS` | ON | mDNS hostname resolution (`CO2-Gadget.local`) |

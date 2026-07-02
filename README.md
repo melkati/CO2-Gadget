@@ -23,7 +23,7 @@
 
 **CO2-Gadget** is an advanced, feature-rich firmware for ESP32-based CO₂ monitors and air quality meters. It supports a wide range of CO₂ sensors, particulate matter (PM) sensors, environmental sensors, displays (TFT, OLED, E-Ink), and communication protocols (WiFi, BLE, MQTT, ESP-NOW). Whether you're building a custom air quality monitor or flashing a commercial board, CO2-Gadget offers enterprise-grade features in a compact embedded package.
 
-> **Current version:** v0.16.013-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
+> **Current version:** v0.16.014-beta — `development` branch. See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 This repository is primarily aimed at **developers and advanced users**. If you're an end user looking to install the firmware on your device, visit the [CO2 Gadget page](https://emariete.com/medidor-co2-gadget/) for pre-built binaries, one-click browser installation, and detailed guides — no compilation required.
 
@@ -82,6 +82,7 @@ Two power modes, switchable at runtime without reboot:
 |---|---|
 | **WiFi** | Web server (REST API), MQTT, OTA updates, Captive Portal |
 | **BLE** | Sensirion MyAmbiance App (iOS/Android) — real-time data, history download, WiFi configuration, SCD4x calibration |
+| **BTHome v2** | Home Assistant BLE auto-discovery — zero-config, no MQTT/WiFi needed. Encrypted (AES-CCM), wake-aware, 10 selectable measurements with smart byte-budget. Independently togglable from Sensirion MyAmbiance. |
 | **MQTT** | Publish measurements, battery, alarms; receive remote commands; Home Assistant Discovery (auto-config) |
 | **ESP-NOW** | Long-range, low-power Espressif protocol for mesh/gateway setups |
 | **HTTP/REST** | Full web API for configuration, sensor data, system status |
@@ -296,6 +297,19 @@ CO2-Gadget works with the **Sensirion MyAmbiance** app for iOS and Android:
 - WiFi configuration via BLE
 - Sensor calibration commands
 
+### 🏠 Home Assistant BLE (BTHome)
+
+CO₂ Gadget also emits standard **BTHome v2** advertisements that Home Assistant
+auto-discovers — no MQTT, no WiFi, no cloud.
+
+- **HA BLE auto-discovery** with entity creation
+- **10 selectable measurement types**: CO₂, Temperature, Humidity, Battery (% and mV),
+  Pressure, PM1.0/PM2.5/PM4.0/PM10 — granular selection in Web UI and serial menu
+- **Optional AES-CCM encryption** with auto-generated bind key, configurable via Web UI
+  (Reveal/Copy/Regenerate) and serial menu
+- **Low-power-aware**: PM omitted on deep sleep; pressure on wake requires opt-in build flag
+- **Fully independent** from Sensirion MyAmbiance — both can be active simultaneously
+
 ---
 
 ## 🏗️ Project Structure
@@ -316,6 +330,7 @@ CO2-Gadget/
 ├── CO2_Gadget_WIFI.h           # WiFi + Web server + REST API + Captive Portal
 ├── CO2_Gadget_Improv.h         # Improv WiFi serial configuration
 ├── CO2_Gadget_BLE.h            # BLE (Sensirion MyAmbiance App)
+├── CO2_Gadget_BTHome.h         # BTHome v2 BLE advertising (encoding, encryption, budget)
 ├── CO2_Gadget_MQTT.h           # MQTT client + Home Assistant Discovery
 ├── CO2_Gadget_ESP-NOW.h        # ESP-NOW communication
 ├── CO2_Gadget_TFT.h            # TFT display driver (TFT_eSPI)
@@ -328,6 +343,7 @@ CO2-Gadget/
 │   └── CO2_Gadget_Thresholds/  # Threshold manager library with NVS persistence
 ├── webserver/                  # Web UI source files (HTML, JS, CSS) + minification scripts
 ├── data/                       # Compiled SPIFFS data (minified + gzipped web assets)
+├── docs/BTHome.md              # BTHome technical reference (payload, encryption, deep sleep)
 └── docs/                       # Architecture and development documentation
 ```
 
@@ -343,6 +359,7 @@ Edit `platformio.ini` under the `[features]` section. Comment or uncomment any l
 [features]
 build_flags =
     -DSUPPORT_BLE              ; BLE / MyAmbiance App
+    -DSUPPORT_BTHOME_BLE       ; BTHome v2 BLE advertisements for Home Assistant
     -DSUPPORT_BUZZER           ; Piezo buzzer
     ; -DSUPPORT_ESPNOW         ; ESP-NOW (comment to disable)
     -DSUPPORT_MDNS             ; mDNS hostname resolution
@@ -350,6 +367,7 @@ build_flags =
     -DSUPPORT_MQTT_DISCOVERY   ; Home Assistant auto-discovery
     -DSUPPORT_OTA              ; Over-the-air updates
     -DSUPPORT_LOW_POWER        ; Deep sleep / low power mode
+    ; -DSUPPORT_LOW_POWER_PRESSURE ; BME280 pressure on deep-sleep wake (opt-in, needs BTHome + Low Power)
     -DSUPPORT_CIRCULAR_BUFFER  ; In-memory data buffer for web charts
 ```
 
