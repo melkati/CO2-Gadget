@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.014-beta (branch: development)
+## [Unreleased] — v0.16.015-beta (branch: development)
 
 > **Note:** Versioning reset as of 10 May 2026. The previous v0.14.x line is superseded by v0.15.x on this branch.
 
@@ -154,6 +154,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `#include "CO2_Gadget_Outputs.h"` replaces dual Neopixel + Buzzer includes
 - `-fpermissive` compiler flag removed
 - T-Display S3 port updated to COM17
+
+### Documentation (emariete.com blog)
+
+New and updated pages in the CO2 Gadget category:
+
+- **Migration guide (post 243097)** — step-by-step instructions for users coming from CO2 Easy to CO2 Gadget, covering hardware, firmware flashing, and preference migration.
+- **Why CO2 Gadget? (post 243103)** — feature comparison and rationale for choosing CO2 Gadget over alternatives; explains sensor coverage, connectivity options, and Home Assistant integration.
+- **FAQ (post 243105)** — frequently asked questions covering installation, calibration, MQTT discovery, BLE pairing, and troubleshooting.
+- **Hub page (post 238964)** — restructured with 1-click install entry point and unified navigation.
+- **Guides enhanced** — BLE, WiFi, MQTT, Low Power, ESP-NOW, BTHome, Sensores, Web UI, Salidas, and Instalación guides reviewed and updated.
+- **Reusable block 242122 (stable install table)** — known issue: uses `/v/` manifest path while `release3.yml` deploys to root of `gh-pages`. Will be fixed on next stable release. See `release-pipeline.md` notes.
 
 ---
 
