@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.012-beta (branch: development)
+## [Unreleased] — v0.16.014-beta (branch: development)
 
 > **Note:** Versioning reset as of 10 May 2026. The previous v0.14.x line is superseded by v0.15.x on this branch.
 
@@ -51,6 +51,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Serial menu**: low power settings moved to dedicated submenu; explicit save required to persist changes
 
 ### Added
+
+#### BTHome BLE (Home Assistant)
+- **BTHome v2 advertising** (#285, by @Tazmania0) — new BLE protocol independent from Sensirion MyAmbiance. Home Assistant auto-discovers the gadget without MQTT or WiFi.
+- **10 selectable measurement types**: CO₂, Temperature, Humidity, Battery (%, mV), Pressure, PM1.0/PM2.5/PM4.0/PM10. Granular selection in Web UI and serial menu with live byte-budget projection.
+- **Optional AES-CCM encryption** — 32-hex bind key auto-generated on first boot; configurable via Web UI (Reveal/Copy/Regenerate) and serial menu.
+- **Low-power-aware mode** — PM measurements are omitted during deep sleep (fan warm-up incompatible). Pressure on wake requires `SUPPORT_LOW_POWER_PRESSURE`. Selections are retained and resume automatically in HIGH_PERFORMANCE mode.
+- **Wake advertisement from deep sleep** — BTHome publishes immediately on timer/sensor wake with whichever sensor data was read (CO₂+temp+hum for SCD sensors, CO₂-only for CM1106/S8).
+- **Coexistence with MyAmbiance** — BTHome can run with Sensirion service on or off; when both active, BTHome rides in the scan response.
+- **`POST /getBTHomeBindKey` endpoint** — dedicated HTTP endpoint with confirmation prompt and no-store headers to reveal the bind key when encryption is active.
+- **TFT/E-Ink status icon** — 16×16 BTHome icon in the status icon strip.
 
 - **Firmware build date/time in web UI**: version string now includes build timestamp (`/status` endpoint)
 - **TFT screenshot capture**: new web endpoint `GET /screenshot` returns PNG screenshot of the display
