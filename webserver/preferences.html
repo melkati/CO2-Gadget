@@ -84,40 +84,11 @@
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
                         <span class="tooltip-text">Expose the Sensirion/MyAmbiance BLE service, history download, WiFi setup, and calibration.</span>
                     </div>
-                    <div class="form-group flex-align-center hidden">
+                    <div class="form-group flex-align-center">
                         <label for="activeBTHome">BTHome:</label>
                         <input type="checkbox" id="activeBTHome" name="activeBTHome">
                         <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
                         <span class="tooltip-text">Also expose CO2, temperature, humidity, and battery using BTHome v2 scan responses for Home Assistant.</span>
-                    </div>
-                    <div class="form-group flex-align-center hidden">
-                        <label for="bthomeEncryption">BTHome encryption:</label>
-                        <input type="checkbox" id="bthomeEncryption" name="bthomeEncryption">
-                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
-                        <span class="tooltip-text">Encrypt BTHome advertisements with AES-CCM. A bind key is generated automatically and can be replaced.</span>
-                    </div>
-                    <div class="form-group hidden" id="bthomeBindKeyGroup">
-                        <label for="bthomeBindKey">BTHome bind key:</label>
-                        <div class="bthome-key-controls">
-                            <input type="password" id="bthomeBindKey" name="bthomeBindKey" maxlength="32" pattern="[0-9a-fA-F]{32}" value="" placeholder="Stored key hidden" autocomplete="off" data-bthome-key>
-                            <div class="bthome-key-actions">
-                                <button type="button" class="btn-secondary" id="bthomeKeyReveal">Reveal</button>
-                                <button type="button" class="btn-secondary" id="bthomeKeyCopy" disabled>Copy</button>
-                                <button type="button" class="btn-secondary" id="bthomeKeyRegenerate">Regenerate</button>
-                            </div>
-                            <span class="bthome-key-status" id="bthomeKeyStatus">The stored key is not loaded into this page.</span>
-                            <span class="bthome-key-status">Note: settings backups do not include the bind key. After a Restore, reveal/re-enter or regenerate it and re-pair Home Assistant.</span>
-                        </div>
-                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24-10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
-                        <span class="tooltip-text">Encryption key shared with Home Assistant. Reveal explicitly, enter 32 hexadecimal characters, or stage a cryptographically random replacement and save it.</span>
-                    </div>
-                    <!-- [BTHOME-SENSEL] Per-sensor selection + live payload-fit projection. Populated by preferences.js -->
-                    <div class="form-group hidden" id="bthomeSensorsGroup">
-                        <label>BTHome sensors:</label>
-                        <div id="bthomeSensorsList" class="bthome-sensors-list"></div>
-                        <span class="bthome-budget-hint" id="bthomeBudgetHint"></span>
-                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
-                        <span class="tooltip-text">Choose desired BTHome values. Temporarily unavailable or invalid readings are retained but not sent; lower-priority values may be omitted when the payload is full.</span>
                     </div>
                     <div class="form-group flex-align-center">
                         <label for="activeWIFI">WiFi:</label>
@@ -235,6 +206,45 @@
                     <div class="form-group flex-align-center"><label for="peerESPNowAddress">Peer Address:</label><input type="text" id="peerESPNowAddress" name="peerESPNowAddress" value=""></div>
                     <div class="form-group flex-align-center"><label for="tToPubESPNow">Publish Interval (secs):</label><input type="number" id="tToPubESPNow" name="tToPubESPNow" value=""></div>
                     <div class="form-group flex-align-center"><label for="tKeepAlESPNow">Keep-Alive (secs):</label><input type="number" id="tKeepAlESPNow" name="tKeepAlESPNow" value=""></div>
+                </div>
+            </div>
+
+            <!-- BTHome Configuration -->
+            <div class="pref-section hidden" id="bthomeConfig">
+                <div class="pref-section-header">
+                    <div class="pref-section-icon"><svg viewBox="0 0 448 512"><path d="M349.4 44.6c5.9-13.7 1.5-29.7-10.6-38.5s-28.6-8-39.9 1.8l-256 224c-10 8.8-13.6 22.9-8.9 35.3S50.7 288 64 288H175.5L98.6 467.4c-5.9 13.7-1.5 29.7 10.6 38.5s28.6 8 39.9-1.8l256-224c10-8.8 13.6-22.9 8.9-35.3s-12.6-20.7-26-20.7H272.5L349.4 44.6z"/></svg></div>
+                    <span class="pref-section-title">BTHome Configuration</span>
+                </div>
+                <div class="pref-section-body">
+                    <div class="form-group flex-align-center">
+                        <label for="bthomeEncryption">BTHome encryption:</label>
+                        <input type="checkbox" id="bthomeEncryption" name="bthomeEncryption">
+                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
+                        <span class="tooltip-text">Encrypt BTHome advertisements with AES-CCM. A bind key is generated automatically and can be replaced.</span>
+                    </div>
+                    <div class="form-group" id="bthomeBindKeyGroup">
+                        <label for="bthomeBindKey">BTHome bind key:</label>
+                        <div class="bthome-key-controls">
+                            <input type="password" id="bthomeBindKey" name="bthomeBindKey" maxlength="32" pattern="[0-9a-fA-F]{32}" value="" placeholder="Stored key hidden" autocomplete="off" data-bthome-key>
+                            <div class="bthome-key-actions">
+                                <button type="button" class="btn-secondary" id="bthomeKeyReveal">Reveal</button>
+                                <button type="button" class="btn-secondary" id="bthomeKeyCopy" disabled>Copy</button>
+                                <button type="button" class="btn-secondary" id="bthomeKeyRegenerate">Regenerate</button>
+                            </div>
+                            <span class="bthome-key-status" id="bthomeKeyStatus">The stored key is not loaded into this page.</span>
+                            <span class="bthome-key-status">Note: settings backups do not include the bind key. After a Restore, reveal/re-enter or regenerate it and re-pair Home Assistant.</span>
+                        </div>
+                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
+                        <span class="tooltip-text">Encryption key shared with Home Assistant. Reveal explicitly, enter 32 hexadecimal characters, or stage a cryptographically random replacement and save it.</span>
+                    </div>
+                    <!-- [BTHOME-SENSEL] Per-sensor selection + live payload-fit projection. Populated by preferences.js -->
+                    <div class="form-group" id="bthomeSensorsGroup">
+                        <label>BTHome sensors:</label>
+                        <div id="bthomeSensorsList" class="bthome-sensors-list"></div>
+                        <span class="bthome-budget-hint" id="bthomeBudgetHint"></span>
+                        <span class="tooltip-icon"><svg viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></span>
+                        <span class="tooltip-text">Choose desired BTHome values. Temporarily unavailable or invalid readings are retained but not sent; lower-priority values may be omitted when the payload is full.</span>
+                    </div>
                 </div>
             </div>
 

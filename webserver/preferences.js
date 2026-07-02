@@ -34,7 +34,7 @@ function displayVersion() {
                 versionText += `-${versionInfo.firmBranch}`;
             }
             versionText += ` (Flavour: ${versionInfo.firmFlavour})`;
-            if (versionInfo.firmBuildDate) versionText += ` — Built: ${versionInfo.firmBuildDate}`;
+            if (versionInfo.firmBuildDate) versionText += ` - Built: ${versionInfo.firmBuildDate}`;
             if (versionInfo.firmBuildTime) versionText += ` at ${versionInfo.firmBuildTime}`;
             document.getElementById("co2GadgetVersion").innerText = versionText;
 
@@ -45,17 +45,21 @@ function displayVersion() {
                 displayBrightInput.max = "16";
                 displayBrightInput.step = "1";
                 const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
-                let currentText = tooltipText.textContent;
-                currentText += ' Valid brightness values: 1-16.';
+                if (tooltipText) {
+                    let currentText = tooltipText.textContent;
+                    currentText += ' Valid brightness values: 1-16.';
+                }
 
             } else {
                 const displayBrightInput = document.getElementById("DisplayBright");
                 let min = displayBrightInput.min;
                 let max = displayBrightInput.max;
                 const tooltipText = document.querySelector('#displayBrightDiv .tooltip-text');
-                let currentText = tooltipText.textContent;
-                currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
-                tooltipText.textContent = currentText;
+                if (tooltipText) {
+                    let currentText = tooltipText.textContent;
+                    currentText += ' Valid brightness values: ' + min + ' to ' + max + '.';
+                    tooltipText.textContent = currentText;
+                }
             }
 
             // TO-DO: Change to use getFeaturesAsJson endpoint to check for "EINK" instead of firmFlavour to reduce complexity
@@ -208,6 +212,7 @@ function populateFormWithPreferences(preferences) {
     });
     toggleVisibility('activeMQTT', 'mqttConfig');
     toggleVisibility('activeESPNOW', 'espNowConfig');
+    toggleVisibility('activeBTHome', 'bthomeConfig');
     toggleVisibility('useStaticIP', 'staticIPSettings');
 
     // Handle dependencies after form is populated
@@ -233,11 +238,9 @@ function loadPreferencesFromServer() {
  * @returns {Object} - The collected preferences data.
  */
 function setBTHomeSupportVisibility(isSupported) {
-    ["activeBTHome", "bthomeEncryption", "bthomeBindKey"].forEach((id) => {
-        const element = document.getElementById(id);
-        const formGroup = element ? element.closest(".form-group") : null;
-        if (formGroup) formGroup.classList.toggle("hidden", !isSupported);
-    });
+    setFormGroupVisibility("activeBTHome", isSupported);
+    const activeBTHome = document.getElementById("activeBTHome");
+    setSectionVisibility("bthomeConfig", isSupported && !!(activeBTHome && activeBTHome.checked));
     updateBTHomeControlsState();
 }
 
@@ -530,6 +533,8 @@ function applyFeatureVisibility() {
     setFormGroupVisibility("mqttShowInCon", features.SUPPORT_MQTT);
     setSectionVisibility("mqttConfig", features.SUPPORT_MQTT && !!(activeMQTT && activeMQTT.checked));
     setSectionVisibility("espNowConfig", features.SUPPORT_ESPNOW && !!(activeESPNOW && activeESPNOW.checked));
+    const activeBTHome = document.getElementById("activeBTHome");
+    setSectionVisibility("bthomeConfig", isBTHomeSupported() && !!(activeBTHome && activeBTHome.checked));
     setSectionVisibility("lowPowerSection", features.SUPPORT_LOW_POWER);
 }
 
