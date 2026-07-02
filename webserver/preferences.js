@@ -515,21 +515,17 @@ function handlePasswordFields() {
 }
 
 function calibrateSensor(calibrationValue) {
-    // Implement the calibration logic here
-    if (calibrationValue > 400 && calibrationValue < 2000) {
-        console.log("Calibration process started...");
-        console.log("Calibration value:", calibrationValue);
+    if (calibrationValue >= 400 && calibrationValue <= 2000) {
         fetch(`/settings?CalibrateCO2=${calibrationValue}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Error calibrating CO2 sensor');
-                console.log('CO2 sensor calibrated successfully');
+            .then(function (response) {
+                if (!response.ok) throw new Error('Server returned ' + response.status);
+                showPopup('Calibration command sent to ' + calibrationValue + ' ppm. Warm-up in progress.');
             })
-            .catch(error => console.error('Error calibrating CO2 sensor:', error));
+            .catch(function (error) {
+                showPopup('Error: ' + error.message);
+            });
     } else {
-        console.error(
-            "Invalid calibration value, please enter a value between 400 and 2000 ppm"
-        );
-        console.log("Calibration value:", calibrationValue);
+        showPopup('Invalid calibration value: ' + calibrationValue + ' ppm. Must be 400–2000.');
     }
 }
 

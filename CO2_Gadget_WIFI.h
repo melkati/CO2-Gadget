@@ -1584,6 +1584,8 @@ void initWebServer() {
                     } else {
                         request->send(400, "text/plain", "Error. CO2 calibration value must be between 400 and 2000");
                     }
+                } else {
+                    request->send(400, "text/plain", "Error. CalibrateCO2 must be a number");
                 }
             };
             // <CO2-GADGET_IP>/settings?ToggleDisplayReverse
