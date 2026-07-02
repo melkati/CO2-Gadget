@@ -49,6 +49,11 @@ void publishMQTTLogData(String logData);            // Defined in CO2_Gadget_MQT
 void putPreferences();                              // Defined in CO2_Gadget_Preferences.h
 void menuLoop();                                    // Defined in CO2_Gadget_Menu.h
 void setBLEHistoryInterval(uint64_t interval);      // Defined in CO2_Gadget_BLE.h
+void refreshBLEOutputs(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
+void refreshBTHomeBLESettings(const char* reason, bool forcePublish = true);  // Defined in CO2_Gadget_BLE.h
+#ifdef SUPPORT_BTHOME_BLE
+uint32_t getBTHomeCounterNVSValue();                // Defined in CO2_Gadget_BTHome.h
+#endif
 String getLowPowerModeName(uint16_t mode);          // Defined in CO2_Gadget_DeepSleep.h
 uint64_t getReliableUptimeSeconds();                // Accumulated uptime across deep sleep cycles
 String getReliableUptimeFormatted();                // Accumulated uptime formatted as <dd>d <hh>h <mm>m
@@ -88,8 +93,63 @@ String MACAddress = "Unset";
 uint8_t peerESPNowAddress[] = ESPNOW_PEER_MAC_ADDRESS;
 
 // BLE options
+bool enableBLE = true;
 bool activeBLE = true;
+#ifdef SUPPORT_BTHOME_BLE
+bool activeBTHome = false;
+bool bthomeEncryption = false;
+String bthomeBindKey = "";
+// BTHome encryption uses a 32-bit packet counter in the nonce. A long-lived key
+// must be replaced before this counter wraps.
+uint32_t bthomeCounter = 0;
+bool bthomeCounterNeedsSeed = false;
+// [BTHOME-SENSEL] Selectable BTHome measurements: bitmask of which values to publish.
+enum : uint32_t {
+    BTHOME_SEL_BATTERY = 1u << 0,
+    BTHOME_SEL_VOLTAGE = 1u << 1,
+    BTHOME_SEL_TEMP    = 1u << 2,
+    BTHOME_SEL_HUM     = 1u << 3,
+    BTHOME_SEL_PRESS   = 1u << 4,
+    BTHOME_SEL_CO2     = 1u << 5,
+    BTHOME_SEL_PM25    = 1u << 6,
+    BTHOME_SEL_PM10    = 1u << 7,
+    BTHOME_SEL_PM1     = 1u << 8,  // no standard BTHome object (non-native)
+    BTHOME_SEL_PM4     = 1u << 9,  // no standard BTHome object (non-native)
+};
+// Default selection = the "core" measurements only (CO2, temperature, humidity,
+// battery). Optional sensors (pressure, PM2.5/PM10, battery voltage) are opt-in:
+// pre-selecting them would show as "selected but not detected" on the many devices
+// that lack that hardware. Only applies on first boot; a saved selection wins.
+#define BTHOME_DEFAULT_SENSOR_MASK ((uint32_t)(BTHOME_SEL_BATTERY | BTHOME_SEL_TEMP | BTHOME_SEL_HUM | BTHOME_SEL_CO2))
+uint32_t bthomeSensors = BTHOME_DEFAULT_SENSOR_MASK;
+// Runtime-only mask of measurements populated during this boot/wake. The
+// durable bthomeSensors mask remains the user's desired selection.
+uint32_t bthomeFreshMeasurements = 0;
+#else
+constexpr bool activeBTHome = false;
+constexpr bool bthomeEncryption = false;
+const String bthomeBindKey = "";
+constexpr uint32_t bthomeCounter = 0;
+#endif
 bool isDownloadingBLE = false;
+
+#ifdef SUPPORT_LOW_POWER
+constexpr uint32_t BLE_WAKE_SETTINGS_MAGIC = 0xB1E20207;
+
+typedef struct {
+    uint32_t magic = 0;
+    bool enableBLEOnWake = true;
+    bool sensirionBLEOnWake = true;
+    bool activeBTHomeOnWake = false;
+    bool bthomeEncryptionOnWake = false;
+    char bthomeBindKeyOnWake[33] = "";
+    uint32_t bthomeSensorsOnWake = 0;
+    uint32_t bthomeCounterOnWake = 0;
+    uint32_t checksum = 0;
+} bleWakeSettings_t;
+
+RTC_DATA_ATTR bleWakeSettings_t bleWakeSettingsRTC;
+#endif
 
 // WIFI options
 bool activeWIFI = true;
@@ -169,15 +229,25 @@ uint64_t timeInitializationCompleted = 0;
 // Variables for Battery reading
 float batteryVoltage = 0;
 uint8_t batteryLevel = 100;
+#ifdef SUPPORT_LOW_POWER
+RTC_DATA_ATTR uint16_t vRef = 960;
+#else
 uint16_t vRef = 960;
+#endif
 uint16_t batteryDischargedMillivolts = 3200;    // Voltage of battery when we consider it discharged (0%).
 uint16_t batteryFullyChargedMillivolts = 4200;  // Voltage of battery when it is considered fully charged (100%).
 
 // Variables to control automatic display off to save power
+#ifdef SUPPORT_LOW_POWER
+RTC_DATA_ATTR bool hasBattery = false;
+RTC_DATA_ATTR bool workingOnExternalPower = true;    // True if working on external power (USB connected)
+RTC_DATA_ATTR bool displayOffOnExternalPower = false;
+#else
 bool hasBattery = false;
 bool workingOnExternalPower = true;    // True if working on external power (USB connected)
-uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool displayOffOnExternalPower = false;
+#endif
+uint32_t actualDisplayBrightness = 0;  // To know if it's on or off
 bool wakeDisplayOnCO2Alert = true;            // Wake display when CO2 rises above the warning threshold (issue #80)
 uint16_t timeToDisplayOff = 0;                // Time in seconds to turn off the display to save power.
 volatile uint64_t lastTimeButtonPressed = 0;  // Last time stamp button up was pressed
@@ -238,6 +308,7 @@ typedef struct {
     float lastTemperatureValue;
     float lastHumidityValue;
     bool activeBLEOnWake = true;
+    bool hasPressureOnWake;  // A pressure sensor (BME280) was present at sleep; gates the SUPPORT_LOW_POWER_PRESSURE wake read
     bool activeWifiOnWake;
     bool sendMQTTOnWake;
     bool sendESPNowOnWake;
@@ -885,6 +956,7 @@ void initGPIOLowPower() {
     initBattery();
     initOutputsGPIO();
 #ifdef SUPPORT_BLE
+    restoreBLEWakeSettingsFromRTC();
     initBLE();
 #endif
     // initSensors();

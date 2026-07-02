@@ -72,6 +72,18 @@ function setCombineMode(andRadioId, orRadioId, combineWithAnd) {
     document.getElementById(orRadioId).checked = !useAnd;
 }
 
+function setFormGroupVisibility(elementId, isVisible) {
+    const element = document.getElementById(elementId);
+    const formGroup = element ? element.closest(".form-group") : null;
+    if (formGroup) formGroup.classList.toggle("hidden", !isVisible);
+    if (element && !isVisible && element.type === "checkbox") {
+        element.checked = false;
+        element.disabled = true;
+    } else if (element) {
+        element.disabled = false;
+    }
+}
+
 function setThresholdTabVisibility(tabName, isVisible) {
     const checkbox = document.getElementById("chk" + tabName);
     const tabContent = document.getElementById(tabName);
@@ -215,6 +227,8 @@ function loadThresholdsFromServer() {
             toggle('chkBluetooth', 'Bluetooth');
             toggle('chkMQTT', 'MQTT');
             toggle('chkESPNOW', 'ESPNOW');
+            applyFeatureVisibility();
+            openFirstAvailableTab();
         })
         .catch(error => console.error('Error retrieving thresholds:', error));
 }

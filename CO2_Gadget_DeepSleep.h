@@ -11,8 +11,17 @@
 
 #include <Sensors.hpp>
 
+const uint16_t DEEP_SLEEP_SECONDS_MIN = 15;
+const uint16_t DEEP_SLEEP_SECONDS_MAX = 900;
+const uint16_t DEEP_SLEEP_SECONDS_DEFAULT = 60;
+
+#ifdef DEBUG_DEEP
 #define DEEP_SLEEP_DEBUG
+#endif
+
+#ifdef DEBUG_DEEP_RTC
 #define DEEP_SLEEP_DEBUG2
+#endif
 
 // CO2 sensors enum
 // typedef enum {
@@ -237,6 +246,100 @@ void callbackTouch() {
     // placeholder callback function
 }
 
+uint32_t calculateBLEWakeSettingsChecksum() {
+    uint32_t checksum = 2166136261UL;
+    auto mixByte = [&checksum](uint8_t value) {
+        checksum ^= value;
+        checksum *= 16777619UL;
+    };
+
+    mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.enableBLEOnWake));
+    mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.sensirionBLEOnWake));
+    mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.activeBTHomeOnWake));
+    mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.bthomeEncryptionOnWake));
+    for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeBindKeyOnWake); ++i) {
+        mixByte(static_cast<uint8_t>(bleWakeSettingsRTC.bthomeBindKeyOnWake[i]));
+    }
+    for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeSensorsOnWake); ++i) {
+        mixByte(static_cast<uint8_t>((bleWakeSettingsRTC.bthomeSensorsOnWake >> (i * 8)) & 0xFF));
+    }
+    for (uint8_t i = 0; i < sizeof(bleWakeSettingsRTC.bthomeCounterOnWake); ++i) {
+        mixByte(static_cast<uint8_t>((bleWakeSettingsRTC.bthomeCounterOnWake >> (i * 8)) & 0xFF));
+    }
+
+    return checksum;
+}
+
+void saveBLEWakeSettingsToRTC() {
+#ifdef SUPPORT_BLE
+    bleWakeSettingsRTC.magic = BLE_WAKE_SETTINGS_MAGIC;
+    bleWakeSettingsRTC.enableBLEOnWake = enableBLE;
+    bleWakeSettingsRTC.sensirionBLEOnWake = activeBLE;
+#ifdef SUPPORT_BTHOME_BLE
+    bleWakeSettingsRTC.activeBTHomeOnWake = activeBTHome;
+    bleWakeSettingsRTC.bthomeEncryptionOnWake = bthomeEncryption;
+    bleWakeSettingsRTC.bthomeSensorsOnWake = bthomeSensors;
+    bleWakeSettingsRTC.bthomeCounterOnWake = bthomeCounter;
+    bthomeBindKey.toCharArray(bleWakeSettingsRTC.bthomeBindKeyOnWake, sizeof(bleWakeSettingsRTC.bthomeBindKeyOnWake));
+#else
+    bleWakeSettingsRTC.activeBTHomeOnWake = false;
+    bleWakeSettingsRTC.bthomeEncryptionOnWake = false;
+    bleWakeSettingsRTC.bthomeSensorsOnWake = 0;
+    bleWakeSettingsRTC.bthomeCounterOnWake = 0;
+    bleWakeSettingsRTC.bthomeBindKeyOnWake[0] = '\0';
+#endif
+    bleWakeSettingsRTC.checksum = calculateBLEWakeSettingsChecksum();
+    Serial.println("-->[DEEP] Saved BLE wake settings. magic: 0x" + String(bleWakeSettingsRTC.magic, HEX) + ", checksum: 0x" + String(bleWakeSettingsRTC.checksum, HEX) + ", actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(bleWakeSettingsRTC.activeBTHomeOnWake));
+#endif
+}
+
+void restoreBLEWakeSettingsFromRTC() {
+#ifdef SUPPORT_BLE
+    uint32_t currentBLEWakeSettingsChecksum = calculateBLEWakeSettingsChecksum();
+    if ((bleWakeSettingsRTC.magic != BLE_WAKE_SETTINGS_MAGIC) || (bleWakeSettingsRTC.checksum != currentBLEWakeSettingsChecksum)) {
+        uint32_t previousBLEWakeSettingsMagic = bleWakeSettingsRTC.magic;
+        uint32_t previousBLEWakeSettingsChecksum = bleWakeSettingsRTC.checksum;
+        preferences.begin("CO2-Gadget", false);
+        enableBLE = preferences.getBool("enableBLE", true);
+        activeBLE = preferences.getBool("activeBLE", true);
+#ifdef SUPPORT_BTHOME_BLE
+        activeBTHome = preferences.getBool("activeBTHome", false);
+        bthomeEncryption = preferences.getBool("bthomeEncrypt", false);
+        bthomeBindKey = preferences.getString("bthomeBindKey", "");
+        bthomeSensors = preferences.getUInt("bthomeSensors", BTHOME_DEFAULT_SENSOR_MASK);
+        bthomeCounter = preferences.getUInt("bthomeCounter", 0);
+        bthomeCounterNeedsSeed = true;
+        ensureBTHomeBindKey();
+#endif
+        preferences.end();
+        saveBLEWakeSettingsToRTC();
+        Serial.println("-->[DEEP] Restored BLE wake settings from preferences because RTC snapshot was not valid. previous magic: 0x" + String(previousBLEWakeSettingsMagic, HEX) + ", previous checksum: 0x" + String(previousBLEWakeSettingsChecksum, HEX) + ", calculated checksum: 0x" + String(currentBLEWakeSettingsChecksum, HEX));
+        return;
+    }
+    enableBLE = bleWakeSettingsRTC.enableBLEOnWake;
+    activeBLE = bleWakeSettingsRTC.sensirionBLEOnWake;
+#ifdef SUPPORT_BTHOME_BLE
+    activeBTHome = bleWakeSettingsRTC.activeBTHomeOnWake;
+    bthomeEncryption = bleWakeSettingsRTC.bthomeEncryptionOnWake;
+    bthomeSensors = bleWakeSettingsRTC.bthomeSensorsOnWake;
+    bthomeCounter = bleWakeSettingsRTC.bthomeCounterOnWake;
+    bthomeBindKey = String(bleWakeSettingsRTC.bthomeBindKeyOnWake);
+#endif
+    Serial.println("-->[DEEP] Restored BLE wake settings. magic: 0x" + String(bleWakeSettingsRTC.magic, HEX) + ", checksum: 0x" + String(bleWakeSettingsRTC.checksum, HEX) + ", actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
+#endif
+}
+
+uint16_t getValidatedDeepSleepSeconds() {
+    if ((deepSleepData.timeSleeping < DEEP_SLEEP_SECONDS_MIN) || (deepSleepData.timeSleeping > DEEP_SLEEP_SECONDS_MAX)) {
+#ifdef DEEP_SLEEP_DEBUG
+        Serial.println("-->[DEEP] Invalid timeSleeping in RTC memory: " + String(deepSleepData.timeSleeping) + ". Using " + String(DEEP_SLEEP_SECONDS_DEFAULT) + " seconds.");
+#endif
+        deepSleepData.timeSleeping = DEEP_SLEEP_SECONDS_DEFAULT;
+    }
+
+    return deepSleepData.timeSleeping;
+}
+
 void prepareServicesForDeepSleep() {
 #ifdef SUPPORT_MQTT
     if (mqttClient.connected()) {
@@ -269,10 +372,12 @@ void toDeepSleep() {
 #endif
 
     deepSleepData.uptimeMillis += millis();
+    const uint16_t sleepSeconds = getValidatedDeepSleepSeconds();
 
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)
                 deepSleepData.displayReverseOnWake = displayReverse;
 #endif
+    saveBLEWakeSettingsToRTC();
 
     if (deepSleepData.co2Sensor == static_cast<CO2SENSORS_t>(CO2Sensor_SCD30)) {
         // sensors.scd30.stopContinuousMeasurement();
@@ -296,12 +401,16 @@ void toDeepSleep() {
         sensors.scd4x.startLowPowerPeriodicMeasurement();
     }
 
+#ifdef DEEP_SLEEP_DEBUG
     Serial.println("");
     Serial.println("-->***********************************************************************************");
-    Serial.println("-->[DEEP] Going into deep sleep for " + String(deepSleepData.timeSleeping) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
+    Serial.println("-->[DEEP] Going into deep sleep for " + String(sleepSeconds) + " seconds with LowPowerMode: " + String(deepSleepData.lowPowerMode) + " (" + getLowPowerModeName(deepSleepData.lowPowerMode) + ")");
     Serial.println("-->***********************************************************************************");
     Serial.println("");
+#endif
     printRTCMemoryEnter();
+
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
 #ifdef BTN_WAKEUP_IS_TOUCHPAD
     // Setup interrupt on Touch Pad 0 (GPIO15)
@@ -334,6 +443,7 @@ void toDeepSleep() {
     prepareServicesForDeepSleep();
     Serial.flush();
     esp_deep_sleep_disable_rom_logging();
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
     // #ifdef BTN_WAKEUP
     //     esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(BTN_WAKEUP), BTN_WAKEUP_ON);  // 1 = High, 0 = Low
     // #else
@@ -364,8 +474,10 @@ void toDeepSleep() {
     }
 #endif
     // #endif
-    esp_sleep_enable_timer_wakeup(deepSleepData.timeSleeping * 1000000ULL);
+    esp_sleep_enable_timer_wakeup(static_cast<uint64_t>(sleepSeconds) * 1000000ULL);
     delay(5);
+
+    prepareServicesForDeepSleep();
 
 #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
     // On ESP32-S3 with USB CDC (HWCDC) enabled, the USB PHY can prevent deep sleep
@@ -449,22 +561,30 @@ void doDeepSleepMQTTConnect() {
 
 void doDeepSleepWiFiConnect() {
     initPreferences();
+    bool wifiConnected = WiFi.status() == WL_CONNECTED;
     if (deepSleepData.activeWifiOnWake) {
-        connectToWiFi();
+        wifiConnected = connectToWiFi();
     }
 
 #ifdef SUPPORT_ESPNOW
-    if (deepSleepData.sendESPNowOnWake) {
+    if (deepSleepData.sendESPNowOnWake && wifiConnected) {
         initESPNow();
     }
 #endif
 #ifdef SUPPORT_MQTT
-    if (deepSleepData.sendMQTTOnWake) {
+    if (deepSleepData.sendMQTTOnWake && wifiConnected) {
         doDeepSleepMQTTConnect();
     }
 #endif
     if (deepSleepData.activateWiFiEvery > 0) {
-        deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+        if (wifiConnected) {
+            deepSleepData.cyclesLeftToWiFiConnect = deepSleepData.activateWiFiEvery;
+        } else {
+            deepSleepData.cyclesLeftToWiFiConnect = 1;
+#ifdef DEEP_SLEEP_DEBUG
+            Serial.println("-->[DEEP] WiFi connection failed. Will retry on next wake cycle.");
+#endif
+        }
     }
 }
 
@@ -487,6 +607,7 @@ void reInitI2C() {
 #endif
         delay(10);
     }
+    Wire.setTimeout(2000);
 }
 
 /**
@@ -802,6 +923,9 @@ bool scd30HandleFromDeepSleep(bool blockingMode = true) {
 
 bool handleLowPowerSensors() {
     bool readOK = false;
+#ifdef SUPPORT_BTHOME_BLE
+    bthomeFreshMeasurements = 0;
+#endif
     bool blockingMode = true;
     // Non-blocking mode for timer wakes so the wake cycle ends quickly
     // (~0.3s) when sensor data isn't ready, instead of burning ~14 mA for ~5s.
@@ -834,9 +958,46 @@ bool handleLowPowerSensors() {
 #endif
         readOK = scd40HandleFromDeepSleep(blockingMode);  // NOTE: must be outside #ifdef DEEP_SLEEP_DEBUG
     } else {
+#ifdef DEEP_SLEEP_DEBUG
         if (!interactiveMode) Serial.println("-->[DEEP][ERROR] deepSleepData.co2Sensor: Unknown");
+#endif
         sensors.init();
     }
+#ifdef SUPPORT_BTHOME_BLE
+    if (readOK) {
+        switch (deepSleepData.co2Sensor) {
+            case CO2Sensor_SCD30:
+            case CO2Sensor_SCD40:
+            case CO2Sensor_SCD41:
+                bthomeFreshMeasurements |= BTHOME_SEL_CO2 | BTHOME_SEL_TEMP | BTHOME_SEL_HUM;
+                break;
+            case CO2Sensor_CM1106SL_NS:
+                bthomeFreshMeasurements |= BTHOME_SEL_CO2;
+                break;
+            default:
+                break;
+        }
+    }
+#if defined(SUPPORT_LOW_POWER_PRESSURE)
+    // Pressure is cheap to obtain on wake (a single forced I2C read), unlike PM
+    // which needs a multi-second fan warm-up. Re-init the BME280 and take one
+    // forced sample so the sensor returns to sleep between wakes, then mark
+    // pressure fresh. I2C is already up from the CO2 sensor read above.
+    if (readOK && deepSleepData.hasPressureOnWake) {
+        if (sensors.bme280.begin() || sensors.bme280.begin(BME280_ADDRESS_ALTERNATE)) {
+            sensors.bme280.setSampling(Adafruit_BME280::MODE_FORCED,
+                                       Adafruit_BME280::SAMPLING_X1,    // temperature
+                                       Adafruit_BME280::SAMPLING_X1,    // pressure
+                                       Adafruit_BME280::SAMPLING_NONE,  // humidity
+                                       Adafruit_BME280::FILTER_OFF);
+            if (sensors.bme280.takeForcedMeasurement()) {
+                pressureHpa = sensors.bme280.readPressure() / 100.0f;  // Pa -> hPa
+                bthomeFreshMeasurements |= BTHOME_SEL_PRESS;
+            }
+        }
+    }
+#endif
+#endif
     return (readOK);
 }
 
@@ -858,12 +1019,34 @@ void handleCycleCountersOnWake() {
 
 void handleBLEOnWake() {
 #ifdef SUPPORT_BLE
-    if (deepSleepData.activeBLEOnWake) {
+    if (deepSleepData.activeBLEOnWake && enableBLE && (activeBLE || activeBTHome)) {
         initBLE();
-#ifdef DEEP_SLEEP_DEBUG
-        Serial.println("-->[DEEP] BLE initialized. activeBLE: " + String(activeBLE));
+        Serial.println("-->[DEEP] BLE initialized. enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
+        bool wakePayloadPublished = publishBLE(true);
+        if (!wakePayloadPublished) {
+            Serial.println("-->[DEEP] BLE wake advertisement skipped because no payload was published.");
+        }
+#ifdef SUPPORT_BTHOME_BLE
+        else if (activeBLE && activeBTHome && sensirionBLEInitialized) {
+            Serial.println("-->[DEEP] Sensirion BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+            delay(BLE_WAKE_ADVERTISEMENT_MS);
+            bool bthomePrimaryAdvertised = updateBTHomeAdvertisementData(false, true, false);
+            if (bthomePrimaryAdvertised) {
+                Serial.println("-->[DEEP] BTHome BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+                delay(BLE_WAKE_ADVERTISEMENT_MS);
+                restoreSensirionAdvertisementData();
+                updateBTHomeAdvertisementData(false, false, false);
+            } else {
+                Serial.println("-->[DEEP] BTHome primary wake advertisement skipped.");
+            }
+        }
 #endif
-        publishBLE();
+        else {
+            Serial.println("-->[DEEP] BLE wake advertisement window: " + String(BLE_WAKE_ADVERTISEMENT_MS) + " ms");
+            delay(BLE_WAKE_ADVERTISEMENT_MS);
+        }
+    } else {
+        Serial.println("-->[DEEP] BLE wake skipped. actBLEOnWake: " + String(deepSleepData.activeBLEOnWake) + ", enableBLE: " + String(enableBLE) + ", activeBLE: " + String(activeBLE) + ", activeBTHome: " + String(activeBTHome));
     }
 #endif
 }
@@ -936,6 +1119,9 @@ void handleMQTTPublishOnWake() {
 void handleLowPowerModeOnWake() {
 #ifdef DEEP_SLEEP_DEBUG
     Serial.println("-->[DEEP] Waking up from deep sleep. LowPowerMode: LOW_POWER");
+#endif
+#ifdef SUPPORT_BLE
+    restoreBLEWakeSettingsFromRTC();
 #endif
     initBattery();
     batteryLoop();
@@ -1099,14 +1285,16 @@ void deepSleepLoop() {
         // if ((millis() - lastDotPrintTime >= 1000)) {
         //     Serial.print(".");            // Print a dot every loop to show that the device is alive
         //     lastDotPrintTime = millis();  // Update last print time
+#endif
     } else {
+#ifdef DEEP_SLEEP_DEBUG
         // Check if enough time has passed since the last print
         if (millis() - lastSerialPrintTime >= 5000) {
             // Serial.println("-->[DEEP] startTimerToDeepSleep: " + String(startTimerToDeepSleep) + " deepSleepData.waitToGoDeepSleepOn1stBoot: " + String(deepSleepData.waitToGoDeepSleepOn1stBoot) + "Now: " + String(millis()));
             Serial.println("-->[DEEP] (inMenu=FALSE) Waiting to go to deep sleep in: " + String((deepSleepData.waitToGoDeepSleepOn1stBoot * 1000 - (millis() - startTimerToDeepSleep)) / 5000) + " seconds");
             lastSerialPrintTime = millis();  // Update last print time
-#endif
         }
+#endif
 
         if (millis() - startTimerToDeepSleep >= deepSleepData.waitToGoDeepSleepOn1stBoot * 1000) {
 #if defined(SUPPORT_TFT) || defined(SUPPORT_OLED) || defined(SUPPORT_EINK)

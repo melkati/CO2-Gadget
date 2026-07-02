@@ -81,6 +81,7 @@ const char *const hexChars[] MEMMODE = {"0123456789ABCDEF"};
 const char *const alphaNum[] MEMMODE = {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,+-_"};
 const char *const allChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@$%&/()=+-*^~:.[]{}?¿"};
 const char *const ssidChars[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!#@%&/()=-*^~:.{}¿"};
+const char *const bthomeKeyChars[] MEMMODE = {"0123456789abcdefABCDEF-"};
 const char *const reducedSet[] MEMMODE = {" 0123456789abcdefghijklmnopqrstuvwxyz.-_"};
 
 // field will initialize its size by this string length
@@ -93,6 +94,7 @@ char tempWiFiSSID[33] = "                                ";
 char tempWiFiPasswrd[64] = "                                                               ";
 char tempHostName[] = "                              ";
 char tempBLEDeviceId[] = "                              ";
+char tempBTHomeBindKey[33] = "                                ";
 char tempCO2Sensor[] = "                              ";
 char tempESPNowAddress[] = "            ";
 
@@ -248,14 +250,14 @@ int8_t setCO2Sensor;
 const uint8_t AutoSensor = 0, MHZ19 = 4, CM1106 = 5, SENSEAIRS8 = 6;
 
 void SetTempCO2Sensor(int8_t sensor) {
-  String strSensor="", paddedString="";  
-  
+  String strSensor="", paddedString="";
+
   if (sensor==AutoSensor)            {strSensor = "AutoSensor";}
   else if (sensor==MHZ19)      {strSensor = "MHZ19";}
   else if (sensor==CM1106)     {strSensor = "CM1106";}
   else if (sensor==SENSEAIRS8) {strSensor = "SENSEAIRS8";}
   else {strSensor = "Unknown";}
-  paddedString = rightPad(strSensor, 30);  
+  paddedString = rightPad(strSensor, 30);
   paddedString.toCharArray(tempMQTTTopic, paddedString.length());
   #ifdef DEBUG_ARDUINOMENU
   Serial.printf("-->[MENU] Setting selected CO2 sensor to: #%s#\n", paddedString.c_str());
@@ -306,19 +308,306 @@ MENU(CO2SensorConfigMenu, "CO2 Sensor", doNothing, noEvent, wrapStyle
   ,SUBMENU(debugSensorsMenu)
   ,EXIT("<Back"));
 
+void printSerialPendingSave();
+
 #ifdef SUPPORT_BLE
-result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
+result doSetEnableBLE(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("enableBLE", enableBLE);
+  preferences.end();
+  refreshBLEOutputs(enableBLE ? "BLE enabled" : "BLE disabled", true);
   return proceed;
 }
 
-TOGGLE(activeBLE, activeBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
+TOGGLE(enableBLE, enableBLEMenu, "BLE Enable: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetEnableBLE, exitEvent)
+  ,VALUE("OFF", false, doSetEnableBLE, exitEvent));
+
+result doSetActiveBLE(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("activeBLE", activeBLE);
+  preferences.end();
+  refreshBLEOutputs(activeBLE ? "MyAmbience output enabled" : "MyAmbience output disabled", true);
+  return proceed;
+}
+
+TOGGLE(activeBLE, activeBLEMenu, "MyAmbience: ", doNothing, noEvent, wrapStyle
   ,VALUE("ON", true, doSetActiveBLE, exitEvent)
   ,VALUE("OFF", false, doSetActiveBLE, exitEvent));
 
+#ifdef SUPPORT_BTHOME_BLE
+result doSetActiveBTHome(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("activeBTHome", activeBTHome);
+  preferences.end();
+  refreshBTHomeBLESettings(activeBTHome ? "BTHome output enabled" : "BTHome output disabled", true);
+  return proceed;
+}
+
+TOGGLE(activeBTHome, activeBTHomeMenu, "BTHome: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetActiveBTHome, exitEvent)
+  ,VALUE("OFF", false, doSetActiveBTHome, exitEvent));
+
+result doSetBTHomeEncryption(eventMask e, navNode &nav, prompt &item) {
+  preferences.begin("CO2-Gadget", false);
+  preferences.putBool("bthomeEncrypt", bthomeEncryption);
+  preferences.end();
+  refreshBTHomeBLESettings(bthomeEncryption ? "BTHome encryption enabled" : "BTHome encryption disabled", true);
+  return proceed;
+}
+
+TOGGLE(bthomeEncryption, bthomeEncryptionMenu, "BTHome Enc: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeEncryption, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeEncryption, exitEvent));
+
+result doSetBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
+  String newBindKey = String(tempBTHomeBindKey);
+  newBindKey.trim();
+  if ((newBindKey.length() > 0) && !setBTHomeBindKey(newBindKey)) {
+    Serial.println("-->[MENU] BTHome bind key unchanged.");
+    copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+    return proceed;
+  }
+  preferences.begin("CO2-Gadget", false);
+  preferences.putString("bthomeBindKey", bthomeBindKey);
+  preferences.end();
+  Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
+  refreshBTHomeBLESettings("BTHome bind key updated", true);
+  return proceed;
+}
+
+result doSerialBTHomeBindKey(eventMask e, navNode &nav, prompt &item) {
+  String newBindKey;
+
+  Serial.println();
+  Serial.println("**********************************************************************");
+  Serial.println("-->[MENU] Serial BTHome bind key setup");
+  Serial.println("-->[MENU] Paste/type 32 hex characters, then press Enter.");
+  Serial.println("-->[MENU] Spaces, ':' and '-' separators are accepted.");
+  Serial.println("-->[MENU] Enter / alone to cancel.");
+  Serial.println("-->[MENU] Leave blank to keep the current key.");
+  Serial.println("-->[MENU] Enter a single dash (-) to generate a new key.");
+  ensureBTHomeBindKey();
+  Serial.println("-->[MENU] Current BTHome bind key: " + bthomeBindKey);
+  Serial.println("**********************************************************************");
+
+  if (!readSerialLine("-->[MENU] BTHome key: ", newBindKey, 47, true, 120000)) return quit;
+  if (serialWizardCanceled(newBindKey, "Serial BTHome bind key setup")) return quit;
+  newBindKey.trim();
+  if (newBindKey.length() == 0) {
+    Serial.println("-->[MENU] BTHome bind key unchanged.");
+    Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
+    return quit;
+  }
+
+  if (!setBTHomeBindKey(newBindKey)) {
+    Serial.println("-->[MENU] BTHome bind key unchanged.");
+    return quit;
+  }
+
+  copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+
+  Serial.println("-->[MENU] BTHome bind key changed.");
+  Serial.println("-->[MENU] BTHome bind key: " + bthomeBindKey);
+  preferences.begin("CO2-Gadget", false);
+  preferences.putString("bthomeBindKey", bthomeBindKey);
+  preferences.end();
+  refreshBTHomeBLESettings("BTHome bind key updated", true);
+  return quit;
+}
+
+// [BTHOME-SENSEL] ----- BTHome "Publish Sensors" selection submenu -----
+// ArduinoMenu TOGGLEs bind to plain bools, so mirror the bthomeSensors bitmask into bools.
+bool bthomeSelBattery = false, bthomeSelVoltage = false, bthomeSelTemp = false, bthomeSelHum = false;
+bool bthomeSelPress = false, bthomeSelCO2 = false, bthomeSelPM25 = false, bthomeSelPM10 = false;
+bool bthomeSelPM1 = false, bthomeSelPM4 = false;  // non-native (no BTHome object)
+
+void updateBTHomeSensorMenuAvailability();
+
+void syncBTHomeSensorMirrors() {
+  bthomeSelBattery = (bthomeSensors & BTHOME_SEL_BATTERY) != 0;
+  bthomeSelVoltage = (bthomeSensors & BTHOME_SEL_VOLTAGE) != 0;
+  bthomeSelTemp    = (bthomeSensors & BTHOME_SEL_TEMP) != 0;
+  bthomeSelHum     = (bthomeSensors & BTHOME_SEL_HUM) != 0;
+  bthomeSelPress   = (bthomeSensors & BTHOME_SEL_PRESS) != 0;
+  bthomeSelCO2     = (bthomeSensors & BTHOME_SEL_CO2) != 0;
+  bthomeSelPM25    = (bthomeSensors & BTHOME_SEL_PM25) != 0;
+  bthomeSelPM10    = (bthomeSensors & BTHOME_SEL_PM10) != 0;
+  bthomeSelPM1     = (bthomeSensors & BTHOME_SEL_PM1) != 0;
+  bthomeSelPM4     = (bthomeSensors & BTHOME_SEL_PM4) != 0;
+}
+
+result doSetBTHomeSensors(eventMask e, navNode &nav, prompt &item) {
+  uint32_t mask = 0;
+  if (bthomeSelBattery) mask |= BTHOME_SEL_BATTERY;
+  if (bthomeSelVoltage) mask |= BTHOME_SEL_VOLTAGE;
+  if (bthomeSelTemp)    mask |= BTHOME_SEL_TEMP;
+  if (bthomeSelHum)     mask |= BTHOME_SEL_HUM;
+  if (bthomeSelPress)   mask |= BTHOME_SEL_PRESS;
+  if (bthomeSelCO2)     mask |= BTHOME_SEL_CO2;
+  if (bthomeSelPM25)    mask |= BTHOME_SEL_PM25;
+  if (bthomeSelPM10)    mask |= BTHOME_SEL_PM10;
+  if (bthomeSelPM1)     mask |= BTHOME_SEL_PM1;
+  if (bthomeSelPM4)     mask |= BTHOME_SEL_PM4;
+  bthomeSensors = mask;
+  preferences.begin("CO2-Gadget", false);
+  preferences.putUInt("bthomeSensors", bthomeSensors);
+  preferences.end();
+  refreshBTHomeBLESettings("BTHome sensor selection changed", true);
+  printBTHomePayloadProjection();
+  return proceed;
+}
+
+TOGGLE(bthomeSelCO2, bthomeSelCO2Menu, "CO2: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelTemp, bthomeSelTempMenu, "Temperature: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelHum, bthomeSelHumMenu, "Humidity: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelBattery, bthomeSelBatteryMenu, "Battery: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM25, bthomeSelPM25Menu, "PM2.5: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPress, bthomeSelPressMenu, "Pressure: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM10, bthomeSelPM10Menu, "PM10: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelVoltage, bthomeSelVoltageMenu, "Battery Voltage: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM1, bthomeSelPM1Menu, "PM1.0: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+TOGGLE(bthomeSelPM4, bthomeSelPM4Menu, "PM4.0: ", doNothing, noEvent, wrapStyle
+  ,VALUE("ON", true, doSetBTHomeSensors, exitEvent)
+  ,VALUE("OFF", false, doSetBTHomeSensors, exitEvent));
+
+result bthomeSensorsMenuCb(eventMask e, navNode &nav, prompt &item) {
+  if (e & enterEvent) {
+    syncBTHomeSensorMirrors();
+    updateBTHomeSensorMenuAvailability();
+    uint32_t included = bthomeFitMask(bthomeEncryption, !bthomeEncryption);
+    Serial.println("-->[MENU] BTHome measurements:");
+    const char *lastGroup = "";
+    for (size_t i = 0; i < BTHOME_MEASUREMENT_COUNT; ++i) {
+      const BTHomeMeasurementDef &m = BTHOME_MEASUREMENTS[i];
+      if (strcmp(lastGroup, m.group) != 0) {
+        lastGroup = m.group;
+        const char *groupLabel = strcmp(m.group, "core") == 0 ? "Core" :
+                                 strcmp(m.group, "optional") == 0 ? "Optional" :
+                                 "No BTHome object";
+        Serial.println("-->[MENU] -- " + String(groupLabel) + " --");
+      }
+      char objId[6];
+      snprintf(objId, sizeof(objId), "0x%02X", m.objectId);
+      bool selected = (bthomeSensors & m.bit) != 0;
+      String status = "available";
+      if (!bthomeMeasurementAvailable(m.bit)) {
+        // Mirror the Web UI: distinguish low-power-blocked (present, not sampled on
+        // wake) from genuinely-absent hardware.
+        if (strcmp(bthomeUnavailableReason(m.bit), "lowpower") == 0) {
+          status = "Not advertised in low-power mode; selection retained";
+        } else {
+          status = selected ? "Not detected; selection retained" : "not detected";
+        }
+      } else if (selected && !bthomeMeasurementValid(m.bit)) {
+        status = "No valid reading; not currently sent";
+      } else if (selected && !(included & m.bit)) {
+        status = "Selected but omitted by payload budget";
+      }
+      Serial.println("-->[MENU]   " + String(m.label) + " [" + String(objId) + "]: " +
+                     String(selected ? "ON" : "off") + " (" + status + ")");
+    }
+    Serial.println("-->[MENU]   Note: PM1.0/PM4.0 use non-standard IDs 0xEE/0xEF and are not parsed by Home Assistant.");
+    printBTHomePayloadProjection();
+  }
+  return proceed;
+}
+
+MENU(bthomeCoreSensorsMenu, "Core", doNothing, noEvent, wrapStyle
+  ,SUBMENU(bthomeSelCO2Menu)
+  ,SUBMENU(bthomeSelTempMenu)
+  ,SUBMENU(bthomeSelHumMenu)
+  ,SUBMENU(bthomeSelBatteryMenu)
+  ,EXIT("<Back"));
+
+MENU(bthomeOptionalSensorsMenu, "Optional", doNothing, noEvent, wrapStyle
+  ,SUBMENU(bthomeSelPM25Menu)
+  ,SUBMENU(bthomeSelPressMenu)
+  ,SUBMENU(bthomeSelPM10Menu)
+  ,SUBMENU(bthomeSelVoltageMenu)
+  ,EXIT("<Back"));
+
+MENU(bthomeNonnativeSensorsMenu, "No BTHome object", doNothing, noEvent, wrapStyle
+  ,SUBMENU(bthomeSelPM1Menu)
+  ,SUBMENU(bthomeSelPM4Menu)
+  ,EXIT("<Back"));
+
+MENU(bthomeSensorsMenu, "Publish Sensors", bthomeSensorsMenuCb, enterEvent, wrapStyle
+  ,SUBMENU(bthomeCoreSensorsMenu)
+  ,SUBMENU(bthomeOptionalSensorsMenu)
+  ,SUBMENU(bthomeNonnativeSensorsMenu)
+  ,EXIT("<Back"));
+
+// Gate each BTHome sensor toggle to match the Web UI: a toggle is selectable when
+// the measurement is available, low-power-blocked (present, just not sampled on a
+// deep-sleep wake), or already selected (so a retained selection can still be
+// dropped). A not-detected, unselected sensor is disabled — you can't select
+// absent hardware. Re-evaluated on each menu enter, so a sensor that appears later
+// re-enables. Distinct status text is printed in bthomeSensorsMenuCb().
+void updateBTHomeSensorMenuAvailability() {
+  const struct {
+    menuNode *menu;
+    uint8_t menuIndex;
+    uint32_t bit;
+  } entries[] = {
+    {&bthomeCoreSensorsMenu, 0, BTHOME_SEL_CO2},
+    {&bthomeCoreSensorsMenu, 1, BTHOME_SEL_TEMP},
+    {&bthomeCoreSensorsMenu, 2, BTHOME_SEL_HUM},
+    {&bthomeCoreSensorsMenu, 3, BTHOME_SEL_BATTERY},
+    {&bthomeOptionalSensorsMenu, 0, BTHOME_SEL_PM25},
+    {&bthomeOptionalSensorsMenu, 1, BTHOME_SEL_PRESS},
+    {&bthomeOptionalSensorsMenu, 2, BTHOME_SEL_PM10},
+    {&bthomeOptionalSensorsMenu, 3, BTHOME_SEL_VOLTAGE},
+    {&bthomeNonnativeSensorsMenu, 0, BTHOME_SEL_PM1},
+    {&bthomeNonnativeSensorsMenu, 1, BTHOME_SEL_PM4},
+  };
+  for (const auto &entry : entries) {
+    bool selected = (bthomeSensors & entry.bit) != 0;
+    bool lowPower = strcmp(bthomeUnavailableReason(entry.bit), "lowpower") == 0;
+    bool allowToggle = bthomeMeasurementAvailable(entry.bit) || lowPower || selected;
+    if (allowToggle) {
+      entry.menu->operator[](entry.menuIndex).enable();
+    } else {
+      entry.menu->operator[](entry.menuIndex).disable();
+    }
+  }
+  bthomeSensorsMenu[0].enable();
+  bthomeSensorsMenu[1].enable();
+  bthomeSensorsMenu[2].enable();
+}
+
+MENU(bthomeConfigMenu, "BTHome", doNothing, noEvent, wrapStyle
+  ,SUBMENU(activeBTHomeMenu)
+  ,SUBMENU(bthomeEncryptionMenu)
+  ,OP("BTHome key", doSerialBTHomeBindKey, enterEvent)
+  ,SUBMENU(bthomeSensorsMenu)
+  ,EXIT("<Back"));
+#endif
+
 MENU(bleConfigMenu, "BLE Config", doNothing, noEvent, wrapStyle
+  ,SUBMENU(enableBLEMenu)
   ,SUBMENU(activeBLEMenu)
-  ,OP("You can't", doNothing, noEvent)
-  ,OP("disable BLE.", doNothing, noEvent)
+#ifdef SUPPORT_BTHOME_BLE
+  ,SUBMENU(bthomeConfigMenu)
+#endif
   ,EXIT("<Back"));
 #endif
 
@@ -643,7 +932,7 @@ result doSetWiFiSSID(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   wifiSSID = String(tempWiFiSSID);
   wifiSSID.trim();
   return proceed;
@@ -669,6 +958,14 @@ result doSetHostName(eventMask e, navNode &nav, prompt &item) {
 #endif
   hostName = String(tempHostName);
   hostName.trim();
+  return proceed;
+}
+
+result doEnableWebPasswordVisibility(eventMask e, navNode &nav, prompt &item) {
+  relaxedSecurity = true;
+  Serial.println("-->[MENU] Web UI password visibility enabled for this runtime session.");
+  Serial.println("-->[MENU] Open /preferences.html?relaxedSecurity to show and edit protected fields.");
+  Serial.println("-->[MENU] This is not saved; rebooting returns Web UI password visibility to normal.");
   return proceed;
 }
 
@@ -726,6 +1023,7 @@ MENU(wifiConfigMenu, "WIFI Config", doNothing, noEvent, wrapStyle
   ,SUBMENU(activeWIFIMenu)
   ,altOP(altPromptWiFiSSID, "", doSerialWiFiSSIDSetup, enterEvent)
   ,altOP(altPromptWiFiPass, "", doSerialWiFiPasswordSetup, enterEvent)
+  ,OP("Web pwd visible", doEnableWebPasswordVisibility, enterEvent)
   ,altOP(altPromptHostName, "", doSerialHostNameSetup, enterEvent)
 #ifdef SUPPORT_OTA
   ,SUBMENU(activeOTAMenu)
@@ -740,7 +1038,7 @@ result doSetMQTTTopic(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   char * p = strchr (tempMQTTTopic, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
@@ -757,11 +1055,11 @@ result doSetMQTTClientId(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   char * p = strchr (tempMQTTClientId, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  mqttClientId = tempMQTTClientId;  
+  mqttClientId = tempMQTTClientId;
   if ((activeMQTT) && (WiFi.isConnected())) {
     initMQTT();
   }
@@ -774,11 +1072,11 @@ result doSetMQTTBrokerIP(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   char * p = strchr (tempMQTTBrokerIP, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  mqttBroker = tempMQTTBrokerIP;  
+  mqttBroker = tempMQTTBrokerIP;
   if ((activeMQTT) && (WiFi.isConnected())) {
     initMQTT();
   }
@@ -791,11 +1089,11 @@ result doSetMQTTUser(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   char * p = strchr (tempMQTTUser, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  mqttUser = tempMQTTUser;  
+  mqttUser = tempMQTTUser;
   if ((activeMQTT) && (WiFi.isConnected())) {
     initMQTT();
   }
@@ -808,11 +1106,11 @@ result doSetMQTTPass(eventMask e, navNode &nav, prompt &item) {
   Serial.print(F("-->[MENU] action1 event:"));
   Serial.println(e);
   Serial.flush();
-#endif  
+#endif
   char * p = strchr (tempMQTTPass, ' ');  // search for space
   if (p)     // if found truncate at space
     *p = 0;
-  mqttPass = tempMQTTPass;  
+  mqttPass = tempMQTTPass;
   if ((activeMQTT) && (WiFi.isConnected())) {
     initMQTT();
   }
@@ -1280,12 +1578,12 @@ MENU(temperatureConfigMenu, "Temp Config", doNothing, noEvent, wrapStyle
 TOGGLE(displayOffOnExternalPower, activeDisplayOffMenuOnBattery, "Off on USB: ", doNothing,noEvent, wrapStyle
   ,VALUE("ON", true, doNothing, noEvent)
   ,VALUE("OFF", false, doNothing, noEvent));
-  
+
 result doDisplayReverse(eventMask e, navNode &nav, prompt &item) {
   #ifdef DEBUG_ARDUINOMENU
     Serial.printf("-->[MENU] Setting doDisplayReverse to %s\n", ((displayReverse) ? "TRUE" : "FALSE"));
-  #endif  
-  reverseButtons(displayReverse);  
+  #endif
+  reverseButtons(displayReverse);
   #ifdef SUPPORT_TFT
   if (displayReverse) {
     tft.setRotation(3);
@@ -1338,10 +1636,10 @@ TOGGLE(displayShowPM25, activeDisplayShowPM25, "PM2.5: ", doNothing, noEvent, wr
 MENU(displayConfigMenu, "Display Config", doNothing, noEvent, wrapStyle
 #ifdef ARDUINO_LILYGO_T_DISPLAY_S3
   ,FIELD(DisplayBrightness, "Brightness:", "", 1, 16, 1, 1, doSetDisplayBrightness, anyEvent, wrapStyle)
-#endif  
+#endif
 #if defined(TTGO_TDISPLAY) || defined(ST7789_240x320)
   ,FIELD(DisplayBrightness, "Brightness:", "", 10, 255, 10, 10, doSetDisplayBrightness, anyEvent, wrapStyle)
-#endif  
+#endif
   ,FIELD(timeToDisplayOff, "Time To Off:", "", 0, 900, 5, 5, doNothing, noEvent, wrapStyle)
   ,SUBMENU(activeDisplayOffMenuOnBattery)
   ,SUBMENU(activeDisplayReverse)
@@ -1410,7 +1708,7 @@ TOGGLE(timeBetweenBuzzerBeeps, timeBetweenBuzzerBeepMenu, "Buzzer: ", doNothing,
   ,VALUE("Every 1min", 60,  doNothing, noEvent)
   ,VALUE("Every 2min", 120,  doNothing, noEvent)
   ,VALUE("Every 5min", 300,  doNothing, noEvent));
-  
+
 TOGGLE(toneBuzzerBeep, toneBuzzerBeepMenu, "Tone: ", doNothing, noEvent, wrapStyle
   ,VALUE("HIGH", BUZZER_TONE_HIGH,  doNothing, noEvent)
   ,VALUE("MED", BUZZER_TONE_MED,  doNothing, noEvent)
@@ -1431,7 +1729,7 @@ MENU(buzzerConfigMenu, "Buzzer Config", doNothing, noEvent, wrapStyle
 MENU(outputsConfigMenu, "Outputs Config", doNothing, noEvent, wrapStyle
   #ifdef SUPPORT_BUZZER
   ,SUBMENU(buzzerConfigMenu)
-  #endif  
+  #endif
   ,FIELD(neopixelBrightness, "Neopix Bright", "%", 0, 255, 5, 10, doSetNeopixelBrightness, anyEvent, noStyle)
   ,SUBMENU(activeNeopixelTypeMenu)
   ,SUBMENU(outputsModeMenu)
@@ -1830,12 +2128,13 @@ MENU(configMenu, "Configuration", doNothing, noEvent, wrapStyle
   ,SUBMENU(mqttConfigMenu)
 #ifdef SUPPORT_ESPNOW
   ,SUBMENU(espnowConfigMenu)
-#endif  
+#endif
   ,SUBMENU(batteryConfigMenu)
   ,SUBMENU(temperatureConfigMenu)
   ,SUBMENU(displayConfigMenu)
   ,SUBMENU(outputsConfigMenu)
   ,SUBMENU(lowPowerConfigMenu)
+  ,OP("Save preferences", doSavePreferences, enterEvent)
   ,EXIT("<Back"));
 
 std::string getUptime() {
@@ -1905,7 +2204,7 @@ MENU(mainMenu, "CO2 Gadget", doNothing, noEvent, wrapStyle
   ,SUBMENU(rebootMenu)
   ,EXIT("<Exit"));
 
-#define MAX_DEPTH 4
+#define MAX_DEPTH 7
 
 // define serial input device
 serialIn serial(Serial);
@@ -2075,6 +2374,9 @@ void loadTempArraysWithActualValues() {
 
 #ifdef SUPPORT_BLE
     copyStringToCharArray(rightPad(provider.getDeviceIdString(), 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
+#ifdef SUPPORT_BTHOME_BLE
+    copyStringToCharArray(rightPad(bthomeBindKey, sizeof(tempBTHomeBindKey) - 1), tempBTHomeBindKey, sizeof(tempBTHomeBindKey), "tempBTHomeBindKey");
+#endif
 #else
     copyStringToCharArray(rightPad("Unavailable", 30), tempBLEDeviceId, 30, "tempBLEDeviceId");
 #endif
@@ -2225,6 +2527,9 @@ void initMenu() {
     }
     batteryConfigMenu[1].disable();  // Make information field unselectable
     temperatureConfigMenu[0].disable();
+#ifdef SUPPORT_BTHOME_BLE
+    updateBTHomeSensorMenuAvailability();
+#endif
     setCO2Sensor = selectedCO2Sensor;
 #ifdef DEBUG_ARDUINOMENU
     Serial.printf("-->[MENU] Loaded CO2 Sensor in menu (setCO2Sensor): %d\n", setCO2Sensor);

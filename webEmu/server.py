@@ -92,8 +92,49 @@ sensors: dict = {
     "co2":             850,
     "temperature":     22.5,
     "humidity":        55.0,
+    "pressure":        1013.25,
+    "pm1":             4,
+    "pm25":            8,
+    "pm4":             10,
+    "pm10":            14,
     "batteryVoltage":  3.85,
 }
+
+sensor_enabled: dict = {key: True for key in sensors}
+sensor_enabled["pressure"] = False
+
+# Mirrors BTHOME_MEASUREMENTS in CO2_Gadget_BLE.h. The emulator keeps the
+# selection separately because the device accepts a {key: bool} object on save
+# but returns a descriptor array from getActualSettingsAsJson.
+BTHOME_BUDGET_MAX = 24
+BTHOME_DESCRIPTORS = (
+    {"key": "battery",     "label": "Battery",         "obj": 0x01, "bytes": 2, "prio": 4,  "group": "core",      "native": True},
+    {"key": "temperature", "label": "Temperature",     "obj": 0x02, "bytes": 3, "prio": 2,  "group": "core",      "native": True},
+    {"key": "humidity",    "label": "Humidity",        "obj": 0x03, "bytes": 3, "prio": 3,  "group": "core",      "native": True},
+    {"key": "pressure",    "label": "Pressure",        "obj": 0x04, "bytes": 4, "prio": 6,  "group": "optional",  "native": True},
+    {"key": "voltage",     "label": "Battery Voltage", "obj": 0x0C, "bytes": 3, "prio": 8,  "group": "optional",  "native": True},
+    {"key": "pm25",        "label": "PM2.5",           "obj": 0x0D, "bytes": 3, "prio": 5,  "group": "optional",  "native": True},
+    {"key": "pm10",        "label": "PM10",            "obj": 0x0E, "bytes": 3, "prio": 7,  "group": "optional",  "native": True},
+    {"key": "co2",         "label": "CO2",             "obj": 0x12, "bytes": 3, "prio": 1,  "group": "core",      "native": True},
+    {"key": "pm1",         "label": "PM1.0",           "obj": 0xEE, "bytes": 3, "prio": 9,  "group": "nonnative", "native": False},
+    {"key": "pm4",         "label": "PM4.0",           "obj": 0xEF, "bytes": 3, "prio": 10, "group": "nonnative", "native": False},
+)
+
+# Mirrors BTHOME_DEFAULT_SENSOR_MASK: core measurements only (optional sensors opt-in).
+BTHOME_DEFAULT_SELECTED = {
+    "battery": True,
+    "temperature": True,
+    "humidity": True,
+    "pressure": False,
+    "voltage": False,
+    "pm25": False,
+    "pm10": False,
+    "co2": True,
+    "pm1": False,
+    "pm4": False,
+}
+
+bthome_selected: dict = dict(BTHOME_DEFAULT_SELECTED)
 
 prefs: dict = {
     "supportBTHomeBLE":     True,
@@ -173,6 +214,114 @@ prefs: dict = {
     "cpDebug":              False,
     "cpWaitTime":           60,
 }
+
+
+# Emulate the device operating mode so the low-power-aware availability/annotation
+# can be exercised without hardware. Mirrors the firmware:
+#   - low-power enabled  -> PM is never advertised on a deep-sleep wake
+#   - pressure on wake    -> only when built with SUPPORT_LOW_POWER_PRESSURE
+emu_low_power: bool = False        # emulator-panel override toggle
+emu_low_power_pressure: bool = False  # mirrors the SUPPORT_LOW_POWER_PRESSURE build flag
+
+_PM_KEYS = {"pm1", "pm25", "pm4", "pm10"}
+
+
+def _emu_low_power_enabled() -> bool:
+    """Low-power active when the panel toggle is on OR the saved lowPowerMode
+    preference is non-zero (mirrors firmware deepSleepData.lowPowerMode != HIGH_PERFORMANCE)."""
+    if emu_low_power:
+        return True
+    try:
+        return int(prefs.get("lowPowerMode", 0) or 0) != 0
+    except (TypeError, ValueError):
+        return str(prefs.get("lowPowerMode", "0")).strip() not in ("0", "", "None")
+
+
+def _bthome_available(key: str) -> bool:
+    sensor_key = {
+        "battery": "batteryVoltage",
+        "voltage": "batteryVoltage",
+    }.get(key, key)
+    present = bool(sensor_enabled.get(sensor_key, False))
+    if _emu_low_power_enabled():
+        if key in _PM_KEYS:
+            return False
+        if key == "pressure" and not emu_low_power_pressure:
+            return False
+    return present
+
+
+def _bthome_unavailable_reason(key: str) -> str:
+    """"" when available; "lowpower" when present but blocked by low-power mode;
+    otherwise "notdetected"."""
+    if _bthome_available(key):
+        return ""
+    sensor_key = {"battery": "batteryVoltage", "voltage": "batteryVoltage"}.get(key, key)
+    present = bool(sensor_enabled.get(sensor_key, False))
+    if _emu_low_power_enabled() and present and (key in _PM_KEYS or (key == "pressure" and not emu_low_power_pressure)):
+        return "lowpower"
+    return "notdetected"
+
+def _bthome_valid(key: str) -> bool:
+    if not _bthome_available(key):
+        return False
+    if key == "co2":
+        return 400 <= sensors["co2"] <= 5000
+    if key == "temperature":
+        return -40 <= sensors["temperature"] <= 85
+    if key == "humidity":
+        return 0 <= sensors["humidity"] <= 100
+    if key == "pressure":
+        return 300 <= sensors["pressure"] <= 1100
+    if key == "voltage":
+        return 1 <= sensors["batteryVoltage"] <= 6
+    return True
+
+
+def _bthome_fit(encrypted: bool) -> set:
+    """Return selected, available, valid keys that fit firmware priority."""
+    overhead = 9 if encrypted else 3
+    budget = max(0, BTHOME_BUDGET_MAX - overhead)
+    used = 0
+    included = set()
+    for descriptor in sorted(BTHOME_DESCRIPTORS, key=lambda item: item["prio"]):
+        key = descriptor["key"]
+        if not bthome_selected.get(key, False) or not _bthome_valid(key):
+            continue
+        if used + descriptor["bytes"] <= budget:
+            used += descriptor["bytes"]
+            included.add(key)
+    return included
+
+
+def _bthome_descriptors_json() -> list:
+    included_plain = _bthome_fit(False)
+    included_encrypted = _bthome_fit(True)
+    result = []
+    for definition in BTHOME_DESCRIPTORS:
+        descriptor = dict(definition)
+        key = descriptor["key"]
+        descriptor.update({
+            "available": _bthome_available(key),
+            "valid": _bthome_valid(key),
+            "unavailableReason": _bthome_unavailable_reason(key),
+            "selected": bool(bthome_selected.get(key, False)),
+            "willSendPlain": key in included_plain,
+            "willSendEnc": key in included_encrypted,
+        })
+        result.append(descriptor)
+    return result
+
+
+def _apply_bthome_selection(selection) -> None:
+    """Apply the same partial {key: bool} update accepted by the firmware."""
+    if not isinstance(selection, dict):
+        return
+    known_keys = {descriptor["key"] for descriptor in BTHOME_DESCRIPTORS}
+    for key, selected in selection.items():
+        if key in known_keys and isinstance(selected, bool):
+            bthome_selected[key] = selected
+
 
 def _default_threshold() -> dict:
     return {
@@ -270,12 +419,16 @@ _EMU_INJECT = r"""
 .__emu_sensor_row{margin-bottom:8px;}
 .__emu_sensor_lbl{display:flex;justify-content:space-between;
   align-items:center;margin-bottom:3px;}
-.__emu_sensor_lbl span{font-size:11px;color:#999;}
+.__emu_sensor_name{display:flex;align-items:center;gap:6px;font-size:11px;color:#999;}
+.__emu_sensor_name input{margin:0;accent-color:#4caf50;cursor:pointer;}
 .__emu_sensor_lbl input[type=number]{width:62px;background:#2a2a44;
   border:1px solid #3b3b5c;color:#e0e0f0;border-radius:4px;
   padding:2px 5px;font-size:12px;text-align:right;}
 .__emu_sensor_row input[type=range]{width:100%;accent-color:#e94560;
   height:4px;cursor:pointer;}
+.__emu_sensor_row.disabled{opacity:.45;}
+.__emu_sensor_row.disabled input[type=range],
+.__emu_sensor_row.disabled input[type=number]{pointer-events:none;}
 
 /* status bar */
 .__emu_status{padding:6px 14px;font-size:10px;color:#666;
@@ -300,31 +453,72 @@ _EMU_INJECT = r"""
   </div>
 
   <div class="__emu_sec">
+    <div class="__emu_sec_title">Device Mode</div>
+    <label class="__emu_sensor_name"><input type="checkbox" id="__emu_lowpower">Low-power (deep sleep) mode</label>
+    <label class="__emu_sensor_name"><input type="checkbox" id="__emu_lowpower_press">SUPPORT_LOW_POWER_PRESSURE (read pressure on wake)</label>
+  </div>
+
+  <div class="__emu_sec">
     <div class="__emu_sec_title">Mock Sensor Values</div>
     <div class="__emu_sensor_row">
       <div class="__emu_sensor_lbl">
-        <span>CO₂ (ppm)</span>
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_co2_e" checked>CO₂ (ppm)</label>
         <input type="number" id="__emu_co2_n" min="400" max="5000" value="850">
       </div>
       <input type="range" id="__emu_co2_r" min="400" max="5000" step="10" value="850">
     </div>
     <div class="__emu_sensor_row">
       <div class="__emu_sensor_lbl">
-        <span>Temperature (°C)</span>
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_tmp_e" checked>Temperature (°C)</label>
         <input type="number" id="__emu_tmp_n" min="-10" max="60" step="0.5" value="22.5">
       </div>
       <input type="range" id="__emu_tmp_r" min="-10" max="60" step="0.5" value="22.5">
     </div>
     <div class="__emu_sensor_row">
       <div class="__emu_sensor_lbl">
-        <span>Humidity (%)</span>
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_hum_e" checked>Humidity (%)</label>
         <input type="number" id="__emu_hum_n" min="0" max="100" value="55">
       </div>
       <input type="range" id="__emu_hum_r" min="0" max="100" step="1" value="55">
     </div>
     <div class="__emu_sensor_row">
       <div class="__emu_sensor_lbl">
-        <span>Battery (V)</span>
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_pre_e">Pressure (hPa)</label>
+        <input type="number" id="__emu_pre_n" min="300" max="1100" step="0.1" value="1013.25">
+      </div>
+      <input type="range" id="__emu_pre_r" min="900" max="1100" step="0.1" value="1013.25">
+    </div>
+    <div class="__emu_sensor_row">
+      <div class="__emu_sensor_lbl">
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_pm1_e" checked>PM1.0 (µg/m³)</label>
+        <input type="number" id="__emu_pm1_n" min="0" max="1000" step="1" value="4">
+      </div>
+      <input type="range" id="__emu_pm1_r" min="0" max="250" step="1" value="4">
+    </div>
+    <div class="__emu_sensor_row">
+      <div class="__emu_sensor_lbl">
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_pm25_e" checked>PM2.5 (µg/m³)</label>
+        <input type="number" id="__emu_pm25_n" min="0" max="1000" step="1" value="8">
+      </div>
+      <input type="range" id="__emu_pm25_r" min="0" max="250" step="1" value="8">
+    </div>
+    <div class="__emu_sensor_row">
+      <div class="__emu_sensor_lbl">
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_pm4_e" checked>PM4.0 (µg/m³)</label>
+        <input type="number" id="__emu_pm4_n" min="0" max="1000" step="1" value="10">
+      </div>
+      <input type="range" id="__emu_pm4_r" min="0" max="250" step="1" value="10">
+    </div>
+    <div class="__emu_sensor_row">
+      <div class="__emu_sensor_lbl">
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_pm10_e" checked>PM10 (µg/m³)</label>
+        <input type="number" id="__emu_pm10_n" min="0" max="1000" step="1" value="14">
+      </div>
+      <input type="range" id="__emu_pm10_r" min="0" max="250" step="1" value="14">
+    </div>
+    <div class="__emu_sensor_row">
+      <div class="__emu_sensor_lbl">
+        <label class="__emu_sensor_name"><input type="checkbox" id="__emu_bat_e" checked>Battery (V)</label>
         <input type="number" id="__emu_bat_n" min="2.5" max="4.2" step="0.01" value="3.85">
       </div>
       <input type="range" id="__emu_bat_r" min="2.5" max="4.2" step="0.01" value="3.85">
@@ -345,7 +539,10 @@ _EMU_INJECT = r"""
   // Server POSTs go through _origFetch to avoid intercepting ourselves.
 
   const _origFetch = window.fetch.bind(window);
-  const _emuSensors = { co2: 850, temperature: 22.5, humidity: 55.0, batteryVoltage: 3.85 };
+  const _emuSensors = {
+    co2: 850, temperature: 22.5, humidity: 55.0, pressure: 1013.25,
+    pm1: 4, pm25: 8, pm4: 10, pm10: 14, batteryVoltage: 3.85
+  };
 
   window.fetch = function (resource, init) {
     const url  = typeof resource === 'string' ? resource : (resource && resource.url) || '';
@@ -356,6 +553,11 @@ _EMU_INJECT = r"""
     if (path === '/readCO2')            return ok(String(Math.round(_emuSensors.co2)));
     if (path === '/readTemperature')    return ok(_emuSensors.temperature.toFixed(1));
     if (path === '/readHumidity')       return ok(String(Math.round(_emuSensors.humidity)));
+    if (path === '/readPressure')       return ok(_emuSensors.pressure.toFixed(1));
+    if (path === '/readPM1')            return ok(String(Math.round(_emuSensors.pm1)));
+    if (path === '/readPM25')           return ok(String(Math.round(_emuSensors.pm25)));
+    if (path === '/readPM4')            return ok(String(Math.round(_emuSensors.pm4)));
+    if (path === '/readPM10')           return ok(String(Math.round(_emuSensors.pm10)));
     if (path === '/readBatteryVoltage') return ok(_emuSensors.batteryVoltage.toFixed(2));
     return _origFetch(resource, init);
   };
@@ -474,18 +676,38 @@ _EMU_INJECT = r"""
       co2:            parseFloat(document.getElementById('__emu_co2_n').value),
       temperature:    parseFloat(document.getElementById('__emu_tmp_n').value),
       humidity:       parseFloat(document.getElementById('__emu_hum_n').value),
+      pressure:       parseFloat(document.getElementById('__emu_pre_n').value),
+      pm1:            parseFloat(document.getElementById('__emu_pm1_n').value),
+      pm25:           parseFloat(document.getElementById('__emu_pm25_n').value),
+      pm4:            parseFloat(document.getElementById('__emu_pm4_n').value),
+      pm10:           parseFloat(document.getElementById('__emu_pm10_n').value),
       batteryVoltage: parseFloat(document.getElementById('__emu_bat_n').value),
     };
   }
 
-  function syncSlidersFromState(s) {
-    [['__emu_co2_r',  '__emu_co2_n',  s.co2],
-     ['__emu_tmp_r',  '__emu_tmp_n',  s.temperature],
-     ['__emu_hum_r',  '__emu_hum_n',  s.humidity],
-     ['__emu_bat_r',  '__emu_bat_n',  s.batteryVoltage]
-    ].forEach(([rid, nid, val]) => {
+  const SENSOR_CONTROLS = [
+    ['co2',            '__emu_co2_r',  '__emu_co2_n',  '__emu_co2_e'],
+    ['temperature',    '__emu_tmp_r',  '__emu_tmp_n',  '__emu_tmp_e'],
+    ['humidity',       '__emu_hum_r',  '__emu_hum_n',  '__emu_hum_e'],
+    ['pressure',       '__emu_pre_r',  '__emu_pre_n',  '__emu_pre_e'],
+    ['pm1',            '__emu_pm1_r',  '__emu_pm1_n',  '__emu_pm1_e'],
+    ['pm25',           '__emu_pm25_r', '__emu_pm25_n', '__emu_pm25_e'],
+    ['pm4',            '__emu_pm4_r',  '__emu_pm4_n',  '__emu_pm4_e'],
+    ['pm10',           '__emu_pm10_r', '__emu_pm10_n', '__emu_pm10_e'],
+    ['batteryVoltage', '__emu_bat_r',  '__emu_bat_n',  '__emu_bat_e'],
+  ];
+
+  function setSensorRowEnabled(checkbox, enabled) {
+    checkbox.checked = enabled;
+    checkbox.closest('.__emu_sensor_row').classList.toggle('disabled', !enabled);
+  }
+
+  function syncSlidersFromState(s, enabled) {
+    SENSOR_CONTROLS.forEach(([key, rid, nid, eid]) => {
+      const val = s[key];
       document.getElementById(rid).value = val;
       document.getElementById(nid).value = val;
+      setSensorRowEnabled(document.getElementById(eid), enabled[key] !== false);
     });
     Object.assign(_emuSensors, s);
   }
@@ -520,14 +742,77 @@ _EMU_INJECT = r"""
   linkSlider('__emu_co2_r', '__emu_co2_n');
   linkSlider('__emu_tmp_r', '__emu_tmp_n');
   linkSlider('__emu_hum_r', '__emu_hum_n');
+  linkSlider('__emu_pre_r', '__emu_pre_n');
+  linkSlider('__emu_pm1_r', '__emu_pm1_n');
+  linkSlider('__emu_pm25_r', '__emu_pm25_n');
+  linkSlider('__emu_pm4_r', '__emu_pm4_n');
+  linkSlider('__emu_pm10_r', '__emu_pm10_n');
   linkSlider('__emu_bat_r', '__emu_bat_n');
+
+  SENSOR_CONTROLS.forEach(([key, , , eid]) => {
+    const checkbox = document.getElementById(eid);
+    checkbox.addEventListener('change', function () {
+      setSensorRowEnabled(this, this.checked);
+      _origFetch('/emu/sensor-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: this.checked }),
+      })
+      .then(r => r.json())
+      .then(() => {
+        setStatus(key + ' → ' + (this.checked ? 'detected' : 'not detected'), 'ok');
+        return refreshBTHomeSensorList();  // preserves current selections
+      })
+      .catch(e => setStatus('Availability error: ' + e.message, 'err'));
+    });
+  });
+
+  // ── Low-power mode toggle (mirrors firmware deepSleepData.lowPowerMode) ──────
+  // Re-fetch descriptors to refresh available/valid/willSend, but PRESERVE the
+  // user's current (possibly unsaved) checkbox selections — otherwise toggling
+  // low-power or a sensor's availability would reset selections to the saved
+  // defaults (e.g. re-checking PM2.5/PM10).
+  function refreshBTHomeSensorList() {
+    if (typeof renderBTHomeSensors !== 'function' || typeof bthomeSensorDescriptors === 'undefined') {
+      return Promise.resolve();
+    }
+    const current = (typeof collectBTHomeSensorSelection === 'function') ? collectBTHomeSensorSelection() : {};
+    return _origFetch('/getActualSettingsAsJson')
+      .then(r => r.json())
+      .then(settings => {
+        const descs = Array.isArray(settings.bthomeSensors) ? settings.bthomeSensors : [];
+        bthomeSensorDescriptors = descs.map((d) =>
+          (d && d.key in current) ? Object.assign({}, d, { selected: current[d.key] }) : d);
+        renderBTHomeSensors();
+      });
+  }
+
+  function postLowPower() {
+    const lp  = document.getElementById('__emu_lowpower').checked;
+    const lpp = document.getElementById('__emu_lowpower_press').checked;
+    _origFetch('/emu/low-power', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lowPower: lp, lowPowerPressure: lpp }),
+    })
+    .then(r => r.json())
+    .then(() => {
+      setStatus('Low-power ' + (lp ? 'on' : 'off') + (lpp ? ' + pressure-on-wake' : ''), 'ok');
+      return refreshBTHomeSensorList();
+    })
+    .catch(e => setStatus('Low-power error: ' + e.message, 'err'));
+  }
+  document.getElementById('__emu_lowpower').addEventListener('change', postLowPower);
+  document.getElementById('__emu_lowpower_press').addEventListener('change', postLowPower);
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
   _origFetch('/emu/state')
     .then(r => r.json())
     .then(d => {
       buildFeatureList(d.features);
-      syncSlidersFromState(d.sensors);
+      syncSlidersFromState(d.sensors, d.sensorEnabled);
+      document.getElementById('__emu_lowpower').checked = !!d.lowPower;
+      document.getElementById('__emu_lowpower_press').checked = !!d.lowPowerPressure;
       setStatus('Ready', 'ok');
     })
     .catch(e => setStatus('Load error: ' + e.message, 'err'));
@@ -567,13 +852,26 @@ def api_features():
 @app.route("/getActualSettingsAsJson")
 def api_settings():
     out = dict(prefs)
+    out.pop("bthomeBindKey", None)
     out["supportBTHomeBLE"] = features.get("BTHomeBLE", False)
+    if features.get("BTHomeBLE", False):
+        out["bthomeSensors"] = _bthome_descriptors_json()
+        out["bthomeBudgetMax"] = BTHOME_BUDGET_MAX
     return jsonify(out)
+
+@app.route("/getBTHomeBindKey", methods=["POST"])
+def api_bthome_bind_key():
+    response = jsonify({"bthomeBindKey": prefs["bthomeBindKey"]})
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 @app.route("/savePreferences", methods=["POST"])
 def api_save():
     data = request.get_json(force=True, silent=True) or {}
+    _apply_bthome_selection(data.pop("bthomeSensors", None))
     prefs.update(data)
     return Response("OK", status=200)
 
@@ -596,6 +894,31 @@ def api_temp():
 @app.route("/readHumidity")
 def api_hum():
     return f"{sensors['humidity']:.0f}"
+
+
+@app.route("/readPressure")
+def api_pressure():
+    return f"{sensors['pressure']:.1f}"
+
+
+@app.route("/readPM1")
+def api_pm1():
+    return f"{sensors['pm1']:.0f}"
+
+
+@app.route("/readPM25")
+def api_pm25():
+    return f"{sensors['pm25']:.0f}"
+
+
+@app.route("/readPM4")
+def api_pm4():
+    return f"{sensors['pm4']:.0f}"
+
+
+@app.route("/readPM10")
+def api_pm10():
+    return f"{sensors['pm10']:.0f}"
 
 
 @app.route("/readBatteryVoltage")
@@ -741,7 +1064,26 @@ def api_cp_status():
 
 @app.route("/emu/state")
 def emu_state():
-    return jsonify({"features": features, "sensors": sensors})
+    return jsonify({
+        "features": features,
+        "sensors": sensors,
+        "sensorEnabled": sensor_enabled,
+        "lowPower": emu_low_power,
+        "lowPowerPressure": emu_low_power_pressure,
+    })
+
+
+@app.route("/emu/low-power", methods=["POST"])
+def emu_set_low_power():
+    """Toggle emulated low-power mode (and the SUPPORT_LOW_POWER_PRESSURE flag) so
+    the low-power-aware BTHome availability/annotation is testable without hardware."""
+    global emu_low_power, emu_low_power_pressure
+    data = request.get_json(force=True, silent=True) or {}
+    if isinstance(data.get("lowPower"), bool):
+        emu_low_power = data["lowPower"]
+    if isinstance(data.get("lowPowerPressure"), bool):
+        emu_low_power_pressure = data["lowPowerPressure"]
+    return jsonify({"lowPower": emu_low_power, "lowPowerPressure": emu_low_power_pressure})
 
 
 @app.route("/emu/features", methods=["POST"])
@@ -760,6 +1102,15 @@ def emu_set_sensors():
         if k in sensors:
             sensors[k] = float(v)
     return jsonify(sensors)
+
+
+@app.route("/emu/sensor-availability", methods=["POST"])
+def emu_set_sensor_availability():
+    data = request.get_json(force=True, silent=True) or {}
+    for key, value in data.items():
+        if key in sensor_enabled and isinstance(value, bool):
+            sensor_enabled[key] = value
+    return jsonify(sensor_enabled)
 
 
 # ── Static file serving with HTML injection ───────────────────────────────────
