@@ -33,7 +33,7 @@ uint16_t encodeBTHomeBatteryVoltage(float value) {
     if (value <= 0.0f) {
         return 0;
     }
-    uint32_t millivolts = static_cast<uint32_t>(round(value * 100.0f)) * 10;
+    uint32_t millivolts = static_cast<uint32_t>(round(value * 1000.0f));
     if (millivolts > UINT16_MAX) {
         return UINT16_MAX;
     }

@@ -76,7 +76,7 @@ Service data is advertised under UUID **`0xFCD2`**. The first byte is the BTHome
 ### Plain payload
 
 ```
-[0x44] [0x00 packetId] [obj-id data]... 
+[0x44] [0x00 packetId] [obj-id data]...
 ```
 
 `0x00` is the BTHome packet-id object; its value is `bthomePacketId`, incremented
@@ -139,7 +139,9 @@ fit the byte budget. **Group** drives the UI grouping:
   Home Assistant.
 
 Default selection (`BTHOME_DEFAULT_SENSOR_MASK`):
-`battery | temperature | humidity | pressure | co2 | pm25 | pm10`.
+`battery | temperature | humidity | co2`.
+
+Pressure, PM values, battery voltage, and nonnative PM1.0 / PM4.0 are opt-in.
 
 ---
 
@@ -523,7 +525,7 @@ All BTHome work, traced chronologically (non-merge commits,
 | 06-23 | `1835906` | Emulate low-power BTHome availability and reason field |
 
 > Interspersed `Merge branch 'modernization/v2'/'development'` merges are omitted.
-> The current branch name is `feat-bthome-ble`.
+> The current branch name is `bthome-clean`.
 
 ---
 

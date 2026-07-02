@@ -410,6 +410,8 @@ void toDeepSleep() {
 #endif
     printRTCMemoryEnter();
 
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
 #ifdef BTN_WAKEUP_IS_TOUCHPAD
     // Setup interrupt on Touch Pad 0 (GPIO15)
     // touchAttachInterrupt(T3, callbackTouch, 40);
