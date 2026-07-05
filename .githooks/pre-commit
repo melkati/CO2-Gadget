@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit hook: reject commits that contain potential credentials
+#
+# INSTALL: git config core.hooksPath .githooks
+# TEST:    echo "password: test" > test.txt && git add test.txt && git commit -m "test"
+#
+# Patterns checked in staged diff (case-insensitive):
+#   - Authorization: Basic (HTTP Basic Auth headers)
+#   - password:      (generic password fields)
+#   - Application Password  (WordPress Application Password)
+#   - api.?key       (API keys)
+#   - secret         (generic secrets)
+#   - Bearer [A-Za-z0-9] (Bearer tokens with plausible value)
+
+PATTERNS="Authorization: Basic|password:[ =]['\"]?[A-Za-z0-9!@#$%^&*()+_={}|:<>?]{8,}|Application Password [A-Z]|api[_-]?key|secret[ =:]['\"]?[A-Za-z0-9]{8,}|Bearer [A-Za-z0-9]{10,}"
+
+if git diff --cached -U0 | grep -q -i -E "$PATTERNS"; then
+  echo ""
+  echo "❌  BLOCKED: Potential credentials detected in staged changes."
+  echo "   Matched patterns: $PATTERNS"
+  echo ""
+  echo "   Run the following to inspect:"
+  echo "     git diff --cached | grep -n -i -E \"$PATTERNS\""
+  echo ""
+  echo "   If these are false positives, use:"
+  echo "     git commit --no-verify"
+  echo ""
+  exit 1
+fi
