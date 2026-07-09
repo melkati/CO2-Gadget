@@ -6,12 +6,20 @@ Runs the PowerShell pipeline if any source file in webserver/ is newer
 than its corresponding .gz output in data/.
 """
 
+import os
 import subprocess
 import shutil
 import sys
 from pathlib import Path
 
-PROJECT_DIR = Path(__file__).resolve().parent.parent
+# PlatformIO runs pre: scripts via exec(), which does not define __file__.
+# Fall back to cwd when __file__ is absent.
+try:
+    _script_dir = Path(__file__).resolve().parent
+except NameError:
+    _script_dir = Path(os.path.abspath(sys.argv[0])).resolve().parent
+
+PROJECT_DIR = _script_dir.parent
 WEBSERVER_DIR = PROJECT_DIR / "webserver"
 DATA_DIR = PROJECT_DIR / "data"
 PIPELINE_SCRIPT = WEBSERVER_DIR / "MinifyCompressAllFiles.ps1"
