@@ -211,7 +211,7 @@ All pages support dark/light mode (auto-detected + manual toggle, persisted in `
 
 | URL | Content-Type | Description |
 |---|---|---|
-| `/index.v2.js` | `application/javascript` | Home page dashboard (bundles common + themes + index) |
+| `/index.js` | `application/javascript` | Home page dashboard (bundles common + themes + index) |
 | `/preferences.js` | `application/javascript` | Device settings page |
 | `/status.js` | `application/javascript` | System status page |
 | `/calibration.js` | `application/javascript` | CO₂ calibration page |
@@ -219,9 +219,6 @@ All pages support dark/light mode (auto-detected + manual toggle, persisted in `
 | `/low_power.js` | `application/javascript` | Deep sleep threshold config |
 | `/ota.js` | `application/javascript` | OTA firmware upload |
 | `/style.css` | `text/css` | Apple-inspired design system |
-| `/style.css` (fallback) | `text/css` | Dark/light mode handler (embedded in style.css) |
 | `/favicon.ico` | `image/png` | Browser tab icon |
 
 All `.gz` files are served transparently (gzip content-negotiation).
-The `.v2` suffix is a cache-busting mechanism — browsers that cached the old `index.js`
-get the updated bundle under a new name.

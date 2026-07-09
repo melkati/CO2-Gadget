@@ -1264,9 +1264,9 @@ void initWebServer() {
         }
     });
 
-    server.on("/index.v2.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request != nullptr) {
-            serveGzippedFile(request, "/index.v2.js.gz", "application/javascript");
+            serveGzippedFile(request, "/index.js.gz", "application/javascript");
         } else {
             Serial.println("---> [WiFi] Error: request is null");
         }
