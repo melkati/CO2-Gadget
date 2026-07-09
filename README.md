@@ -421,6 +421,14 @@ Everyone is welcome to contribute to CO2-Gadget, regardless of skill level or ba
 - Update [CHANGELOG.md](CHANGELOG.md) with your changes
 - For major changes, open an issue first to discuss
 
+### AI-Assisted Contributions
+
+We welcome the responsible use of AI tools. See [docs/ai-guidelines.md](docs/ai-guidelines.md)
+for our full policy.
+
+> **TL;DR:** AI is a productivity tool, not a substitute for understanding. You are
+> responsible for every line of code you submit.
+
 ### Testing
 
 We have active Alpha and Beta testing programs. Reach out on [Telegram](https://t.me/emariete_chat).

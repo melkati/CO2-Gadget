@@ -96,6 +96,17 @@ RAM: XX.X% (XXXXX bytes) | Flash: XX.X% (XXXXXXX bytes)
 
 ---
 
+## AI-Assisted Contributions
+
+We welcome the responsible use of AI tools. See [docs/ai-guidelines.md](docs/ai-guidelines.md)
+for our full policy.
+
+Key points:
+- You are responsible for every line of code you submit, regardless of how it was generated
+- PRs that appear to be unverified AI output will be closed without review
+- Disclosure in the PR description is appreciated but not required
+- AI code review on other people's PRs is not permitted
+
 ## Project Resources
 
 - [GitHub Repository](https://github.com/melkati/CO2-Gadget)
