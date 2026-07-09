@@ -13,6 +13,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **ESP-NOW peer MAC**: fixed web UI save of peer MAC address — local variable was shadowing the global, causing changes via preferences page to be silently discarded (`CO2_Gadget_Preferences.h:1108`)
 - **ESP-NOW MAC validation**: added format validation to prevent out-of-bounds read in `strtoul()` parsing of peer MAC address (`CO2_Gadget_Preferences.h:1111`)
 
+### Docs
+- **AI contribution guidelines**: added `docs/ai-guidelines.md` with responsible AI use policy, inspired by OCaml and Django; linked from `README.md`, `docs/contributing.md`, and new `.github/PULL_REQUEST_TEMPLATE.md`
+
 ---
 
 ## [Unreleased] — v0.16.015-beta (branch: development)
