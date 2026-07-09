@@ -98,8 +98,7 @@ RAM: XX.X% (XXXXX bytes) | Flash: XX.X% (XXXXXXX bytes)
 
 ## AI-Assisted Contributions
 
-We welcome the responsible use of AI tools. See [docs/ai-guidelines.md](docs/ai-guidelines.md)
-for our full policy.
+We welcome the responsible use of AI tools. See [ai-guidelines.md](ai-guidelines.md) for our full policy.
 
 Key points:
 - You are responsible for every line of code you submit, regardless of how it was generated
