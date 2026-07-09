@@ -1856,7 +1856,7 @@ void initWebServer() {
             String response;
             serializeJson(json, response);
             request->send(200, "application/json", response);
-#ifdef DEBUG_CAPTIVE_PORTAL
+#if defined(DEBUG_CAPTIVE_PORTAL) && !defined(WIFI_PRIVACY)
             Serial.print("-->[WEBS] Received /savePreferences command with content: ");
             Serial.println(response);
 #endif
