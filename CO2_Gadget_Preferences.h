@@ -1108,7 +1108,7 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
             peerESPNowAddressStr.trim();
             // Expected format: "XX:XX:XX:XX:XX:XX" or "XX-XX-XX-XX-XX-XX" (17 chars).
             // Validate format before parsing to avoid out-of-bounds reads (UB) on short/invalid input.
-            if (peerESPNowAddressStr.length() >= 17 &&
+            if (peerESPNowAddressStr.length() == 17 &&
                 (peerESPNowAddressStr[2] == ':' || peerESPNowAddressStr[2] == '-') &&
                 (peerESPNowAddressStr[5] == ':' || peerESPNowAddressStr[5] == '-') &&
                 (peerESPNowAddressStr[8] == ':' || peerESPNowAddressStr[8] == '-') &&

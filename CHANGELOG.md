@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.016-beta (branch: development)
+## [Unreleased] — v0.16.018-beta (branch: development)
 
 ### Fixed
 - **savePreferences debug log**: added `WIFI_PRIVACY` guard to `/savePreferences` debug output for consistency with `printActualSettings()` and `onWifiSettingsChanged()` (`CO2_Gadget_WIFI.h:1860`)
