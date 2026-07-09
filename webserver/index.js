@@ -1,20 +1,3 @@
-// Initialize intervals with default values
-let co2Interval = 15000; // 15 seconds
-let temperatureInterval = 30000; // 60 seconds
-let humidityInterval = 30000; // 60 seconds
-
-/**
- * Sets the update intervals for CO2, temperature, and humidity data.
- * 
- * @param {number} newCO2Interval - The new interval for updating CO2 data in milliseconds.
- */
-function setUpdateIntervals(newCO2Interval) {
-    co2Interval = newCO2Interval;
-    setInterval(updateCO2Data, co2Interval);
-    setInterval(updateTemperatureData, temperatureInterval);
-    setInterval(updateHumidityData, humidityInterval);
-}
-
 /**
  * Updates the stroke color and dash array of an SVG path based on a value.
  * Uses getTotalLength() so it works for arc gauges.
@@ -25,22 +8,6 @@ function setUpdateIntervals(newCO2Interval) {
  */
 function updateStroke(value, elementId, colorRanges, maxValue) {
     updateStrokeRange(value, elementId, colorRanges, 0, maxValue);
-}
-
-/**
- * Reads the current measurement interval, converts it to milliseconds,
- * and sets the update intervals accordingly.
- * 
- * @returns {void}
- */
-function updateMeasurementInterval() {
-    readMeasurementInterval().then(measurementInterval => {
-        console.log('CO2 Measurement Interval', measurementInterval);
-        let newCO2Interval = parseInt(measurementInterval) * 1000;
-        setUpdateIntervals(newCO2Interval);
-    }).catch(error => {
-        console.error('Error updating measurement interval', error);
-    });
 }
 
 /**
@@ -183,12 +150,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var currentFileName = window.location.pathname.split("/").pop();
     if (currentFileName === "index.html" || currentFileName === "") {
         readPreferencesFromServer().then(preferences => {
+            // Use device's measurementInterval (seconds); floor at 5s, fallback 15s
+            const intervalSecs = Math.max(5, preferences.measurementInterval || 15);
             updateCharts(preferences);
             highlightCurrentPage();
 
-            // updateCharts already calls updateTemperatureData() and updateHumidityData()
-            // internally, so only one interval is needed here.
-            setInterval(() => updateCharts(preferences), co2Interval);
+            setInterval(() => updateCharts(preferences), intervalSecs * 1000);
         }).catch(error => {
             console.error('Error initializing page:', error);
         });

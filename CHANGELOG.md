@@ -6,9 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.018-beta (branch: development)
+## [Unreleased] — v0.16.019-beta (branch: development)
 
 ### Fixed
+- **index page polling**: dashboard now respects device's `measurementInterval` instead of hardcoded 15s polling. Removed dead code (`setUpdateIntervals`, `updateMeasurementInterval`) with multiple bugs including double ms conversion and missing `clearInterval`. (`webserver/index.js`)
 - **savePreferences debug log**: added `WIFI_PRIVACY` guard to `/savePreferences` debug output for consistency with `printActualSettings()` and `onWifiSettingsChanged()` (`CO2_Gadget_WIFI.h:1860`)
 - **ESP-NOW peer MAC**: fixed web UI save of peer MAC address — local variable was shadowing the global, causing changes via preferences page to be silently discarded (`CO2_Gadget_Preferences.h:1108`)
 - **ESP-NOW MAC validation**: added format validation to prevent out-of-bounds read in `strtoul()` parsing of peer MAC address (`CO2_Gadget_Preferences.h:1111`)
