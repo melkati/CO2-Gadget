@@ -49,8 +49,8 @@ PAGE_FILES = {
 
 def needs_rebuild() -> bool:
     """Check if any source file is newer than the corresponding .gz output."""
-    if not any((DATA_DIR / name).exists() for name in PAGE_FILES.values()):
-        return True  # No .gz files at all → rebuild
+    if not all((DATA_DIR / name).exists() for name in PAGE_FILES.values()):
+        return True  # Missing any .gz file → rebuild
 
     # Check shared trigger files
     for name in TRIGGER_FILES:
@@ -94,9 +94,10 @@ def run_pipeline():
     # Detect available PowerShell (cross-platform: pwsh on macOS/Linux, powershell on Windows)
     pwsh = shutil.which("pwsh") or shutil.which("powershell")
     if not pwsh:
-        print("  ⚠️  No PowerShell executable found (tried pwsh, powershell) — skipping rebuild", file=sys.stderr)
-        print("  ⚠️  Run the pipeline manually: powershell -File webserver/MinifyCompressAllFiles.ps1 -DeleteMinifiedFiles", file=sys.stderr)
-        return
+        print("  ❌ No PowerShell executable found (tried pwsh, powershell) — cannot rebuild web assets", file=sys.stderr)
+        print("  ❌ Run the pipeline manually: powershell -File webserver/MinifyCompressAllFiles.ps1 -DeleteMinifiedFiles", file=sys.stderr)
+        print("  ❌ Aborting build to prevent stale assets in firmware", file=sys.stderr)
+        sys.exit(1)
 
     try:
         result = subprocess.run(

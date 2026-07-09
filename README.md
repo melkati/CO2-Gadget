@@ -264,9 +264,11 @@ Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) — no so
    > Since PR #296, `extra_scripts` in `platformio.ini` runs
    > `tools/prebuild_web_assets.py` before each build, which detects stale
    > `.gz` files in `data/` and runs the pipeline automatically when needed.
-   > **Note:** The auto-rebuild requires PowerShell (`pwsh` or `powershell`).
-   > On macOS/Linux, run the pipeline manually. You can also always run it
-   > manually for immediate results.
+   > **Note:** Requires PowerShell (`pwsh` or `powershell`). `pwsh` (PowerShell 7)
+   > is available on all platforms including macOS/Linux. Install it via:
+   > `winget install Microsoft.PowerShell` (Windows), `brew install powershell` (macOS),
+   > or `apt install powershell` (Linux). You can also always run the pipeline manually
+   > for immediate results.
 
 4. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
    ```bash
