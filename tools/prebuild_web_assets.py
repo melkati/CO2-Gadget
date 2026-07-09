@@ -15,7 +15,6 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 WEBSERVER_DIR = PROJECT_DIR / "webserver"
 DATA_DIR = PROJECT_DIR / "data"
 PIPELINE_SCRIPT = WEBSERVER_DIR / "MinifyCompressAllFiles.ps1"
-BUILD_MARKER = PROJECT_DIR / ".pio" / "build" / ".web_assets_built"
 
 # Files that, when changed, trigger a rebuild of ALL bundles
 TRIGGER_FILES = [

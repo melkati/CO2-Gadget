@@ -4,6 +4,7 @@
 *.bin
 *.ino.cpp
 *.py
+!tools/prebuild_web_assets.py
 images
 Bootlogo
 platformio_extra_configs.ini
