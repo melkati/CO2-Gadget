@@ -7,7 +7,7 @@ than its corresponding .gz output in data/.
 """
 
 import subprocess
-import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -83,10 +83,17 @@ def run_pipeline():
     print("  🔨 Web assets: source files changed — rebuilding...")
     print("─" * 60)
 
+    # Detect available PowerShell (cross-platform: pwsh on macOS/Linux, powershell on Windows)
+    pwsh = shutil.which("pwsh") or shutil.which("powershell")
+    if not pwsh:
+        print("  ⚠️  No PowerShell executable found (tried pwsh, powershell) — skipping rebuild", file=sys.stderr)
+        print("  ⚠️  Run the pipeline manually: powershell -File webserver/MinifyCompressAllFiles.ps1 -DeleteMinifiedFiles", file=sys.stderr)
+        return
+
     try:
         result = subprocess.run(
             [
-                "powershell.exe",
+                pwsh,
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
@@ -106,7 +113,7 @@ def run_pipeline():
             print(result.stderr)
             print(f"  ⚠️  Pipeline exited with code {result.returncode}", file=sys.stderr)
     except FileNotFoundError:
-        print("  ⚠️  PowerShell not found — skipping web asset rebuild", file=sys.stderr)
+        print(f"  ⚠️  PowerShell ({pwsh}) not found — skipping web asset rebuild", file=sys.stderr)
     except subprocess.TimeoutExpired:
         print("  ⚠️  Pipeline timed out — skipping web asset rebuild", file=sys.stderr)
 

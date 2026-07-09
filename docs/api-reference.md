@@ -221,4 +221,7 @@ All pages support dark/light mode (auto-detected + manual toggle, persisted in `
 | `/style.css` | `text/css` | Apple-inspired design system |
 | `/favicon.ico` | `image/png` | Browser tab icon |
 
-All `.gz` files are served transparently (gzip content-negotiation).
+All `.gz` files are served only when the client sends `Accept-Encoding: gzip`.
+Otherwise `serveGzippedFile()` returns an error page.
+The `.v2` suffix was used for cache-busting; the naming was consolidated to `index.js`
+since the legacy `index.js.gz` was removed (PR #296).
