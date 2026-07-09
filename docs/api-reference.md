@@ -211,16 +211,16 @@ All pages support dark/light mode (auto-detected + manual toggle, persisted in `
 
 | URL | Content-Type | Description |
 |---|---|---|
-| `/index.min.js` | `application/javascript` | Home page logic |
-| `/preferences.min.js` | `application/javascript` | Preferences logic |
-| `/status.min.js` | `application/javascript` | Status page logic |
-| `/calibration.min.js` | `application/javascript` | Calibration logic |
-| `/charts.min.js` | `application/javascript` | Charts page logic |
-| `/low_power.min.js` | `application/javascript` | Low power page logic |
-| `/ota.min.js` | `application/javascript` | OTA upload logic |
+| `/index.js` | `application/javascript` | Home page dashboard (bundles common + themes + index) |
+| `/preferences.js` | `application/javascript` | Device settings page |
+| `/status.js` | `application/javascript` | System status page |
+| `/calibration.js` | `application/javascript` | CO₂ calibration page |
+| `/charts.js` | `application/javascript` | Historical charts with Chart.js |
+| `/low_power.js` | `application/javascript` | Deep sleep threshold config |
+| `/ota.js` | `application/javascript` | OTA firmware upload |
 | `/style.css` | `text/css` | Apple-inspired design system |
-| `/themes.js` | `application/javascript` | Dark/light mode handler |
-| `/common.js` | `application/javascript` | Shared utilities |
 | `/favicon.ico` | `image/png` | Browser tab icon |
 
-All JS/CSS files use cache-busting query parameters (`?v=YYYYMMDD`).
+All `.gz` files are served only when the client sends `Accept-Encoding: gzip`.
+Otherwise `serveGzippedFile()` returns a minimal HTML fallback page.
+Bundle naming was consolidated from `index.v2.js` to `index.js` (PR #296).

@@ -257,12 +257,25 @@ Visit the [CO2 Gadget page](https://emariete.com/en/meter-co2-gadget/) — no so
    monitor_port = COM6
    ```
 
-3. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
+3. **Rebuild web assets** (required after editing any file in `webserver/`):
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File webserver/MinifyCompressAllFiles.ps1 -DeleteMinifiedFiles
+   ```
+   > Since PR #296, `extra_scripts` in `platformio.ini` runs
+   > `tools/prebuild_web_assets.py` before each build, which detects stale
+   > `.gz` files in `data/` and runs the pipeline automatically when needed.
+   > **Note:** Requires PowerShell (`pwsh` or `powershell`). `pwsh` (PowerShell 7)
+   > is available on all platforms including macOS/Linux. Install it via:
+   > `winget install Microsoft.PowerShell` (Windows), `brew install powershell` (macOS),
+   > or `apt install powershell` (Linux). You can also always run the pipeline manually
+   > for immediate results.
+
+4. **Build and upload** (replace `TTGO_TDISPLAY` with your desired flavor):
    ```bash
    pio run -e TTGO_TDISPLAY --target upload
    ```
 
-4. **Monitor serial output:**
+5. **Monitor serial output:**
    ```bash
    pio run -e TTGO_TDISPLAY --target monitor
    ```
