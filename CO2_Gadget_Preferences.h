@@ -1105,9 +1105,21 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         // Get the MAC address for peerESPNowAddress as a string from JSON
         if (JsonDocument.containsKey("peerESPNowAddress")) {
             String peerESPNowAddressStr = JsonDocument["peerESPNowAddress"].as<String>();
-            const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
-            for (int i = 0; i < 6; i++) {
-                peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
+            peerESPNowAddressStr.trim();
+            // Expected format: "XX:XX:XX:XX:XX:XX" or "XX-XX-XX-XX-XX-XX" (17 chars).
+            // Validate format before parsing to avoid out-of-bounds reads (UB) on short/invalid input.
+            if (peerESPNowAddressStr.length() >= 17 &&
+                (peerESPNowAddressStr[2] == ':' || peerESPNowAddressStr[2] == '-') &&
+                (peerESPNowAddressStr[5] == ':' || peerESPNowAddressStr[5] == '-') &&
+                (peerESPNowAddressStr[8] == ':' || peerESPNowAddressStr[8] == '-') &&
+                (peerESPNowAddressStr[11] == ':' || peerESPNowAddressStr[11] == '-') &&
+                (peerESPNowAddressStr[14] == ':' || peerESPNowAddressStr[14] == '-')) {
+                const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
+                for (int i = 0; i < 6; i++) {
+                    peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
+                }
+            } else {
+                Serial.println("-->[PREF][WARNING] Invalid ESP-NOW peer MAC format: \"" + peerESPNowAddressStr + "\". Expected XX:XX:XX:XX:XX:XX. Skipping.");
             }
         }
 
