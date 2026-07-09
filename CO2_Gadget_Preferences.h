@@ -1105,8 +1105,6 @@ bool handleSavePreferencesFromJSON(String jsonPreferences) {
         // Get the MAC address for peerESPNowAddress as a string from JSON
         if (JsonDocument.containsKey("peerESPNowAddress")) {
             String peerESPNowAddressStr = JsonDocument["peerESPNowAddress"].as<String>();
-            // Convert the string to an array of uint8_t
-            uint8_t peerESPNowAddress[6];
             const char* peerESPNowAddressChar = peerESPNowAddressStr.c_str();
             for (int i = 0; i < 6; i++) {
                 peerESPNowAddress[i] = strtoul(peerESPNowAddressChar + i * 3, NULL, 16);
