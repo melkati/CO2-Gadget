@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.023-beta (branch: development)
+## [Unreleased] — v0.16.024-beta (branch: development)
 
 ### Fixed
 - **Beta firmware deployment**: corrected the FTP destination so firmware binaries are uploaded to the same `/beta/` path referenced by the GitHub Pages manifests. (release workflow)

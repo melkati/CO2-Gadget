@@ -245,38 +245,38 @@ jobs:
           commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
 
       # ------------------------------------------------------------------
-          # STEP 2: Inspect the FTP account root before uploading.
-          # This is intentionally verbose and must not print credentials. It
-          # tells us whether the account is rooted at /public_html or already
-          # chrooted below /public_html/wp-content/uploads/firmware.
-          # ------------------------------------------------------------------
-          - name: Inspect FTP root and firmware directories
-          env:
-            FTP_SERVER: ${{ secrets.FTP_SERVER }}
-            FTP_USERNAME: ${{ secrets.FTP_USER }}
-            FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          run: |
-            python - <<'PY'
-            import ftplib
-            import os
-              from urllib.parse import urlparse
+      # STEP 2: Inspect the FTP account root before uploading.
+      # This is intentionally verbose and must not print credentials. It
+      # tells us whether the account is rooted at /public_html or already
+      # chrooted below /public_html/wp-content/uploads/firmware.
+      # ------------------------------------------------------------------
+      - name: Inspect FTP root and firmware directories
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import ftplib
+          import os
+          from urllib.parse import urlparse
 
-              raw_server = os.environ["FTP_SERVER"].strip()
-              parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
-              host = parsed.hostname or raw_server
-              port = parsed.port or 21
-              ftp = ftplib.FTP()
-              try:
-                ftp.connect(host, port, timeout=20)
-                ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-                print(f"FTP server: {host}:{port}")
-                print(f"FTP PWD: {ftp.pwd()}")
-              except Exception as exc:
-                # Diagnostics must never prevent the actual deploy action.
-                print(f"FTP diagnostic connection failed: {type(exc).__name__}: {exc}")
-                raise SystemExit(0)
+          raw_server = os.environ["FTP_SERVER"].strip()
+          parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
+          host = parsed.hostname or raw_server
+          port = parsed.port or 21
+          ftp = ftplib.FTP()
+          try:
+              ftp.connect(host, port, timeout=20)
+              ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+              print(f"FTP server: {host}:{port}")
+              print(f"FTP PWD: {ftp.pwd()}")
+          except Exception as exc:
+              # Diagnostics must never prevent the actual deploy action.
+              print(f"FTP diagnostic connection failed: {type(exc).__name__}: {exc}")
+              raise SystemExit(0)
 
-            candidates = [
+          candidates = [
               ".",
               "/",
               "/public_html",
@@ -286,22 +286,22 @@ jobs:
               "/wp-content",
               "/wp-content/uploads",
               "/wp-content/uploads/firmware",
-            ]
-            for path in candidates:
+          ]
+          for path in candidates:
               try:
-                ftp.cwd(path)
-                names = []
-                ftp.retrlines("NLST", names.append)
-                print(f"FTP PATH OK: {path} -> {names[:30]}")
+                  ftp.cwd(path)
+                  names = []
+                  ftp.retrlines("NLST", names.append)
+                  print(f"FTP PATH OK: {path} -> {names[:30]}")
               except Exception as exc:
-                print(f"FTP PATH MISS: {path} -> {type(exc).__name__}")
+                  print(f"FTP PATH MISS: {path} -> {type(exc).__name__}")
 
-            ftp.quit()
-            PY
+          ftp.quit()
+          PY
 
-          # ------------------------------------------------------------------
-          # STEP 3: Deploy .bin files to emariete.com via FTP
-          # The account is expected to be rooted at the firmware directory.
+      # ------------------------------------------------------------------
+      # STEP 3: Deploy .bin files to emariete.com via FTP
+      # The account is expected to be rooted at the firmware directory.
       # ------------------------------------------------------------------
       - name: FTP upload firmware .bin files
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
