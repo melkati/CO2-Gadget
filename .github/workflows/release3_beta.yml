@@ -246,6 +246,7 @@ jobs:
 
       # ------------------------------------------------------------------
       # STEP 2: Deploy .bin files to emariete.com via FTP
+      # Upload them to the same path referenced by BIN_BASE_URL above.
       # ------------------------------------------------------------------
       - name: FTP upload firmware .bin files
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
@@ -254,7 +255,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: ./ftp_firmware/beta/
-          REMOTE_DIR: /${{ github.event.repository.name }}/beta/
+          REMOTE_DIR: /wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
