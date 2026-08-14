@@ -6,12 +6,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.022-beta (branch: development)
+## [Unreleased] — v0.16.023-beta (branch: development)
 
 ### Fixed
 - **Beta firmware deployment**: corrected the FTP destination so firmware binaries are uploaded to the same `/beta/` path referenced by the GitHub Pages manifests. (release workflow)
 - **FTP account root**: corrected the remote path to account for the FTP user's chroot at the firmware directory.
 - **FTP deployment diagnostics**: added temporary root/path inspection to the Beta workflow without exposing credentials.
+- **FTP diagnostics robustness**: normalize an optional `ftp://` prefix and never block deployment when inspection cannot connect.
 - **index page polling**: dashboard now respects device's `measurementInterval` instead of hardcoded 15s polling. Removed dead code (`setUpdateIntervals`, `updateMeasurementInterval`) with multiple bugs including double ms conversion and missing `clearInterval`. (`webserver/index.js`)
 - **savePreferences debug log**: added `WIFI_PRIVACY` guard to `/savePreferences` debug output for consistency with `printActualSettings()` and `onWifiSettingsChanged()` (`CO2_Gadget_WIFI.h:1860`)
 - **ESP-NOW peer MAC**: fixed web UI save of peer MAC address — local variable was shadowing the global, causing changes via preferences page to be silently discarded (`CO2_Gadget_Preferences.h:1108`)

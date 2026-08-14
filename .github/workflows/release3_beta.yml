@@ -259,11 +259,22 @@ jobs:
             python - <<'PY'
             import ftplib
             import os
+              from urllib.parse import urlparse
 
-            ftp = ftplib.FTP()
-            ftp.connect(os.environ["FTP_SERVER"], 21, timeout=20)
-            ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-            print(f"FTP PWD: {ftp.pwd()}")
+              raw_server = os.environ["FTP_SERVER"].strip()
+              parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
+              host = parsed.hostname or raw_server
+              port = parsed.port or 21
+              ftp = ftplib.FTP()
+              try:
+                ftp.connect(host, port, timeout=20)
+                ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+                print(f"FTP server: {host}:{port}")
+                print(f"FTP PWD: {ftp.pwd()}")
+              except Exception as exc:
+                # Diagnostics must never prevent the actual deploy action.
+                print(f"FTP diagnostic connection failed: {type(exc).__name__}: {exc}")
+                raise SystemExit(0)
 
             candidates = [
               ".",
