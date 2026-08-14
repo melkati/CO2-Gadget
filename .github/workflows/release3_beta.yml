@@ -245,8 +245,52 @@ jobs:
           commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
 
       # ------------------------------------------------------------------
-      # STEP 2: Deploy .bin files to emariete.com via FTP
-      # Upload them to the same path referenced by BIN_BASE_URL above.
+          # STEP 2: Inspect the FTP account root before uploading.
+          # This is intentionally verbose and must not print credentials. It
+          # tells us whether the account is rooted at /public_html or already
+          # chrooted below /public_html/wp-content/uploads/firmware.
+          # ------------------------------------------------------------------
+          - name: Inspect FTP root and firmware directories
+          env:
+            FTP_SERVER: ${{ secrets.FTP_SERVER }}
+            FTP_USERNAME: ${{ secrets.FTP_USER }}
+            FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          run: |
+            python - <<'PY'
+            import ftplib
+            import os
+
+            ftp = ftplib.FTP()
+            ftp.connect(os.environ["FTP_SERVER"], 21, timeout=20)
+            ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+            print(f"FTP PWD: {ftp.pwd()}")
+
+            candidates = [
+              ".",
+              "/",
+              "/public_html",
+              "/public_html/wp-content",
+              "/public_html/wp-content/uploads",
+              "/public_html/wp-content/uploads/firmware",
+              "/wp-content",
+              "/wp-content/uploads",
+              "/wp-content/uploads/firmware",
+            ]
+            for path in candidates:
+              try:
+                ftp.cwd(path)
+                names = []
+                ftp.retrlines("NLST", names.append)
+                print(f"FTP PATH OK: {path} -> {names[:30]}")
+              except Exception as exc:
+                print(f"FTP PATH MISS: {path} -> {type(exc).__name__}")
+
+            ftp.quit()
+            PY
+
+          # ------------------------------------------------------------------
+          # STEP 3: Deploy .bin files to emariete.com via FTP
+          # The account is expected to be rooted at the firmware directory.
       # ------------------------------------------------------------------
       - name: FTP upload firmware .bin files
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
