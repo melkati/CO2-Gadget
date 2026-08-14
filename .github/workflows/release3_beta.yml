@@ -255,7 +255,9 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: ./ftp_firmware/beta/
-          REMOTE_DIR: /wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/
+          # FTP account root already maps to /wp-content/uploads/firmware/.
+          # Do not repeat the web-server path here.
+          REMOTE_DIR: /${{ github.event.repository.name }}/beta/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
