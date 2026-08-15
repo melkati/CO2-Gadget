@@ -316,6 +316,17 @@ jobs:
                   print(f"Created: {path}")
               except ftplib.error_perm:
                   print(f"Already exists: {path}")
+              # Directories created via raw FTP MKD may not inherit the
+              # world-readable+executable permissions (755) that the web
+              # server needs to traverse them and serve files inside.
+              # The stable (non-/beta/) folder was created long ago with
+              # correct permissions; this new /beta/ folder was not.
+              # SITE CHMOD is best-effort — not all FTP servers support it.
+              try:
+                  ftp.voidcmd(f"SITE CHMOD 755 {path}")
+                  print(f"chmod 755: {path}")
+              except Exception as exc:
+                  print(f"SITE CHMOD not supported/failed for {path}: {exc}")
 
           ftp.quit()
           PY
@@ -349,7 +360,7 @@ jobs:
       # CDN caching entirely, so we know for certain whether the transfer
       # really happened.
       # ------------------------------------------------------------------
-      - name: Verify uploaded files via FTP listing
+      - name: Verify uploaded files via FTP listing and fix permissions
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USER }}
@@ -373,6 +384,16 @@ jobs:
           target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}/beta"
           ftp.cwd(target)
           print(f"Listing {target}:")
+          names = ftp.nlst()
+
+          for name in names:
+              if name in (".", ".."):
+                  continue
+              try:
+                  ftp.voidcmd(f"SITE CHMOD 644 {name}")
+              except Exception as exc:
+                  print(f"SITE CHMOD not supported/failed for {name}: {exc}")
+
           lines = []
           ftp.retrlines("LIST", lines.append)
           for line in lines:

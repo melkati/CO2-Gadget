@@ -6,7 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.028-beta (branch: development)
+## [Unreleased] — v0.16.029-beta (branch: development)
+
+### Fixed
+- **#300 — Definitive root cause: directory permissions**: direct FTP `LIST` confirmed the v0.16.027/028 binaries genuinely existed on the server with correct sizes, yet HTTP still returned 404. Comparison against the stable (non-`/beta/`) folder — which serves `.bin` files fine (HTTP 200) via the same FTP account — pinpointed the difference: the `/beta/` directory was newly created via raw FTP `MKD`, which does not necessarily grant the web server (running as a different user/group) read+execute permission on the directory. Added `SITE CHMOD 755` on each created directory level and `SITE CHMOD 644` on every uploaded file to guarantee they are web-readable, matching the working stable folder's permissions.
 
 ### Fixed
 - **#300 — follow-up verification**: build and FTP upload both reported success for v0.16.027 (52 uniquely-named files transferred), but the resulting URLs still returned HTTP 404 on emariete.com. Added a temporary direct FTP directory listing right after upload to see the real server-side state, bypassing HTTP/CDN entirely, since `SamKirkland/FTP-Deploy-Action@2.0.0` is documented to sometimes report success despite failing silently.
