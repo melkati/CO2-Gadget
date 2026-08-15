@@ -1,0 +1,21 @@
+{
+  "name": "CO2-Gadget-TDISPLAY_S3",
+  "flavour": "TDISPLAY_S3",
+  "version": "0.16.029-beta",
+  "compilation_date": "15-08-2026",
+  "compilation_time": "10:32:35",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 20,
+  "builds": [
+      {
+        "chipFamily": "ESP32-S3",
+        "improv": true,
+        "parts": [
+          { "path": "https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta/CO2-Gadget-TDISPLAY_S3-0.16.029-bootloader.bin", "offset": 0 },
+          { "path": "https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta/CO2-Gadget-TDISPLAY_S3-0.16.029-partitions.bin", "offset": 32768 },
+          { "path": "https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta/CO2-Gadget-TDISPLAY_S3-0.16.029-firmware.bin", "offset": 65536 },
+          { "path": "https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta/CO2-Gadget-TDISPLAY_S3-0.16.029-spiffs.bin", "offset": 13172736 }
+        ]
+      }
+  ]
+}
