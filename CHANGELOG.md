@@ -6,13 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.024-beta (branch: development)
+## [Unreleased] — v0.16.025-beta (branch: development)
 
 ### Fixed
-- **Beta firmware deployment**: corrected the FTP destination so firmware binaries are uploaded to the same `/beta/` path referenced by the GitHub Pages manifests. (release workflow)
-- **FTP account root**: corrected the remote path to account for the FTP user's chroot at the firmware directory.
-- **FTP deployment diagnostics**: added temporary root/path inspection to the Beta workflow without exposing credentials.
-- **FTP diagnostics robustness**: normalize an optional `ftp://` prefix and never block deployment when inspection cannot connect.
+- **#300 — Beta/Release firmware deployment**: root-caused via direct FTP inspection — the FTP account root is the web server root (`public_html`), not chrooted to the firmware directory. `REMOTE_DIR` now correctly repeats the full `/wp-content/uploads/firmware/CO2-Gadget/...` path in both `release3_beta.yml` and `release3.yml`, matching the absolute URLs baked into the manifests. Added a permanent, idempotent "ensure remote directory exists" step before upload, since the FTP action used (`SamKirkland/FTP-Deploy-Action@2.0.0`) can silently fail to create missing nested directories.
 - **index page polling**: dashboard now respects device's `measurementInterval` instead of hardcoded 15s polling. Removed dead code (`setUpdateIntervals`, `updateMeasurementInterval`) with multiple bugs including double ms conversion and missing `clearInterval`. (`webserver/index.js`)
 - **savePreferences debug log**: added `WIFI_PRIVACY` guard to `/savePreferences` debug output for consistency with `printActualSettings()` and `onWifiSettingsChanged()` (`CO2_Gadget_WIFI.h:1860`)
 - **ESP-NOW peer MAC**: fixed web UI save of peer MAC address — local variable was shadowing the global, causing changes via preferences page to be silently discarded (`CO2_Gadget_Preferences.h:1108`)

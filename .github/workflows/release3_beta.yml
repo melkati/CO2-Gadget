@@ -245,16 +245,23 @@ jobs:
           commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
 
       # ------------------------------------------------------------------
-      # STEP 2: Inspect the FTP account root before uploading.
-      # This is intentionally verbose and must not print credentials. It
-      # tells us whether the account is rooted at /public_html or already
-      # chrooted below /public_html/wp-content/uploads/firmware.
+      # STEP 2: Ensure the remote directory chain exists before uploading.
+      #
+      # Confirmed 2026-08-14 via direct FTP inspection (see issue #300):
+      #   - The FTP account root ("/") IS the web server root (public_html).
+      #   - It already contains "wp-content/uploads/firmware/CO2-Gadget/".
+      #   - REMOTE_DIR below MUST therefore repeat the full web-server path
+      #     (it is NOT chrooted to the firmware directory).
+      # SamKirkland/FTP-Deploy-Action@2.0.0 is known to silently fail to
+      # create missing nested directories, so we create the chain ourselves
+      # (idempotent — ignores "already exists" errors) before the upload.
       # ------------------------------------------------------------------
-      - name: Inspect FTP root and firmware directories
+      - name: Ensure remote FTP directory exists
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           python - <<'PY'
           import ftplib
@@ -265,43 +272,28 @@ jobs:
           parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
           host = parsed.hostname or raw_server
           port = parsed.port or 21
-          ftp = ftplib.FTP()
-          try:
-              ftp.connect(host, port, timeout=20)
-              ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-              print(f"FTP server: {host}:{port}")
-              print(f"FTP PWD: {ftp.pwd()}")
-          except Exception as exc:
-              # Diagnostics must never prevent the actual deploy action.
-              print(f"FTP diagnostic connection failed: {type(exc).__name__}: {exc}")
-              raise SystemExit(0)
 
-          candidates = [
-              ".",
-              "/",
-              "/public_html",
-              "/public_html/wp-content",
-              "/public_html/wp-content/uploads",
-              "/public_html/wp-content/uploads/firmware",
-              "/wp-content",
-              "/wp-content/uploads",
-              "/wp-content/uploads/firmware",
-          ]
-          for path in candidates:
+          ftp = ftplib.FTP()
+          ftp.connect(host, port, timeout=20)
+          ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+
+          target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}/beta"
+          parts = [p for p in target.split("/") if p]
+          path = ""
+          for part in parts:
+              path += "/" + part
               try:
-                  ftp.cwd(path)
-                  names = []
-                  ftp.retrlines("NLST", names.append)
-                  print(f"FTP PATH OK: {path} -> {names[:30]}")
-              except Exception as exc:
-                  print(f"FTP PATH MISS: {path} -> {type(exc).__name__}")
+                  ftp.mkd(path)
+                  print(f"Created: {path}")
+              except ftplib.error_perm:
+                  print(f"Already exists: {path}")
 
           ftp.quit()
           PY
 
       # ------------------------------------------------------------------
       # STEP 3: Deploy .bin files to emariete.com via FTP
-      # The account is expected to be rooted at the firmware directory.
+      # REMOTE_DIR repeats the full web-server path (see note above).
       # ------------------------------------------------------------------
       - name: FTP upload firmware .bin files
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
@@ -310,9 +302,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: ./ftp_firmware/beta/
-          # FTP account root already maps to /wp-content/uploads/firmware/.
-          # Do not repeat the web-server path here.
-          REMOTE_DIR: /${{ github.event.repository.name }}/beta/
+          REMOTE_DIR: /wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/
           METHOD: ftp
           PORT: 21
           ARGS: --verbose
