@@ -168,16 +168,37 @@ jobs:
           }
           EOF
 
+      # ------------------------------------------------------------------
+      # Rename build outputs to match the versioned filenames referenced
+      # by the manifest (BIN_BASE_URL above). Without this, every board's
+      # artifact keeps the same generic PlatformIO names (bootloader.bin,
+      # firmware.bin, ...) and they silently overwrite each other once all
+      # 13 environments are flattened into a single FTP folder later
+      # (root cause of issue #300 — only 1 of each file type survived
+      # instead of 4 per board x 13 boards).
+      # ------------------------------------------------------------------
+      - name: Rename firmware files to match manifest
+        if: steps.check_version.outputs.VERSION != ''
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          ENV_NAME: ${{ matrix.environment }}
+          VER: ${{ steps.check_version.outputs.VERSION }}
+        run: |
+          SRC=.pio/build/${ENV_NAME}
+          for part in bootloader partitions firmware spiffs; do
+            cp "${SRC}/${part}.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-${part}.bin"
+          done
+
       - name: Upload artifact (all files for this environment)
         if: steps.check_version.outputs.VERSION != ''
         uses: actions/upload-artifact@v4
         with:
           name: beta-${{ matrix.environment }}
           path: |
-            .pio/build/${{ matrix.environment }}/bootloader.bin
-            .pio/build/${{ matrix.environment }}/partitions.bin
-            .pio/build/${{ matrix.environment }}/firmware.bin
-            .pio/build/${{ matrix.environment }}/spiffs.bin
+            ${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-bootloader.bin
+            ${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-partitions.bin
+            ${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-firmware.bin
+            ${{ github.event.repository.name }}-${{ matrix.environment }}-${{ steps.check_version.outputs.VERSION }}-spiffs.bin
             ${{ github.event.repository.name }}-${{ matrix.environment }}.beta.manifest.json
           retention-days: 2
 

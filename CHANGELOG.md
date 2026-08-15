@@ -6,10 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.025-beta (branch: development)
+## [Unreleased] — v0.16.026-beta (branch: development)
 
 ### Fixed
-- **#300 — Beta/Release firmware deployment**: root-caused via direct FTP inspection — the FTP account root is the web server root (`public_html`), not chrooted to the firmware directory. `REMOTE_DIR` now correctly repeats the full `/wp-content/uploads/firmware/CO2-Gadget/...` path in both `release3_beta.yml` and `release3.yml`, matching the absolute URLs baked into the manifests. Added a permanent, idempotent "ensure remote directory exists" step before upload, since the FTP action used (`SamKirkland/FTP-Deploy-Action@2.0.0`) can silently fail to create missing nested directories.
+- **#300 — Real root cause found and fixed**: firmware binaries were uploaded to a flat FTP folder without renaming them from PlatformIO's generic output names (`bootloader.bin`, `partitions.bin`, `firmware.bin`, `spiffs.bin`). Since all 13 board environments produced files with identical names, they silently overwrote each other during deployment — only 1 of each type survived instead of 4 per board × 13 boards — and none matched the versioned filenames (`CO2-Gadget-<FLAVOR>-<VERSION>-<part>.bin`) referenced by the manifests. Added a rename step right after building each board so uploaded/deployed files are unique and match the manifest exactly. Applied to both `release3_beta.yml` and `release3.yml`.
+- **FTP remote path**: confirmed via direct FTP inspection that the account root is the web server root (`public_html`, not chrooted to the firmware directory); `REMOTE_DIR` now correctly repeats the full `/wp-content/uploads/firmware/CO2-Gadget/...` path, matching the manifests' absolute URLs. Added a permanent, idempotent "ensure remote directory exists" step before upload.
 - **index page polling**: dashboard now respects device's `measurementInterval` instead of hardcoded 15s polling. Removed dead code (`setUpdateIntervals`, `updateMeasurementInterval`) with multiple bugs including double ms conversion and missing `clearInterval`. (`webserver/index.js`)
 - **savePreferences debug log**: added `WIFI_PRIVACY` guard to `/savePreferences` debug output for consistency with `printActualSettings()` and `onWifiSettingsChanged()` (`CO2_Gadget_WIFI.h:1860`)
 - **ESP-NOW peer MAC**: fixed web UI save of peer MAC address — local variable was shadowing the global, causing changes via preferences page to be silently discarded (`CO2_Gadget_Preferences.h:1108`)
