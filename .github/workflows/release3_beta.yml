@@ -340,3 +340,43 @@ jobs:
         run: |
           curl -sf "https://emariete.com/clean_cache_litespeed.php" || true
           echo "Origin cache purge attempted"
+
+      # ------------------------------------------------------------------
+      # TEMPORARY (issue #300 follow-up): the FTP-Deploy-Action reports
+      # success even when it has previously failed silently (see
+      # release-pipeline notes). Verify directly via ftplib what is
+      # actually present on the server after the upload, bypassing HTTP/
+      # CDN caching entirely, so we know for certain whether the transfer
+      # really happened.
+      # ------------------------------------------------------------------
+      - name: Verify uploaded files via FTP listing
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          python - <<'PY'
+          import ftplib
+          import os
+          from urllib.parse import urlparse
+
+          raw_server = os.environ["FTP_SERVER"].strip()
+          parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
+          host = parsed.hostname or raw_server
+          port = parsed.port or 21
+
+          ftp = ftplib.FTP()
+          ftp.connect(host, port, timeout=20)
+          ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+
+          target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}/beta"
+          ftp.cwd(target)
+          print(f"Listing {target}:")
+          lines = []
+          ftp.retrlines("LIST", lines.append)
+          for line in lines:
+              print(line)
+          print(f"Total entries: {len(lines)}")
+          ftp.quit()
+          PY

@@ -6,9 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.027-beta (branch: development)
+## [Unreleased] — v0.16.028-beta (branch: development)
 
 ### Fixed
+- **#300 — follow-up verification**: build and FTP upload both reported success for v0.16.027 (52 uniquely-named files transferred), but the resulting URLs still returned HTTP 404 on emariete.com. Added a temporary direct FTP directory listing right after upload to see the real server-side state, bypassing HTTP/CDN entirely, since `SamKirkland/FTP-Deploy-Action@2.0.0` is documented to sometimes report success despite failing silently.
 - **#300 — Fixed flaky binary rename**: the previous fix (v0.16.026) renamed binaries to their versioned manifest filenames in a step placed *after* both `pio run` invocations (firmware + `buildfs`). At least one environment (`esp32dev_ST7789_240x320`) failed with `cp: cannot stat '.pio/build/.../bootloader.bin': No such file or directory` at that point, even though the file was confirmed built moments earlier — likely related to `build_cache_dir = .pio/build` in `platformio.ini` interacting with PlatformIO's caching across the second `pio run -t buildfs` invocation. Binaries are now copied to their versioned names immediately after each build step that produces them (bootloader/partitions/firmware right after `pio run`, spiffs right after `pio run -t buildfs`), before any further build command can run.
 - **FTP remote path**: confirmed via direct FTP inspection that the account root is the web server root (`public_html`, not chrooted to the firmware directory); `REMOTE_DIR` now correctly repeats the full `/wp-content/uploads/firmware/CO2-Gadget/...` path, matching the manifests' absolute URLs. Added a permanent, idempotent "ensure remote directory exists" step before upload.
 - **index page polling**: dashboard now respects device's `measurementInterval` instead of hardcoded 15s polling. Removed dead code (`setUpdateIntervals`, `updateMeasurementInterval`) with multiple bugs including double ms conversion and missing `clearInterval`. (`webserver/index.js`)
