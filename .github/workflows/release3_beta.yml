@@ -112,10 +112,39 @@ jobs:
         run: |
           pio run -e ${{ matrix.environment }}
 
+      # ------------------------------------------------------------------
+      # Copy bootloader/partitions/firmware to versioned filenames RIGHT
+      # AWAY, before running any further `pio run` invocation. Root cause
+      # of issue #300: these files were found missing by the time a later
+      # step tried to read them, likely due to `build_cache_dir = .pio/build`
+      # in platformio.ini interacting with PlatformIO's caching when a
+      # second `pio run` (buildfs) runs afterwards.
+      # ------------------------------------------------------------------
+      - name: Rename firmware binaries to match manifest
+        if: steps.check_version.outputs.VERSION != ''
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          ENV_NAME: ${{ matrix.environment }}
+          VER: ${{ steps.check_version.outputs.VERSION }}
+        run: |
+          SRC=.pio/build/${ENV_NAME}
+          for part in bootloader partitions firmware; do
+            cp "${SRC}/${part}.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-${part}.bin"
+          done
+
       - name: Build filesystem
         if: steps.check_version.outputs.VERSION != ''
         run: |
           pio run -e ${{ matrix.environment }} -t buildfs
+
+      - name: Rename spiffs binary to match manifest
+        if: steps.check_version.outputs.VERSION != ''
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          ENV_NAME: ${{ matrix.environment }}
+          VER: ${{ steps.check_version.outputs.VERSION }}
+        run: |
+          cp ".pio/build/${ENV_NAME}/spiffs.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-spiffs.bin"
 
       - name: Create manifest with absolute .bin URLs
         if: steps.check_version.outputs.VERSION != ''
@@ -167,27 +196,6 @@ jobs:
             ]
           }
           EOF
-
-      # ------------------------------------------------------------------
-      # Rename build outputs to match the versioned filenames referenced
-      # by the manifest (BIN_BASE_URL above). Without this, every board's
-      # artifact keeps the same generic PlatformIO names (bootloader.bin,
-      # firmware.bin, ...) and they silently overwrite each other once all
-      # 13 environments are flattened into a single FTP folder later
-      # (root cause of issue #300 — only 1 of each file type survived
-      # instead of 4 per board x 13 boards).
-      # ------------------------------------------------------------------
-      - name: Rename firmware files to match manifest
-        if: steps.check_version.outputs.VERSION != ''
-        env:
-          REPO_NAME: ${{ github.event.repository.name }}
-          ENV_NAME: ${{ matrix.environment }}
-          VER: ${{ steps.check_version.outputs.VERSION }}
-        run: |
-          SRC=.pio/build/${ENV_NAME}
-          for part in bootloader partitions firmware spiffs; do
-            cp "${SRC}/${part}.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-${part}.bin"
-          done
 
       - name: Upload artifact (all files for this environment)
         if: steps.check_version.outputs.VERSION != ''

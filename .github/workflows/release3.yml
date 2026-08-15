@@ -95,9 +95,36 @@ jobs:
         run: |
           pio run -e ${{ matrix.environment }}
 
+      # ------------------------------------------------------------------
+      # Copy bootloader/partitions/firmware to versioned filenames RIGHT
+      # AWAY, before running any further `pio run` invocation. Root cause
+      # of issue #300 (beta workflow): these files were found missing by
+      # the time a later step tried to read them, likely due to
+      # `build_cache_dir = .pio/build` in platformio.ini interacting with
+      # PlatformIO's caching when a second `pio run` (buildfs) runs after.
+      # ------------------------------------------------------------------
+      - name: Rename firmware binaries to match manifest
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          ENV_NAME: ${{ matrix.environment }}
+          VER: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          SRC=.pio/build/${ENV_NAME}
+          for part in bootloader partitions firmware; do
+            cp "${SRC}/${part}.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-${part}.bin"
+          done
+
       - name: Build filesystem
         run: |
           pio run -e ${{ matrix.environment }} -t buildfs
+
+      - name: Rename spiffs binary to match manifest
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          ENV_NAME: ${{ matrix.environment }}
+          VER: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          cp ".pio/build/${ENV_NAME}/spiffs.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-spiffs.bin"
 
       - name: Create manifest with absolute .bin URLs
         id: create_manifest
@@ -149,25 +176,6 @@ jobs:
             ]
           }
           EOF
-
-      # ------------------------------------------------------------------
-      # Rename build outputs to match the versioned filenames referenced
-      # by the manifest (BIN_BASE_URL above). Without this, every board's
-      # artifact keeps the same generic PlatformIO names (bootloader.bin,
-      # firmware.bin, ...) and they silently overwrite each other once all
-      # 13 environments are flattened into a single FTP folder later
-      # (root cause of issue #300 in the beta workflow).
-      # ------------------------------------------------------------------
-      - name: Rename firmware files to match manifest
-        env:
-          REPO_NAME: ${{ github.event.repository.name }}
-          ENV_NAME: ${{ matrix.environment }}
-          VER: ${{ steps.get_version.outputs.VERSION }}
-        run: |
-          SRC=.pio/build/${ENV_NAME}
-          for part in bootloader partitions firmware spiffs; do
-            cp "${SRC}/${part}.bin" "./${REPO_NAME}-${ENV_NAME}-${VER}-${part}.bin"
-          done
 
       - name: Upload artifact (all files for this environment)
         uses: actions/upload-artifact@v4
