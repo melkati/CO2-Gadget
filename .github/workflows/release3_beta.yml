@@ -6,8 +6,8 @@ name: Beta Release V3.0
 # emariete.com because newly FTP-uploaded files there return HTTP 404 (issue #300).
 #
 # Architecture:
-#   build_beta (matrix, parallel) â†’ uploads artifacts
-#   deploy (single job, after all builds) â†’ gh-pages (manifests + .bin files)
+#   build_beta (matrix, parallel) -> uploads artifacts
+#   deploy (single job, after all builds) -> gh-pages (manifests + .bin files)
 
 on:
   push:
@@ -21,6 +21,10 @@ on:
         description: 'Version number (e.g. 0.16.012)'
         required: false
         default: '0.0.0'
+      environment:
+        description: 'Build a single environment only (e.g. esp32dev). Blank = all 13. Skips deploy.'
+        required: false
+        default: ''
 
 jobs:
   build_beta:
@@ -33,20 +37,9 @@ jobs:
 
     strategy:
       matrix:
-        environment:
-          - esp32dev
-          - esp32dev_OLED
-          - TTGO_TDISPLAY
-          - TTGO_TDISPLAY_SANDWICH
-          - TDISPLAY_S3
-          - esp32dev_ST7789_240x320
-          - ttgo-t5-EINKBOARDGDEM0213B74
-          - ttgo-t5-EINKBOARDDEPG0213BN
-          - ttgo-t5-EINKBOARDGDEW0213M21
-          - ttgo-t7-EINKBOARDGDEM029T94
-          - ttgo-t7-WEACT_GDEH0154D67
-          - ttgo-t7-WEACT_DEPG0213BN
-          - ttgo-t7-WEACT_GxEPD2_290_BS
+        # Full release: all 13 environments. Quick check: a single env passed
+        # via workflow_dispatch input `environment` (deploy is skipped).
+        environment: ${{ fromJSON((github.event_name == 'workflow_dispatch' && github.event.inputs.environment != '') && format('["{0}"]', github.event.inputs.environment) || '["esp32dev","esp32dev_OLED","TTGO_TDISPLAY","TTGO_TDISPLAY_SANDWICH","TDISPLAY_S3","esp32dev_ST7789_240x320","ttgo-t5-EINKBOARDGDEM0213B74","ttgo-t5-EINKBOARDDEPG0213BN","ttgo-t5-EINKBOARDGDEW0213M21","ttgo-t7-EINKBOARDGDEM029T94","ttgo-t7-WEACT_GDEH0154D67","ttgo-t7-WEACT_DEPG0213BN","ttgo-t7-WEACT_GxEPD2_290_BS"]') }}
 
     env:
       CHIP_FAMILY: ${{ matrix.environment == 'TDISPLAY_S3' && 'ESP32-S3' || 'ESP32' }}
@@ -63,7 +56,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # Manual trigger: version must be provided as input (defaults to "0.0.0")
             VERSION="${{ github.event.inputs.version || '0.0.0' }}"
-            echo "Manual trigger â€” using version: $VERSION"
+            echo "Manual trigger -- using version: $VERSION"
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           else
             # Push trigger: extract version from commit message
@@ -216,8 +209,9 @@ jobs:
     name: Deploy Beta Release
     needs: build_beta
     runs-on: ubuntu-latest
-    # Only run if at least one build succeeded (not skipped, not failed)
-    if: needs.build_beta.result == 'success'
+    # Run only for full releases (push, or full manual run). Skip for a quick
+    # single-env check, which would otherwise wipe the other boards' files.
+    if: needs.build_beta.result == 'success' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == ''))
 
     steps:
       - name: Checkout code
@@ -268,7 +262,7 @@ jobs:
       # ------------------------------------------------------------------
       # Deploy manifests + .bin files to GitHub Pages
       # publish_dir=./gh-pages publishes its CONTENTS to gh-pages root
-      # So ./gh-pages/beta/<files> â†’ gh-pages/beta/<files>
+      # So ./gh-pages/beta/<files> -> gh-pages/beta/<files>
       # URL: melkati.github.io/CO2-Gadget/beta/<file>
       # force_orphan keeps the branch history from growing with binaries.
       # ------------------------------------------------------------------
