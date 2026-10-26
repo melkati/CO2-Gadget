@@ -264,3 +264,8 @@ jobs:
             ./ftp_firmware/*.bin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The WordPress install page caches the rendered version table. Purge the
+      # LiteSpeed page cache so the newly published version shows up immediately.
+      - name: Purge LiteSpeed page cache
+        run: curl -sf "https://emariete.com/clean_cache_litespeed.php" || true
