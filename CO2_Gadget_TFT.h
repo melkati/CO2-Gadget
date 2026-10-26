@@ -797,7 +797,17 @@ void showBatteryIcon(int32_t posX, int32_t posY, bool forceRedraw) {  // For TTG
     spr.deleteSprite();
 }
 
-void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+// -----------------------------------------------------------------------------
+// Status icon rendering.
+//
+// The icons are drawn through a template "Canvas" so the exact same drawing
+// code can target either the physical TFT (tft) or an off-screen sprite (spr).
+// displayShowValues() renders the whole strip into a sprite and pushes it in a
+// single operation (see drawStatusIconStrip()), which avoids the black flash /
+// flicker caused by clearing the strip directly on the panel before redrawing.
+// -----------------------------------------------------------------------------
+template <typename Canvas>
+void showWiFiIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
     if (!displayShowStatusIcons) return;
     bool wifiStatusActive = activeWIFI;
 #ifdef SUPPORT_LOW_POWER
@@ -808,40 +818,40 @@ void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!wifiStatusActive) return;
 
     // If captivePortalActive = true; draw a white circle instead of the WiFi icon. If forceCaptivePortalActive is also true, draw it blue
-
     if (captivePortalActive) {
-        tft.drawRect(posX - 2, posY - 2, 16 + 4, 16 + 4, TFT_BLACK);
+        canvas.drawRect(posX - 2, posY - 2, 16 + 4, 16 + 4, TFT_BLACK);
         if (forceCaptivePortalActive) {
-            tft.fillCircle(posX + 8, posY + 8, 6, TFT_BLUE);
+            canvas.fillCircle(posX + 8, posY + 8, 6, TFT_BLUE);
         } else {
-            tft.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);
+            canvas.fillCircle(posX + 8, posY + 8, 6, TFT_WHITE);
         }
         return;
     }
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     int16_t rssi = getWiFiRSSIForStatus();
     if (troubledWIFI) {
-        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
-        tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
+        canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        canvas.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
     if (deepSleepData.lastWifiRSSIValid) {
         int16_t signalStrength = abs(rssi);
         if (signalStrength < 60)
-            tft.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
+            canvas.drawBitmap(posX, posY, iconWiFi, 16, 16, TFT_BLACK, iconDefaultColor);
         else if (signalStrength < 70)
-            tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_ORANGE);
+            canvas.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_ORANGE);
         else if (signalStrength < 80)
-            tft.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_YELLOW);
+            canvas.drawBitmap(posX, posY, iconWiFiMed, 16, 16, TFT_BLACK, TFT_YELLOW);
         else
-            tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
+            canvas.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
     } else {
-        tft.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
+        canvas.drawBitmap(posX, posY, iconWiFiLow, 16, 16, TFT_BLACK, TFT_BLUE);
     }
 }
 
-void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+template <typename Canvas>
+void showBLEIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
     if (!displayShowStatusIcons) return;
     bool bleStatusActive = enableBLE && activeBLE;
 #ifdef SUPPORT_LOW_POWER
@@ -851,11 +861,12 @@ void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #endif
     if (!bleStatusActive) return;
 
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    tft.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, iconDefaultColor);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawBitmap(posX, posY, iconBLE, 16, 16, TFT_BLACK, iconDefaultColor);
 }
 
-void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+template <typename Canvas>
+void showBTHomeIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
     if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_BTHOME_BLE
     bool bthomeStatusActive = enableBLE && activeBTHome;
@@ -866,12 +877,13 @@ void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) {
 #endif
     if (!bthomeStatusActive) return;
 
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    tft.drawBitmap(posX, posY, iconBTHome, 16, 16, TFT_BLACK, iconDefaultColor);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawBitmap(posX, posY, iconBTHome, 16, 16, TFT_BLACK, iconDefaultColor);
 #endif
 }
 
-void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+template <typename Canvas>
+void showMQTTIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
     if (!displayShowStatusIcons) return;
     bool mqttStatusActive = activeMQTT;
 #ifdef SUPPORT_LOW_POWER
@@ -882,15 +894,16 @@ void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!mqttStatusActive) return;
 
     if (troubledMQTT) {
-        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
-        tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
+        canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        canvas.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    tft.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawBitmap(posX, posY, iconMQTT, 16, 16, TFT_BLACK, iconDefaultColor);
 }
 
-void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
+template <typename Canvas>
+void showEspNowIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
     if (!displayShowStatusIcons) return;
 #ifdef SUPPORT_ESPNOW
     bool espNowStatusActive = activeESPNOW;
@@ -902,18 +915,44 @@ void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) {
     if (!espNowStatusActive) return;
 
     if (troubledESPNOW) {
-        tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
-        tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
+        canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_RED);
+        canvas.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
         return;
     }
-    tft.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
-    tft.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
+    canvas.drawRoundRect(posX - 2, posY - 2, 16 + 4, 16 + 4, 2, TFT_DARKGREY);
+    canvas.drawBitmap(posX, posY, iconEspNow, 16, 16, TFT_BLACK, iconDefaultColor);
 #endif
 }
 
-void clearStatusIconArea() {
-    int32_t clearWidth = elementPosition.espNowIconX + 22;
-    tft.fillRect(0, 0, clearWidth, 22, TFT_BLACK);
+// Thin wrappers kept for backwards compatibility (draw directly to the panel).
+void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) { showWiFiIconOn(tft, posX, posY); }
+void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) { showBLEIconOn(tft, posX, posY); }
+void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) { showBTHomeIconOn(tft, posX, posY); }
+void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) { showMQTTIconOn(tft, posX, posY); }
+void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) { showEspNowIconOn(tft, posX, posY); }
+
+// Render the whole left status-icon strip into a sprite and push it in one go.
+// Atomic update => no black flash and no icons "popping in" one by one.
+void drawStatusIconStrip() {
+    int32_t stripWidth = elementPosition.espNowIconX + 22;
+    int32_t stripHeight = 22;
+    if (stripWidth <= 0 || stripHeight <= 0) return;
+
+    if (spr.createSprite(stripWidth, stripHeight) == nullptr) {
+        // Not enough RAM for the strip buffer: skip this refresh instead of
+        // falling back to the flickering clear-and-redraw path.
+        return;
+    }
+    spr.fillSprite(TFT_BLACK);
+    showWiFiIconOn(spr, elementPosition.wifiIconX, elementPosition.wifiIconY);
+    showMQTTIconOn(spr, elementPosition.mqttIconX, elementPosition.mqttIconY);
+    showBLEIconOn(spr, elementPosition.bleIconX, elementPosition.bleIconY);
+#ifdef SUPPORT_BTHOME_BLE
+    showBTHomeIconOn(spr, elementPosition.bthomeIconX, elementPosition.bthomeIconY);
+#endif
+    showEspNowIconOn(spr, elementPosition.espNowIconX, elementPosition.espNowIconY);
+    spr.pushSprite(0, 0);
+    spr.deleteSprite();
 }
 
 void showTemperatureIcon(int32_t posX, int32_t posY, bool forceRedraw) {
@@ -1072,14 +1111,7 @@ void displayShowValues(bool forceRedraw = false) {
     showHumidity(hum, elementPosition.humidityX, elementPosition.humidityY, forceRedraw);
     showBatteryIcon(elementPosition.batteryIconX, elementPosition.batteryIconY, forceRedraw);
     showBatteryVoltage(elementPosition.batteryVoltageX, elementPosition.batteryVoltageY, forceRedraw);
-    clearStatusIconArea();
-    showWiFiIcon(elementPosition.wifiIconX, elementPosition.wifiIconY, forceRedraw);
-    showMQTTIcon(elementPosition.mqttIconX, elementPosition.mqttIconY, forceRedraw);
-    showBLEIcon(elementPosition.bleIconX, elementPosition.bleIconY, forceRedraw);
-#ifdef SUPPORT_BTHOME_BLE
-    showBTHomeIcon(elementPosition.bthomeIconX, elementPosition.bthomeIconY, forceRedraw);
-#endif
-    showEspNowIcon(elementPosition.espNowIconX, elementPosition.espNowIconY, forceRedraw);
+    drawStatusIconStrip();
     forceRedraw = false;
     shouldRedrawDisplay = false;
 
