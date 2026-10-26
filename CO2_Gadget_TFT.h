@@ -924,13 +924,6 @@ void showEspNowIconOn(Canvas &canvas, int32_t posX, int32_t posY) {
 #endif
 }
 
-// Thin wrappers kept for backwards compatibility (draw directly to the panel).
-void showWiFiIcon(int32_t posX, int32_t posY, bool forceRedraw) { showWiFiIconOn(tft, posX, posY); }
-void showBLEIcon(int32_t posX, int32_t posY, bool forceRedraw) { showBLEIconOn(tft, posX, posY); }
-void showBTHomeIcon(int32_t posX, int32_t posY, bool forceRedraw) { showBTHomeIconOn(tft, posX, posY); }
-void showMQTTIcon(int32_t posX, int32_t posY, bool forceRedraw) { showMQTTIconOn(tft, posX, posY); }
-void showEspNowIcon(int32_t posX, int32_t posY, bool forceRedraw) { showEspNowIconOn(tft, posX, posY); }
-
 // Render the whole left status-icon strip into a sprite and push it in one go.
 // Atomic update => no black flash and no icons "popping in" one by one.
 void drawStatusIconStrip() {
