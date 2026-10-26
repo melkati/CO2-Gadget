@@ -1,12 +1,13 @@
 name: Beta Release V3.0
 
 # Create a beta: commit with message "Beta v<major>.<minor>.<patch>"
-# Manifests are deployed to GitHub Pages (melkati.github.io/CO2-Gadget/beta/)
-# Firmware .bin files are deployed via FTP to emariete.com
+# Manifests AND firmware .bin files are deployed to GitHub Pages
+# (melkati.github.io/CO2-Gadget/beta/). Binaries are no longer served from
+# emariete.com because newly FTP-uploaded files there return HTTP 404 (issue #300).
 #
 # Architecture:
-#   build_beta (matrix, parallel) → uploads artifacts
-#   deploy (single job, after all builds) → gh-pages (manifests) + FTP (.bin files)
+#   build_beta (matrix, parallel) â†’ uploads artifacts
+#   deploy (single job, after all builds) â†’ gh-pages (manifests + .bin files)
 
 on:
   push:
@@ -62,7 +63,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # Manual trigger: version must be provided as input (defaults to "0.0.0")
             VERSION="${{ github.event.inputs.version || '0.0.0' }}"
-            echo "Manual trigger — using version: $VERSION"
+            echo "Manual trigger â€” using version: $VERSION"
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           else
             # Push trigger: extract version from commit message
@@ -167,8 +168,9 @@ jobs:
             spiffs_offset=3604480
           fi
 
-          # Base URL for .bin files on emariete.com (absolute paths in manifest)
-          BIN_BASE_URL="https://emariete.com/wp-content/uploads/firmware/CO2-Gadget/beta"
+          # Base URL for .bin files on GitHub Pages (absolute paths in manifest).
+          # Same folder as the manifests; GitHub Pages sends CORS "*" headers.
+          BIN_BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/beta"
           REPO_NAME="${{ github.event.repository.name }}"
           ENV_NAME="${{ matrix.environment }}"
           VER="${{ steps.check_version.outputs.VERSION }}"
@@ -244,160 +246,37 @@ jobs:
             echo "Found version: $VERSION"
           fi
 
-      - name: Organize files for GitHub Pages (manifests only)
+      # force_orphan below replaces the whole gh-pages branch, so first pull the
+      # existing stable manifests (gh-pages root) back in to avoid deleting them.
+      - name: Fetch existing gh-pages content (to preserve stable manifests)
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: ./existing_pages
+
+      - name: Organize files for GitHub Pages (manifests + .bin)
         run: |
-          # Put manifests inside ./gh-pages/beta/ so they end up at /beta/<manifest>
+          # Everything goes inside ./gh-pages/beta/ so it ends up at /beta/<file>
           mkdir -p ./gh-pages/beta
-          find ./beta_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/beta/ \;
-          echo "=== Manifests for GitHub Pages ==="
-          ls -laR ./gh-pages/beta/
-
-      - name: Organize files for FTP (.bin only)
-        run: |
-          mkdir -p ./ftp_firmware/beta
-          find ./beta_firmware -name "*.bin" -exec cp {} ./ftp_firmware/beta/ \;
-          echo "=== Firmware for FTP ==="
-          ls -la ./ftp_firmware/beta/
+          find ./beta_firmware \( -name "*.manifest.json" -o -name "*.bin" \) -exec cp {} ./gh-pages/beta/ \;
+          # Preserve stable files (manifests + .bin) living at the gh-pages root
+          if [ -d ./existing_pages ]; then find ./existing_pages -maxdepth 1 -type f -exec cp {} ./gh-pages/ \; ; fi
+          echo "=== Files for GitHub Pages ==="
+          ls -laR ./gh-pages/
 
       # ------------------------------------------------------------------
-      # STEP 1: Deploy manifests to GitHub Pages
+      # Deploy manifests + .bin files to GitHub Pages
       # publish_dir=./gh-pages publishes its CONTENTS to gh-pages root
-      # So ./gh-pages/beta/<files> → gh-pages/beta/<files>
-      # URL: melkati.github.io/CO2-Gadget/beta/<manifest>
+      # So ./gh-pages/beta/<files> â†’ gh-pages/beta/<files>
+      # URL: melkati.github.io/CO2-Gadget/beta/<file>
+      # force_orphan keeps the branch history from growing with binaries.
       # ------------------------------------------------------------------
-      - name: Deploy manifests to GitHub Pages
+      - name: Deploy manifests and firmware to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
           force_orphan: true
-          commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests"
+          commit_message: "Beta v${{ steps.get_version.outputs.VERSION }} manifests and firmware"
 
-      # ------------------------------------------------------------------
-      # STEP 2: Ensure the remote directory chain exists before uploading.
-      #
-      # Confirmed 2026-08-14 via direct FTP inspection (see issue #300):
-      #   - The FTP account root ("/") IS the web server root (public_html).
-      #   - It already contains "wp-content/uploads/firmware/CO2-Gadget/".
-      #   - REMOTE_DIR below MUST therefore repeat the full web-server path
-      #     (it is NOT chrooted to the firmware directory).
-      # SamKirkland/FTP-Deploy-Action@2.0.0 is known to silently fail to
-      # create missing nested directories, so we create the chain ourselves
-      # (idempotent — ignores "already exists" errors) before the upload.
-      # ------------------------------------------------------------------
-      - name: Ensure remote FTP directory exists
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          REPO_NAME: ${{ github.event.repository.name }}
-        run: |
-          python - <<'PY'
-          import ftplib
-          import os
-          from urllib.parse import urlparse
-
-          raw_server = os.environ["FTP_SERVER"].strip()
-          parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
-          host = parsed.hostname or raw_server
-          port = parsed.port or 21
-
-          ftp = ftplib.FTP()
-          ftp.connect(host, port, timeout=20)
-          ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-
-          target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}/beta"
-          parts = [p for p in target.split("/") if p]
-          path = ""
-          for part in parts:
-              path += "/" + part
-              try:
-                  ftp.mkd(path)
-                  print(f"Created: {path}")
-              except ftplib.error_perm:
-                  print(f"Already exists: {path}")
-              # Directories created via raw FTP MKD may not inherit the
-              # world-readable+executable permissions (755) that the web
-              # server needs to traverse them and serve files inside.
-              # The stable (non-/beta/) folder was created long ago with
-              # correct permissions; this new /beta/ folder was not.
-              # SITE CHMOD is best-effort — not all FTP servers support it.
-              try:
-                  ftp.voidcmd(f"SITE CHMOD 755 {path}")
-                  print(f"chmod 755: {path}")
-              except Exception as exc:
-                  print(f"SITE CHMOD not supported/failed for {path}: {exc}")
-
-          ftp.quit()
-          PY
-
-      # ------------------------------------------------------------------
-      # STEP 3: Deploy .bin files to emariete.com via FTP
-      # REMOTE_DIR repeats the full web-server path (see note above).
-      # ------------------------------------------------------------------
-      - name: FTP upload firmware .bin files
-        uses: SamKirkland/FTP-Deploy-Action@2.0.0
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: ./ftp_firmware/beta/
-          REMOTE_DIR: /wp-content/uploads/firmware/${{ github.event.repository.name }}/beta/
-          METHOD: ftp
-          PORT: 21
-          ARGS: --verbose
-
-      - name: Purge origin cache (LiteSpeed)
-        run: |
-          curl -sf "https://emariete.com/clean_cache_litespeed.php" || true
-          echo "Origin cache purge attempted"
-
-      # ------------------------------------------------------------------
-      # TEMPORARY (issue #300 follow-up): the FTP-Deploy-Action reports
-      # success even when it has previously failed silently (see
-      # release-pipeline notes). Verify directly via ftplib what is
-      # actually present on the server after the upload, bypassing HTTP/
-      # CDN caching entirely, so we know for certain whether the transfer
-      # really happened.
-      # ------------------------------------------------------------------
-      - name: Verify uploaded files via FTP listing and fix permissions
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          REPO_NAME: ${{ github.event.repository.name }}
-        run: |
-          python - <<'PY'
-          import ftplib
-          import os
-          from urllib.parse import urlparse
-
-          raw_server = os.environ["FTP_SERVER"].strip()
-          parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
-          host = parsed.hostname or raw_server
-          port = parsed.port or 21
-
-          ftp = ftplib.FTP()
-          ftp.connect(host, port, timeout=20)
-          ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-
-          target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}/beta"
-          ftp.cwd(target)
-          print(f"Listing {target}:")
-          names = ftp.nlst()
-
-          for name in names:
-              if name in (".", ".."):
-                  continue
-              try:
-                  ftp.voidcmd(f"SITE CHMOD 644 {name}")
-              except Exception as exc:
-                  print(f"SITE CHMOD not supported/failed for {name}: {exc}")
-
-          lines = []
-          ftp.retrlines("LIST", lines.append)
-          for line in lines:
-              print(line)
-          print(f"Total entries: {len(lines)}")
-          ftp.quit()
-          PY

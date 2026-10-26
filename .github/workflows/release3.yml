@@ -1,12 +1,13 @@
-﻿name: Release V3.0 (Stable)
+name: Release V3.0 (Stable)
 
 # Create a stable release: push a new tag (v1.0, v2.0, etc.)
-# Manifests are deployed to GitHub Pages (melkati.github.io/CO2-Gadget/)
-# Firmware .bin files are deployed via FTP to emariete.com
+# Manifests and firmware .bin files are deployed to GitHub Pages (melkati.github.io/CO2-Gadget/)
+# and the .bin files are also attached to the GitHub Release
+# (emariete.com is no longer used for binaries — see issue #300).
 #
 # Architecture:
 #   build_release (matrix, parallel) → uploads artifacts
-#   deploy (single job, after all builds) → gh-pages (manifests) + FTP (.bin) + GitHub Release
+#   deploy (single job, after all builds) → gh-pages (manifests + .bin) + GitHub Release
 
 on:
   push:
@@ -146,12 +147,13 @@ jobs:
             spiffs_offset=3604480
           fi
 
-          # Base URL for .bin files on emariete.com (absolute paths in manifest)
-          # Stable releases go to /firmware/CO2-Gadget/ (NOT /beta/)
-          BIN_BASE_URL="https://emariete.com/wp-content/uploads/firmware/CO2-Gadget"
+          # Base URL for .bin files: GitHub Pages root (same place as the manifests).
+          # GitHub Pages sends CORS "*" headers, which ESP Web Tools needs; GitHub
+          # Release asset URLs redirect to a host that browsers often block via CORS.
           REPO_NAME="${{ github.event.repository.name }}"
           ENV_NAME="${{ matrix.environment }}"
           VER="${{ steps.get_version.outputs.VERSION }}"
+          BIN_BASE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
           cat > ${REPO_NAME}-${ENV_NAME}.manifest.json << EOF
           {
@@ -221,96 +223,44 @@ jobs:
             echo "Found version: $VERSION"
           fi
 
-      - name: Organize files for GitHub Pages (manifests at root)
-        run: |
-          # Stable manifests go to root of gh-pages (not /beta/)
-          mkdir -p ./gh-pages
-          find ./release_firmware -name "*.manifest.json" -exec cp {} ./gh-pages/ \;
-          echo "=== Manifests for GitHub Pages ==="
-          ls -la ./gh-pages/
+      # force_orphan below replaces the whole gh-pages branch, so first pull the
+      # existing content (beta/ folder) back in to avoid deleting the beta installer.
+      - name: Fetch existing gh-pages content (to preserve beta files)
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: ./existing_pages
 
-      - name: Organize files for FTP (.bin only)
+      - name: Organize files for GitHub Pages (manifests + .bin at root)
         run: |
-          # .bin files go to /CO2-Gadget/ on emariete.com (stable, not /beta/)
+          # Stable manifests and .bin files go to root of gh-pages (not /beta/)
+          mkdir -p ./gh-pages
+          find ./release_firmware \( -name "*.manifest.json" -o -name "*.bin" \) -exec cp {} ./gh-pages/ \;
+          # Preserve the beta installer files
+          if [ -d ./existing_pages/beta ]; then cp -r ./existing_pages/beta ./gh-pages/beta; fi
+          # Also keep the .bin files for the GitHub Release assets
           mkdir -p ./ftp_firmware
           find ./release_firmware -name "*.bin" -exec cp {} ./ftp_firmware/ \;
-          echo "=== Files for FTP ==="
-          ls -la ./ftp_firmware/
+          echo "=== Files for GitHub Pages ==="
+          ls -laR ./gh-pages/
 
-      - name: Deploy manifests to GitHub Pages
+      - name: Deploy manifests and firmware to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
           enable_jekyll: false
           force_orphan: true
-          clean: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.event.repository.name }}-${{ steps.get_version.outputs.VERSION }}
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
           draft: false
           generate_release_notes: true
           files: |
             ./ftp_firmware/*.bin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ------------------------------------------------------------------
-      # Ensure the remote directory chain exists before uploading.
-      # See release3_beta.yml for the full explanation (issue #300): the
-      # FTP account root is the web server root (public_html), NOT chrooted
-      # to the firmware directory, and the old FTP-Deploy-Action can fail
-      # silently to create missing nested directories.
-      # ------------------------------------------------------------------
-      - name: Ensure remote FTP directory exists
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          REPO_NAME: ${{ github.event.repository.name }}
-        run: |
-          python - <<'PY'
-          import ftplib
-          import os
-          from urllib.parse import urlparse
-
-          raw_server = os.environ["FTP_SERVER"].strip()
-          parsed = urlparse(raw_server if "://" in raw_server else f"ftp://{raw_server}")
-          host = parsed.hostname or raw_server
-          port = parsed.port or 21
-
-          ftp = ftplib.FTP()
-          ftp.connect(host, port, timeout=20)
-          ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-
-          target = f"/wp-content/uploads/firmware/{os.environ['REPO_NAME']}"
-          parts = [p for p in target.split("/") if p]
-          path = ""
-          for part in parts:
-              path += "/" + part
-              try:
-                  ftp.mkd(path)
-                  print(f"Created: {path}")
-              except ftplib.error_perm:
-                  print(f"Already exists: {path}")
-
-          ftp.quit()
-          PY
-
-      - name: FTP Deploy .bin files to emariete.com
-        uses: SamKirkland/FTP-Deploy-Action@2.0.0
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: ./ftp_firmware/
-          REMOTE_DIR: /wp-content/uploads/firmware/${{ github.event.repository.name }}/
-          METHOD: ftp
-          PORT: 21
-          ARGS: --verbose
-
-      - name: Clean eMariete.com Cache
-        run: curl https://emariete.com/clean_cache_litespeed.php

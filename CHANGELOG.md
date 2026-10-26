@@ -6,9 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.029-beta (branch: development)
+## [Unreleased] — v0.16.030-beta (branch: development)
 
 ### Fixed
+- **#300 — Firmware hosting migrated to GitHub Pages**: the installer's `.bin` URLs on emariete.com kept returning HTTP 404 (a server-side WordPress issue that persisted despite multiple CI/CD fixes). Beta and stable manifests now reference binaries hosted on GitHub Pages (`melkati.github.io/CO2-Gadget/...`), removing the emariete.com dependency for binary downloads entirely. Removed all FTP upload steps from both `release3_beta.yml` and `release3.yml`.
 - **#300 — Definitive root cause: directory permissions**: direct FTP `LIST` confirmed the v0.16.027/028 binaries genuinely existed on the server with correct sizes, yet HTTP still returned 404. Comparison against the stable (non-`/beta/`) folder — which serves `.bin` files fine (HTTP 200) via the same FTP account — pinpointed the difference: the `/beta/` directory was newly created via raw FTP `MKD`, which does not necessarily grant the web server (running as a different user/group) read+execute permission on the directory. Added `SITE CHMOD 755` on each created directory level and `SITE CHMOD 644` on every uploaded file to guarantee they are web-readable, matching the working stable folder's permissions.
 
 ### Fixed
