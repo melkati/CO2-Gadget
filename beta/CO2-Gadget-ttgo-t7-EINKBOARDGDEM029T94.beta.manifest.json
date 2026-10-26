@@ -1,0 +1,21 @@
+{
+  "name": "CO2-Gadget-ttgo-t7-EINKBOARDGDEM029T94",
+  "flavour": "ttgo-t7-EINKBOARDGDEM029T94",
+  "version": "0.16.031-beta",
+  "compilation_date": "26-10-2026",
+  "compilation_time": "14:12:54",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 20,
+  "builds": [
+      {
+        "chipFamily": "ESP32",
+        "improv": true,
+        "parts": [
+          { "path": "https://melkati.github.io/CO2-Gadget/beta/CO2-Gadget-ttgo-t7-EINKBOARDGDEM029T94-0.16.031-bootloader.bin", "offset": 4096 },
+          { "path": "https://melkati.github.io/CO2-Gadget/beta/CO2-Gadget-ttgo-t7-EINKBOARDGDEM029T94-0.16.031-partitions.bin", "offset": 32768 },
+          { "path": "https://melkati.github.io/CO2-Gadget/beta/CO2-Gadget-ttgo-t7-EINKBOARDGDEM029T94-0.16.031-firmware.bin", "offset": 65536 },
+          { "path": "https://melkati.github.io/CO2-Gadget/beta/CO2-Gadget-ttgo-t7-EINKBOARDGDEM029T94-0.16.031-spiffs.bin", "offset": 3604480 }
+        ]
+      }
+  ]
+}
