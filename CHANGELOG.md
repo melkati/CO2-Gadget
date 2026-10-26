@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — v0.16.030-beta (branch: development)
+## [Unreleased] — v0.16.031-beta (branch: development)
 
 ### Fixed
 - **TFT status icons flicker**: the status-icon strip was cleared directly on the panel (`fillRect` black) before redrawing each icon one-by-one, producing a visible black flash/flicker on every display update. The strip is now rendered into a sprite and pushed in a single atomic operation, eliminating the flicker. (`CO2_Gadget_TFT.h`)
