@@ -268,4 +268,10 @@ jobs:
       # The WordPress install page caches the rendered version table. Purge the
       # LiteSpeed page cache so the newly published version shows up immediately.
       - name: Purge LiteSpeed page cache
-        run: curl -sf "https://emariete.com/clean_cache_litespeed.php" || true
+        env:
+          LSCACHE_PURGE_TOKEN: ${{ secrets.LSCACHE_PURGE_TOKEN }}
+        run: |
+          curl -sf --retry 3 --retry-delay 2 \
+            "https://emariete.com/clean_cache_litespeed.php?k=${LSCACHE_PURGE_TOKEN}" \
+            | grep -q PURGE_OK
+
