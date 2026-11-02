@@ -271,7 +271,19 @@ jobs:
         env:
           LSCACHE_PURGE_TOKEN: ${{ secrets.LSCACHE_PURGE_TOKEN }}
         run: |
-          curl -sf --retry 3 --retry-delay 2 \
-            "https://emariete.com/clean_cache_litespeed.php?k=${LSCACHE_PURGE_TOKEN}" \
-            | grep -q PURGE_OK
+          # El token viaja en una CABECERA HTTP, nunca en la URL: asi no queda
+          # en los access logs del servidor ni en los logs de Cloudflare.
+          code=$(curl -sS -o /tmp/lscache-purge.out -w '%{http_code}' \
+            --max-time 30 --retry 3 --retry-delay 3 --retry-max-time 25 \
+            -H "X-Purge-Token: ${LSCACHE_PURGE_TOKEN}" \
+            "https://emariete.com/clean_cache_litespeed.php")
+          echo "litespeed purge http=${code}"
+          # 200 = purgado. 429 = alguien purgo hace menos de 30 s (la cache ya
+          # esta fresca), asi que tambien es un estado aceptable.
+          if [ "$code" = "200" ] || [ "$code" = "429" ]; then
+            echo "litespeed cache purge ok (http=${code})"
+          else
+            echo "::error::Fallo la purga de la cache LiteSpeed (http=${code}): $(cat /tmp/lscache-purge.out)"
+            exit 1
+          fi
 
